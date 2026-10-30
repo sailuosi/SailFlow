@@ -7,19 +7,11 @@
     <Title>Sailflow Resource Module</Title>
     <Description>Resource management module for saiflow.NET. Provides user, role, department, and organizational structure management capabilities.</Description>
     <Product>saiflow.NET</Product>
-    <PackageProjectUrl>https://github.com/besley/slickflow</PackageProjectUrl>
-    <Copyright>@2014-2025</Copyright>
-    <RepositoryUrl>https://github.com/besley/saiflow.git</RepositoryUrl>
-    <Company>Hangzhou, Ligong</Company>
-    <Authors>Besley</Authors>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Devart.Data.Oracle.EFCore" Version="9.5.399" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.1" />
   </ItemGroup>
 
   <ItemGroup>

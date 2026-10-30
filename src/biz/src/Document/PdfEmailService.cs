@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using saiflow.biz.Utility;
 using saiflow.engine.Common;
 using saiflow.engine.External;
-using saiflow.engine.Utility;
 
-namespace saiflow.hub.External.Document
+namespace saiflow.biz.Document
 {
     /// <summary>
     /// LocalService: generates a PDF document from process variables and saves it to disk.

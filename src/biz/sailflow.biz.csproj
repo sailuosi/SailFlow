@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
+    <PackageId>saiflow.biz</PackageId>
+    <RootNamespace>saiflow.biz</RootNamespace>
+    <AssemblyName>saiflow.biz</AssemblyName>
+    <Description>Business-side concrete implementations for Sailflow (LocalService, document generation, etc.). Keep engine free of domain-specific capabilities.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="iTextSharp" Version="5.5.13.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\core\pure\engine\sailflow.engine.csproj" />
+  </ItemGroup>
+
+</Project>

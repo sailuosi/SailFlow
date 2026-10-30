@@ -4,11 +4,11 @@ using System.IO;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 
-namespace saiflow.engine.Utility
+namespace saiflow.biz.Utility
 {
     /// <summary>
     /// PDF document generation utility for workflow process documents
-    /// 工作流程文档PDF生成工具类
+    /// 工作流程文档PDF生成工具类（业务侧实现，不属于引擎核心）
     /// </summary>
     public static class PdfGenerateUtility
     {
