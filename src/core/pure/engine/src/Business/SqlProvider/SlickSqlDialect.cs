@@ -18,13 +18,6 @@ namespace saiflow.engine.Business.SqlProvider
         /// <summary>流程定义表（实体 / Manager 内联 SQL，固定 snake）。</summary>
         public static string ProcessEntityTable => "wf_process";
 
-        /// <summary>
-        /// 流程定义表（SqlProvider 双方言：SQL Server 历史 Pascal 表名）。
-        /// Manager 内联请用 <see cref="ProcessEntityTable"/>。
-        /// </summary>
-        public static string ProcessTable
-            => IsSqlServer ? "WfProcess" : "wf_process";
-
         /// <summary>变量定义表。</summary>
         public static string VariableTable => "wf_variable";
 
@@ -50,14 +43,6 @@ namespace saiflow.engine.Business.SqlProvider
         /// <summary>任务视图主键排序列（SQL Server 用 TaskId，其它库视图主键为 id）。</summary>
         public static string TaskIdColumn
             => IsSqlServer ? "TaskId" : "id";
-
-        /// <summary>SQL Server：放在 SELECT 后的 <c>TOP n</c>；其它库返回空。</summary>
-        public static string LimitPrefix(int n)
-            => IsSqlServer ? $"TOP {n} " : string.Empty;
-
-        /// <summary>非 SQL Server：语句末尾 <c>LIMIT n</c>；SQL Server 返回空。</summary>
-        public static string LimitSuffix(int n)
-            => IsSqlServer ? string.Empty : $"\n                       LIMIT {n}";
 
         /// <summary>实体字段 → 库列名（SQL Server 保持 Pascal）。</summary>
         public static string MapField(string entityField)

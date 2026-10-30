@@ -5,7 +5,7 @@
     <PackageId>saiflow.biz</PackageId>
     <RootNamespace>saiflow.biz</RootNamespace>
     <AssemblyName>saiflow.biz</AssemblyName>
-    <Description>Sailflow business composition root: schema bootstrap, AI runtime registration, and biz feature packages (docs/AI).</Description>
+    <Description>Sailflow business composition root: schema bootstrap, AI runtime registration, and biz feature packages (docs/AI/query).</Description>
     <LangVersion>14.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -17,6 +17,7 @@
     <ProjectReference Include="..\..\core\ext\localize\sailflow.localize.csproj" />
     <ProjectReference Include="..\AI\sailflow.biz.AI.csproj" />
     <ProjectReference Include="..\docs\sailflow.biz.docs.csproj" />
+    <ProjectReference Include="..\query\sailflow.biz.query.csproj" />
   </ItemGroup>
 
 </Project>
