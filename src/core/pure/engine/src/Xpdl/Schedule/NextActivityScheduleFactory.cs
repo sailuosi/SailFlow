@@ -28,7 +28,7 @@ namespace saiflow.engine.Xpdl.Schedule
             }
             else
             {
-                throw new Exception(LocalizeMessagesLocator.Current.GetEngineMessage("nextactivityschedulefactory.unknownnodetype"));
+                throw new Exception(client.Messages.GetEngineMessage("nextactivityschedulefactory.unknownnodetype"));
             }
             return activitySchedule;
         }

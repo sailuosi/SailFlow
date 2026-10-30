@@ -55,7 +55,7 @@ namespace saiflow.engine.Core.Pattern.Auto
             }
             else
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.Execute.exception", script.Method.ToString()));
+                throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.Execute.exception", script.Method.ToString()));
             }
         }
 
@@ -86,12 +86,12 @@ namespace saiflow.engine.Core.Pattern.Auto
                 }
                 else
                 {
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecutePythonMethod.warn"));
+                    throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.ExecutePythonMethod.warn"));
                 }
             }
             catch (Exception ex)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecutePythonMethod.exception", ex.Message));
+                throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.ExecutePythonMethod.exception", ex.Message));
             }
         }
 
@@ -113,12 +113,12 @@ namespace saiflow.engine.Core.Pattern.Auto
                 }
                 else
                 {
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteSQLMethod.warn"));
+                    throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.ExecuteSQLMethod.warn"));
                 }
             }
             catch (Exception ex)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteSQLMethod.exception", ex.Message));
+                throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.ExecuteSQLMethod.exception", ex.Message));
             }
         }
     }

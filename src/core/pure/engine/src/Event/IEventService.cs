@@ -5,6 +5,7 @@ using System.Text;
 using System.Data;
 using mooSQL.data;
 using saiflow.data;
+using saiflow.engine.Client;
 using saiflow.engine.Common;
 
 namespace saiflow.engine.Event
@@ -15,6 +16,7 @@ namespace saiflow.engine.Event
     /// </summary>
     public interface IEventService
     {
+        SailClient Sail { get; }
         int GetProcessInstanceId();
         SQLBuilder GetKit();
         string GetVariable(ProcessVariableScopeEnum variableType, string name);

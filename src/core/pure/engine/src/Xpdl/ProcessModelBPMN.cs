@@ -337,7 +337,7 @@ namespace saiflow.engine.Xpdl
             var startNode = ProcessModelHelper.GetStartActivity(this.Process);
             if (startNode == null)
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmodel.getstartactivity.error"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmodel.getstartactivity.error"));
             }
             return startNode;
         }
@@ -368,7 +368,7 @@ namespace saiflow.engine.Xpdl
             }
             catch (System.Exception e)
             {
-                throw new WfXpdlException(LocalizeMessagesLocator.Current.GetEngineMessage("processmodel.getfirstactivitylist.error"),
+                throw new WfXpdlException(Sail.Messages.GetEngineMessage("processmodel.getfirstactivitylist.error"),
                     e);
             }
         }
@@ -719,7 +719,7 @@ namespace saiflow.engine.Xpdl
                         }
                         else
                         {
-                            throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmodel.getnextactivitylist.nonenextstepperformer.error"));
+                            throw new ApplicationException(Sail.Messages.GetEngineMessage("processmodel.getnextactivitylist.nonenextstepperformer.error"));
                         }
                     }
                 }
@@ -866,7 +866,7 @@ namespace saiflow.engine.Xpdl
                 }
                 else
                 {
-                    throw new XmlDefinitionException(LocalizeMessagesLocator.Current.GetEngineMessage("processmodel.getpreviousactivitylist.error",
+                    throw new XmlDefinitionException(Sail.Messages.GetEngineMessage("processmodel.getpreviousactivitylist.error",
                         transition.FromActivity.ActivityType.ToString()));
                 }
             }

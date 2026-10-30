@@ -92,7 +92,7 @@ namespace saiflow.engine.Core.SendBack
         {
             if (activityResource.NextActivityPerformers == null)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("nodesendback.ExecuteInstanceImp.error"));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("nodesendback.ExecuteInstanceImp.error"));
             }
 
             TaskManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance, activityResource.NextActivityPerformers[toActivityInstance.ActivityId], activityResource.AppRunner);
@@ -143,7 +143,7 @@ namespace saiflow.engine.Core.SendBack
 
             if (previousActivityInstance == null)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("nodesendback.CreateBackwardActivityTaskTransitionInstance.error"));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("nodesendback.CreateBackwardActivityTaskTransitionInstance.error"));
             }
 
             var toActivityInstance = this.ActivityInstanceManager.CreateBackwardActivityInstanceObject(

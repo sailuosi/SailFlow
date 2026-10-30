@@ -54,7 +54,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Started_IsRunningAlready;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceStartup.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceStartup.error");
                 return rmins;
             }
 
@@ -126,7 +126,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Started_IsRunningAlready;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceStartup.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceStartup.error");
                 return rmins;
             }
 
@@ -170,7 +170,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_ErrorArguments;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
                 return rmins;
             }
             rmins.AppRunner = runner;
@@ -186,7 +186,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_HasNoTask;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.nonetask.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.nonetask.error");
                 return rmins;
             }
 
@@ -195,7 +195,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_NotInRunning;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.notrunning.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.notrunning.error");
                 return rmins;
             }
 
@@ -219,7 +219,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_VariableRequiredFailed;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.variable.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.variable.error");
                 return rmins;
             }
 
@@ -256,7 +256,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_ErrorArguments;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
                 return rmins;
             }
             rmins.AppRunner = runner;
@@ -303,7 +303,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Jump_ErrorArguments;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceJump.missing.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceJump.missing.error");
                 return rmins;
             }
 
@@ -313,7 +313,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Jump_OverOneStep;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceJump.jump.error",
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceJump.jump.error",
                     runner.NextActivityPerformers.Count().ToString());
                 return rmins;
             }
@@ -364,7 +364,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Jump_ErrorArguments;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceReject.missing.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceReject.missing.error");
                 return rmins;
             }
 
@@ -372,7 +372,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Jump_OverOneStep;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceReject.jump.error",
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceReject.jump.error",
                     runner.NextActivityPerformers.Count().ToString());
                 return rmins;
             }
@@ -446,7 +446,7 @@ namespace saiflow.engine.Core.Runtime
                 {
                     result.Status = WfExecutedStatus.Exception;
                     result.ExceptionType = WfExceptionType.Jump_NotActivityBackCompleted;
-                    result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceReject.back.error");
+                    result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceReject.back.error");
 
                     return rmins;
                 }
@@ -501,7 +501,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Jump_ErrorArguments;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceClose.missing.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceClose.missing.error");
                 return rmins;
             }
 
@@ -511,7 +511,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Jump_OverOneStep;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceClose.jump.error",
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceClose.jump.error",
                     runner.NextActivityPerformers.Count().ToString());
                 return rmins;
             }
@@ -563,7 +563,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_IsNull;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.null.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.null.error");
 
                 return rmins;
             }
@@ -579,7 +579,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_NotInRunning;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.nonerun.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.nonerun.error");
 
                 return rmins;
             }
@@ -588,7 +588,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_NotMineTask;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.nonetask.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.nonetask.error");
                 return rmins;
             }
 
@@ -598,7 +598,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_NotTaskNode;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.nottask.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.nottask.error");
                 return rmins;
             }
 
@@ -616,7 +616,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_IsNull;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.empty.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.empty.error");
                 return rmins;
             }
 
@@ -628,7 +628,7 @@ namespace saiflow.engine.Core.Runtime
                 {
                     result.Status = WfExecutedStatus.Exception;
                     result.ExceptionType = WfExceptionType.Sendback_IsNull;
-                    result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.noneperformer.error");
+                    result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.noneperformer.error");
 
                     return rmins;
                 }
@@ -654,7 +654,7 @@ namespace saiflow.engine.Core.Runtime
                     {
                         result.Status = WfExecutedStatus.Exception;
                         result.ExceptionType = WfExceptionType.Sendback_IsTooManyPrevious;
-                        result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.notunique.error");
+                        result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSendBack.notunique.error");
 
                         return rmins;
                     }
@@ -765,7 +765,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Withdraw_ErrorArguments;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.missingtaskid.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.missingtaskid.error");
                 return rmins;
             }
             //获取已经完成任务的信息
@@ -777,7 +777,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_NotMineTask;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.nonetask.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.nonetask.error");
                 return rmins;
             }
 
@@ -790,7 +790,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_IsNull;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.noneperformer.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.noneperformer.error");
 
                 return rmins;
             }
@@ -816,7 +816,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_NotInRunning;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.nonerun.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.nonerun.error");
 
                 return rmins;
             }
@@ -827,7 +827,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_NotTaskNode;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.nottask.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.nottask.error");
                 return rmins;
             }
 
@@ -850,7 +850,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_IsNull;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.empty.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.empty.error");
                 return rmins;
             }
 
@@ -875,7 +875,7 @@ namespace saiflow.engine.Core.Runtime
                 {
                     result.Status = WfExecutedStatus.Exception;
                     result.ExceptionType = WfExceptionType.Sendback_IsTooManyPrevious;
-                    result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.notunique.error");
+                    result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceWithdraw.notunique.error");
 
                     return rmins;
                 }
@@ -928,7 +928,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Resend_NotTaskNode;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceResend.missingtaskid.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceResend.missingtaskid.error");
 
                 return rmins;
             }
@@ -944,7 +944,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Resend_WithoutBackSourceNode;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceResend.nonebacksrc.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceResend.nonebacksrc.error");
 
                 return rmins;
             }
@@ -997,7 +997,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Resend_NotTaskNode;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceRevise.missingtaskid.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceRevise.missingtaskid.error");
 
                 return rmins;
             }
@@ -1045,7 +1045,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Reverse_NotInCompleted;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceReverse.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceReverse.error");
                 return rmins;
             }
 
@@ -1116,7 +1116,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.SignForward_ErrorArguments;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSignForward.missing.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSignForward.missing.error");
                 return rmins;
             }
 
@@ -1124,7 +1124,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.SignForward_NoneSigners;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSignForward.noneperformer.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSignForward.noneperformer.error");
                 return rmins;
             }
 
@@ -1140,7 +1140,7 @@ namespace saiflow.engine.Core.Runtime
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_HasNoTask;
-                result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSignForward.nonetask.error");
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceSignForward.nonetask.error");
                 return rmins;
             }
 

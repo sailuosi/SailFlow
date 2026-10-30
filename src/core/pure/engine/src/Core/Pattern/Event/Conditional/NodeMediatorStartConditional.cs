@@ -69,7 +69,7 @@ namespace saiflow.engine.Core.Pattern.Event.Conditional
                 }
                 else
                 {
-                    throw new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorstartconditional.ExecuteWorkItem.exception"));
+                    throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorstartconditional.ExecuteWorkItem.exception"));
                 }
             }
             catch (Exception ex)

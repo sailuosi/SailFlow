@@ -351,7 +351,7 @@ namespace saiflow.engine.Core.Pattern
                     if (nextActivityMatchedResult.MatchedType != NextActivityMatchedType.Successed
                         || nextActivityMatchedResult.Root.HasChildren == false)
                     {
-                        throw new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.ContinueForwardCurrentNode.warn"));
+                        throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNode.warn"));
                     }
                     
                     ContinueForwardCurrentNodeRecurisivly(this.LinkContext.FromActivity,
@@ -370,7 +370,7 @@ namespace saiflow.engine.Core.Pattern
             }
             catch (System.Exception ex)
             {
-                throw new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.ContinueForwardCurrentNode.error", ex.Message),
+                throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNode.error", ex.Message),
                     ex.InnerException != null? ex.InnerException : ex);
             }
         }
@@ -457,7 +457,7 @@ namespace saiflow.engine.Core.Pattern
                                     LogPriority.Normal,
                                     null,
                                     new WfRuntimeException(
-                                        LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.warn"))
+                                        Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.warn"))
                                     );
                             }
                         }
@@ -472,7 +472,7 @@ namespace saiflow.engine.Core.Pattern
                                     LogEventType.Exception,
                                     LogPriority.Normal,
                                     null,
-                                    new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
+                                    new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
                                     );
                             }
                             else
@@ -483,7 +483,7 @@ namespace saiflow.engine.Core.Pattern
                                     LogEventType.Exception,
                                     LogPriority.Normal,
                                     null,
-                                    new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
+                                    new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
                                     );
                             }
                         }
@@ -544,7 +544,7 @@ namespace saiflow.engine.Core.Pattern
                             LogEventType.Exception,
                             LogPriority.Normal,
                             null,
-                            new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.unknowntype.warn",
+                            new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.unknowntype.warn",
                                 comp.Activity.ActivityType.ToString()))
                             );
                     }
@@ -578,7 +578,7 @@ namespace saiflow.engine.Core.Pattern
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
-                                new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
+                                new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
                                 );
                         }
                         else
@@ -589,7 +589,7 @@ namespace saiflow.engine.Core.Pattern
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
-                                new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
+                                new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
                                 );
                         }
                     }
@@ -804,7 +804,7 @@ namespace saiflow.engine.Core.Pattern
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
-                                new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
+                                new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
                                 );
                         }
                         else
@@ -815,7 +815,7 @@ namespace saiflow.engine.Core.Pattern
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
-                                new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
+                                new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
                                 );
                         }
                     }
@@ -865,7 +865,7 @@ namespace saiflow.engine.Core.Pattern
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
-                                new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
+                                new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
                                 );
                         }
                         else
@@ -876,7 +876,7 @@ namespace saiflow.engine.Core.Pattern
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
-                                new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
+                                new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
                                 );
                         }
                     }
@@ -889,7 +889,7 @@ namespace saiflow.engine.Core.Pattern
                         LogEventType.Exception,
                         LogPriority.Normal,
                         null,
-                        new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.unknowntype.warn",
+                        new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.unknowntype.warn",
                             comp.Activity.ActivityType.ToString()))
                         );
                 }
@@ -945,7 +945,7 @@ namespace saiflow.engine.Core.Pattern
         {
             if (activityResource.NextActivityPerformers == null)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.createnewtask.warn"));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("nodemediator.createnewtask.warn"));
             }
 
             TaskManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance, activityResource.NextActivityPerformers[toActivityInstance.ActivityId], activityResource.AppRunner);
@@ -1135,7 +1135,7 @@ namespace saiflow.engine.Core.Pattern
             }
             else
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.generateactivityassigneduserinfo.warn"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("nodemediator.generateactivityassigneduserinfo.warn"));
             }
             return toActivityInstance;
         }
@@ -1173,15 +1173,15 @@ namespace saiflow.engine.Core.Pattern
             var message = string.Empty;
             if (WfNodeMediatedResult.Feedback == WfNodeMediatedFeedback.ForwardToNextSequenceTask)
             {
-                message = LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.getnodemediatedmessage.next.warn");
+                message = Sail.Messages.GetEngineMessage("nodemediator.getnodemediatedmessage.next.warn");
             }
             else if (WfNodeMediatedResult.Feedback == WfNodeMediatedFeedback.WaitingForCompletedMore)
             {
-                message = LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.GetNodeMediatedMessage.waiting.warn");
+                message = Sail.Messages.GetEngineMessage("nodemediator.GetNodeMediatedMessage.waiting.warn");
             }
             else if (WfNodeMediatedResult.Feedback == WfNodeMediatedFeedback.NotEnoughApprovalBranchesCount)
             {
-                message = LocalizeMessagesLocator.Current.GetEngineMessage("nodemediator.GetNodeMediatedMessage.notenoughapproval.warn");
+                message = Sail.Messages.GetEngineMessage("nodemediator.GetNodeMediatedMessage.notenoughapproval.warn");
             }
             return message;
         }

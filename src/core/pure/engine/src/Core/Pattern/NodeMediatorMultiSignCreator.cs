@@ -85,12 +85,12 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else
                 {
-                    throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatormicreator.CreateActivityTaskTransitionInstance.warn"));
+                    throw new ApplicationException(Sail.Messages.GetEngineMessage("nodemediatormicreator.CreateActivityTaskTransitionInstance.warn"));
                 }
             }
             else
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatormicreator.CreateActivityTaskTransitionInstance.exception"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("nodemediatormicreator.CreateActivityTaskTransitionInstance.exception"));
             }
         }
     }

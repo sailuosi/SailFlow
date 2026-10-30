@@ -67,7 +67,7 @@ namespace saiflow.engine.Core.Pattern
                     }
                     else
                     {
-                        ThrowUncerternXmlNodeTypeException(forwardContext.CurrentActivity.ActivityType.ToString(), 
+                        ThrowUncerternXmlNodeTypeException(client, forwardContext.CurrentActivity.ActivityType.ToString(), 
                             forwardContext.CurrentActivity.TriggerDetail.TriggerType.ToString(),
                             forwardContext.CurrentActivity.TriggerDetail.MessageDirection.ToString());
                         return null;
@@ -85,7 +85,7 @@ namespace saiflow.engine.Core.Pattern
                     }
                     else
                     {
-                        ThrowUncerternXmlNodeTypeException(forwardContext.CurrentActivity.ActivityType.ToString(),
+                        ThrowUncerternXmlNodeTypeException(client, forwardContext.CurrentActivity.ActivityType.ToString(),
                             forwardContext.CurrentActivity.TriggerDetail.TriggerType.ToString(),
                             forwardContext.CurrentActivity.TriggerDetail.MessageDirection.ToString());
                         return null;
@@ -93,7 +93,7 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else
                 {
-                    ThrowUncerternXmlNodeTypeException(forwardContext.CurrentActivity.ActivityType.ToString(),
+                    ThrowUncerternXmlNodeTypeException(client, forwardContext.CurrentActivity.ActivityType.ToString(),
                         forwardContext.CurrentActivity.TriggerDetail.TriggerType.ToString());
                     return null;
                 }
@@ -121,7 +121,7 @@ namespace saiflow.engine.Core.Pattern
                     }
                     else
                     {
-                        ThrowUncerternXmlNodeTypeException(forwardContext.CurrentActivity.ActivityType.ToString(),
+                        ThrowUncerternXmlNodeTypeException(client, forwardContext.CurrentActivity.ActivityType.ToString(),
                             forwardContext.CurrentActivity.TriggerDetail.TriggerType.ToString(),
                             forwardContext.CurrentActivity.TriggerDetail.MessageDirection.ToString());
                         return null;
@@ -139,7 +139,7 @@ namespace saiflow.engine.Core.Pattern
                     }
                     else
                     {
-                        ThrowUncerternXmlNodeTypeException(forwardContext.CurrentActivity.ActivityType.ToString(),
+                        ThrowUncerternXmlNodeTypeException(client, forwardContext.CurrentActivity.ActivityType.ToString(),
                             forwardContext.CurrentActivity.TriggerDetail.TriggerType.ToString(),
                             forwardContext.CurrentActivity.TriggerDetail.MessageDirection.ToString());
                         return null;
@@ -147,7 +147,7 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else
                 {
-                    ThrowUncerternXmlNodeTypeException(forwardContext.CurrentActivity.ActivityType.ToString(),
+                    ThrowUncerternXmlNodeTypeException(client, forwardContext.CurrentActivity.ActivityType.ToString(),
                         forwardContext.CurrentActivity.TriggerDetail.TriggerType.ToString());
                     return null;
                 }
@@ -174,7 +174,7 @@ namespace saiflow.engine.Core.Pattern
                     }
                     else
                     {
-                        ThrowUncerternXmlNodeTypeException(forwardContext.CurrentActivity.ActivityType.ToString(),
+                        ThrowUncerternXmlNodeTypeException(client, forwardContext.CurrentActivity.ActivityType.ToString(),
                             forwardContext.CurrentActivity.TriggerDetail.TriggerType.ToString(),
                             forwardContext.CurrentActivity.TriggerDetail.MessageDirection.ToString());
                         return null;
@@ -192,7 +192,7 @@ namespace saiflow.engine.Core.Pattern
                     }
                     else
                     {
-                        ThrowUncerternXmlNodeTypeException(forwardContext.CurrentActivity.ActivityType.ToString(),
+                        ThrowUncerternXmlNodeTypeException(client, forwardContext.CurrentActivity.ActivityType.ToString(),
                             forwardContext.CurrentActivity.TriggerDetail.TriggerType.ToString(),
                             forwardContext.CurrentActivity.TriggerDetail.MessageDirection.ToString());
                         return null;
@@ -200,7 +200,7 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else
                 {
-                    ThrowUncerternXmlNodeTypeException(forwardContext.CurrentActivity.ActivityType.ToString(),
+                    ThrowUncerternXmlNodeTypeException(client, forwardContext.CurrentActivity.ActivityType.ToString(),
                         forwardContext.CurrentActivity.TriggerDetail.TriggerType.ToString());
                     return null;
                 }
@@ -261,7 +261,7 @@ namespace saiflow.engine.Core.Pattern
                     }
                     else
                     {
-                        throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.error"));
+                        throw new ApplicationException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.error"));
                     }
                 }
                 else if (forwardContext.FromActivityInstance.MainActivityInstanceId == null)
@@ -294,17 +294,17 @@ namespace saiflow.engine.Core.Pattern
                         }
                         else
                         {
-                            throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.warn"));
+                            throw new ApplicationException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.warn"));
                         }
                     }
                     else
                     {
-                        throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.error"));
+                        throw new ApplicationException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.error"));
                     }
                 }
                 else
                 {
-                    throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.error"));
+                    throw new ApplicationException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.error"));
                 }
             }
             else if (forwardContext.CurrentActivity.ActivityType == ActivityTypeEnum.SubProcessNode)
@@ -314,7 +314,7 @@ namespace saiflow.engine.Core.Pattern
             }
             else
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.uncertain.warn",
+                throw new ApplicationException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.uncertain.warn",
                     forwardContext.CurrentActivity.ActivityType.ToString()));
             }
         }
@@ -326,17 +326,17 @@ namespace saiflow.engine.Core.Pattern
         /// <param name="triggerType"></param>
         /// <param name="throwCatchDirection"></param>
         /// <exception cref="ApplicationException"></exception>
-        private static void ThrowUncerternXmlNodeTypeException(string activityType, string triggerType, string throwCatchDirection = null)
+        private static void ThrowUncerternXmlNodeTypeException(SailClient client, string activityType, string triggerType, string throwCatchDirection = null)
         {
             if (!string.IsNullOrEmpty(throwCatchDirection))
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.uncertain.warn",
+                throw new ApplicationException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.uncertain.warn",
                     string.Format("ActivityType:{0},trigger:{1},direction:{2}", activityType, triggerType, throwCatchDirection)
                 ));
             }
             else
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.uncertain.warn",
+                throw new ApplicationException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.uncertain.warn",
                     string.Format("ActivityType:{0},trigger:{1}", activityType, triggerType)
                 ));
             }
@@ -397,13 +397,13 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else
                 {
-                    throw new XmlDefinitionException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediatorGateway.uncertaingateway.warn", 
+                    throw new XmlDefinitionException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediatorGateway.uncertaingateway.warn", 
                         gActivity.GatewayDetail.DirectionType.ToString()));
                 }
             }
             else
             {
-                throw new XmlDefinitionException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediatorGateway.uncertain.warn",
+                throw new XmlDefinitionException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediatorGateway.uncertain.warn",
                     gActivity.ActivityType.ToString()));
             }
             return nodeMediator;
@@ -440,7 +440,7 @@ namespace saiflow.engine.Core.Pattern
                         }
                         else
                         {
-                            throw new XmlDefinitionException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediatorEvent.uncertain.warn",
+                            throw new XmlDefinitionException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediatorEvent.uncertain.warn",
                                 eventActivity.TriggerDetail.MessageDirection.ToString()));
                         }
                     }
@@ -456,13 +456,13 @@ namespace saiflow.engine.Core.Pattern
                         }
                         else
                         {
-                            throw new XmlDefinitionException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediatorEvent.uncertain.warn",
+                            throw new XmlDefinitionException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediatorEvent.uncertain.warn",
                                 eventActivity.TriggerDetail.MessageDirection.ToString()));
                         }
                     }
                     else
                     {
-                        throw new XmlDefinitionException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediatorEvent.uncertain.warn",
+                        throw new XmlDefinitionException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediatorEvent.uncertain.warn",
                                 eventActivity.TriggerDetail.MessageDirection.ToString()));
                     }
                 }
@@ -491,7 +491,7 @@ namespace saiflow.engine.Core.Pattern
             }
             else
             {
-                throw new XmlDefinitionException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediatorEvent.uncertain.warn",
+                throw new XmlDefinitionException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediatorEvent.uncertain.warn",
                     eventActivity.ActivityType.ToString()));
             }
             return nodeMediator;
@@ -532,7 +532,7 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else
                 {
-                    throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.uncertain.warn",
+                    throw new ApplicationException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.uncertain.warn",
                         string.Format("ActivityType:{0},trigger:{1}", endActivity.ActivityType.ToString(),
                                                             endActivity.TriggerDetail.TriggerType)
                     ));
@@ -540,7 +540,7 @@ namespace saiflow.engine.Core.Pattern
             }
             else
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.uncertain.warn",
+                throw new ApplicationException(client.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.uncertain.warn",
                     string.Format("ActivityType:{0},trigger:{1}", endActivity.ActivityType.ToString(),
                                                         endActivity.TriggerDetail.TriggerType)
                 ));

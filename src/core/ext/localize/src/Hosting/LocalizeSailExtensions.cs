@@ -21,6 +21,8 @@ namespace saiflow.hub.Localize.Hosting
                 {
                     var messages = new JsonLocalizeMessages();
                     coll.Properties[SailBuilderKeys.LocalizeMessages] = messages;
+                    client.Messages = messages;
+                    // Keep Locator in sync for rare static helpers without SailClient.
                     LocalizeMessagesLocator.Register(messages);
                     messages.SetDefault();
                 }

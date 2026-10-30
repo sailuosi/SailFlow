@@ -26,21 +26,17 @@ namespace saiflow.engine.Executor
     /// </summary>
     public class WorkflowActivityExecutor : IWorkflowActivityExecutor
     {
-        public WorkflowActivityExecutor(SailClient client)
+        public WorkflowActivityExecutor(SailClient client, string notifyClientSessionId = null, Action<string, object> notifyClientCallback = null)
         {
             Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+            _notifyClientSessionId = notifyClientSessionId;
+            _notifyClientCallback = notifyClientCallback;
         }
 
         protected SailClient Sail { get; }
 
         private readonly string _notifyClientSessionId;
         private readonly Action<string, object> _notifyClientCallback;
-
-        public WorkflowActivityExecutor(string notifyClientSessionId = null, Action<string, object> notifyClientCallback = null)
-        {
-            _notifyClientSessionId = notifyClientSessionId;
-            _notifyClientCallback = notifyClientCallback;
-        }
 
         /// <summary>
         /// Execute a single activity (service, AI, script, or end node).
@@ -108,7 +104,7 @@ namespace saiflow.engine.Executor
             else if (service.Method == ServiceMethodEnum.LocalMethod)
                 ExecuteLocalMethodInExecutor(service, context);
             else
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.Execute.exception", service.Method.ToString()));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("actionexecutor.Execute.exception", service.Method.ToString()));
         }
 
         public string GetVariableFromContext(AutoExecutionContext context, string name)
@@ -176,6 +172,7 @@ namespace saiflow.engine.Executor
         {
             try
             {
+                context.Sail ??= Sail;
                 var adapter = new AutoRunEventServiceAdapter(context);
                 var instance = ReflectionHelper.GetSpecialInstance<IExternalService>(service.Expression);
                 if (instance is IExecutable executableInstance)
@@ -183,7 +180,7 @@ namespace saiflow.engine.Executor
             }
             catch (Exception ex)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteLocalService.exception", ex.Message));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("actionexecutor.ExecuteLocalService.exception", ex.Message));
             }
         }
 
@@ -200,6 +197,7 @@ namespace saiflow.engine.Executor
             if (!registry.TryResolve(key, out var d))
                 throw new WorkflowException($"Delegate not found for key: {key}. Register before Run with ServiceTaskDelegateRegistry.Global.Register(key, delegate).");
 
+            context.Sail ??= Sail;
             var adapter = new AutoRunEventServiceAdapter(context);
             if (d is Action<IEventService> action)
             {
@@ -266,7 +264,7 @@ namespace saiflow.engine.Executor
             }
             catch (Exception ex)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteWebApi.exception", ex.Message));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("actionexecutor.ExecuteWebApi.exception", ex.Message));
             }
         }
 
@@ -294,7 +292,7 @@ namespace saiflow.engine.Executor
             }
             catch (Exception ex)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteCSharpLibraryMethod.exception", ex.Message));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("actionexecutor.ExecuteCSharpLibraryMethod.exception", ex.Message));
             }
         }
 
@@ -309,7 +307,7 @@ namespace saiflow.engine.Executor
             }
             catch (Exception ex)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteStoreProcedureMethod.exception", ex.Message));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("actionexecutor.ExecuteStoreProcedureMethod.exception", ex.Message));
             }
         }
 

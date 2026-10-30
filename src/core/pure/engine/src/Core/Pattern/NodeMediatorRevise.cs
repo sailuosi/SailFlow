@@ -92,23 +92,23 @@ namespace saiflow.engine.Core.Pattern
                                 }
                                 else
                                 {
-                                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorrevise.ExecuteWorkItem.warn"));
+                                    throw new WorkflowException(Sail.Messages.GetEngineMessage("nodemediatorrevise.ExecuteWorkItem.warn"));
                                 }
                             }
                             else
                             {
-                                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorrevise.ExecuteWorkItem.warn"));
+                                throw new WorkflowException(Sail.Messages.GetEngineMessage("nodemediatorrevise.ExecuteWorkItem.warn"));
                             }
                         }
                     }
                     else
                     {
-                        throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorrevise.ExecuteWorkItem.exception"));
+                        throw new WorkflowException(Sail.Messages.GetEngineMessage("nodemediatorrevise.ExecuteWorkItem.exception"));
                     } 
                 }
                 else
                 {
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorrevise.ExecuteWorkItem.error"));
+                    throw new WorkflowException(Sail.Messages.GetEngineMessage("nodemediatorrevise.ExecuteWorkItem.error"));
                 }
                 OnAfterExecuteWorkItem();
             }

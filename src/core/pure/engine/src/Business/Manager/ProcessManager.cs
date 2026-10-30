@@ -95,7 +95,7 @@ namespace saiflow.engine.Business.Manager
             {
                 if (throwException == true)
                 {
-                    throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.getbyversion.error",
+                    throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbyversion.error",
                         string.Format("ProcessId: {0}, Version: {1}", processId, version)
                     ));
                 }
@@ -138,7 +138,7 @@ namespace saiflow.engine.Business.Manager
             {
                 if (isNotThrownException == false)
                 {
-                    throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.getbyversion.error",
+                    throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbyversion.error",
                         string.Format("ProcessId: {0}", processId)
 ));
                 }
@@ -173,7 +173,7 @@ namespace saiflow.engine.Business.Manager
             }
             else
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.getbyname.error"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbyname.error"));
             }
             return entity;
         }
@@ -205,7 +205,7 @@ namespace saiflow.engine.Business.Manager
             }
             else
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.getbycode.error"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbycode.error"));
             }
             return entity;
         }
@@ -229,7 +229,7 @@ namespace saiflow.engine.Business.Manager
 
             if (list.Count() > 1)
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.getbyversioninternal.error"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbyversioninternal.error"));
             }
             else if (list.Count() == 1)
             {
@@ -257,7 +257,7 @@ namespace saiflow.engine.Business.Manager
 
             if (list.Count() > 1)
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.getbymessage.error"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbymessage.error"));
             }
             else if (list.Count() == 1)
             {
@@ -296,7 +296,7 @@ namespace saiflow.engine.Business.Manager
             }
             else
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.getsinglebyapptype.error"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getsinglebyapptype.error"));
             }
             return entity;
         }
@@ -372,7 +372,7 @@ namespace saiflow.engine.Business.Manager
             var entityExisted = GetByVersionInternal(kit, entity.ProcessId, entity.Version);
             if (entityExisted != null)
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.insert.error"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.insert.error"));
             }
 
             return Sibling(kit).useRepo<ProcessEntity, int>().InsertWithPK(entity);
@@ -453,7 +453,7 @@ namespace saiflow.engine.Business.Manager
             int newProcessId = 0;
             if (string.IsNullOrEmpty(newVersion))
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.upgrade.error"));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("processmanager.upgrade.error"));
             }
 
             using (var kit = Sail.UseRunSQL())
@@ -649,7 +649,7 @@ namespace saiflow.engine.Business.Manager
                 var processDB = processManager.GetByVersion(process.ProcessId, process.Version, false);
                 if (processDB != null)
                 {
-                    throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.import.sameprocessexist.error"));
+                    throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.import.sameprocessexist.error"));
                 }
                 else
                 {
@@ -679,7 +679,7 @@ namespace saiflow.engine.Business.Manager
             }
             else
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.import.emptyprocessnode.error"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.import.emptyprocessnode.error"));
             }
             return processFileEntity;
         }
@@ -720,7 +720,7 @@ namespace saiflow.engine.Business.Manager
             //Check if the process name is empty
             if (string.IsNullOrEmpty(entity.ProcessName))
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.saveprocessfile.noprocessname.error"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.saveprocessfile.noprocessname.error"));
             }
 
             using (var kit = Sail.UseRunSQL())
@@ -786,7 +786,7 @@ namespace saiflow.engine.Business.Manager
             //Check if the process name is empty
             if (string.IsNullOrEmpty(packageClient.Name))
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.saveprocessfile.noprocessname.error"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.saveprocessfile.noprocessname.error"));
             }
 
             var poolProcessListClient = packageClient.ParticipantList;
@@ -994,7 +994,7 @@ namespace saiflow.engine.Business.Manager
                 }
                 catch (System.Exception ex)
                 {
-                    throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.setprocesstimertype.error", ex.Message));
+                    throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.setprocesstimertype.error", ex.Message));
                 }
             }
         }
@@ -1035,7 +1035,7 @@ namespace saiflow.engine.Business.Manager
                 var packageDB = GetByVersion(package.ProcessId, package.Version);
                 if (packageDB != null)
                 {
-                    throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.import.sameprocessexist.error"));
+                    throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.import.sameprocessexist.error"));
                 }
                 else
                 {
@@ -1056,7 +1056,7 @@ namespace saiflow.engine.Business.Manager
                     var processDB = GetByVersion(process.ProcessId, process.Version, false);
                     if (processDB != null)
                     {
-                        throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.import.sameprocessexist.error"));
+                        throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.import.sameprocessexist.error"));
                     }
                     else
                     {
@@ -1066,7 +1066,7 @@ namespace saiflow.engine.Business.Manager
                 }
                 else
                 {
-                    throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("processmanager.import.emptyprocessnode.error"));
+                    throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.import.emptyprocessnode.error"));
                 }
             }
         }

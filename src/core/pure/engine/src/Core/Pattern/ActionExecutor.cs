@@ -120,7 +120,7 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else
                 {
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.Execute.exception", action.ActionMethod.ToString()));
+                    throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.Execute.exception", action.ActionMethod.ToString()));
                 }
             }
         }
@@ -145,7 +145,7 @@ namespace saiflow.engine.Core.Pattern
             }
             catch (System.Exception ex)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteLocalService.exception", ex.Message));
+                throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.ExecuteLocalService.exception", ex.Message));
             }
         }
 
@@ -191,7 +191,7 @@ namespace saiflow.engine.Core.Pattern
             }
             catch (System.Exception ex)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteWebApi.exception", ex.Message));
+                throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.ExecuteWebApi.exception", ex.Message));
             }
         }
 
@@ -216,12 +216,12 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else
                 {
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteSQLMethod.warn"));
+                    throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.ExecuteSQLMethod.warn"));
                 }
             }
             catch (System.Exception ex)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteSQLMethod.exception", ex.Message));
+                throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.ExecuteSQLMethod.exception", ex.Message));
             }
         }
 
@@ -242,7 +242,7 @@ namespace saiflow.engine.Core.Pattern
             }
             catch (System.Exception ex)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteStoreProcedureMethod.exception", ex.Message));
+                throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.ExecuteStoreProcedureMethod.exception", ex.Message));
             }
         }
 
@@ -275,12 +275,12 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else
                 {
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecutePythonMethod.warn"));
+                    throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.ExecutePythonMethod.warn"));
                 }
             }
             catch (System.Exception ex)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecutePythonMethod.exception", ex.Message));
+                throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.ExecutePythonMethod.exception", ex.Message));
             }
         }
 
@@ -317,7 +317,7 @@ namespace saiflow.engine.Core.Pattern
             }
             catch(System.Exception ex)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteCSharpLibraryMethod.exception", ex.Message));
+                throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage("actionexecutor.ExecuteCSharpLibraryMethod.exception", ex.Message));
             }
         }
 

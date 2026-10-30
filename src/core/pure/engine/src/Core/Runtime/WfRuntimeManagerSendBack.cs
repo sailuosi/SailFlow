@@ -79,7 +79,7 @@ namespace saiflow.engine.Core.Runtime
                     }
                     else
                     {
-                        throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagersendback.ExecuteInstanceImp.error"));
+                        throw new ApplicationException(Sail.Messages.GetEngineMessage("wfruntimemanagersendback.ExecuteInstanceImp.error"));
                     }
 
                     //执行退回方法
@@ -123,7 +123,7 @@ namespace saiflow.engine.Core.Runtime
                     }
                     else
                     {
-                        throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("wfruntimemanagersendback.ExecuteInstanceImp.error"));
+                        throw new ApplicationException(Sail.Messages.GetEngineMessage("wfruntimemanagersendback.ExecuteInstanceImp.error"));
                     }
 
                     //执行退回方法

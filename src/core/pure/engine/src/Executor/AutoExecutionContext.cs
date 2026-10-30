@@ -1,3 +1,4 @@
+using saiflow.engine.Client;
 using saiflow.engine.Common;
 using saiflow.engine.Xpdl;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ namespace saiflow.engine.Executor
     /// </summary>
     public class AutoExecutionContext
     {
+        public SailClient Sail { get; set; }
         public IProcessModel ProcessModel { get; set; }
         public IDictionary<string, string> Variables { get; set; }
         public WfAppRunner Runner { get; set; }

@@ -58,7 +58,7 @@ namespace saiflow.engine.Core.Parser
             if (string.IsNullOrEmpty(runner.AppInstanceId)
                 || string.IsNullOrEmpty(runner.ProcessId))
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("nextstepparser.getnextactivityroleusertree.error"));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("nextstepparser.getnextactivityroleusertree.error"));
             }
 
             using (var kit = Sail.UseRunSQL())
@@ -71,7 +71,7 @@ namespace saiflow.engine.Core.Parser
                 var isRunningTask = tm.CheckTaskStateInRunningState(taskView);
                 if (isRunningTask == false)
                 {
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("nextstepparser.getnextactivityroleusertree.notrunning.error"));
+                    throw new WorkflowException(Sail.Messages.GetEngineMessage("nextstepparser.getnextactivityroleusertree.notrunning.error"));
                 }
 
                 var treeNodeList = new List<NodeView>();

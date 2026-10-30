@@ -76,7 +76,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
             var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(Sail, runner, kit, ref runAppResult);
             if (runAppResult.Status == WfExecutedStatus.Exception)
             {
-                throw new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorend.ContinueMainProcessRunning.warn", runAppResult.Message));
+                throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorend.ContinueMainProcessRunning.warn", runAppResult.Message));
             }
 
             //注册事件并运行
@@ -141,7 +141,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
                 if (node.ActivityType != ActivityTypeEnum.EndNode
                     && performerList.Count == 0)
                 {
-                    throw new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorend.FillNextActivityPerformersByRoleList.warn", node.ActivityName));
+                    throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorend.FillNextActivityPerformersByRoleList.warn", node.ActivityName));
                 }
                 else
                 {

@@ -1,5 +1,6 @@
 using mooSQL.data;
 using saiflow.data;
+using saiflow.engine.Client;
 using saiflow.engine.Common;
 using saiflow.engine.Event;
 using System;
@@ -18,7 +19,11 @@ namespace saiflow.engine.Executor
         public AutoRunEventServiceAdapter(AutoExecutionContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            Sail = context.Sail
+                ?? throw new ArgumentException("AutoExecutionContext.Sail is required.", nameof(context));
         }
+
+        public SailClient Sail { get; }
 
         /// <summary>Non-persistent variables bag for rule input materialization (same assembly as RuleExecutor).</summary>
         internal IDictionary<string, string> VariablesSnapshot => _context?.Variables;

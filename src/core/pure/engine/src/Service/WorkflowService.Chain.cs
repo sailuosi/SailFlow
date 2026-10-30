@@ -142,7 +142,7 @@ namespace saiflow.engine.Service
             }
             else
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.nextstep.error"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("workflowservice.nextstep.error"));
             }
             return this;
         }
@@ -159,7 +159,7 @@ namespace saiflow.engine.Service
             }
             else
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.nextstep.error"));
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("workflowservice.nextstep.error"));
             }
             return this;
         }

@@ -142,8 +142,9 @@ namespace saiflow.engine.Executor
 
                 _autoExecutionContext.ProcessModel = _processModel;
                 _autoExecutionContext.Runner = _wfAppRunner;
+                _autoExecutionContext.Sail = Sail;
 
-                var activityExecutor = new WorkflowActivityExecutor(_notifyClientSessionId, _notifyClientCallback);
+                var activityExecutor = new WorkflowActivityExecutor(Sail, _notifyClientSessionId, _notifyClientCallback);
                 var nodeRunner = new WorkflowNodeRunner(_processModel, activityExecutor);
                 nodeRunner.Run(startActivity, _autoExecutionContext, result);
 

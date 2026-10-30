@@ -559,19 +559,19 @@ namespace saiflow.engine.Business.Manager
             return ResolveTaskOfMineByActivityInstance(list, activityInstanceId);
         }
 
-        private static TaskViewEntity ResolveTaskOfMineByActivityInstance(
+        private TaskViewEntity ResolveTaskOfMineByActivityInstance(
             List<TaskViewEntity> list, int activityInstanceId)
         {
             if (list.Count == 0)
             {
-                var message = LocalizeMessagesLocator.Current.GetEngineMessage("taskmanager.gettaskofmine.error");
+                var message = Sail.Messages.GetEngineMessage("taskmanager.gettaskofmine.error");
                 throw new WorkflowException(
                     string.Format("{0}，ActivityInstanceId: {1}", message, activityInstanceId.ToString())
                 );
             }
             if (list.Count > 1)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("taskmanager.gettaskofmine.toomoretasks.error"));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("taskmanager.gettaskofmine.toomoretasks.error"));
             }
             return list[0];
         }
@@ -607,14 +607,14 @@ namespace saiflow.engine.Business.Manager
 
             if (list.Count == 0)
             {
-                var message = LocalizeMessagesLocator.Current.GetEngineMessage("taskmanager.gettaskofmine.error");
+                var message = Sail.Messages.GetEngineMessage("taskmanager.gettaskofmine.error");
                 throw new WorkflowException(
                     string.Format("{0}，AppInstanceId: {1}", message, appInstanceId.ToString())
                 );
             }
             if (list.Count > 1)
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("taskmanager.gettaskofmine.toomoretasks.error"));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("taskmanager.gettaskofmine.toomoretasks.error"));
             }
             return list[0];
         }
@@ -798,8 +798,8 @@ namespace saiflow.engine.Business.Manager
 
                 if (user != null && !string.IsNullOrEmpty(user.EMail))
                 {
-                    var title = LocalizeMessagesLocator.Current.GetEngineMessage("taskmanager.emailtemplate.title");
-                    var body = LocalizeMessagesLocator.Current.GetEngineMessage("taskmanager.emailtemplate.body");
+                    var title = Sail.Messages.GetEngineMessage("taskmanager.emailtemplate.title");
+                    var body = Sail.Messages.GetEngineMessage("taskmanager.emailtemplate.body");
                     body = string.Format(body, JobAdminConfig.EMailSendUtility_LocalHostWebApp, entity.AppName, entity.AppInstanceId);
                     var emailSendUtility = new EMailSendUtility(Sail, entity.Id);
                     emailSendUtility.SendEMailAsync(title, body, user.EMail);
@@ -850,7 +850,7 @@ namespace saiflow.engine.Business.Manager
                 }
                 catch (System.Exception e)
                 {
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("taskmanager.settaskread.error", e.Message), e);
+                    throw new WorkflowException(Sail.Messages.GetEngineMessage("taskmanager.settaskread.error", e.Message), e);
                 }
             }
         }
@@ -869,7 +869,7 @@ namespace saiflow.engine.Business.Manager
                 }
                 catch (System.Exception e)
                 {
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("taskmanager.settaskemailsent.error", e.Message), e);
+                    throw new WorkflowException(Sail.Messages.GetEngineMessage("taskmanager.settaskemailsent.error", e.Message), e);
                 }
             }
         }
@@ -921,7 +921,7 @@ namespace saiflow.engine.Business.Manager
                 }
                 catch (System.Exception e)
                 {
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("taskmanager.entrust.error"), e);
+                    throw new WorkflowException(Sail.Messages.GetEngineMessage("taskmanager.entrust.error"), e);
                 }
             }
         }
@@ -934,7 +934,7 @@ namespace saiflow.engine.Business.Manager
             if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
                 && activityInstance.ActivityState != (short)ActivityStateEnum.Running)
             {
-                return WfDataManagedResult.Exception(LocalizeMessagesLocator.Current.GetEngineMessage("taskmanager.entrust.warn"));
+                return WfDataManagedResult.Exception(Sail.Messages.GetEngineMessage("taskmanager.entrust.warn"));
             }
 
             if (cancelOriginalTask)
@@ -947,7 +947,7 @@ namespace saiflow.engine.Business.Manager
             var taskList = GetTaskListByActivity(kit, activityInstance.ProcessInstanceId, activityInstance.Id);
             if (taskList.Where(t => t.AssignedUserId == entity.EntrustToUserId).Any())
             {
-                return WfDataManagedResult.Exception(LocalizeMessagesLocator.Current.GetEngineMessage("taskmanager.entrust.notagain.warn"));
+                return WfDataManagedResult.Exception(Sail.Messages.GetEngineMessage("taskmanager.entrust.notagain.warn"));
             }
 
             Insert(kit, activityInstance, entity.EntrustToUserId, entity.EntrustToUserName,
@@ -967,7 +967,7 @@ namespace saiflow.engine.Business.Manager
                 }
                 catch (System.Exception e)
                 {
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("taskmanager.entrust.error"), e);
+                    throw new WorkflowException(Sail.Messages.GetEngineMessage("taskmanager.entrust.error"), e);
                 }
             }
         }
@@ -1018,7 +1018,7 @@ namespace saiflow.engine.Business.Manager
                 }
                 catch (System.Exception e)
                 {
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("taskmanager.replace.error"), e);
+                    throw new WorkflowException(Sail.Messages.GetEngineMessage("taskmanager.replace.error"), e);
                 }
             }
         }

@@ -80,7 +80,7 @@ namespace saiflow.engine.Xpdl
                         else
                         {
                             var errMsg = string.Format("Unknown node type：{0}", transition.ToActivity.ActivityType.ToString());
-                            LogManager.RecordLog(client, LocalizeMessagesLocator.Current.GetEngineMessage("processmodel.getnextactivitylist.error"),
+                            LogManager.RecordLog(client, client.Messages.GetEngineMessage("processmodel.getnextactivitylist.error"),
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
@@ -104,12 +104,12 @@ namespace saiflow.engine.Xpdl
             }
             catch (System.Exception e)
             {
-                LogManager.RecordLog(client, LocalizeMessagesLocator.Current.GetEngineMessage("processmodel.getnextactivitylist.error"),
+                LogManager.RecordLog(client, client.Messages.GetEngineMessage("processmodel.getnextactivitylist.error"),
                     LogEventType.Exception,
                     LogPriority.Normal,
                     null,
                     new WfXpdlException(e.Message));
-                throw new WfXpdlException(LocalizeMessagesLocator.Current.GetEngineMessage("processmodel.getnextactivitylist.error", e.Message),
+                throw new WfXpdlException(client.Messages.GetEngineMessage("processmodel.getnextactivitylist.error", e.Message),
                     e);
             }
         }

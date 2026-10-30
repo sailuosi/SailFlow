@@ -1,5 +1,6 @@
 using System;
 using mooSQL.data;
+using saiflow.hub.Localize;
 
 namespace saiflow.engine.Client;
 
@@ -16,6 +17,11 @@ public partial class SailClient
     public SailDialect Dialect { get; set; } = null!;
 
     public SailConfig Config { get; set; } = null!;
+
+    /// <summary>
+    /// Localization messages (JSON via <c>UseLocalize()</c>; default passthrough returns keys).
+    /// </summary>
+    public ILocalizeMessages Messages { get; set; } = PassthroughLocalizeMessages.Instance;
 
     /// <summary>事件插槽便捷访问（与 <see cref="SailDialect.Event"/> 同源）。</summary>
     public ISailEventHub Event => Dialect?.Event

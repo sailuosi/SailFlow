@@ -127,12 +127,12 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
                 }
                 catch (Exception ex)
                 {
-                    throw new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorintertimer.CalcDataTimeFromVariable.error", expression), ex);
+                    throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorintertimer.CalcDataTimeFromVariable.error", expression), ex);
                 }
             }
             else
             {
-                throw new WfXpdlException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorintertimer.CalcDataTimeFromVariable.error"));
+                throw new WfXpdlException(Sail.Messages.GetEngineMessage("nodemediatorintertimer.CalcDataTimeFromVariable.error"));
             }
         }
     }

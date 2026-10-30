@@ -113,8 +113,9 @@ var wf = new WorkflowService(sail);   // 必须传入 SailClient
 | `UseBizDocs` | `sailflow.biz.docs` | PDF LocalService 等 |
 | `UseForm` | `sailflow.form` | `IFormService` 注册 |
 | `UseResource` | `sailflow.resource` | `IResourceService` 注册 |
-| `UseLocalize` | `sailflow.localize` | `ILocalizeMessages` → `LocalizeMessagesLocator` |
-| `ILocalizeMessages` / Locator | `sailflow.baseHub` | 引擎调用 `LocalizeMessagesLocator.Current.*`；未注册时 passthrough（返回 key）；`LocalizeHelper` 已 Obsolete |
+| `UseLocalize` | `sailflow.localize` | 写入 `SailClient.Messages` + Locator 双写 |
+| `SailClient.Messages` | `sailflow.engine` | 文案根；默认 passthrough；引擎优先 `Sail.Messages` |
+| `ILocalizeMessages` / Locator | `sailflow.baseHub` | 契约 + 无 Client 静态兜底；`LocalizeHelper` Obsolete |
 | `UseSchema` / `InitDb` | `sailflow.biz`（host） | 核心表 + 可选 AI 表 + 种子 |
 | 宿主 `Program.cs` | 业务应用 | 调用管道 |
 
@@ -727,9 +728,9 @@ builder.Services.AddSingleton(sp =>
 
 **Phase C″ — Localize 契约解耦（已完成）**
 
-1. `ILocalizeMessages` / `LocalizeMessagesLocator` 在 baseHub；引擎调用点改为 `LocalizeMessagesLocator.Current`（`LocalizeHelper` Obsolete）。
-2. `JsonLocalizeMessages` + `UseLocalize()` 在 localize；去掉 engine → localize ProjectReference。
-3. 未 `UseLocalize` 时 passthrough（返回 key），宿主应显式注册以启用 JSON 文案。
+1. `ILocalizeMessages` / `LocalizeMessagesLocator` 在 baseHub；`SailClient.Messages` 持有实例（`UseLocalize` 写入）。
+2. 引擎主路径：`Sail.Messages` / `client.Messages` / `eventService.Sail.Messages`；少数无 Client 的静态工具仍用 Locator（与 `UseLocalize` 双写同步）。
+3. `JsonLocalizeMessages` + `UseLocalize()` 在 localize；去掉 engine → localize ProjectReference；未注册时 passthrough。
 
 **Phase D — 可选 MS DI 桥**
 

@@ -92,7 +92,7 @@ namespace saiflow.engine.Business.Manager
         {
             var nodeList = GetTransitonInstance(appInstanceId, processId, ActivityTypeEnum.EndNode).ToList();
             if (nodeList == null || nodeList.Count == 0)
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("transitioninstancemanager.entrust.error"));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("transitioninstancemanager.entrust.error"));
             return nodeList[0];
         }
 
@@ -100,7 +100,7 @@ namespace saiflow.engine.Business.Manager
         {
             var nodeList = GetWorkItemTransitonInstance(appInstanceId, processId).ToList();
             if (nodeList.Count == 0)
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("transitioninstancemanager.getlasttasktransition.error"));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("transitioninstancemanager.getlasttasktransition.error"));
             return nodeList[0];
         }
 

@@ -65,7 +65,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
             if (runner.ControlParameterSheet == null || runner.ControlParameterSheet.EOrJoinTokenPassCount <= 0)
             {
                 result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Failed);
-                throw new WfXpdlException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatoreorjoin.CompleteAutomaticallyByTokensCount.error"));
+                throw new WfXpdlException(Sail.Messages.GetEngineMessage("nodemediatoreorjoin.CompleteAutomaticallyByTokensCount.error"));
             }
             var tokensCountRequired = runner.ControlParameterSheet.EOrJoinTokenPassCount;
             result = CompleteAutomaticallyInternal(processInstance, transitionId, fromActivity, fromActivityInstance, tokensCountRequired, runner, kit);
@@ -92,7 +92,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
             if (tokensCountRequired == 0)
             {
                 result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Failed);
-                throw new WfXpdlException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatoreorjoin.CompleteAutomaticallyByForcedBranchesCount.error"));
+                throw new WfXpdlException(Sail.Messages.GetEngineMessage("nodemediatoreorjoin.CompleteAutomaticallyByForcedBranchesCount.error"));
             }
 
             //根据强制分支的数目和具体分支来完成增强合并节点

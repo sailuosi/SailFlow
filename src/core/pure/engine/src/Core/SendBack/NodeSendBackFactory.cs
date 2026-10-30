@@ -45,7 +45,7 @@ namespace saiflow.engine.Core.SendBack
                 {
                     //如果有其它模式，没有处理到，则直接抛出异常
                     //If there are other modes that cannot be handled, throw an exception directly
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("nodesendbackfactory.CreateNodeReverter.error",
+                    throw new WorkflowException(client.Messages.GetEngineMessage("nodesendbackfactory.CreateNodeReverter.error",
                         sendbackOperation.PreviousNodeOperationType.ToString()));
                 }
             }
@@ -67,7 +67,7 @@ namespace saiflow.engine.Core.SendBack
                 {
                     //如果有其它模式，没有处理到，则直接抛出异常
                     //If there are other modes that cannot be handled, throw an exception directly
-                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("nodesendbackfactory.CreateNodeReverter.error",
+                    throw new WorkflowException(client.Messages.GetEngineMessage("nodesendbackfactory.CreateNodeReverter.error",
                         sendbackOperation.CurrentMultipleInstanceDetailType.ToString()));
                 }
             }

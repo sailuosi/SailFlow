@@ -48,7 +48,7 @@ namespace saiflow.engine.Business.Manager
             }
             catch (System.Exception e)
             {
-                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("activityinstancemanager.getbyid.error", e.Message),
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("activityinstancemanager.getbyid.error", e.Message),
                     e);
             }
         }
@@ -100,7 +100,7 @@ namespace saiflow.engine.Business.Manager
             var activityInstanceList = GetRunningActivityInstanceList(kit, runner.AppInstanceId, runner.ProcessId, runner.Version).ToList();
             if (activityInstanceList == null || activityInstanceList.Count == 0)
             {
-                var message = LocalizeMessagesLocator.Current.GetEngineMessage("activityinstancemanager.getrunningnode.error");
+                var message = Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.error");
                 var e = new WorkflowException(message);
                 LogManager.RecordLog(Sail, message, LogEventType.Exception, LogPriority.Normal, null, e);
                 throw e;
@@ -128,9 +128,9 @@ namespace saiflow.engine.Business.Manager
                 }
                 else
                 {
-                    var msgException = LocalizeMessagesLocator.Current.GetEngineMessage("activityinstancemanager.getrunningnode.unique.error");
+                    var msgException = Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.unique.error");
                     var e = new WorkflowException(msgException);
-                    LogManager.RecordLog(Sail, LocalizeMessagesLocator.Current.GetEngineMessage("activityinstancemanager.getrunningnode.error"),
+                    LogManager.RecordLog(Sail, Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.error"),
                         LogEventType.Exception, LogPriority.Normal, null, e);
                     throw e;
                 }
@@ -1286,7 +1286,7 @@ namespace saiflow.engine.Business.Manager
                 }
                 else
                 {
-                    var msgException = LocalizeMessagesLocator.Current.GetEngineMessage("activityinstancemanager.CheckPassRateMatchedInfo.UnknownCompareTypeValue");
+                    var msgException = Sail.Messages.GetEngineMessage("activityinstancemanager.CheckPassRateMatchedInfo.UnknownCompareTypeValue");
                     throw new WorkflowException(msgException);
                 }
             }
@@ -1334,13 +1334,13 @@ namespace saiflow.engine.Business.Manager
                 }
                 else
                 {
-                    var msgException = LocalizeMessagesLocator.Current.GetEngineMessage("activityinstancemanager.CheckPassRateMatchedInfo.UnknownCompareTypeValue");
+                    var msgException = Sail.Messages.GetEngineMessage("activityinstancemanager.CheckPassRateMatchedInfo.UnknownCompareTypeValue");
                     throw new WorkflowException(msgException);
                 }
             }
             else
             {
-                var msgException = LocalizeMessagesLocator.Current.GetEngineMessage("activityinstancemanager.CheckPassRateMatchedInfo.UnknownMergeTypeValue");
+                var msgException = Sail.Messages.GetEngineMessage("activityinstancemanager.CheckPassRateMatchedInfo.UnknownMergeTypeValue");
                 throw new WorkflowException(msgException);
             }
         }

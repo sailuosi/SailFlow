@@ -129,7 +129,7 @@ namespace saiflow.engine.Core.Parser
             if (string.IsNullOrEmpty(runner.AppInstanceId)
                 || string.IsNullOrEmpty(runner.ProcessId))
             {
-                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("nextstepparser.getnextactivityroleusertree.error"));
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("nextstepparser.getnextactivityroleusertree.error"));
             }
 
             //条件参数一致
@@ -180,7 +180,7 @@ namespace saiflow.engine.Core.Parser
                     var isRunningTask = tm.CheckTaskStateInRunningState(taskView);
                     if (isRunningTask == false)
                     {
-                        throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("nextstepparser.getnextactivityroleusertree.notrunning.error"));
+                        throw new WorkflowException(Sail.Messages.GetEngineMessage("nextstepparser.getnextactivityroleusertree.notrunning.error"));
                     }
 
                     //读取流程变量表，合并条件参数
