@@ -14,6 +14,8 @@ public sealed class SailCollection : List<SailFeatureDescriptor>, ISailCollectio
     public ISailCollection AddFeature(SailFeatureDescriptor descriptor)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
+        if (string.IsNullOrWhiteSpace(descriptor.Name))
+            throw new ArgumentException("SailFeatureDescriptor.Name is required.", nameof(descriptor));
 
         for (var i = 0; i < Count; i++)
         {

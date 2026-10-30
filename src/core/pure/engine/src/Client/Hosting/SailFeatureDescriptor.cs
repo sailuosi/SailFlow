@@ -19,7 +19,8 @@ public enum SailFeaturePhase
 /// </summary>
 public sealed class SailFeatureDescriptor
 {
-    public required string Name { get; init; }
+    /// <summary>Feature name used for idempotent replace (same Name + Phase).</summary>
+    public string Name { get; init; } = string.Empty;
 
     public SailFeaturePhase Phase { get; init; }
 
