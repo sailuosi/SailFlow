@@ -113,8 +113,8 @@ var wf = new WorkflowService(sail);   // 必须传入 SailClient
 | `UseBizDocs` | `sailflow.biz.docs` | PDF LocalService 等 |
 | `UseForm` | `sailflow.form` | `IFormService` 注册 |
 | `UseResource` | `sailflow.resource` | `IResourceService` 注册 |
-| `UseLocalize` | `sailflow.localize` | `ILocalizeMessages` → `LocalizeMessagesLocator`；引擎经 `LocalizeHelper` 门面取值 |
-| `ILocalizeMessages` / `LocalizeHelper` | `sailflow.baseHub`（契约+门面） | 引擎只依赖契约；未注册时 passthrough（返回 key） |
+| `UseLocalize` | `sailflow.localize` | `ILocalizeMessages` → `LocalizeMessagesLocator` |
+| `ILocalizeMessages` / Locator | `sailflow.baseHub` | 引擎调用 `LocalizeMessagesLocator.Current.*`；未注册时 passthrough（返回 key）；`LocalizeHelper` 已 Obsolete |
 | `UseSchema` / `InitDb` | `sailflow.biz`（host） | 核心表 + 可选 AI 表 + 种子 |
 | 宿主 `Program.cs` | 业务应用 | 调用管道 |
 
@@ -423,7 +423,7 @@ public static class XxxSailBuilderExtensions
 | `UseEventHub(ISailEventHub)` | engine | ConfigureClient | 替换默认 Event stub |
 | `UseForm()` | form | ConfigureClient | 注册 `IFormService` → Locator |
 | `UseResource()` | resource | ConfigureClient | 注册 `IResourceService` → Locator |
-| `UseLocalize()` | localize | ConfigureClient | 注册 `ILocalizeMessages` → Locator；引擎经 `LocalizeHelper` |
+| `UseLocalize()` | localize | ConfigureClient | 注册 `ILocalizeMessages` → Locator；引擎用 `LocalizeMessagesLocator.Current` |
 | `UseBizAI()` | biz.AI | ConfigureClient + PostBuild | `AiNodeExecutorLocator` + `AiRuntime.EnsureTables` |
 | `UseBizDocs()` | biz.docs | ConfigureClient | 文档 LocalService 相关（若需） |
 | `UseSchema(...)` | biz host | PostBuild | 核心表 + 种子；可组合 AI 表 |
@@ -727,7 +727,7 @@ builder.Services.AddSingleton(sp =>
 
 **Phase C″ — Localize 契约解耦（已完成）**
 
-1. `ILocalizeMessages` / `LocalizeMessagesLocator` / `LocalizeHelper` 门面在 baseHub。
+1. `ILocalizeMessages` / `LocalizeMessagesLocator` 在 baseHub；引擎调用点改为 `LocalizeMessagesLocator.Current`（`LocalizeHelper` Obsolete）。
 2. `JsonLocalizeMessages` + `UseLocalize()` 在 localize；去掉 engine → localize ProjectReference。
 3. 未 `UseLocalize` 时 passthrough（返回 key），宿主应显式注册以启用 JSON 文案。
 

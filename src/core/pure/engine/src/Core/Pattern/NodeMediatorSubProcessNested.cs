@@ -56,7 +56,7 @@ namespace saiflow.engine.Core.Pattern
                         base.LinkContext.FromActivityInstance.ActivityId);
                     if (isCompleted == false)
                     {
-                        throw new WfRuntimeException(LocalizeHelper.GetEngineMessage("nodemediatorsubprocess.ExecuteWorkItem.notcompleted.warn",
+                        throw new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorsubprocess.ExecuteWorkItem.notcompleted.warn",
                             string.Format("Activity:{0}", base.LinkContext.FromActivity.ActivityName)));
                     }
                 }
@@ -465,7 +465,7 @@ namespace saiflow.engine.Core.Pattern
 
             //if (isSubProcessNotExisted == true)
             //{
-            //    throw new WfRuntimeException(LocalizeHelper.GetEngineMessage("nodemediatorsubprocess.CreateSubProcessRunner.nonevariableparamsvalue.warn"));
+            //    throw new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorsubprocess.CreateSubProcessRunner.nonevariableparamsvalue.warn"));
             //}
             #endregion
 

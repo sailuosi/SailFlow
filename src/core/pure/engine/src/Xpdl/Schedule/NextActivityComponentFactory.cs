@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using saiflow.hub.Localize;
 using saiflow.engine.Common;
 using saiflow.engine.Xpdl.Entity;
@@ -24,14 +24,14 @@ namespace saiflow.engine.Xpdl.Schedule
             {
                 //单一节点
                 //Simple node
-                name = LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.singlenode");
+                name = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.singlenode");
                 component = new NextActivityItem(name, transition, activity);
             }
             else if (XPDLHelper.IsCrossOverComponentNode(activity.ActivityType) == true)
             {
                 //跨事件节点，包括服务节点
                 //CrossOver node
-                name = LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.crossovereventnode");
+                name = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.crossovereventnode");
                 component = new NextActivityIntermediate(name, transition, activity);
             }
             else if (XPDLHelper.IsGatewayComponentNode(activity.ActivityType) == true)
@@ -41,14 +41,14 @@ namespace saiflow.engine.Xpdl.Schedule
                 {
                     //必全选节点
                     //All nodes must be selected
-                    name = LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.mandatorycheckall");                 
+                    name = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.mandatorycheckall");                 
                 }
                 else if (activity.GatewayDetail.DirectionType == GatewayDirectionEnum.AndSplitMI
                     || activity.GatewayDetail.DirectionType == GatewayDirectionEnum.AndJoinMI)
                 {
                     //并行多实例节点
                     //AndSplitMI
-                    name = LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.parallelmultipleinstance");
+                    name = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.parallelmultipleinstance");
                 }
                 else if (activity.GatewayDetail.DirectionType == GatewayDirectionEnum.OrSplit
                     || activity.GatewayDetail.DirectionType == GatewayDirectionEnum.OrJoin
@@ -56,24 +56,24 @@ namespace saiflow.engine.Xpdl.Schedule
                 {
                     //或多选节点
                     //Or select multiple nodes
-                    name = LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.orsplitorjoin");
+                    name = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.orsplitorjoin");
                 }
                 else if (activity.GatewayDetail.DirectionType == GatewayDirectionEnum.XOrSplit
                     || activity.GatewayDetail.DirectionType == GatewayDirectionEnum.XOrJoin)
                 {
                     //异或节点
                     //XOr Node
-                    name = LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.xor");
+                    name = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.xor");
                 }
                 else if (activity.GatewayDetail.DirectionType == GatewayDirectionEnum.EOrJoin)
                 {
                     //增强合并多选节点
                     //EOrJoin Node
-                    name = LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.eorjoin");
+                    name = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.eorjoin");
                 }
                 else
                 {
-                    throw new WfXpdlException(LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.CreateNextActivityComponent.gateway.error", 
+                    throw new WfXpdlException(LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.CreateNextActivityComponent.gateway.error", 
                         activity.GatewayDetail.DirectionType.ToString()));
                 }
                 component = new NextActivityRouter(name, transition, activity);
@@ -82,12 +82,12 @@ namespace saiflow.engine.Xpdl.Schedule
             {
                 //子流程节点
                 //Sub Process Node
-                name = LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.subprocess");
+                name = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.subprocess");
                 component = new NextActivityItem(name, transition, activity);
             }
             else
             {
-                throw new WfXpdlException(LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.CreateNextActivityComponent.error",
+                throw new WfXpdlException(LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.CreateNextActivityComponent.error",
                     activity.ActivityType.ToString()));
             }
 
@@ -110,14 +110,14 @@ namespace saiflow.engine.Xpdl.Schedule
             {
                 //单一节点
                 //Simple node
-                string name = LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.singlenode"); ;
+                string name = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.singlenode"); ;
                 var transition = CreateJumpforwardEmptyTransition(fromActivity, toActivity);
 
                 component = new NextActivityItem(name, transition, toActivity);    
             }
             else
             {
-                throw new ApplicationException(LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.CreateNextActivityComponent.jump.error", 
+                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.CreateNextActivityComponent.jump.error", 
                     fromActivity.ActivityType.ToString()));
             }
             return component;
@@ -151,7 +151,7 @@ namespace saiflow.engine.Xpdl.Schedule
         /// <returns>根节点</returns>
         internal static NextActivityComponent CreateNextActivityComponent()
         {
-            NextActivityComponent root = new NextActivityRouter(LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.nextsteplist"), 
+            NextActivityComponent root = new NextActivityRouter(LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.nextsteplist"), 
                 null,  null);
             return root;
         }
@@ -163,7 +163,7 @@ namespace saiflow.engine.Xpdl.Schedule
         /// <returns>根节点</returns>
         internal static NextActivityComponent CreatePreviousActivityComponent()
         {
-            NextActivityComponent root = new NextActivityRouter(LocalizeHelper.GetEngineMessage("nextactivitycomponentfactory.previoussteplist"),
+            NextActivityComponent root = new NextActivityRouter(LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponentfactory.previoussteplist"),
                 null, null);
             return root;
         }

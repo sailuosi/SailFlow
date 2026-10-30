@@ -47,7 +47,7 @@ namespace saiflow.engine.Utility
                 return instance as T;
             }
 
-            throw new ApplicationException(LocalizeHelper.GetEngineMessage("reflectionhelper.GetSpecialInstance.error", fullName));
+            throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("reflectionhelper.GetSpecialInstance.error", fullName));
         }
 
         /// <summary>

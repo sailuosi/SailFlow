@@ -62,7 +62,7 @@ namespace saiflow.engine.Core.Pattern.Auto
                 && service.AIServiceType != AiServiceTypeEnum.RAG
                 && service.AIServiceType != AiServiceTypeEnum.Agent)
             {
-                throw new WorkflowException(LocalizeHelper.GetEngineMessage(
+                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage(
                     "actionexecutor.Execute.exception", service.AIServiceType.ToString()));
             }
 
@@ -161,7 +161,7 @@ namespace saiflow.engine.Core.Pattern.Auto
             }
             catch (Exception ex)
             {
-                throw new WorkflowException(LocalizeHelper.GetEngineMessage(
+                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage(
                     "actionexecutor.ExecuteLocalService.exception", ex.Message));
             }
         }

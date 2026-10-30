@@ -95,7 +95,7 @@ namespace saiflow.engine.Xpdl.Schedule
             {
                 resultType = NextActivityMatchedType.Failed;
 
-                throw new XmlDefinitionException(LocalizeHelper.GetEngineMessage("nextactivityschedulebase.unknownnodetype", forwardTransition.ToActivity.ActivityType.ToString()));
+                throw new XmlDefinitionException(LocalizeMessagesLocator.Current.GetEngineMessage("nextactivityschedulebase.unknownnodetype", forwardTransition.ToActivity.ActivityType.ToString()));
             }
             return child;
         }

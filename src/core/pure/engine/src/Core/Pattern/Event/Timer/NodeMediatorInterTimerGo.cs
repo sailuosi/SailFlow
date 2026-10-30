@@ -70,7 +70,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
         {
             if (LinkContext.FromActivityInstance.OverdueDateTime < DateTime.UtcNow)
             {
-                throw new WfRuntimeException(LocalizeHelper.GetEngineMessage("nodemediatorintertimergo.CheckBeingExecutedInfo.exception"));
+                throw new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorintertimergo.CheckBeingExecutedInfo.exception"));
             }
         }
 

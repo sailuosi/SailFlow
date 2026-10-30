@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -55,34 +55,34 @@ namespace saiflow.engine.Xpdl.Schedule
             switch (matchedType)
             {
                 case NextActivityMatchedType.Unknown:
-                    result.Message = LocalizeHelper.GetEngineMessage("nextactivitymatchedresult.Unkonwn");
+                    result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitymatchedresult.Unkonwn");
                     break;
                 case NextActivityMatchedType.Failed:
-                    result.Message = LocalizeHelper.GetEngineMessage("nextactivitymatchedresult.Exceptional"); 
+                    result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitymatchedresult.Exceptional"); 
                     break;
                 case NextActivityMatchedType.Successed:
-                    result.Message = LocalizeHelper.GetEngineMessage("nextactivitymatchedresult.Successed"); 
+                    result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitymatchedresult.Successed"); 
                     break;
                 case NextActivityMatchedType.NoneTransitionFilteredByCondition:
-                    result.Message = LocalizeHelper.GetEngineMessage("nextactivitymatchedresult.NoneTransitionFilteredByCondition"); 
+                    result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitymatchedresult.NoneTransitionFilteredByCondition"); 
                     break;
                 case NextActivityMatchedType.WaitingForOtherSplitting:
-                    result.Message = LocalizeHelper.GetEngineMessage("nextactivitymatchedresult.WaitingForOtherSplitting"); 
+                    result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitymatchedresult.WaitingForOtherSplitting"); 
                     break;
                 case NextActivityMatchedType.WaitingForAgreedOrRefused:
-                    result.Message = LocalizeHelper.GetEngineMessage("nextactivitymatchedresult.WaitingForAgreedOrRefused");
+                    result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitymatchedresult.WaitingForAgreedOrRefused");
                     break;
                 case NextActivityMatchedType.NoneTransitionMatchedToSplit:
-                    result.Message = LocalizeHelper.GetEngineMessage("nextactivitymatchedresult.NoneWayMatchedToSplit"); 
+                    result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitymatchedresult.NoneWayMatchedToSplit"); 
                     break;
                 case NextActivityMatchedType.FailedPassRateOfMulitipleInstance:
-                    result.Message = LocalizeHelper.GetEngineMessage("nextactivitymatchedresult.FailedPassRateOfMulitipleInstance"); 
+                    result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitymatchedresult.FailedPassRateOfMulitipleInstance"); 
                     break;
                 case NextActivityMatchedType.WaitingForOthersJoin:
-                    result.Message = LocalizeHelper.GetEngineMessage("nextactivitymatchedresult.WaitingForOthersJoin"); 
+                    result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitymatchedresult.WaitingForOthersJoin"); 
                     break;
                 case NextActivityMatchedType.NotMadeItselfToJoin:
-                    result.Message = LocalizeHelper.GetEngineMessage("nextactivitymatchedresult.NotMadeItselfToJoin"); 
+                    result.Message = LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitymatchedresult.NotMadeItselfToJoin"); 
                     break;
             }
             return result;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Configuration;
 using System.IO;
@@ -25,7 +25,7 @@ namespace saiflow.engine.Utility
             }
             catch (System.NullReferenceException ex)
             {
-                throw new Exception(LocalizeHelper.GetEngineMessage("confighelper.GetAppSettingString.error", key));
+                throw new Exception(LocalizeMessagesLocator.Current.GetEngineMessage("confighelper.GetAppSettingString.error", key));
             }
         }
 
@@ -42,7 +42,7 @@ namespace saiflow.engine.Utility
             }
             catch (System.NullReferenceException ex)
             {
-                throw new Exception(LocalizeHelper.GetEngineMessage("confighelper.GetConnectionString.error", key));
+                throw new Exception(LocalizeMessagesLocator.Current.GetEngineMessage("confighelper.GetConnectionString.error", key));
             }
         }
 

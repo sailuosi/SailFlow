@@ -27,7 +27,7 @@ namespace saiflow.engine.Event
             }
             else
             {
-                throw new ApplicationException(LocalizeHelper.GetEngineMessage("eventservicefactory.CreateEventService.error"));
+                throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("eventservicefactory.CreateEventService.error"));
             }
         }
     }

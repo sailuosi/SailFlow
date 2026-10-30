@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using saiflow.hub.Localize;
 using saiflow.engine.Xpdl.Entity;
@@ -55,7 +55,7 @@ namespace saiflow.engine.Xpdl.Schedule
         /// <param name="nextActivity"></param>
         public virtual void Add(NextActivityComponent nextActivity)
         {
-            throw new InvalidOperationException(LocalizeHelper.GetEngineMessage("nextactivitycomponent.Add.error"));
+            throw new InvalidOperationException(LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponent.Add.error"));
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace saiflow.engine.Xpdl.Schedule
         /// <returns></returns>
         public virtual bool Remove(NextActivityComponent nextActivity)
         {
-            throw new InvalidOperationException(LocalizeHelper.GetEngineMessage("nextactivitycomponent.Remove.error"));
+            throw new InvalidOperationException(LocalizeMessagesLocator.Current.GetEngineMessage("nextactivitycomponent.Remove.error"));
         }
     }
 }

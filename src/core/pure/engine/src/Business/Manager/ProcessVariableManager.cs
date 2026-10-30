@@ -246,7 +246,7 @@ namespace saiflow.engine.Business.Manager
         internal int SaveVariable(SQLBuilder kit, ProcessVariableEntity entity)
         {
             if (string.IsNullOrEmpty(entity.Name) || string.IsNullOrEmpty(entity.Value))
-                throw new WorkflowException(LocalizeHelper.GetEngineMessage("processvariablemanager.savevariable.error"));
+                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("processvariablemanager.savevariable.error"));
 
             ProcessVariableEntity existProcessVariable;
             if (entity.Id != 0)

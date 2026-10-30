@@ -189,7 +189,7 @@ namespace saiflow.engine.Xpdl.Schedule
             else
             {
                 resultType = NextActivityMatchedType.Failed; 
-                throw new WfXpdlException(LocalizeHelper.GetEngineMessage("nextactivityschedulesplit.error", 
+                throw new WfXpdlException(LocalizeMessagesLocator.Current.GetEngineMessage("nextactivityschedulesplit.error", 
                     currentGatewayActivity.GatewayDetail.DirectionType.ToString()));
             }
             return gatewayComponent;

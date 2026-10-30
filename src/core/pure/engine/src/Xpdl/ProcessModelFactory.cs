@@ -76,7 +76,7 @@ namespace saiflow.engine.Xpdl
             if (string.IsNullOrEmpty(processId)
                 || string.IsNullOrEmpty(version))
             {
-                throw new WfXpdlException(LocalizeHelper.GetEngineMessage("processmodel.factory.processnullexception"));
+                throw new WfXpdlException(LocalizeMessagesLocator.Current.GetEngineMessage("processmodel.factory.processnullexception"));
             }
 
             var pm = new ProcessManager(client);
@@ -84,7 +84,7 @@ namespace saiflow.engine.Xpdl
 
             if (entity == null)
             {
-                throw new WfXpdlException(LocalizeHelper.GetEngineMessage("processmodel.factory.processnullexception"));
+                throw new WfXpdlException(LocalizeMessagesLocator.Current.GetEngineMessage("processmodel.factory.processnullexception"));
             }
 
             IProcessModel processModel = new ProcessModelBPMN(client, entity);
@@ -174,7 +174,7 @@ namespace saiflow.engine.Xpdl
 
             if (entity == null)
             {
-                throw new WfXpdlException(LocalizeHelper.GetEngineMessage("processmodel.factory.processnullexception"));
+                throw new WfXpdlException(LocalizeMessagesLocator.Current.GetEngineMessage("processmodel.factory.processnullexception"));
             }
 
             IProcessModel processModel = new ProcessModelBPMN(client, entity);

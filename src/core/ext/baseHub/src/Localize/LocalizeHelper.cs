@@ -1,9 +1,12 @@
+using System;
+
 namespace saiflow.hub.Localize
 {
     /// <summary>
-    /// Static facade over <see cref="LocalizeMessagesLocator.Current"/>.
-    /// Engine call sites keep using this type; implementation is registered by UseLocalize.
+    /// Obsolete facade over <see cref="LocalizeMessagesLocator.Current"/>.
+    /// Prefer <c>LocalizeMessagesLocator.Current.GetEngineMessage(...)</c> (or inject <see cref="ILocalizeMessages"/>).
     /// </summary>
+    [Obsolete("Use LocalizeMessagesLocator.Current (or ILocalizeMessages) instead.")]
     public static class LocalizeHelper
     {
         private static ILocalizeMessages M => LocalizeMessagesLocator.Current;

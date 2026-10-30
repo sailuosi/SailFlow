@@ -74,7 +74,7 @@ namespace saiflow.engine.Core.Pattern.Event
             var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(Sail, runner, kit, ref runAppResult);
             if (runAppResult.Status == WfExecutedStatus.Exception)
             {
-                throw new WfRuntimeException(LocalizeHelper.GetEngineMessage("nodemediatorend.ContinueMainProcessRunning.warn", runAppResult.Message));
+                throw new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorend.ContinueMainProcessRunning.warn", runAppResult.Message));
             }
 
             //注册事件并运行
@@ -141,7 +141,7 @@ namespace saiflow.engine.Core.Pattern.Event
                 {
                     //此处没有模拟测试用户，所以给出异常信息
                     //There are no simulated test users here, so abnormal information is provided
-                    throw new WfRuntimeException(LocalizeHelper.GetEngineMessage("nodemediatorend.FillNextActivityPerformersByRoleList.warn", node.ActivityName));
+                    throw new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorend.FillNextActivityPerformersByRoleList.warn", node.ActivityName));
                 }
                 dict.Add(node.ActivityId, performerList);
 

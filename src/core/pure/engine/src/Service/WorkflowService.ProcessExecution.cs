@@ -105,7 +105,7 @@ namespace saiflow.engine.Service
             {
                 startedResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                startedResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.startprocess.error", error);
+                startedResult.Message = LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.startprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_START_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
@@ -300,7 +300,7 @@ namespace saiflow.engine.Service
             {
                 runAppResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                runAppResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.runprocess.error", error);
+                runAppResult.Message = LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.runprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
@@ -442,7 +442,7 @@ namespace saiflow.engine.Service
             {
                 runAppResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                runAppResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.runprocess.error", error);
+                runAppResult.Message = LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.runprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
@@ -561,7 +561,7 @@ namespace saiflow.engine.Service
             {
                 withdrawedResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                withdrawedResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.withdrawprocess.error", error);
+                withdrawedResult.Message = LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.withdrawprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_WITHDRAW_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
@@ -679,7 +679,7 @@ namespace saiflow.engine.Service
             {
                 sendbackResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                sendbackResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.sendbackprocess.error", error);
+                sendbackResult.Message = LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.sendbackprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_SENDBACK_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
@@ -798,7 +798,7 @@ namespace saiflow.engine.Service
             {
                 resendResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                resendResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.resendprocess.error", error);
+                resendResult.Message = LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.resendprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RESEND_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
@@ -918,7 +918,7 @@ namespace saiflow.engine.Service
             {
                 reviseResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                reviseResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.reviseprocess.error", error);
+                reviseResult.Message = LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.reviseprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_REVISE_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
@@ -1038,7 +1038,7 @@ namespace saiflow.engine.Service
             {
                 reversedResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                reversedResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.reverseprocess.error", error);
+                reversedResult.Message = LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.reverseprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_REVERSE_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
@@ -1158,7 +1158,7 @@ namespace saiflow.engine.Service
             {
                 rejectedResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                rejectedResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.rejectprocess.error", error);
+                rejectedResult.Message = LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.rejectprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_REJECT_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
@@ -1275,7 +1275,7 @@ namespace saiflow.engine.Service
             {
                 closedResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                closedResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.closeprocess.error", error);
+                closedResult.Message = LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.closeprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_CLOSE_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
@@ -1395,7 +1395,7 @@ namespace saiflow.engine.Service
             {
                 jumpResult.ExceptionType = WfExceptionType.Jump_OtherError;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                jumpResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.jumpprocess.error", error);
+                jumpResult.Message = LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.jumpprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_JUMP_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
@@ -1549,7 +1549,7 @@ namespace saiflow.engine.Service
             {
                 signforwardResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                signforwardResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.signforwardprocess.error", error);
+                signforwardResult.Message = LocalizeMessagesLocator.Current.GetEngineMessage("workflowservice.signforwardprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_SIGN_FORWARD_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally

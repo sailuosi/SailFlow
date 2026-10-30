@@ -150,7 +150,7 @@ namespace saiflow.engine.Business.Manager
                 return list[0];
             if (list.Count == 0)
                 return null;
-            throw new WorkflowException(LocalizeHelper.GetEngineMessage("processinstancemanager.GetSubProcessInstance.error"));
+            throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("processinstancemanager.GetSubProcessInstance.error"));
         }
 
         internal ProcessInstanceEntity GetRunningProcessInstance(string appInstanceId, string processId)
@@ -291,7 +291,7 @@ namespace saiflow.engine.Business.Manager
             }
             else
             {
-                throw new ProcessInstanceException(LocalizeHelper.GetEngineMessage("processinstancemanager.complete.error"));
+                throw new ProcessInstanceException(LocalizeMessagesLocator.Current.GetEngineMessage("processinstancemanager.complete.error"));
             }
             return processInstance;
         }
@@ -316,7 +316,7 @@ namespace saiflow.engine.Business.Manager
             }
             else
             {
-                throw new ProcessInstanceException(LocalizeHelper.GetEngineMessage("processinstancemanager.suspend.error"));
+                throw new ProcessInstanceException(LocalizeMessagesLocator.Current.GetEngineMessage("processinstancemanager.suspend.error"));
             }
         }
 
@@ -340,7 +340,7 @@ namespace saiflow.engine.Business.Manager
             }
             else
             {
-                throw new ProcessInstanceException(LocalizeHelper.GetEngineMessage("processinstancemanager.resume.error"));
+                throw new ProcessInstanceException(LocalizeMessagesLocator.Current.GetEngineMessage("processinstancemanager.resume.error"));
             }
         }
 
@@ -372,7 +372,7 @@ namespace saiflow.engine.Business.Manager
             }
             else
             {
-                throw new ProcessInstanceException(LocalizeHelper.GetEngineMessage("processinstancemanager.recallsubprocess.error"));
+                throw new ProcessInstanceException(LocalizeMessagesLocator.Current.GetEngineMessage("processinstancemanager.recallsubprocess.error"));
             }
         }
 
@@ -395,7 +395,7 @@ namespace saiflow.engine.Business.Manager
             }
             else
             {
-                throw new ProcessInstanceException(LocalizeHelper.GetEngineMessage("processinstancemanager.reverse.error"));
+                throw new ProcessInstanceException(LocalizeMessagesLocator.Current.GetEngineMessage("processinstancemanager.reverse.error"));
             }
         }
 
@@ -423,7 +423,7 @@ namespace saiflow.engine.Business.Manager
             {
                 var entity = GetProcessInstanceLatest(kit, runner.AppInstanceId, runner.ProcessId, runner.Version);
                 if (entity == null || entity.ProcessState != (short)ProcessStateEnum.Running)
-                    throw new WorkflowException(LocalizeHelper.GetEngineMessage("processinstancemanager.cancel.error"));
+                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("processinstancemanager.cancel.error"));
 
                 entity.ProcessState = (short)ProcessStateEnum.Canceled;
                 entity.RecordStatusInvalid = 1;
@@ -435,7 +435,7 @@ namespace saiflow.engine.Business.Manager
             }
             catch (System.Exception e)
             {
-                throw new WorkflowException(LocalizeHelper.GetEngineMessage("processinstancemanager.cancel.error", e.Message));
+                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("processinstancemanager.cancel.error", e.Message));
             }
         }
 
@@ -452,7 +452,7 @@ namespace saiflow.engine.Business.Manager
                 }
                 catch (System.Exception e)
                 {
-                    throw new WorkflowException(LocalizeHelper.GetEngineMessage("processinstancemanager.discard.error", e.Message));
+                    throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("processinstancemanager.discard.error", e.Message));
                 }
             }
         }
@@ -486,7 +486,7 @@ namespace saiflow.engine.Business.Manager
                 }
                 catch (System.Exception ex)
                 {
-                    throw new ProcessInstanceException(LocalizeHelper.GetEngineMessage("processinstancemanager.terminate.error", ex.Message));
+                    throw new ProcessInstanceException(LocalizeMessagesLocator.Current.GetEngineMessage("processinstancemanager.terminate.error", ex.Message));
                 }
             }
         }
@@ -504,7 +504,7 @@ namespace saiflow.engine.Business.Manager
                 Update(kit, entity);
                 return true;
             }
-            throw new ProcessInstanceException(LocalizeHelper.GetEngineMessage("processinstancemanager.terminate.error"));
+            throw new ProcessInstanceException(LocalizeMessagesLocator.Current.GetEngineMessage("processinstancemanager.terminate.error"));
         }
 
         internal bool SetOverdue(int processInstanceId, DateTime overdueDateTime, WfAppRunner runner)
@@ -527,7 +527,7 @@ namespace saiflow.engine.Business.Manager
                 Update(kit, entity);
                 return true;
             }
-            throw new ProcessInstanceException(LocalizeHelper.GetEngineMessage("processinstancemanager.setoverdue.error"));
+            throw new ProcessInstanceException(LocalizeMessagesLocator.Current.GetEngineMessage("processinstancemanager.setoverdue.error"));
         }
 
         internal bool Delete(int processInstanceId, bool isForced = false)
@@ -564,7 +564,7 @@ namespace saiflow.engine.Business.Manager
                 Sibling(kit).useRepo<ProcessInstanceEntity, int>().DeleteById(processInstanceId);
                 return true;
             }
-            throw new ProcessInstanceException(LocalizeHelper.GetEngineMessage("processinstancemanager.delete.error"));
+            throw new ProcessInstanceException(LocalizeMessagesLocator.Current.GetEngineMessage("processinstancemanager.delete.error"));
         }
 
         internal bool Delete(string processId, string version)

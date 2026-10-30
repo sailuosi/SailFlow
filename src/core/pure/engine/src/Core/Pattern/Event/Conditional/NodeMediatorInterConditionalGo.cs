@@ -78,7 +78,7 @@ namespace saiflow.engine.Core.Pattern.Event.Conditional
                 expression);
             if (isConditionPassed == false)
             {
-                throw new WfRuntimeException(LocalizeHelper.GetEngineMessage("nodemediatorinterconditionalgo.CheckBeingExecutedInfo.exception"));
+                throw new WfRuntimeException(LocalizeMessagesLocator.Current.GetEngineMessage("nodemediatorinterconditionalgo.CheckBeingExecutedInfo.exception"));
             }
         }
 

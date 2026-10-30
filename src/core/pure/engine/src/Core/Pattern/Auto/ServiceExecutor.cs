@@ -69,7 +69,7 @@ namespace saiflow.engine.Core.Pattern.Auto
             }
             else
             {
-                throw new WorkflowException(LocalizeHelper.GetEngineMessage("actionexecutor.Execute.exception", service.Method.ToString()));
+                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.Execute.exception", service.Method.ToString()));
             }
         }
 
@@ -90,7 +90,7 @@ namespace saiflow.engine.Core.Pattern.Auto
             }
             catch (Exception ex)
             {
-                throw new WorkflowException(LocalizeHelper.GetEngineMessage("actionexecutor.ExecuteLocalService.exception", ex.Message));
+                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteLocalService.exception", ex.Message));
             }
         }
 
@@ -135,7 +135,7 @@ namespace saiflow.engine.Core.Pattern.Auto
             }
             catch (Exception ex)
             {
-                throw new WorkflowException(LocalizeHelper.GetEngineMessage("actionexecutor.ExecuteWebApi.exception", ex.Message));
+                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteWebApi.exception", ex.Message));
             }
         }
 
@@ -153,7 +153,7 @@ namespace saiflow.engine.Core.Pattern.Auto
             }
             catch (Exception ex)
             {
-                throw new WorkflowException(LocalizeHelper.GetEngineMessage("actionexecutor.ExecuteStoreProcedureMethod.exception", ex.Message));
+                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteStoreProcedureMethod.exception", ex.Message));
             }
         }
 
@@ -187,7 +187,7 @@ namespace saiflow.engine.Core.Pattern.Auto
             }
             catch (Exception ex)
             {
-                throw new WorkflowException(LocalizeHelper.GetEngineMessage("actionexecutor.ExecuteCSharpLibraryMethod.exception", ex.Message));
+                throw new WorkflowException(LocalizeMessagesLocator.Current.GetEngineMessage("actionexecutor.ExecuteCSharpLibraryMethod.exception", ex.Message));
             }
         }
     }

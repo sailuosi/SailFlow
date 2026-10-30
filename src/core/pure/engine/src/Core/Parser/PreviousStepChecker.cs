@@ -252,7 +252,7 @@ namespace saiflow.engine.Core.Parser
                 }
                 else
                 {
-                    throw new ApplicationException(LocalizeHelper.GetEngineMessage("previousstepchecker.getpreviousactivitylist.error"));
+                    throw new ApplicationException(LocalizeMessagesLocator.Current.GetEngineMessage("previousstepchecker.getpreviousactivitylist.error"));
                 }
             }
 
