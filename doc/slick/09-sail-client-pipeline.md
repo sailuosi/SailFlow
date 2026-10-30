@@ -2,7 +2,7 @@
 
 > 状态：**Phase A/B/C（Form + Resource）已落地；静态 Access 已移除（实例下传）**  
 > 对齐对象：ASP.NET Core `WebApplicationBuilder` / `IServiceCollection` / `UseXxx` 扩展管道；取库对齐 mooSQL `DBInstance`  
-> 关联现状：`SailClient`、`SailClientAssembler`、`SailClientBuilder` / `SailClientHost`、`WorkflowService(SailClient)`、`saiflow.biz` 引导、`AiNodeExecutorLocator` / `FormServiceLocator` / `ResourceServiceLocator`
+> 关联现状：`SailClient`、`SailClientAssembler`、`SailClientBuilder` / `SailClientHost`、`WorkflowService(SailClient)`、`saiflow.biz` 引导、`AiNodeExecutorLocator` / `FormServiceLocator` / `ResourceServiceLocator` / `LocalizeMessagesLocator`
 
 ---
 
@@ -19,7 +19,8 @@
 - 组件与服务的注册采用 **Collection + Fluent Builder + 扩展方法**，形如：
 
 ```csharp
-builder.Services.UseBizAI()
+builder.Services.UseLocalize()
+                .UseBizAI()
                 .UseBizDocs()
                 .UseResource()
                 .UseForm()
@@ -42,7 +43,7 @@ var wf = new WorkflowService(sail);   // 必须传入 SailClient
 
 ### 1.3 非目标（本阶段不做）
 
-- Form / Resource Locator 去静态（另议题）；localize 保持引擎依赖。
+- Form / Resource / Localize Locator 去静态、挂到 `SailClient` 实例（另议题）。
 - 不把 `SailClient` 变成完整 IoC 容器替代品；它是**应用根 + 注册总线**，解析可委托给简单 Locator 或 `IServiceProvider`。
 - 不强制多 `SailClient` 实例并存（默认同进程单例；多租户可后续扩展 `named client`）。
 
@@ -75,6 +76,7 @@ var wf = new WorkflowService(sail);   // 必须传入 SailClient
 │   var builder = SailClient.CreateBuilder(args/config);  │
 │   builder.Services                                      │
 │       .UseDatabase(db)                                  │
+│       .UseLocalize()                                    │
 │       .UseBizAI()                                       │
 │       .UseResource()                                    │
 │       .UseForm()                                        │
@@ -87,14 +89,14 @@ var wf = new WorkflowService(sail);   // 必须传入 SailClient
 ┌─────────────────────────────────────────────────────────┐
 │  SailClient (应用根实例)                                 │
 │   · DBFactory / Dialect / Config（已有插槽）             │
-│   · Features / Locators（AI、Form、Resource…）           │
+│   · Features / Locators（AI、Form、Resource、Localize…） │
 │   · 下传 → WorkflowService / Managers / Runtime / Mediator│
 └─────────────────────────────────────────────────────────┘
          ▲ 注册回调来自各包的 UseXxx
          │
 ┌────────┴────────┐  ┌──────────────┐  ┌────────────────┐  ┌─────────────────┐
-│ sailflow.biz.AI │  │ sailflow.form│  │ sailflow.resource│ │ sailflow.biz    │
-│ UseBizAI()      │  │ UseForm()    │  │ UseResource()  │  │ UseSchema()     │
+│ sailflow.biz.AI │  │ sailflow.form│  │ sailflow.resource│ │ sailflow.localize│
+│ UseBizAI()      │  │ UseForm()    │  │ UseResource()  │  │ UseLocalize()   │
 └─────────────────┘  └──────────────┘  └────────────────┘  └─────────────────┘
 ```
 
@@ -111,6 +113,8 @@ var wf = new WorkflowService(sail);   // 必须传入 SailClient
 | `UseBizDocs` | `sailflow.biz.docs` | PDF LocalService 等 |
 | `UseForm` | `sailflow.form` | `IFormService` 注册 |
 | `UseResource` | `sailflow.resource` | `IResourceService` 注册 |
+| `UseLocalize` | `sailflow.localize` | `ILocalizeMessages` → `LocalizeMessagesLocator`；引擎经 `LocalizeHelper` 门面取值 |
+| `ILocalizeMessages` / `LocalizeHelper` | `sailflow.baseHub`（契约+门面） | 引擎只依赖契约；未注册时 passthrough（返回 key） |
 | `UseSchema` / `InitDb` | `sailflow.biz`（host） | 核心表 + 可选 AI 表 + 种子 |
 | 宿主 `Program.cs` | 业务应用 | 调用管道 |
 
@@ -419,6 +423,7 @@ public static class XxxSailBuilderExtensions
 | `UseEventHub(ISailEventHub)` | engine | ConfigureClient | 替换默认 Event stub |
 | `UseForm()` | form | ConfigureClient | 注册 `IFormService` → Locator |
 | `UseResource()` | resource | ConfigureClient | 注册 `IResourceService` → Locator |
+| `UseLocalize()` | localize | ConfigureClient | 注册 `ILocalizeMessages` → Locator；引擎经 `LocalizeHelper` |
 | `UseBizAI()` | biz.AI | ConfigureClient + PostBuild | `AiNodeExecutorLocator` + `AiRuntime.EnsureTables` |
 | `UseBizDocs()` | biz.docs | ConfigureClient | 文档 LocalService 相关（若需） |
 | `UseSchema(...)` | biz host | PostBuild | 核心表 + 种子；可组合 AI 表 |
@@ -613,6 +618,7 @@ using saiflow.hub.Form.Hosting;
 var builder = SailClient.CreateBuilder(configuration);
 builder.Services
     .UseDatabase(dbInstance)          // 或 UseDatabase(dbFactory)
+    .UseLocalize()                    // JSON 文案；否则 LocalizeHelper 透传 key
     .UseResource()
     .UseForm()
     .UseBizAI()
@@ -657,6 +663,7 @@ builder.Services.AddSingleton(sp =>
     var sailBuilder = SailClient.CreateBuilder(config);
     sailBuilder.Services
         .UseDatabase(db)
+        .UseLocalize()
         .UseResource()
         .UseForm()
         .UseBizAI()
@@ -717,6 +724,12 @@ builder.Services.AddSingleton(sp =>
 1. 删除 `SailClientAccess`；`SailSqlAccess` 仅留 `Sibling`。
 2. `Build()` 不再 `bindAccess`；`SailClientHost` 只缓存实例。
 3. Managers / `WorkflowService` / Runtime / NodeMediator / Parser / Message 经 ctor 持有 `Sail`。
+
+**Phase C″ — Localize 契约解耦（已完成）**
+
+1. `ILocalizeMessages` / `LocalizeMessagesLocator` / `LocalizeHelper` 门面在 baseHub。
+2. `JsonLocalizeMessages` + `UseLocalize()` 在 localize；去掉 engine → localize ProjectReference。
+3. 未 `UseLocalize` 时 passthrough（返回 key），宿主应显式注册以启用 JSON 文案。
 
 **Phase D — 可选 MS DI 桥**
 

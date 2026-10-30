@@ -17,6 +17,7 @@ namespace saiflow.hub.Localize
             ReadProjectJSONResourceFromFile(ProjectTypeEnum.Engine);
             ReadProjectJSONResourceFromFile(ProjectTypeEnum.Designer);
             ReadProjectJSONResourceFromFile(ProjectTypeEnum.Web);
+            ReadProjectJSONResourceFromFile(ProjectTypeEnum.Job);
         }
 
         /// <summary>

@@ -27,7 +27,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ext\baseHub\sailflow.baseHub.csproj" />
-    <ProjectReference Include="..\..\ext\localize\sailflow.localize.csproj" />
     <ProjectReference Include="..\AI\sailflow.AI.csproj" />
     <ProjectReference Include="..\basis\sailflow.basis.csproj" />
   </ItemGroup>
