@@ -10,10 +10,7 @@ using saiflow.engine.Xpdl.Common;
 using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Core.Result;
-using IronPython.Compiler.Ast;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using static IronPython.Modules._ast;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace saiflow.engine.Core.Pattern
 {
