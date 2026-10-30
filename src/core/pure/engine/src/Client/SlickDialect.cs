@@ -35,23 +35,4 @@ public sealed class SailDialect
     public void RegisterDbFactory(SailDBFactory factory) => MountDbFactory(factory);
 
     public void RegisterEvent(ISailEventHub eventHub) => MountEvent(eventHub);
-
-    /// <summary>
-    /// Phase E：手写 SQL 方言片段入口（表名/视图/TOP·LIMIT）。
-    /// 实现位于 <c>Business.SqlProvider.SailSqlDialect</c>，此处仅作 Client 侧发现点。
-    /// </summary>
-    public static class Sql
-    {
-        public static bool IsSqlServer => Business.SqlProvider.SailSqlDialect.IsSqlServer;
-        public static string ProcessTable => Business.SqlProvider.SailSqlDialect.ProcessTable;
-        public static string ProcessEntityTable => Business.SqlProvider.SailSqlDialect.ProcessEntityTable;
-        public static string ActivityInstanceTable => Business.SqlProvider.SailSqlDialect.ActivityInstanceTable;
-        public static string ProcessInstanceTable => Business.SqlProvider.SailSqlDialect.ProcessInstanceTable;
-        public static string TaskTable => Business.SqlProvider.SailSqlDialect.TaskTable;
-        public static string VariableTable => Business.SqlProvider.SailSqlDialect.VariableTable;
-        public static string TaskView => Business.SqlProvider.SailSqlDialect.TaskView;
-        public static string MapField(string entityField) => Business.SqlProvider.SailSqlDialect.MapField(entityField);
-        public static string LimitPrefix(int n) => Business.SqlProvider.SailSqlDialect.LimitPrefix(n);
-        public static string LimitSuffix(int n) => Business.SqlProvider.SailSqlDialect.LimitSuffix(n);
-    }
 }
