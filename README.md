@@ -1,4 +1,4 @@
-# beeflow
+# sailflow
 
 > **致敬 [Slickflow](https://github.com/besley/slickflow)**  
 > 本仓库基于开源工作流引擎 [Slickflow](https://github.com/besley/slickflow) 二次改造而来。感谢 Besley / 杭州砺工科技及社区的杰出贡献。原项目采用 MIT 协议，源授权说明见 [NOTICE](./NOTICE)。
