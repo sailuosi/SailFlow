@@ -9,7 +9,6 @@ using saiflow.engine.Common;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Xpdl;
 using saiflow.engine.Xpdl.Entity;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace saiflow.engine.Core.Pattern.Gateway
 {

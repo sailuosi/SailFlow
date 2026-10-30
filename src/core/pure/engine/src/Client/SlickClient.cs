@@ -9,7 +9,7 @@ namespace saiflow.engine.Client;
 /// 数据访问终态约定：无事务用 <see cref="UseRunSQL"/>；有事务由上游灌入同一 <see cref="SQLBuilder"/>（begin/commit）。
 /// 业务不持有 DBInstance，不依赖 DBExecutor。切片完成须符合约定，禁止中间态。详见 doc/slick/08。
 /// </summary>
-public class SailClient
+public partial class SailClient
 {
     public SailDBFactory DBFactory { get; set; } = null!;
 

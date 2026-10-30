@@ -28,7 +28,7 @@ namespace saiflow.engine.Service
         public WorkflowService()
         {
             ResourceService = ResourceServiceFactory.Create();
-            FormService = FormServiceFactory.Create();
+            FormService = FormServiceLocator.Resolve();
         }
         #endregion
     }

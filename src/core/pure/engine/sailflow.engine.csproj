@@ -18,6 +18,7 @@
     <PackageReference Include="IronPython" Version="3.4.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.8" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
     <PackageReference Include="NRules" Version="1.0.4" />
     <PackageReference Include="NRules.Fluent" Version="1.0.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -26,7 +27,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ext\baseHub\sailflow.baseHub.csproj" />
-    <ProjectReference Include="..\..\ext\form\sailflow.form.csproj" />
     <ProjectReference Include="..\..\ext\localize\sailflow.localize.csproj" />
     <ProjectReference Include="..\..\ext\resource\sailflow.resource.csproj" />
     <ProjectReference Include="..\AI\sailflow.AI.csproj" />

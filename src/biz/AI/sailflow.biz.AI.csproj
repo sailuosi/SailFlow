@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\core\pure\AI\sailflow.AI.csproj" />
     <ProjectReference Include="..\..\core\pure\basis\sailflow.basis.csproj" />
+    <ProjectReference Include="..\..\core\pure\engine\sailflow.engine.csproj" />
   </ItemGroup>
 
 </Project>
