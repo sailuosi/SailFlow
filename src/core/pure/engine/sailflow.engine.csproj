@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	 <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
@@ -26,8 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ext\baseHub\sailflow.baseHub.csproj" />
     <ProjectReference Include="..\AI\sailflow.AI.csproj" />
+    <ProjectReference Include="..\baseHub\sailflow.baseHub.csproj" />
     <ProjectReference Include="..\basis\sailflow.basis.csproj" />
   </ItemGroup>
 
