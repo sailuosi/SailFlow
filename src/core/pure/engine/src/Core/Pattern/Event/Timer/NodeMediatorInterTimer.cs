@@ -13,6 +13,7 @@ using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Core.Runtime;
 using saiflow.engine.Message;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Timer
 {
     /// <summary>
@@ -21,8 +22,8 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
     /// </summary>
     internal class NodeMediatorInterTimer : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
     {
-        internal NodeMediatorInterTimer(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorInterTimer(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
@@ -97,7 +98,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
                 runner,
                 kit);
 
-            var tm = new TaskManager();
+            var tm = new TaskManager(Sail);
             var newTaskId = tm.Insert(SailSqlAccess.Sibling(kit), toActivityInstance,
                 new Performer(WfDefine.SYSTEM_JOBTIMER_USER_ID, WfDefine.SYSTEM_JOBTIMER_USER_NAME),
                 runner);

@@ -10,6 +10,7 @@ using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 using saiflow.WebUtility;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Parser
 {
     /// <summary>
@@ -22,6 +23,13 @@ namespace saiflow.engine.Core.Parser
     /// </summary>
     internal class NextStepParser
     {
+        public NextStepParser(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         /// <summary>
         /// Next step of the process: information acquisition
         /// 流程下一步信息获取
@@ -56,12 +64,12 @@ namespace saiflow.engine.Core.Parser
         {
             IDictionary<string, PerformerList> nextSteps = null;
 
-            var tm = new TaskManager();
+            var tm = new TaskManager(Sail);
             TaskViewEntity taskView = tm.GetTaskOfMine(runner);
 
             //读取活动实例中记录的步骤预选数据
             //Read the pre selected data of the steps recorded in the activity instance
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             if (taskView.MainActivityInstanceId != null)
             {
                 var mainActivityInstanceId = taskView.MainActivityInstanceId.Value;
@@ -74,7 +82,7 @@ namespace saiflow.engine.Core.Parser
 
             //获取下一步信息
             //Obtain the next step information
-            var processModel = ProcessModelFactory.CreateByTask(taskView);
+            var processModel = ProcessModelFactory.CreateByTask(Sail, taskView);
             var nextActivity = processModel.GetNextActivity(taskView.ActivityId);
             if (nextActivity != null)
             {
@@ -134,12 +142,12 @@ namespace saiflow.engine.Core.Parser
             NextActivityListViewResult nextTreeResult = null;
             IProcessModel processModel = null;
 
-            using (var kit = saiflow.engine.Client.SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 TaskViewEntity taskView = null;
-                var tm = new TaskManager();
+                var tm = new TaskManager(Sail);
                 ProcessInstanceEntity processInstance = null;
-                var pim = new ProcessInstanceManager();
+                var pim = new ProcessInstanceManager(Sail);
                 if (runner.TaskId != null)
                 {
                     //运行中的流程
@@ -177,12 +185,12 @@ namespace saiflow.engine.Core.Parser
 
                     //读取流程变量表，合并条件参数
                     //Read the process variable table and merge condition parameters
-                    var processVariableManager = new ProcessVariableManager();
+                    var processVariableManager = new ProcessVariableManager(Sail);
                     condition = processVariableManager.GetVariableByTask(kit, taskView, condition);
 
                     //获取下一步列表
                     //Get the next step list
-                    processModel = ProcessModelFactory.CreateByTask(SailSqlAccess.Sibling(kit), taskView);
+                    processModel = ProcessModelFactory.CreateByTask(Sail, SailSqlAccess.Sibling(kit), taskView);
                     nextTreeResult = processModel.GetNextActivityListView(taskView.ActivityId, taskView.ActivityInstanceId, condition, kit);
                     
                     foreach (var ns in nextTreeResult.StepList)
@@ -211,7 +219,7 @@ namespace saiflow.engine.Core.Parser
 
                     //流程准备启动，获取第一个办理节点的用户列表
                     //Process preparation to start, obtain the user list of the first processing node
-                    processModel = ProcessModelFactory.CreateByProcess(runner.ProcessId, runner.Version);
+                    processModel = ProcessModelFactory.CreateByProcess(Sail, runner.ProcessId, runner.Version);
                     var firstActivity = processModel.GetFirstActivity();
                     nextTreeResult = processModel.GetNextActivityListView(firstActivity.ActivityId,
                         null,

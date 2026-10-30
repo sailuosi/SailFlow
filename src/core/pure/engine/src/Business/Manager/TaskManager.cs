@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +26,12 @@ namespace saiflow.engine.Business.Manager
     /// </summary>
     public class TaskManager
     {
+        public TaskManager(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
         private static SQLBuilder Sibling(SQLBuilder kit)
         {
             var next = kit.DBLive.useSQL();
@@ -42,7 +48,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public TaskViewEntity GetTaskView(int taskId)
         {
-            return SailClientAccess.UseRunSQL().useRepo<TaskViewEntity, int>().GetById(taskId);
+            return Sail.UseRunSQL().useRepo<TaskViewEntity, int>().GetById(taskId);
         }
 
         internal TaskViewEntity GetTaskView(SQLBuilder kit, int taskId)
@@ -53,7 +59,7 @@ namespace saiflow.engine.Business.Manager
         /// 获取任务
         /// </summary>
         public TaskEntity GetTask(int taskId)
-            => SailClientAccess.UseRunSQL().useRepo<TaskEntity, int>().GetById(taskId);
+            => Sail.UseRunSQL().useRepo<TaskEntity, int>().GetById(taskId);
 
         internal TaskEntity GetTask(SQLBuilder kit, int taskId)
             => Sibling(kit).useRepo<TaskEntity, int>().GetById(taskId);
@@ -64,7 +70,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal List<TaskEntity> GetTaskListByActivity(int processInstanceId, int activityInstanceId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetTaskListByActivity(kit, processInstanceId, activityInstanceId);
         }
 
@@ -85,7 +91,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal TaskEntity GetTaskByActivity(int processInstanceId, int activityInstanceId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetTaskByActivity(kit, processInstanceId, activityInstanceId);
         }
 
@@ -101,7 +107,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal TaskViewEntity GetTaskViewByActivity(int processInstanceId, int activityInstanceId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetTaskViewByActivity(kit, processInstanceId, activityInstanceId);
         }
 
@@ -129,7 +135,7 @@ namespace saiflow.engine.Business.Manager
         {
             var isLast = false;
             var task = GetTask(taskId);
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             var activityInstance = aim.GetById(task.ActivityInstanceId);
 
             if (aim.IsMultipleInstanceChildren(activityInstance) == true)
@@ -402,7 +408,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal TaskViewEntity GetFirstRunningTask(int activityInstanceId)
         {
-            var list = SailClientAccess.UseRunSQL()
+            var list = Sail.UseRunSQL()
                 .select("*")
                 .from(SailSqlDialect.TaskView)
                 .where(SailSqlDialect.MapField("ProcessState"), 2)
@@ -436,7 +442,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         private IEnumerable<TaskViewEntity> GetTasksPaged(TaskQuery query, int activityState)
         {
-            var kit = SailClientAccess.UseRunSQL()
+            var kit = Sail.UseRunSQL()
                 .select("*")
                 .from(SailSqlDialect.TaskView)
                 .where(SailSqlDialect.MapField("ProcessState"), 2)
@@ -491,7 +497,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public List<TaskViewEntity> GetTaskToDoListTop()
         {
-            return SailClientAccess.UseRunSQL()
+            return Sail.UseRunSQL()
                 .select("*")
                 .from(SailSqlDialect.TaskView)
                 .where(SailSqlDialect.MapField("ProcessState"), 2)
@@ -510,7 +516,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public List<TaskViewEntity> GetTaskDoneListTop()
         {
-            return SailClientAccess.UseRunSQL()
+            return Sail.UseRunSQL()
                 .select("*")
                 .from(SailSqlDialect.TaskView)
                 .where(SailSqlDialect.MapField("ProcessState"), 2)
@@ -529,7 +535,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal TaskViewEntity GetTaskOfMineByActivityInstance(int activityInstanceId, string userId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetTaskOfMineByActivityInstance(kit, activityInstanceId, userId);
         }
 
@@ -576,7 +582,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal TaskViewEntity GetTaskOfMine(string appInstanceId, string processId, string userId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetTaskOfMine(kit, appInstanceId, processId, userId);
         }
 
@@ -619,7 +625,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal TaskViewEntity GetTaskOfMine(WfAppRunner runner)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetTaskOfMine(kit, runner);
         }
 
@@ -679,7 +685,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal IEnumerable<TaskViewEntity> GetReadyTaskOfApp(WfAppRunner runner)
         {
-            return SailClientAccess.UseRunSQL()
+            return Sail.UseRunSQL()
                 .select("*")
                 .from(SailSqlDialect.TaskView)
                 .where(SailSqlDialect.MapField("AppInstanceId"), runner.AppInstanceId)
@@ -697,7 +703,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal IList<TaskViewEntity> GetTaskListEMailUnSent()
         {
-            return SailClientAccess.UseRunSQL()
+            return Sail.UseRunSQL()
                 .select("*")
                 .from(SailSqlDialect.TaskView)
                 .where(SailSqlDialect.MapField("ProcessState"), 2)
@@ -795,7 +801,7 @@ namespace saiflow.engine.Business.Manager
                     var title = LocalizeHelper.GetEngineMessage("taskmanager.emailtemplate.title");
                     var body = LocalizeHelper.GetEngineMessage("taskmanager.emailtemplate.body");
                     body = string.Format(body, JobAdminConfig.EMailSendUtility_LocalHostWebApp, entity.AppName, entity.AppInstanceId);
-                    var emailSendUtility = new EMailSendUtility(entity.Id);
+                    var emailSendUtility = new EMailSendUtility(Sail, entity.Id);
                     emailSendUtility.SendEMailAsync(title, body, user.EMail);
                 }
             }
@@ -816,7 +822,7 @@ namespace saiflow.engine.Business.Manager
 
         internal void Update(TaskEntity entity)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             Update(kit, entity);
         }
 
@@ -832,14 +838,14 @@ namespace saiflow.engine.Business.Manager
 
         internal void SetTaskRead(WfAppRunner taskRunner)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
                 {
                     var task = GetTask(kit, taskRunner.TaskId.Value);
                     SetTaskState(kit, task, taskRunner.UserId, taskRunner.UserName, TaskStateEnum.Reading);
-                    new ActivityInstanceManager().Read(kit, task.ActivityInstanceId, taskRunner);
+                    new ActivityInstanceManager(Sail).Read(kit, task.ActivityInstanceId, taskRunner);
                     kit.commit();
                 }
                 catch (System.Exception e)
@@ -851,7 +857,7 @@ namespace saiflow.engine.Business.Manager
 
         internal void SetTaskEMailSent(int taskId)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -903,7 +909,7 @@ namespace saiflow.engine.Business.Manager
 
         internal WfDataManagedResult Entrust(TaskEntrustedEntity entity, bool cancelOriginalTask = true)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -922,7 +928,7 @@ namespace saiflow.engine.Business.Manager
 
         internal WfDataManagedResult Entrust(SQLBuilder kit, TaskEntrustedEntity entity, bool cancelOriginalTask = true)
         {
-            var am = new ActivityInstanceManager();
+            var am = new ActivityInstanceManager(Sail);
             var activityInstance = am.GetByTask(kit, entity.TaskId);
 
             if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
@@ -951,7 +957,7 @@ namespace saiflow.engine.Business.Manager
 
         internal void CancelEntrustedTask(int taskId)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -1001,7 +1007,7 @@ namespace saiflow.engine.Business.Manager
 
         internal Boolean Replace(int activityInstanceId, List<TaskReplacedEntity> replaced, WfAppRunner runner)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -1020,7 +1026,7 @@ namespace saiflow.engine.Business.Manager
         internal void Replace(SQLBuilder kit, int activityInstanceId, List<TaskReplacedEntity> replaced, WfAppRunner runner)
         {
             CancelTask(kit, activityInstanceId);
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             var activityInstance = aim.GetById(kit, activityInstanceId);
             activityInstance.AssignedUserIds = GenerateActivityAssignedUserIDs(replaced);
             activityInstance.AssignedUserNames = GenerateActivityAssignedUserNames(replaced);
@@ -1066,7 +1072,7 @@ namespace saiflow.engine.Business.Manager
 
         internal bool Delete(int taskId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return Delete(kit, taskId);
         }
 

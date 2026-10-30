@@ -2,6 +2,7 @@ using System;
 using mooSQL.data;
 using saiflow.AI.Abstractions;
 using saiflow.AI.Entity;
+using saiflow.engine.Client;
 
 namespace saiflow.AI.Runtime
 {
@@ -14,9 +15,11 @@ namespace saiflow.AI.Runtime
         /// Registers <see cref="DefaultAiNodeExecutor"/> as the engine's AI node executor.
         /// Call once at application startup when AI nodes are enabled.
         /// </summary>
-        public static void UseDefaultExecutor()
+        public static void UseDefaultExecutor(SailClient client)
         {
-            AiNodeExecutorLocator.Register(new DefaultAiNodeExecutor());
+            if (client == null)
+                throw new ArgumentNullException(nameof(client));
+            AiNodeExecutorLocator.Register(new DefaultAiNodeExecutor(client));
         }
 
         /// <summary>

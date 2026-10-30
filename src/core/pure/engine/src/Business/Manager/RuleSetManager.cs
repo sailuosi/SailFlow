@@ -13,10 +13,16 @@ namespace saiflow.engine.Business.Manager
     /// </summary>
     public class RuleSetManager
     {
+        public RuleSetManager(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
         private const string RuleSetTable = "wf_rule_set";
 
         public IList<RuleSetEntity> GetAll()
-            => SailClientAccess.UseRunSQL()
+            => Sail.UseRunSQL()
                 .useRepo<RuleSetEntity>()
                 .GetList()
                 .OrderBy(x => x.RuleSetCode)
@@ -27,14 +33,14 @@ namespace saiflow.engine.Business.Manager
         {
             if (string.IsNullOrEmpty(ruleSetCode))
                 return null;
-            return SailClientAccess.UseRunSQL()
+            return Sail.UseRunSQL()
                 .useRepo<RuleSetEntity>()
                 .GetFirst(x => x.RuleSetCode == ruleSetCode);
         }
 
         public int Insert(RuleSetEntity entity)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return Insert(kit, entity);
         }
 
@@ -50,7 +56,7 @@ namespace saiflow.engine.Business.Manager
 
         public void Update(RuleSetEntity entity)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             Update(kit, entity);
         }
 
@@ -64,7 +70,7 @@ namespace saiflow.engine.Business.Manager
         {
             if (string.IsNullOrEmpty(ruleSetCode))
                 return;
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try

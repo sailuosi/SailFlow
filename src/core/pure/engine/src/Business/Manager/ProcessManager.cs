@@ -22,6 +22,12 @@ namespace saiflow.engine.Business.Manager
     /// </summary>
     public class ProcessManager
     {
+        public ProcessManager(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
         private static SQLBuilder Sibling(SQLBuilder kit)
         {
             var next = kit.DBLive.useSQL();
@@ -37,7 +43,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public ProcessEntity GetById(int id)
         {
-            return SailClientAccess.UseRunSQL().useRepo<ProcessEntity, int>().GetById(id);
+            return Sail.UseRunSQL().useRepo<ProcessEntity, int>().GetById(id);
         }
 
         /// <summary>
@@ -57,7 +63,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public ProcessEntity GetByVersion(string processId, string version, bool throwException = true)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetByVersion(kit, processId, version, throwException);
         }
 
@@ -103,7 +109,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public ProcessEntity GetVersionUsing(string processId, bool isNotThrownException = true)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetVersionUsing(kit, processId, isNotThrownException);
         }
 
@@ -149,7 +155,7 @@ namespace saiflow.engine.Business.Manager
             if (string.IsNullOrEmpty(version)) version = "1";
 
             ProcessEntity entity = null;
-            var list = SailClientAccess.UseRunSQL()
+            var list = Sail.UseRunSQL()
                 .select("*")
                 .from(SailSqlDialect.ProcessEntityTable)
                 .where("process_name", processName)
@@ -181,7 +187,7 @@ namespace saiflow.engine.Business.Manager
             if (string.IsNullOrEmpty(version)) version = "1";
 
             ProcessEntity entity = null;
-            var list = SailClientAccess.UseRunSQL()
+            var list = Sail.UseRunSQL()
                 .select("*")
                 .from(SailSqlDialect.ProcessEntityTable)
                 .where("process_code", processCode)
@@ -241,7 +247,7 @@ namespace saiflow.engine.Business.Manager
             ProcessEntity entity = null;
             //StartType:2  --- message trigger
             //StartExpression -- message topic
-            var list = SailClientAccess.UseRunSQL()
+            var list = Sail.UseRunSQL()
                 .select("*")
                 .from(SailSqlDialect.ProcessEntityTable)
                 .where("start_type", 2)
@@ -266,7 +272,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public ProcessEntity GetSingleByAppType(string appType)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetSingleByAppType(kit, appType);
         }
 
@@ -301,7 +307,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public List<ProcessEntity> GetAll()
         {
-            return SailClientAccess.UseRunSQL()
+            return Sail.UseRunSQL()
                 .select("*")
                 .from(SailSqlDialect.ProcessEntityTable)
                 .query<ProcessEntity>()
@@ -314,7 +320,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public List<ProcessEntity> GetListSimple()
         {
-            var kit = SailClientAccess.UseRunSQL().from(SailSqlDialect.ProcessEntityTable);
+            var kit = Sail.UseRunSQL().from(SailSqlDialect.ProcessEntityTable);
             if (SailSqlDialect.IsSqlServer)
             {
                 kit.select(@"Id, ProcessId, ProcessName, ProcessCode, Version, Status, AppType, PackageType, PackageId,
@@ -341,7 +347,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public int Insert(ProcessEntity entity)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -380,7 +386,7 @@ namespace saiflow.engine.Business.Manager
         {
             var entityDB = GetByVersion(entity.ProcessId, entity.Version);
 
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -421,7 +427,7 @@ namespace saiflow.engine.Business.Manager
             string version,
             byte usingState)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -450,7 +456,7 @@ namespace saiflow.engine.Business.Manager
                 throw new WorkflowException(LocalizeHelper.GetEngineMessage("processmanager.upgrade.error"));
             }
 
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -506,7 +512,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public void Delete(int id)
         {
-            SailClientAccess.UseRunSQL().useRepo<ProcessEntity, int>().DeleteById(id);
+            Sail.UseRunSQL().useRepo<ProcessEntity, int>().DeleteById(id);
         }
 
         /// <summary>
@@ -517,7 +523,7 @@ namespace saiflow.engine.Business.Manager
         {
             var entity = GetByVersion(processId, version);
 
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -549,7 +555,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public void DeleteProcess(string processId, string version)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -590,7 +596,7 @@ namespace saiflow.engine.Business.Manager
         {
             int processId = 0;
 
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -639,7 +645,7 @@ namespace saiflow.engine.Business.Manager
                 process.XmlContent = xmlContent;
                 process.Version = "1";
 
-                var processManager = new ProcessManager();
+                var processManager = new ProcessManager(Sail);
                 var processDB = processManager.GetByVersion(process.ProcessId, process.Version, false);
                 if (processDB != null)
                 {
@@ -717,7 +723,7 @@ namespace saiflow.engine.Business.Manager
                 throw new ApplicationException(LocalizeHelper.GetEngineMessage("processmanager.saveprocessfile.noprocessname.error"));
             }
 
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -761,7 +767,7 @@ namespace saiflow.engine.Business.Manager
                 }
                 catch (System.Exception ex)
                 {
-                    LogManager.RecordLog(WfDefine.WF_XPDL_ERROR, LogEventType.Error, LogPriority.High, null, ex);
+                    LogManager.RecordLog(Sail, WfDefine.WF_XPDL_ERROR, LogEventType.Error, LogPriority.High, null, ex);
                     throw;
                 }
             }
@@ -784,7 +790,7 @@ namespace saiflow.engine.Business.Manager
             }
 
             var poolProcessListClient = packageClient.ParticipantList;
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -935,13 +941,13 @@ namespace saiflow.engine.Business.Manager
        /// </summary>
         internal void SetProcessTimerType(string processId, string version)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
                 {
                     var entity = GetByVersion(kit, processId, version, true);
-                    var processModel = ProcessModelFactory.CreateByProcess(entity);
+                    var processModel = ProcessModelFactory.CreateByProcess(Sail, entity);
 
                     //StartNode
                     var startNode = processModel.GetStartActivity();

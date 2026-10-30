@@ -11,6 +11,7 @@ using saiflow.engine.Common;
 using saiflow.engine.Core;
 using saiflow.engine.Xpdl.Entity;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Event
 {
     /// <summary>
@@ -19,11 +20,18 @@ namespace saiflow.engine.Event
     /// </summary>
     internal class EventExecutor
     {
+        public EventExecutor(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         /// <summary>
         /// Call program methods for external business applications
         /// 调用外部业务应用的程序方法
         /// </summary>
-        internal static void InvokeExternalEvent(SQLBuilder kit,
+        internal static void InvokeExternalEvent(SailClient client, SQLBuilder kit,
             EventFireTypeEnum eventType,
             Activity currentActivity,
             ActivityForwardContext context)
@@ -38,7 +46,7 @@ namespace saiflow.engine.Event
                 ActivityCode = currentActivity.ActivityCode,
                 ActivityResource = context.ActivityResource
             };
-            InvokeExternalEvent(kit, eventType,
+            InvokeExternalEvent(client, kit, eventType,
                 context.ActivityResource.AppRunner.EventSubscriptionList,
                     eventContext);
         }
@@ -47,7 +55,7 @@ namespace saiflow.engine.Event
         /// Call program methods for external business applications
         /// 调用外部业务应用的程序方法
         /// </summary>
-        internal static void InvokeExternalEvent(SQLBuilder kit,
+        internal static void InvokeExternalEvent(SailClient client, SQLBuilder kit,
             EventFireTypeEnum eventType,
             EventSubscriptionList eventList,
             int processInstanceId)
@@ -57,7 +65,7 @@ namespace saiflow.engine.Event
             var eventListFiltered = eventList.Where(k => k.Key == eventType);
             if (eventListFiltered != null)
             {
-                var pim = new ProcessInstanceManager();
+                var pim = new ProcessInstanceManager(client);
                 var entity = pim.GetById(kit, processInstanceId);
 
                 var context = new EventContext
@@ -66,7 +74,7 @@ namespace saiflow.engine.Event
                     ProcessId = entity.ProcessId,
                     ProcessInstanceId = processInstanceId
                 };
-                Execute(kit, context, eventListFiltered);
+                Execute(client, kit, context, eventListFiltered);
             }
         }
 
@@ -74,7 +82,7 @@ namespace saiflow.engine.Event
         /// Call program methods for external business applications
         /// 调用外部业务应用的程序方法
         /// </summary>
-        internal static void InvokeExternalEvent(SQLBuilder kit,
+        internal static void InvokeExternalEvent(SailClient client, SQLBuilder kit,
             EventFireTypeEnum eventType,
             EventSubscriptionList eventList,
             EventContext context)
@@ -85,7 +93,7 @@ namespace saiflow.engine.Event
 
             if (eventListFiltered != null)
             {
-                Execute(kit, context, eventListFiltered);
+                Execute(client, kit, context, eventListFiltered);
             }
         }
 
@@ -93,13 +101,13 @@ namespace saiflow.engine.Event
         /// Execution event subscription list method
         /// 执行事件订阅列表方法
         /// </summary>
-        private static void Execute(SQLBuilder kit,
+        private static void Execute(SailClient client, SQLBuilder kit,
             EventContext context,
             IEnumerable<KeyValuePair<EventFireTypeEnum, Func<EventContext, IEventService, Boolean>>> eventList)
         {
             foreach (var e in eventList)
             {
-                Execute(kit, context, e);
+                Execute(client, kit, context, e);
             }
         }
 
@@ -107,7 +115,7 @@ namespace saiflow.engine.Event
         /// Execution event subscription method
         /// 执行事件订阅方法
         /// </summary>
-        private static Boolean Execute(SQLBuilder kit,
+        private static object Execute(SailClient client, SQLBuilder kit,
             EventContext context,
             KeyValuePair<EventFireTypeEnum, Func<EventContext, IEventService, Boolean>> item)
         {
@@ -116,8 +124,7 @@ namespace saiflow.engine.Event
                 || item.Key == EventFireTypeEnum.OnProcessRunning
                 || item.Key == EventFireTypeEnum.OnProcessCompleted)
             {
-                var eventService = EventServiceFactory.CreateEventService(EventScopeTypeEnum.Process,
-                    kit, context);
+                var eventService = EventServiceFactory.CreateEventService(EventScopeTypeEnum.Process, kit, context, client);
                 eventService.SetActivityResource(context.ActivityResource);
                 result = item.Value(context, eventService as IEventService);
             }
@@ -126,8 +133,7 @@ namespace saiflow.engine.Event
                 || item.Key == EventFireTypeEnum.OnActivityExecuted
                 || item.Key == EventFireTypeEnum.OnActivityCompleted)
             {
-                var eventService = EventServiceFactory.CreateEventService(EventScopeTypeEnum.Activity,
-                    kit, context);
+                var eventService = EventServiceFactory.CreateEventService(EventScopeTypeEnum.Activity, kit, context, client);
                 eventService.SetActivityResource(context.ActivityResource);
                 result = item.Value(context, eventService as IEventService);
             }

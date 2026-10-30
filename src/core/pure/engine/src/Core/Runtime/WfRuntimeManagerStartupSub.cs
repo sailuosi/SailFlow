@@ -24,7 +24,7 @@ namespace saiflow.engine.Core.Runtime
         internal override void ExecuteInstanceImp(SQLBuilder kit)
         {
             var subProcessNode = (SubProcessNode)base.InvokedSubProcessNode;
-            var pim = new ProcessInstanceManager();
+            var pim = new ProcessInstanceManager(Sail);
             var processInstance = pim.CreateNewProcessInstanceObject(base.AppRunner,
                 base.ProcessModel.ProcessEntity,
                 subProcessNode);
@@ -35,7 +35,7 @@ namespace saiflow.engine.Core.Runtime
                 subStartactivity,
                 base.ActivityResource);
 
-            NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(startExecutionContext, kit);
+            NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(startExecutionContext, kit, Sail);
             mediator.LinkContext.FromActivityInstance = RunningActivityInstance;
             mediator.ExecuteWorkItem(null);
 

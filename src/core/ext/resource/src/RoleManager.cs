@@ -1,16 +1,24 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
 using saiflow.data;
+using saiflow.engine.Client;
 
 namespace saiflow.hub.Resource
 {
     /// <summary>角色。终态：SailSqlAccess / kit。</summary>
     internal class RoleManager
     {
+        public RoleManager(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         internal List<RoleEntity> GetAll()
         {
-            var kit = SailSqlAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return kit
                 .select("*")
                 .from("sys_role")
@@ -21,7 +29,7 @@ namespace saiflow.hub.Resource
 
         internal RoleEntity GetByCode(string roleCode)
         {
-            var kit = SailSqlAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return kit
                 .select("*")
                 .from("sys_role")

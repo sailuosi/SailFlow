@@ -13,14 +13,22 @@ using saiflow.engine.Xpdl.Entity;
 using saiflow.hub.Localize;
 using saiflow.WebUtility;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Auto
 {
     internal class AiServiceExecutor
     {
+        public AiServiceExecutor(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         /// <summary>
         /// Execute AI service list on an AIServiceNode (scheduling only; AI work via IAiNodeExecutor).
         /// </summary>
-        internal static void ExecuteAIServiceList(Activity fromActivity,
+        internal static void ExecuteAIServiceList(SailClient client, Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
             Activity currentActivity,
             ActivityInstanceEntity currentActivityInstance,
@@ -35,14 +43,14 @@ namespace saiflow.engine.Core.Pattern.Auto
             {
                 if (service.AIServiceType != AiServiceTypeEnum.None)
                 {
-                    Execute(fromActivity, fromActivityInstance, currentActivity, service,
+                    Execute(client, fromActivity, fromActivityInstance, currentActivity, service,
                         currentActivityInstance, activityForwardContext, eventService)
                         .GetAwaiter().GetResult();
                 }
             }
         }
 
-        private static async Task Execute(Activity fromActivity,
+        private static async Task Execute(SailClient client, Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
             Activity currentActivity,
             AiServiceDetail service,
@@ -62,7 +70,7 @@ namespace saiflow.engine.Core.Pattern.Auto
             {
                 var kit = eventService.GetKit();
                 var processInstanceId = eventService.GetProcessInstanceId();
-                var pvm = new ProcessVariableManager();
+                var pvm = new ProcessVariableManager(client);
 
                 var variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -85,7 +93,7 @@ namespace saiflow.engine.Core.Pattern.Auto
 
                 if (string.IsNullOrEmpty(processId))
                 {
-                    var processInstance = new ProcessInstanceManager().GetById(kit, processInstanceId);
+                    var processInstance = new ProcessInstanceManager(client).GetById(kit, processInstanceId);
                     if (processInstance == null)
                         throw new WorkflowException($"Process instance not found: id={processInstanceId}");
                     processId = processInstance.ProcessId;

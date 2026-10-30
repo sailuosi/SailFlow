@@ -13,6 +13,7 @@ using saiflow.engine.Business.Manager;
 using static IronPython.Runtime.Profiler;
 using System.Reflection;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Parser
 {
     /// <summary>
@@ -21,6 +22,13 @@ namespace saiflow.engine.Core.Parser
     /// </summary>
     internal class SignForwardStepMaker
     {
+        public SignForwardStepMaker(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         /// <summary>
         /// Obtain information on the steps for adding a signature
         /// 获取加签步骤信息
@@ -53,11 +61,11 @@ namespace saiflow.engine.Core.Parser
                 throw new WorkflowException(LocalizeHelper.GetEngineMessage("nextstepparser.getnextactivityroleusertree.error"));
             }
 
-            using (var kit = saiflow.engine.Client.SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 //运行状态的流程实例
                 //Process instance of running status
-                var tm = new TaskManager();
+                var tm = new TaskManager(Sail);
                 TaskViewEntity taskView = tm.GetTaskOfMine(SailSqlAccess.Sibling(kit), runner);
 
                 var isRunningTask = tm.CheckTaskStateInRunningState(taskView);
@@ -67,7 +75,7 @@ namespace saiflow.engine.Core.Parser
                 }
 
                 var treeNodeList = new List<NodeView>();
-                var processModel = ProcessModelFactory.CreateByTask(SailSqlAccess.Sibling(kit), taskView);
+                var processModel = ProcessModelFactory.CreateByTask(Sail, SailSqlAccess.Sibling(kit), taskView);
                 var currentActivity = processModel.GetActivity(taskView.ActivityId);
                 treeNodeList.Add(new NodeView
                 {

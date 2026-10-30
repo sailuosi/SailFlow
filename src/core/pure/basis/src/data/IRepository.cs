@@ -19,7 +19,7 @@ namespace saiflow.data
         IEnumerable<T> GetAll<T>() where T : class;
         IEnumerable<T> GetAll<T>(IDbConnection conn, IDbTransaction trans) where T : class;
 
-        /// <summary>过渡：裸 SQL。请改 <c>SailDbAccess.GetRequired().useSQL()</c> / <c>SailSqlAccess.UseRunSQL()</c>。</summary>
+        /// <summary>过渡：裸 SQL。请改 <c>SailClient.UseRunSQL()</c> / kit 下传。</summary>
         [Obsolete(SailRepoObsolete.RawSql)]
         T GetFirst<T>(string sql, dynamic param = null, bool buffered = true) where T : class;
 
@@ -78,6 +78,6 @@ namespace saiflow.data
     public static class SailRepoObsolete
     {
         public const string RawSql =
-            "Prefer SQLBuilder: SailDbAccess.GetRequired().useSQL() or SailSqlAccess.UseRunSQL(). Raw SQL overloads are transitional (Phase F-2).";
+            "Prefer SQLBuilder via SailClient.UseRunSQL() / kit. Raw SQL overloads are transitional (Phase F-2).";
     }
 }

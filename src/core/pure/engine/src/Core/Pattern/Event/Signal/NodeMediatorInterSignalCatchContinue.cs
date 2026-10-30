@@ -12,6 +12,7 @@ using saiflow.engine.Xpdl;
 using saiflow.engine.Xpdl.Entity;
 using saiflow.hub.Essential;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Signal
 {
     /// <summary>
@@ -20,9 +21,8 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
     /// </summary>
     internal class NodeMediatorInterSignalCatchContinue : NodeMediator
     {
-        internal NodeMediatorInterSignalCatchContinue(ActivityForwardContext forwardContext,
-            SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorInterSignalCatchContinue(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }

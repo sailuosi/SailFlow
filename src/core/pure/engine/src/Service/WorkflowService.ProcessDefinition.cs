@@ -22,7 +22,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ProcessEntity GetProcessByVersion(string processId, string version = null)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var entity = pm.GetByVersion(processId, version);
             return entity;
         }
@@ -33,7 +33,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ProcessEntity GetProcessByName(string processName, string version = null)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var entity = pm.GetByName(processName, version);
             return entity;
         }
@@ -44,7 +44,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ProcessEntity GetProcessByCode(string processCode, string version)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var entity = pm.GetByCode(processCode, version);
             return entity;
         }
@@ -55,7 +55,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ProcessEntity GetProcessUsing(string processId)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var entity = pm.GetVersionUsing(processId);
             return entity;
         }
@@ -66,7 +66,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ProcessEntity GetProcessById(int id)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var entity = pm.GetById(id);
             return entity;
         }
@@ -77,7 +77,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ProcessFileEntity GetProcessFileById(int id)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var entity = pm.GetProcessFileById(id, XPDLStorageFactory.CreateXPDLStorage());
             return entity;
         }
@@ -88,7 +88,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<ProcessEntity> GetProcessList()
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var list = pm.GetAll();
             return list;
         }
@@ -99,7 +99,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<ProcessEntity> GetProcessListSimple()
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var list = pm.GetListSimple();
             return list;
         }
@@ -110,7 +110,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ProcessFileEntity GetProcessFile(string processId, string version)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var entity = pm.GetProcessFile(processId, version, XPDLStorageFactory.CreateXPDLStorage());
             return entity;
         }
@@ -121,7 +121,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void SaveProcessFile(ProcessFileEntity entity)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             pm.SaveProcessFile(entity);
         }
 
@@ -131,7 +131,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public int InsertProcess(ProcessEntity entity)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var processId = pm.Insert(entity);
             return processId;
         }
@@ -142,7 +142,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public int CreateProcess(ProcessEntity entity)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var processId = pm.CreateProcess(entity);
             return processId;
         }
@@ -154,7 +154,7 @@ namespace saiflow.engine.Service
         public int CreateProcessVersion(ProcessEntity entity)
         {
             int newProcessId = 0;
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var entityDB = pm.GetById(entity.Id);
             if (entity != null)
             {
@@ -169,7 +169,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ProcessFileEntity CreateProcessByXML(string xmlContent)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var processFileEntity = pm.CreateProcessByXML(xmlContent);
             return processFileEntity;
         }
@@ -180,7 +180,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void UpdateProcess(ProcessEntity entity)
         {
-            var processManager = new ProcessManager();
+            var processManager = new ProcessManager(Sail);
             processManager.Update(entity);
         }
 
@@ -192,7 +192,7 @@ namespace saiflow.engine.Service
             string version,
             byte usingState)
         {
-            var processManager = new ProcessManager();
+            var processManager = new ProcessManager(Sail);
             processManager.UpdateUsingState(processId, version, usingState);
         }
 
@@ -202,7 +202,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void UpgradeProcess(string processId, string version, string newVersion)
         {
-            var processManager = new ProcessManager();
+            var processManager = new ProcessManager(Sail);
             processManager.Upgrade(processId, version, newVersion);
         }
 
@@ -212,7 +212,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void DeleteProcess(string processId, string version)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             pm.DeleteProcess(processId, version);
         }
 
@@ -222,7 +222,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void DeleteProcess(int id)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             pm.Delete(id);
         }
 
@@ -232,7 +232,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public bool DeleteInstanceInt(string processId, string version)
         {
-            var pim = new ProcessInstanceManager();
+            var pim = new ProcessInstanceManager(Sail);
             return pim.Delete(processId, version);
         }
 
@@ -242,7 +242,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void ImportProcess(string xmlContent)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             pm.ImportProcess(xmlContent);
         }
 

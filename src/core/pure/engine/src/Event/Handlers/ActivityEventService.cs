@@ -10,6 +10,7 @@ using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 using saiflow.engine.Event;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Event.Handlers
 {
     /// <summary>
@@ -17,14 +18,13 @@ namespace saiflow.engine.Event.Handlers
     /// 活动事件服务类
     /// </summary>
     public class ActivityEventService : EventServiceBase, IEventService
-    {    
-        /// <summary>
+    {
+/// <summary>
         /// Constructor
         /// </summary>
         /// <param name="kit"></param>
         /// <param name="context"></param>
-        public ActivityEventService(SQLBuilder kit, EventContext context)
-            : base(kit, context)
+        public ActivityEventService(SQLBuilder kit, EventContext context, SailClient client) : base(kit, context, client)
         {
 
         }
@@ -37,7 +37,7 @@ namespace saiflow.engine.Event.Handlers
         /// <returns></returns>
         public override T GetInstance<T>(int id)
         {
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             var entity = aim.GetById(SailSqlAccess.Sibling(Kit), id);
             return entity as T;
         }

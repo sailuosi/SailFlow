@@ -1,5 +1,7 @@
-﻿using saiflow.hub.Resource;
+using System;
+using saiflow.hub.Resource;
 using saiflow.hub.Form;
+using saiflow.engine.Client;
 
 namespace saiflow.engine.Service
 {
@@ -10,6 +12,11 @@ namespace saiflow.engine.Service
     public partial class WorkflowService : IWorkflowService
     {
         #region Property and Constructor
+        /// <summary>
+        /// 运行根实例（对齐 mooSQL DBInstance 下传）。
+        /// </summary>
+        protected SailClient Sail { get; }
+
         /// <summary>
         /// Role User Resource Service Interface
         /// 角色用户资源服务接口
@@ -25,8 +32,9 @@ namespace saiflow.engine.Service
         /// <summary>
         /// Constructor
         /// </summary>
-        public WorkflowService()
+        public WorkflowService(SailClient client)
         {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
             ResourceService = ResourceServiceLocator.Resolve();
             FormService = FormServiceLocator.Resolve();
         }

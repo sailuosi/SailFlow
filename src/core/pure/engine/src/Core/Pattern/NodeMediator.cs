@@ -12,6 +12,7 @@ using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Xpdl.Schedule;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
+using saiflow.engine.Client;
 using saiflow.engine.Core.Result;
 using saiflow.engine.Core.Runtime;
 using saiflow.engine.Core.Pattern.Event;
@@ -79,7 +80,7 @@ namespace saiflow.engine.Core.Pattern
             {
                 if (activityInstanceManager == null)
                 {
-                    activityInstanceManager = new ActivityInstanceManager();
+                    activityInstanceManager = new ActivityInstanceManager(Sail);
                 }
                 return activityInstanceManager;
             }
@@ -92,7 +93,7 @@ namespace saiflow.engine.Core.Pattern
             {
                 if (taskManager == null)
                 {
-                    taskManager = new TaskManager();
+                    taskManager = new TaskManager(Sail);
                 }
                 return taskManager;
             }
@@ -104,7 +105,7 @@ namespace saiflow.engine.Core.Pattern
             get
             {
                 if (processInstanceManager == null)
-                    processInstanceManager = new ProcessInstanceManager();
+                    processInstanceManager = new ProcessInstanceManager(Sail);
                 return processInstanceManager;
             }
         }
@@ -147,22 +148,27 @@ namespace saiflow.engine.Core.Pattern
         #endregion
 
         #region Constructor Function
-        internal NodeMediator(ActivityForwardContext forwardContext, SQLBuilder kit)
+        protected SailClient Sail { get; }
+
+        internal NodeMediator(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
         {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
             _activityForwardContext = forwardContext;
             _kit = kit;
             LinkContext.FromActivity = forwardContext.CurrentActivity;
         }
 
-        internal NodeMediator(BackwardContext backwardContext, SQLBuilder kit)
+        internal NodeMediator(BackwardContext backwardContext, SQLBuilder kit, SailClient client)
         {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
             _kit = kit;
             _backwardContext = backwardContext;
             LinkContext.FromActivity = backwardContext.BackwardFromActivity;
         }
 
-        internal NodeMediator(SQLBuilder kit)
+        internal NodeMediator(SQLBuilder kit, SailClient client)
         {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
             _kit = kit;
         }
         #endregion
@@ -195,9 +201,7 @@ namespace saiflow.engine.Core.Pattern
                     ActivityId = fromActivityId,
                     ActivityName = fromActivityName
                 };
-                _eventService = EventServiceFactory.CreateEventService(EventScopeTypeEnum.Activity,
-                   this.Kit,
-                   eventContext);
+                _eventService = EventServiceFactory.CreateEventService(EventScopeTypeEnum.Activity, this.Kit, eventContext, Sail);
             }
             return _eventService;
         }
@@ -247,7 +251,7 @@ namespace saiflow.engine.Core.Pattern
             //Before node flow, invoke the delegation event of activity execution
             //节点流转前，调用活动执行的委托事件
             var currentActivity = LinkContext.CurrentActivity != null ? LinkContext.CurrentActivity : LinkContext.FromActivity;
-            EventExecutor.InvokeExternalEvent(this.Kit,
+            EventExecutor.InvokeExternalEvent(Sail, this.Kit,
                 EventFireTypeEnum.OnActivityExecuting,
                 currentActivity,
                 ActivityForwardContext);
@@ -262,7 +266,7 @@ namespace saiflow.engine.Core.Pattern
             //After the node flow is completed, invoke the delegation event that the activity completes execution
             //节点流转完成后，调用活动完成执行的委托事件
             var currentActivity = LinkContext.CurrentActivity != null ? LinkContext.CurrentActivity : LinkContext.FromActivity;
-            EventExecutor.InvokeExternalEvent(this.Kit,
+            EventExecutor.InvokeExternalEvent(Sail, this.Kit,
                 EventFireTypeEnum.OnActivityExecuted,
                 currentActivity,
                 ActivityForwardContext);
@@ -285,7 +289,7 @@ namespace saiflow.engine.Core.Pattern
             var eventService = GetEventService();
             var fromActivity = LinkContext.FromActivity;
             var currentActivity = LinkContext.CurrentActivity;
-            AiServiceExecutor.ExecuteAIServiceList(fromActivity, fromActivityInstance, currentActivity, currentActivityInstance, ActivityForwardContext, eventService as IEventService);
+            AiServiceExecutor.ExecuteAIServiceList(Sail, fromActivity, fromActivityInstance, currentActivity, currentActivityInstance, ActivityForwardContext, eventService as IEventService);
         }
 
         /// <summary>
@@ -423,9 +427,7 @@ namespace saiflow.engine.Core.Pattern
                         if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
                         {
                             //This node type is a branch or merge node type: First, the current node needs to be instantiated (auto complete)
-                            NodeMediatorGateway gatewayNodeMediator = NodeMediatorFactory.CreateNodeMediatorGateway(comp.Activity,
-                            this.ActivityForwardContext.ProcessModel,
-                            Kit);
+                            NodeMediatorGateway gatewayNodeMediator = NodeMediatorFactory.CreateNodeMediatorGateway(comp.Activity, this.ActivityForwardContext.ProcessModel, Kit, Sail);
 
                             ICompleteGatewayAutomaticlly autoGateway = (ICompleteGatewayAutomaticlly)gatewayNodeMediator;
                             nodeExecutedResult = autoGateway.CompleteAutomaticlly(ActivityForwardContext.ProcessInstance,
@@ -450,7 +452,7 @@ namespace saiflow.engine.Core.Pattern
                             {
                                 mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                                     WfNodeMediatedFeedback.OrJoinOneBranchHasBeenFinishedWaittingOthers));
-                                LogManager.RecordLog("ContinueForwardCurrentNodeRecurisivlyExeception",
+                                LogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
                                     LogEventType.Exception,
                                     LogPriority.Normal,
                                     null,
@@ -466,7 +468,7 @@ namespace saiflow.engine.Core.Pattern
                             {
                                 mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                                     WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
-                                LogManager.RecordLog("NodeMediator.ContinueForwardCurrentNodeRecurisivly.IsWaintingOneOfJoin.Exception",
+                                LogManager.RecordLog(Sail, "NodeMediator.ContinueForwardCurrentNodeRecurisivly.IsWaintingOneOfJoin.Exception",
                                     LogEventType.Exception,
                                     LogPriority.Normal,
                                     null,
@@ -477,7 +479,7 @@ namespace saiflow.engine.Core.Pattern
                             {
                                 mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                                     WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
-                                LogManager.RecordLog("NodeMediator.ContinueForwardCurrentNodeRecurisivly.IsWaintingOneOfJoin.OtherUnknownReason.Exception",
+                                LogManager.RecordLog(Sail, "NodeMediator.ContinueForwardCurrentNodeRecurisivly.IsWaintingOneOfJoin.OtherUnknownReason.Exception",
                                     LogEventType.Exception,
                                     LogPriority.Normal,
                                     null,
@@ -490,10 +492,7 @@ namespace saiflow.engine.Core.Pattern
                     {
                         //Intermediate event type node, calling external business logic,
                         //and then the process continues to flow downwards
-                        NodeMediator eventNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext,
-                            comp.Activity,
-                            ActivityForwardContext.ProcessModel,
-                            Kit);
+                        NodeMediator eventNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
                         eventNodeMediator.LinkContext.FromActivity = fromActivity;
                         eventNodeMediator.LinkContext.CurrentActivity = comp.Activity;
 
@@ -530,7 +529,7 @@ namespace saiflow.engine.Core.Pattern
                         {
                             mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                                 WfNodeMediatedFeedback.IntermediateEventFailed));
-                            LogManager.RecordLog("IntermediateNodeExecuteException",
+                            LogManager.RecordLog(Sail, "IntermediateNodeExecuteException",
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
@@ -541,7 +540,7 @@ namespace saiflow.engine.Core.Pattern
                     {
                         mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                             WfNodeMediatedFeedback.UnknownNodeTypeToWatch));
-                        LogManager.RecordLog("NodeMediator.UnknownType.Exception",
+                        LogManager.RecordLog(Sail, "NodeMediator.UnknownType.Exception",
                             LogEventType.Exception,
                             LogPriority.Normal,
                             null,
@@ -556,7 +555,7 @@ namespace saiflow.engine.Core.Pattern
                     if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
                     {
                         //Create new task node
-                        NodeMediator taskNodeMediator = new NodeMediatorTask(Kit);
+                        NodeMediator taskNodeMediator = new NodeMediatorTask(Kit, Sail);
                         taskNodeMediator.CreateActivityTaskTransitionInstance(comp.Activity,
                             ActivityForwardContext.ProcessInstance,
                             fromActivityInstance,
@@ -575,7 +574,7 @@ namespace saiflow.engine.Core.Pattern
                         {
                             mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                                 WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
-                            LogManager.RecordLog("NodeMediator.TaskNode.NeedOtherGatewayBranchesToJoin.Exception",
+                            LogManager.RecordLog(Sail, "NodeMediator.TaskNode.NeedOtherGatewayBranchesToJoin.Exception",
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
@@ -586,7 +585,7 @@ namespace saiflow.engine.Core.Pattern
                         {
                             mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                                 WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
-                            LogManager.RecordLog("NodeMediator.TaskNode.NeedOtherGatewayBranchesToJoin.OtherUnkownReaseon.Exception",
+                            LogManager.RecordLog(Sail, "NodeMediator.TaskNode.NeedOtherGatewayBranchesToJoin.OtherUnkownReaseon.Exception",
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
@@ -598,10 +597,7 @@ namespace saiflow.engine.Core.Pattern
                 else if (comp.Activity.ActivityType == ActivityTypeEnum.AIServiceNode)
                 {
                     NodeAutoExecutedResult aiServiceExecutedResult = null;
-                    NodeMediator aiServiceNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext,
-                        comp.Activity,
-                        ActivityForwardContext.ProcessModel,
-                        Kit);
+                    NodeMediator aiServiceNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
 
                     ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)aiServiceNodeMediator;
                     var currentActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity,
@@ -626,15 +622,14 @@ namespace saiflow.engine.Core.Pattern
                         var outputVariableNameList = ActivityForwardContext.ProcessModel.GetActivityOutputVarialbeNameList(comp.Activity);
 
                         var kit = SailSqlAccess.Sibling(Kit);
-                        var pvm = new ProcessVariableManager();
+                        var pvm = new ProcessVariableManager(Sail);
                         var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id, currentActivityInstance.Id,
                             outputVariableNameList);
 
                         var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
 
                         var processModelBPMNCore = new ProcessModelBPMNCore();
-                        var aiServiceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(ActivityForwardContext.ProcessModel,
-                            comp.Activity.ActivityId, currentActivityInstance.Id, newConditionKeyValuePair, Kit);
+                        var aiServiceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId, currentActivityInstance.Id, newConditionKeyValuePair, Kit);
 
                         if (aiServiceNextMatchedResult.MatchedType != NextActivityMatchedType.Successed
                             || aiServiceNextMatchedResult.Root == null
@@ -661,7 +656,7 @@ namespace saiflow.engine.Core.Pattern
                     {
                         mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                             WfNodeMediatedFeedback.IntermediateEventFailed));
-                        LogManager.RecordLog("AIServiceNodeExecuteException",
+                        LogManager.RecordLog(Sail, "AIServiceNodeExecuteException",
                             LogEventType.Exception,
                             LogPriority.Normal,
                             null,
@@ -672,10 +667,7 @@ namespace saiflow.engine.Core.Pattern
                 {
                     //Service type node, calling external business logic, and then the process continues to flow downwards
                     NodeAutoExecutedResult serviceExecutedResult = null;
-                    NodeMediator serviceNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext,
-                        comp.Activity,
-                        ActivityForwardContext.ProcessModel,
-                        Kit);
+                    NodeMediator serviceNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
 
                     ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)serviceNodeMediator;
                     var currentActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity,
@@ -700,14 +692,13 @@ namespace saiflow.engine.Core.Pattern
                         var outputVariableNameList = ActivityForwardContext.ProcessModel.GetActivityOutputVarialbeNameList(comp.Activity);
 
                         var kit = SailSqlAccess.Sibling(Kit);
-                        var pvm = new ProcessVariableManager();
+                        var pvm = new ProcessVariableManager(Sail);
                         var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id, currentActivityInstance.Id,
                             outputVariableNameList);
                         var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
 
                         var processModelBPMNCore = new ProcessModelBPMNCore();
-                        var serviceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(ActivityForwardContext.ProcessModel,
-                            comp.Activity.ActivityId, currentActivityInstance.Id, newConditionKeyValuePair, Kit);
+                        var serviceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId, currentActivityInstance.Id, newConditionKeyValuePair, Kit);
 
                         if (serviceNextMatchedResult.MatchedType != NextActivityMatchedType.Successed
                             || serviceNextMatchedResult.Root == null
@@ -735,7 +726,7 @@ namespace saiflow.engine.Core.Pattern
                     {
                         mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                             WfNodeMediatedFeedback.IntermediateEventFailed));
-                        LogManager.RecordLog("ServiceNodeExecuteException",
+                        LogManager.RecordLog(Sail, "ServiceNodeExecuteException",
                             LogEventType.Exception,
                             LogPriority.Normal,
                             null,
@@ -746,10 +737,7 @@ namespace saiflow.engine.Core.Pattern
                 {
                     //Script type node, calling script program, and then the process continues to flow downwards
                     NodeAutoExecutedResult scriptExecutedResult = null;
-                    NodeMediator scriptNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext,
-                        comp.Activity,
-                        ActivityForwardContext.ProcessModel,
-                        Kit);
+                    NodeMediator scriptNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
 
                     ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)scriptNodeMediator;
                     var toActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity,
@@ -781,7 +769,7 @@ namespace saiflow.engine.Core.Pattern
                     else
                     {
                         mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(WfNodeMediatedFeedback.IntermediateEventFailed));
-                        LogManager.RecordLog("ScriptNodeExecuteException",
+                        LogManager.RecordLog(Sail, "ScriptNodeExecuteException",
                             LogEventType.Exception,
                             LogPriority.Normal,
                             null,
@@ -793,7 +781,7 @@ namespace saiflow.engine.Core.Pattern
                     if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
                     {
                         //This node type is a task node: Determine whether a task can be created based on the type of from Activity Instance
-                        NodeMediator mediatorMICreator = new NodeMediatorMultiSignCreator(Kit);
+                        NodeMediator mediatorMICreator = new NodeMediatorMultiSignCreator(Kit, Sail);
                         mediatorMICreator.CreateActivityTaskTransitionInstance(comp.Activity,
                             ActivityForwardContext.ProcessInstance,
                             fromActivityInstance,
@@ -812,7 +800,7 @@ namespace saiflow.engine.Core.Pattern
                         {
                             mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                                 WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
-                            LogManager.RecordLog("ContinueForwardCurrentNodeRecurisivlyExeception",
+                            LogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
@@ -823,7 +811,7 @@ namespace saiflow.engine.Core.Pattern
                         {
                             mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                                 WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
-                            LogManager.RecordLog("ContinueForwardCurrentNodeRecurisivlyExeception",
+                            LogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
@@ -836,7 +824,7 @@ namespace saiflow.engine.Core.Pattern
                 {
                     if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
                     {
-                        var subNodeMediator = NodeMediatorFactory.CreateNodeMediatorSubProcess(comp.Activity, this.Kit);
+                        var subNodeMediator = NodeMediatorFactory.CreateNodeMediatorSubProcess(comp.Activity, this.Kit, Sail);
                         subNodeMediator.CreateActivityTaskTransitionInstance(comp.Activity,
                             ActivityForwardContext.ProcessInstance,
                             fromActivityInstance,
@@ -853,7 +841,7 @@ namespace saiflow.engine.Core.Pattern
                     if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
                     {
                         //This node is the completion end node, ending the process
-                        var endMediator = NodeMediatorFactory.CreateNodeMediatorEnd(ActivityForwardContext, comp.Activity, Kit);
+                        var endMediator = NodeMediatorFactory.CreateNodeMediatorEnd(ActivityForwardContext, comp.Activity, Kit, Sail);
                         endMediator.LinkContext.CurrentActivity = comp.Activity;
 
                         //Create end node instance and transitioni data
@@ -873,7 +861,7 @@ namespace saiflow.engine.Core.Pattern
                         {
                             mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                                 WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
-                            LogManager.RecordLog("NodeMediator.EndNode.NeedOtherGatewayBranchesToJoin.Exception",
+                            LogManager.RecordLog(Sail, "NodeMediator.EndNode.NeedOtherGatewayBranchesToJoin.Exception",
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
@@ -884,7 +872,7 @@ namespace saiflow.engine.Core.Pattern
                         {
                             mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                                 WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
-                            LogManager.RecordLog("NodeMediator.EndNode.NeedOtherGatewayBranchesToJoin.OtherUnkownReaseon.Exception",
+                            LogManager.RecordLog(Sail, "NodeMediator.EndNode.NeedOtherGatewayBranchesToJoin.OtherUnkownReaseon.Exception",
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
@@ -897,7 +885,7 @@ namespace saiflow.engine.Core.Pattern
                 {
                     mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                         WfNodeMediatedFeedback.UnknownNodeTypeToWatch));
-                    LogManager.RecordLog("NodeMediator.UnkonwNodeType.Exception",
+                    LogManager.RecordLog(Sail, "NodeMediator.UnkonwNodeType.Exception",
                         LogEventType.Exception,
                         LogPriority.Normal,
                         null,
@@ -1098,7 +1086,7 @@ namespace saiflow.engine.Core.Pattern
             WfAppRunner runner,
             SQLBuilder kit)
         {
-            var tim = new TransitionInstanceManager();
+            var tim = new TransitionInstanceManager(Sail);
             var transitionInstanceObject = tim.CreateTransitionInstanceObject(processInstance,
                 transitionId,
                 fromActivityInstance,

@@ -1,3 +1,4 @@
+using saiflow.engine.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,8 +18,8 @@ namespace saiflow.engine.Core.SendBack
     /// </summary>
     internal class NodeSendBackMIS : NodeSendBack
     {
-        internal NodeSendBackMIS(SendBackOperation sendbackOperation, SQLBuilder kit)
-            : base(sendbackOperation, kit)
+        internal NodeSendBackMIS(SendBackOperation sendbackOperation, SQLBuilder kit, SailClient client)
+            : base(sendbackOperation, kit, client)
         {
 
         }
@@ -31,7 +32,7 @@ namespace saiflow.engine.Core.SendBack
             var runningNode = base.SendBackOperation.BackwardFromActivityInstance;
             //创建撤销到上一步的节点记录
             //Create a node record to undo to the previous step
-            var psc = new PreviousStepChecker();
+            var psc = new PreviousStepChecker(Sail);
             var previousAdjacentBrotherNode = psc.GetPreviousOfMultipleInstanceNode(
                 runningNode.MainActivityInstanceId.Value,
                 runningNode.Id,

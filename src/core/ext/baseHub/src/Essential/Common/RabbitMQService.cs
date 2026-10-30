@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using mooSQL.data;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using saiflow.hub.Essential.Entity;
@@ -17,6 +18,9 @@ namespace saiflow.hub.Essential.Common
     {
         public Func<MessageEntity, MessageConsumedResult> ConsumeMessageFunction;
         public Func<SignalEntity, List<SignalConsumedResult>> ConsumeSignalFunction;
+
+        /// <summary>宿主注入：() => sailClient.UseRunSQL()</summary>
+        public Func<SQLBuilder> UseRunSql { get; set; }
 
         internal RabbitMQService()
         {
@@ -77,12 +81,14 @@ namespace saiflow.hub.Essential.Common
 
                 if (strTriggerType == "Message")
                 {
-                    var msgMediator = new MessageMediator();
+                    var msgMediator = new MessageMediator(UseRunSql
+                        ?? throw new InvalidOperationException("RabbitMQService.UseRunSql is not set."));
                     msgMediator.InvokeFromMessage(ConsumeMessageFunction, topic, line, jobName);
                 }
                 else if (strTriggerType == "Signal")
                 {
-                    var signalMediator = new SignalMediator();
+                    var signalMediator = new SignalMediator(UseRunSql
+                        ?? throw new InvalidOperationException("RabbitMQService.UseRunSql is not set."));
                     signalMediator.InvokeFromSignal(ConsumeSignalFunction, topic, line, jobName);
                 }
                 else

@@ -5,6 +5,7 @@ using System.Xml;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 using saiflow.engine.Utility;
+using saiflow.engine.Client;
 
 namespace saiflow.engine.Xpdl
 {
@@ -35,10 +36,10 @@ namespace saiflow.engine.Xpdl
         /// 遍历 <c>wf_process</c> 全表，把 XML 中的变量定义写入 <c>wf_variable</c>。
         /// </summary>
         /// <param name="skipActivityIfWfVariableExists">为 true 时，若该流程版本下某活动已有 wf_variable 记录则跳过（避免覆盖手工数据）。为 false 时按 XML 覆盖该活动变量。</param>
-        public static MigrationResult MigrateFromDatabase(bool skipActivityIfWfVariableExists = true)
+        public static MigrationResult MigrateFromDatabase(SailClient client, bool skipActivityIfWfVariableExists = true)
         {
             var result = new MigrationResult();
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(client);
             List<ProcessEntity> all;
             try
             {
@@ -69,7 +70,7 @@ namespace saiflow.engine.Xpdl
 
                     result.ProcessRowsWithVariableXml++;
                     var version = string.IsNullOrWhiteSpace(entity.Version) ? "1" : entity.Version;
-                    MigrateOneProcessEntity(entity, version, skipActivityIfWfVariableExists, result);
+                    MigrateOneProcessEntity(client, entity, version, skipActivityIfWfVariableExists, result);
                 }
                 catch (Exception ex)
                 {
@@ -84,6 +85,7 @@ namespace saiflow.engine.Xpdl
         /// 迁移单条流程记录（可单元测试或单独调用）。
         /// </summary>
         public static void MigrateOneProcessEntity(
+            SailClient client,
             ProcessEntity entity,
             string version,
             bool skipActivityIfWfVariableExists,
@@ -99,7 +101,7 @@ namespace saiflow.engine.Xpdl
                 return;
             }
 
-            var vm = new VariableManager();
+            var vm = new VariableManager(client);
             var processIdForRow = entity.ProcessId;
 
             for (var pi = 0; pi < processNodes.Count; pi++)

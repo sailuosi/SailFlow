@@ -26,6 +26,13 @@ namespace saiflow.engine.Executor
     /// </summary>
     public class WorkflowActivityExecutor : IWorkflowActivityExecutor
     {
+        public WorkflowActivityExecutor(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         private readonly string _notifyClientSessionId;
         private readonly Action<string, object> _notifyClientCallback;
 
@@ -297,7 +304,7 @@ namespace saiflow.engine.Executor
             {
                 var parameters = CompositeSqlParametersValueFromContext(service.Arguments ?? "", context);
                 var procedureName = service.Expression;
-                using var kit = SailClientAccess.UseRunSQL();
+                using var kit = Sail.UseRunSQL();
                 SailCmdRunner.ExecuteProc(kit, procedureName, parameters);
             }
             catch (Exception ex)

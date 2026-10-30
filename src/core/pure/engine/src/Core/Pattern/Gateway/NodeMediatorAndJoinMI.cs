@@ -1,3 +1,4 @@
+using saiflow.engine.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,8 +19,8 @@ namespace saiflow.engine.Core.Pattern.Gateway
     /// </summary>
     internal class NodeMediatorAndJoinMI : NodeMediatorGateway, ICompleteGatewayAutomaticlly
     {
-        internal NodeMediatorAndJoinMI(Activity activity, IProcessModel processModel, SQLBuilder kit)
-            : base(activity, processModel, kit)
+        internal NodeMediatorAndJoinMI(Activity activity, IProcessModel processModel, SQLBuilder kit, SailClient client)
+            : base(activity, processModel, kit, client)
         {
 
         }

@@ -24,7 +24,7 @@ namespace saiflow.AI.Abstractions
             if (_executor == null)
             {
                 throw new InvalidOperationException(
-                    "AI node executor is not registered. Reference sailflow.biz.AI and call AiRuntime.UseDefaultExecutor() at host startup.");
+                    "AI node executor is not registered. Reference sailflow.biz.AI and call AiRuntime.UseDefaultExecutor(client) at host startup.");
             }
 
             return _executor;

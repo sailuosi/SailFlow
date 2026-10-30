@@ -11,6 +11,7 @@ using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Business.Entity;
 using saiflow.WebUtility;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
@@ -19,8 +20,8 @@ namespace saiflow.engine.Core.Pattern
     /// </summary>
     internal class NodeMediatorSignForward : NodeMediator
     {
-        internal NodeMediatorSignForward(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorSignForward(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }

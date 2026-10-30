@@ -12,6 +12,7 @@ using saiflow.engine.Xpdl;
 using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Message;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Signal
 {
     /// <summary>
@@ -20,8 +21,8 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
     /// </summary>
     internal class NodeMediatorInterSignalThrow : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
     {
-        internal NodeMediatorInterSignalThrow(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorInterSignalThrow(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
@@ -73,7 +74,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
 
             //执行节点上的信号发布
             //Signal release on the execution node
-            var signalDelegateService = new SignalDelegateService();
+            var signalDelegateService = new SignalDelegateService(Sail);
             signalDelegateService.PublishSignal(processInstance, LinkContext.CurrentActivity, toActivityInstance);
 
             base.InsertTransitionInstance(processInstance,

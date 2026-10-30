@@ -4,6 +4,7 @@ using mooSQL.data;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Signal
 {
     /// <summary>
@@ -12,8 +13,8 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
     /// </summary>
     internal class NodeMediatorEndSignalCatch : NodeMediator
     {
-        internal NodeMediatorEndSignalCatch(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorEndSignalCatch(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
@@ -25,7 +26,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
         {
             OnBeforeExecuteWorkItem();
 
-            ProcessInstanceManager pim = new ProcessInstanceManager();
+            ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
             var kit = SailSqlAccess.Sibling(Kit);
             var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id,
                 ActivityForwardContext.ActivityResource.AppRunner);

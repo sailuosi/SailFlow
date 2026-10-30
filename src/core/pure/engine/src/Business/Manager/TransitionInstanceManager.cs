@@ -17,6 +17,12 @@ namespace saiflow.engine.Business.Manager
     /// </summary>
     internal class TransitionInstanceManager
     {
+        public TransitionInstanceManager(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
         #region Create
         internal TransitionInstanceEntity CreateTransitionInstanceObject(
             ProcessInstanceEntity processInstance,
@@ -57,7 +63,7 @@ namespace saiflow.engine.Business.Manager
         #region Insert / Delete
         internal int Insert(TransitionInstanceEntity entity)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return Insert(kit, entity);
         }
 
@@ -69,7 +75,7 @@ namespace saiflow.engine.Business.Manager
         }
 
         internal void Delete(int transitionInstanceId)
-            => SailClientAccess.UseRunSQL().useRepo<TransitionInstanceEntity, int>().DeleteById(transitionInstanceId);
+            => Sail.UseRunSQL().useRepo<TransitionInstanceEntity, int>().DeleteById(transitionInstanceId);
 
         internal void Delete(SQLBuilder kit, int transitionInstanceId)
             => kit.useRepo<TransitionInstanceEntity, int>().DeleteById(transitionInstanceId);
@@ -77,7 +83,7 @@ namespace saiflow.engine.Business.Manager
 
         #region Query
         internal TransitionInstanceEntity GetById(int transitionInstanceId)
-            => SailClientAccess.UseRunSQL().useRepo<TransitionInstanceEntity, int>().GetById(transitionInstanceId);
+            => Sail.UseRunSQL().useRepo<TransitionInstanceEntity, int>().GetById(transitionInstanceId);
 
         internal TransitionInstanceEntity GetById(SQLBuilder kit, int transitionInstanceId)
             => kit.useRepo<TransitionInstanceEntity, int>().GetById(transitionInstanceId);
@@ -100,7 +106,7 @@ namespace saiflow.engine.Business.Manager
 
         internal IEnumerable<TransitionInstanceEntity> GetWorkItemTransitonInstance(string appInstanceId, string processId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetWorkItemTransitonInstance(kit, appInstanceId, processId);
         }
 
@@ -121,7 +127,7 @@ namespace saiflow.engine.Business.Manager
         internal IEnumerable<TransitionInstanceEntity> GetTransitonInstance(
             string appInstanceId, string processId, ActivityTypeEnum toActivityType)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetTransitonInstance(kit, appInstanceId, processId, toActivityType);
         }
 
@@ -142,7 +148,7 @@ namespace saiflow.engine.Business.Manager
             string appInstanceId, string processId, string version)
         {
             IEnumerable<TransitionInstanceEntity> list = new List<TransitionInstanceEntity>();
-            var pim = new ProcessInstanceManager();
+            var pim = new ProcessInstanceManager(Sail);
             var pi = pim.GetProcessInstanceCurrent(appInstanceId, processId, version);
             if (pi != null)
                 list = GetTransitionInstanceList(appInstanceId, processId, pi.Id);
@@ -152,7 +158,7 @@ namespace saiflow.engine.Business.Manager
         internal IEnumerable<TransitionInstanceEntity> GetTransitionInstanceList(
             string appInstanceId, string processId, int processInstanceId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetTransitionInstanceList(kit, appInstanceId, processId, processInstanceId);
         }
 
@@ -171,7 +177,7 @@ namespace saiflow.engine.Business.Manager
 
         internal IList<ActivityInstanceEntity> GetTargetActivityInstanceList(int fromActivityInstanceId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetTargetActivityInstanceList(kit, fromActivityInstanceId);
         }
 

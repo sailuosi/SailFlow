@@ -1,13 +1,22 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
 using saiflow.engine.Business.Entity;
+using saiflow.engine.Client;
 using saiflow.engine.Xpdl.Entity;
 
 namespace saiflow.engine.Business.Manager
 {
     internal class ProcessVariableResolver
     {
+        public ProcessVariableResolver(SailClient client)
+        {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         /// <summary>检查必填输出变量是否存在（有事务时用上游 kit）。</summary>
         internal bool CheckVariableRequired(
             SQLBuilder kit,
@@ -23,7 +32,7 @@ namespace saiflow.engine.Business.Manager
             var outputVariableList = variableList
                 .Where(v => v.DirectionType == VariableDirectionTypeEnum.Output)
                 .ToList();
-            var pvm = new ProcessVariableManager();
+            var pvm = new ProcessVariableManager(Sail);
             foreach (var ov in outputVariableList)
             {
                 if (ov.IsRequired != true)

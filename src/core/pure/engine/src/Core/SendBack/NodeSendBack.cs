@@ -10,6 +10,7 @@ using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 using saiflow.engine.Common;
 using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Client;
 
 namespace saiflow.engine.Core.SendBack
 {
@@ -20,13 +21,14 @@ namespace saiflow.engine.Core.SendBack
     internal abstract class NodeSendBack
     {
         #region Property and Constructor
-        internal NodeSendBack(SendBackOperation sendbackOperation, SQLBuilder kit)
+        internal NodeSendBack(SendBackOperation sendbackOperation, SQLBuilder kit, SailClient client)
         {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
             _sendBackOperation = sendbackOperation;
             _kit = kit;
-            _activityInstanceManager = new ActivityInstanceManager();
-            _taskManager = new TaskManager();
-            _transitionInstanceManager = new TransitionInstanceManager();
+            _activityInstanceManager = new ActivityInstanceManager(Sail);
+            _taskManager = new TaskManager(Sail);
+            _transitionInstanceManager = new TransitionInstanceManager(Sail);
         }
 
         private SQLBuilder _kit;
@@ -34,6 +36,8 @@ namespace saiflow.engine.Core.SendBack
 
         private SendBackOperation _sendBackOperation;
         protected SendBackOperation SendBackOperation { get { return _sendBackOperation; } }
+
+        protected SailClient Sail { get; }
 
         private ActivityInstanceManager _activityInstanceManager;
         protected ActivityInstanceManager ActivityInstanceManager { get { return _activityInstanceManager; } }

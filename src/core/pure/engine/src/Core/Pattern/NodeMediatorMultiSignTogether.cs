@@ -12,6 +12,7 @@ using saiflow.engine.Business.Entity;
 using saiflow.engine.Core.Result;
 using static IronPython.Modules._ast;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
@@ -20,8 +21,8 @@ namespace saiflow.engine.Core.Pattern
     /// </summary>
     internal class NodeMediatorMultiSignTogether : NodeMediator
     {
-        internal NodeMediatorMultiSignTogether(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorMultiSignTogether(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }

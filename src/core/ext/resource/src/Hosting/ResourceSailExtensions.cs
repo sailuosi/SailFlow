@@ -17,9 +17,9 @@ namespace saiflow.hub.Resource.Hosting
                 Name = "Resource",
                 Phase = SailFeaturePhase.ConfigureClient,
                 Order = 110,
-                ConfigureClient = (_, coll) =>
+                ConfigureClient = (client, coll) =>
                 {
-                    var resourceService = ResourceServiceFactory.Create();
+                    var resourceService = ResourceServiceFactory.Create(client);
                     coll.Properties[SailBuilderKeys.ResourceService] = resourceService;
                     ResourceServiceLocator.Register(resourceService);
                 }

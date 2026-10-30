@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using Newtonsoft.Json;
 using mooSQL.data;
@@ -14,6 +14,13 @@ namespace saiflow.engine.Business.Manager
     /// </summary>
     public class LogManager
     {
+        public LogManager(SailClient client)
+        {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         public void Record(
             string title,
             LogEventType eventType,
@@ -52,7 +59,8 @@ namespace saiflow.engine.Business.Manager
                     log.RequestData = jsonData.Length > 2000 ? jsonData.Substring(0, 2000) : jsonData;
                 }
 
-                ThreadPool.QueueUserWorkItem(Insert, log);
+                var client = Sail;
+                ThreadPool.QueueUserWorkItem(_ => InsertAsync(client, log));
             }
             catch
             {
@@ -60,10 +68,9 @@ namespace saiflow.engine.Business.Manager
             }
         }
 
-        private static void Insert(object state)
+        private static void InsertAsync(SailClient client, LogEntity log)
         {
-            var log = (LogEntity)state;
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = client.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -82,13 +89,14 @@ namespace saiflow.engine.Business.Manager
             => kit.useRepo<LogEntity>().Insert(log);
 
         public static void RecordLog(
+            SailClient client,
             string title,
             LogEventType eventType,
             LogPriority priority,
             object extraObject,
             Exception e)
         {
-            new LogManager().Record(title, eventType, priority, extraObject, e);
+            new LogManager(client).Record(title, eventType, priority, extraObject, e);
         }
     }
 }

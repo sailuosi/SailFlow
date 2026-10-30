@@ -15,6 +15,7 @@ using saiflow.engine.Core.Runtime;
 using Microsoft.VisualBasic;
 using static IronPython.Modules._ast;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Conditional
 {
     /// <summary>
@@ -23,8 +24,8 @@ namespace saiflow.engine.Core.Pattern.Event.Conditional
     /// </summary>
     internal class NodeMediatorInterConditional : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
     {
-        internal NodeMediatorInterConditional(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorInterConditional(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
@@ -97,7 +98,7 @@ namespace saiflow.engine.Core.Pattern.Event.Conditional
 
             //插入任务数据
             //Insert task data
-            var tm = new TaskManager();
+            var tm = new TaskManager(Sail);
             var newTaskId = tm.Insert(SailSqlAccess.Sibling(kit), toActivityInstance,
                 new Performer(WfDefine.SYSTEM_JOBTIMER_USER_ID, WfDefine.SYSTEM_JOBTIMER_USER_NAME),
                 runner);

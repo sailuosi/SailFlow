@@ -10,6 +10,7 @@ using saiflow.AI.Configuration;
 using saiflow.AI.Entity;
 using saiflow.AI.Manager;
 using saiflow.WebUtility;
+using saiflow.engine.Client;
 
 namespace saiflow.AI.Service
 {
@@ -28,7 +29,14 @@ namespace saiflow.AI.Service
     /// </summary>
     public class AgentMultiTurnService
     {
-        private readonly LlmMultiTurnService _llmMultiTurn = new LlmMultiTurnService();
+        private readonly SailClient Sail;
+        private readonly LlmMultiTurnService _llmMultiTurn;
+
+        public AgentMultiTurnService(SailClient client)
+        {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
+            _llmMultiTurn = new LlmMultiTurnService(Sail);
+        }
 
         /// <summary>
         /// Main entry called by WorkflowActivityExecutor for Agent-type nodes.
@@ -54,7 +62,7 @@ namespace saiflow.AI.Service
             if (!axConfig.ModelProviderId.HasValue)
                 throw new InvalidOperationException($"ModelProviderId is not set for ActivityId={axConfig.ActivityId}");
 
-            var modelProviderManager = new AiModelProviderManager();
+            var modelProviderManager = new AiModelProviderManager(Sail);
             var modelProvider        = modelProviderManager.GetById(axConfig.ModelProviderId.Value);
 
             if (modelProvider == null)

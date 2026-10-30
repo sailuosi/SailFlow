@@ -9,6 +9,7 @@ using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 using saiflow.engine.Xpdl.Entity;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Xpdl.Schedule
 {
     /// <summary>
@@ -17,7 +18,7 @@ namespace saiflow.engine.Xpdl.Schedule
     /// </summary>
     internal class NextActivityScheduleSplit : NextActivityScheduleBase
     {
-        #region Property and Constructor
+#region Property and Constructor
         private Nullable<int> _activityInstanceId;
         internal Nullable<int> ActivityInstanceId
         {
@@ -27,8 +28,12 @@ namespace saiflow.engine.Xpdl.Schedule
             }
         }
 
-        internal NextActivityScheduleSplit(IProcessModel processModel, Nullable<int> activityInstanceId) : base(processModel)
+        protected SailClient Sail { get; }
+
+        internal NextActivityScheduleSplit(IProcessModel processModel, Nullable<int> activityInstanceId, SailClient client)
+            : base(processModel)
         {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
             _activityInstanceId = activityInstanceId;
         }
         #endregion
@@ -138,7 +143,7 @@ namespace saiflow.engine.Xpdl.Schedule
             else if(currentGatewayActivity.GatewayDetail.DirectionType == GatewayDirectionEnum.ApprovalOrSplit)
             {
                 var fromActivity = fromTransition.FromActivity;
-                var aim = new ActivityInstanceManager();
+                var aim = new ActivityInstanceManager(Sail);
                 var nodePassedResult = aim.CheckActivityInstancePassedResult(SailSqlAccess.Sibling(kit), this.ActivityInstanceId);
 
                 //根据节点通过类型连线类型

@@ -13,6 +13,7 @@ using saiflow.engine.Xpdl;
 using saiflow.engine.Xpdl.Entity;
 using System.Threading.Tasks;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Conditional
 {
     /// <summary>
@@ -21,8 +22,8 @@ namespace saiflow.engine.Core.Pattern.Event.Conditional
     /// </summary>
     internal class NodeMediatorInterConditionalGo : NodeMediator
     {
-        internal NodeMediatorInterConditionalGo(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorInterConditionalGo(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
@@ -72,7 +73,7 @@ namespace saiflow.engine.Core.Pattern.Event.Conditional
         private void CheckBeingExecutedInfo(SQLBuilder kit)
         {
             var expression = ActivityForwardContext.CurrentActivity.TriggerDetail.Expression;
-            var pvm = new ProcessVariableManager();
+            var pvm = new ProcessVariableManager(Sail);
             var isConditionPassed = pvm.ValidateProcessVariable(kit, LinkContext.FromActivityInstance.ProcessInstanceId,
                 expression);
             if (isConditionPassed == false)
@@ -131,7 +132,7 @@ namespace saiflow.engine.Core.Pattern.Event.Conditional
             {
                 //并发多实例分支判断(AndSplit Multiple)
                 //Concurrent multi instance branch judgment (AndSplit Multiple)
-                var processModel = ProcessModelFactory.CreateByProcessInstance(SailSqlAccess.Sibling(kit), processInstance);
+                var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, SailSqlAccess.Sibling(kit), processInstance);
                 var activityNode = processModel.GetActivity(fromActivityInstance.ActivityId);
                 isParallel = processModel.IsAndSplitMI(activityNode);
             }

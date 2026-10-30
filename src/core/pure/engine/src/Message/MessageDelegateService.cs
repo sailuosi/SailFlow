@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
@@ -14,6 +14,7 @@ using saiflow.hub.Essential;
 using saiflow.hub.Essential.Common;
 using saiflow.hub.Essential.Entity;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Message
 {
     /// <summary>
@@ -22,6 +23,13 @@ namespace saiflow.engine.Message
     /// </summary>
     public class MessageDelegateService
     {
+        public MessageDelegateService(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         #region Message Publish
         /// <summary>
         /// Build the message to be published
@@ -36,7 +44,7 @@ namespace saiflow.engine.Message
         {
             var topic = throwActivity.TriggerDetail.Expression;
             ProcessEntity catchProcess = null;
-            var catchActivity = XPDLHelper.GetMessageCatchActivity(processInstance, throwActivity, throwActivityInstance, out catchProcess);
+            var catchActivity = XPDLHelper.GetMessageCatchActivity(Sail, processInstance, throwActivity, throwActivityInstance, out catchProcess);
 
             var appRunner = new WfAppRunner();
             appRunner.MessageTopic = topic;
@@ -75,7 +83,7 @@ namespace saiflow.engine.Message
             {
                 try
                 {
-                    IWorkflowService wfService = new WorkflowService();
+                    IWorkflowService wfService = new WorkflowService(Sail);
                     WfExecutedResult wfResult = WfExecutedResult.Default();
                     var catchActivity = msgRunnerView.ActivityEntity;
                     if (catchActivity.ActivityType == ActivityTypeEnum.StartNode)
@@ -165,7 +173,7 @@ namespace saiflow.engine.Message
 
             //封装下一步的步骤信息
             //Encapsulate the next step information
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             var runningActivityInstance = aim.GetActivityInstanceLatest(runner.AppInstanceId, runner.ProcessId, msgRunnerView.ActivityEntity.ActivityId);
             if (runningActivityInstance != null)
             {

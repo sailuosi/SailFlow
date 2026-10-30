@@ -8,6 +8,7 @@ using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Business.Entity;
 
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
@@ -16,14 +17,14 @@ namespace saiflow.engine.Core.Pattern
     /// </summary>
     internal class NodeMediatorTask : NodeMediator
     {
-        internal NodeMediatorTask(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorTask(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
 
-        internal NodeMediatorTask(SQLBuilder kit)
-            : base(kit)
+        internal NodeMediatorTask(SQLBuilder kit, SailClient client)
+            : base(kit, client)
         {
 
         }
@@ -106,7 +107,7 @@ namespace saiflow.engine.Core.Pattern
             {
                 //������ʵ����֧�ж�(AndSplit Multiple)
                 //Concurrent multi instance branch judgment (AndSplit Multiple)
-                var processModel = ProcessModelFactory.CreateByProcessInstance(SailSqlAccess.Sibling(kit), processInstance);
+                var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, SailSqlAccess.Sibling(kit), processInstance);
                 var activityNode = processModel.GetActivity(fromActivityInstance.ActivityId);
                 isParallel = processModel.IsAndSplitMI(activityNode);
             }
@@ -178,7 +179,7 @@ namespace saiflow.engine.Core.Pattern
                     ActivityCode = toActivity.ActivityCode,
                     ActivityResource = activityResource
                 };
-                EventExecutor.InvokeExternalEvent(kit,
+                EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnActivityCreated,
                     activityResource.AppRunner.EventSubscriptionList,
                     EventContext);

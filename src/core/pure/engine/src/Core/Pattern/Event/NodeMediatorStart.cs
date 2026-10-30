@@ -13,6 +13,7 @@ using saiflow.engine.Xpdl.Node;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event
 {
     /// <summary>
@@ -21,8 +22,8 @@ namespace saiflow.engine.Core.Pattern.Event
     /// </summary>
     internal class NodeMediatorStart : NodeMediator
     {
-        internal NodeMediatorStart(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorStart(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
             
         }
@@ -34,7 +35,7 @@ namespace saiflow.engine.Core.Pattern.Event
         {
             try
             {
-                ProcessInstanceManager pim = new ProcessInstanceManager();
+                ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
                 var kit = SailSqlAccess.Sibling(Kit);
                 var newId = pim.Insert(kit, ActivityForwardContext.ProcessInstance);
                 ActivityForwardContext.ProcessInstance.Id = newId;

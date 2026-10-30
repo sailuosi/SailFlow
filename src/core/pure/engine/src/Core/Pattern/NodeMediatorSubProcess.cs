@@ -18,6 +18,7 @@ using saiflow.engine.Core.Event;
 using saiflow.engine.Core.Runtime;
 
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
@@ -26,14 +27,14 @@ namespace saiflow.engine.Core.Pattern
     /// </summary>
     internal class NodeMediatorSubProcess : NodeMediator
     {
-        internal NodeMediatorSubProcess(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorSubProcess(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
 
-        internal NodeMediatorSubProcess(SQLBuilder kit)
-            : base(kit)
+        internal NodeMediatorSubProcess(SQLBuilder kit, SailClient client)
+            : base(kit, client)
         {
         }
 
@@ -48,7 +49,7 @@ namespace saiflow.engine.Core.Pattern
                 {
                     //检查子流程是否结束
                     //Check if the sub process has ended
-                    var pim = new ProcessInstanceManager();
+                    var pim = new ProcessInstanceManager(Sail);
                     var kit = SailSqlAccess.Sibling(Kit);
                     bool isCompleted = pim.CheckSubProcessInstanceCompleted(kit,
                         base.LinkContext.FromActivityInstance.Id,
@@ -195,7 +196,7 @@ namespace saiflow.engine.Core.Pattern
             Boolean isParallel = false;
             if (fromActivityInstance.ActivityType == (short)ActivityTypeEnum.GatewayNode)
             {
-                var processModel = ProcessModelFactory.CreateByProcessInstance(SailSqlAccess.Sibling(kit), processInstance);
+                var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, SailSqlAccess.Sibling(kit), processInstance);
                 var activityNode = processModel.GetActivity(fromActivityInstance.ActivityId);
                 isParallel = processModel.IsAndSplitMI(activityNode);
             }
@@ -296,7 +297,7 @@ namespace saiflow.engine.Core.Pattern
                 performerList = activityResource.NextActivityPerformers[toActivity.ActivityId];
             }
 
-            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartupSub(subRunner,
+            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartupSub(Sail, subRunner,
                 processInstance,
                 subProcessNode,
                 performerList,
@@ -373,7 +374,7 @@ namespace saiflow.engine.Core.Pattern
 
                 //启动子流程
                 //Startup sub process
-                var subKit = saiflow.engine.Client.SailClientAccess.UseRunSQL();
+                var subKit = Sail.UseRunSQL();
                 var subProcessNode = (SubProcessNode)toActivity.Node;
                 subProcessNode.ActivityInstance = entity;   
                 WfAppRunner subRunner = CreateSubProcessRunner(activityResource.AppRunner, 
@@ -381,7 +382,7 @@ namespace saiflow.engine.Core.Pattern
                     kit);
 
                 WfExecutedResult startedResult = WfExecutedResult.Default();
-                var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartupSub(subRunner,
+                var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartupSub(Sail, subRunner,
                     processInstance,
                     subProcessNode,
                     plist,
@@ -435,7 +436,7 @@ namespace saiflow.engine.Core.Pattern
             //        int.TryParse(subProcessId, out processId);
             //        if (processId > 0)
             //        {
-            //            var pm = new ProcessManager();
+            //            var pm = new ProcessManager(Sail);
             //            var process = pm.GetById(SailSqlAccess.Sibling(kit), processId);
             //            if (process != null)
             //            {

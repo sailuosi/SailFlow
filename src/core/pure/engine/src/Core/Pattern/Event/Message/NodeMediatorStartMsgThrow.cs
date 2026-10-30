@@ -11,6 +11,7 @@ using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 using saiflow.engine.Message;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Message
 {
     /// <summary>
@@ -19,8 +20,8 @@ namespace saiflow.engine.Core.Pattern.Event.Message
     /// </summary>
     internal class NodeMediatorStartMsgThrow : NodeMediator
     {
-        internal NodeMediatorStartMsgThrow(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorStartMsgThrow(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
@@ -32,7 +33,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
         {
             try
             {
-                ProcessInstanceManager pim = new ProcessInstanceManager();
+                ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
                 var kit = SailSqlAccess.Sibling(Kit);
                 var newId = pim.Insert(kit, ActivityForwardContext.ProcessInstance);
                 ActivityForwardContext.ProcessInstance.Id = newId;
@@ -78,7 +79,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
 
             //执行节点上的消息发布
             //Publish messages on the execution node
-            var msgDelegateService = new MessageDelegateService();
+            var msgDelegateService = new MessageDelegateService(Sail);
             msgDelegateService.PublishMessage(processInstance, LinkContext.FromActivity, fromActivityInstance);
 
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Successed);

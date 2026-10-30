@@ -8,6 +8,7 @@ using saiflow.AI.Entity;
 using saiflow.AI.Implementation;
 using saiflow.AI.Manager;
 using saiflow.WebUtility;
+using saiflow.engine.Client;
 
 namespace saiflow.AI.Service
 {
@@ -17,6 +18,13 @@ namespace saiflow.AI.Service
     /// </summary>
     public class LlmMultiTurnService
     {
+        public LlmMultiTurnService(SailClient client)
+        {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
+        }
+
+        private readonly SailClient Sail;
+
         /// <summary>
         /// Invokes the LLM in pure LLM mode (no RAG retrieval):
         /// uses memory_turns from axConfig and sends history merged with the current turn.
@@ -37,7 +45,7 @@ namespace saiflow.AI.Service
             if (!axConfig.ModelProviderId.HasValue)
                 throw new InvalidOperationException("ModelProviderId is not set in AxConfig");
 
-            var modelProviderManager = new AiModelProviderManager();
+            var modelProviderManager = new AiModelProviderManager(Sail);
             var modelProvider = modelProviderManager.GetById(axConfig.ModelProviderId.Value);
             if (modelProvider == null)
                 throw new InvalidOperationException($"AIModelProvider not found for ModelProviderId: {axConfig.ModelProviderId.Value}");

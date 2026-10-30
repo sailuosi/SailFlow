@@ -7,6 +7,7 @@ using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Common;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
@@ -15,14 +16,14 @@ namespace saiflow.engine.Core.Pattern
     /// </summary>
     internal class NodeMediatorMultiSignCreator : NodeMediator
     {
-        internal NodeMediatorMultiSignCreator(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorMultiSignCreator(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
 
-        internal NodeMediatorMultiSignCreator(SQLBuilder kit)
-            : base(kit)
+        internal NodeMediatorMultiSignCreator(SQLBuilder kit, SailClient client)
+            : base(kit, client)
         {
         }
 

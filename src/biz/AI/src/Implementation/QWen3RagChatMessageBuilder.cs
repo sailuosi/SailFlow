@@ -6,6 +6,7 @@ using saiflow.AI.Entity;
 using saiflow.AI.Manager;
 using saiflow.AI.Service;
 using saiflow.WebUtility;
+using saiflow.engine.Client;
 
 namespace saiflow.AI.Implementation
 {
@@ -22,6 +23,7 @@ namespace saiflow.AI.Implementation
         /// 配置仅从节点 ai_activity_config 和 ai_model_provider 读取，不读取本地 AiAppConfiguration。
         /// </summary>
         internal static async Task<IList<CustomApiMessage>> BuildRagChatMessageContentAsync(
+            SailClient sail,
             IList<MultiMediaFile> mediaFileList,
             string systemPrompt,
             string userMessage,
@@ -29,10 +31,12 @@ namespace saiflow.AI.Implementation
             IList<ChatHistoryMessage> historyChatMessageList = null,
             int memoryTurns = 10)
         {
+            if (sail == null)
+                throw new ArgumentNullException(nameof(sail));
             if (axConfig?.RagEmbeddingModelId == null || !axConfig.RagEmbeddingModelId.HasValue)
                 throw new InvalidOperationException("QWen3 RAG 需要在节点配置 ai_activity_config 中设置 RagEmbeddingModelId，指向 ai_model_provider 中的向量模型 (model_type=vector_model)。");
 
-            var modelManager = new AiModelProviderManager();
+            var modelManager = new AiModelProviderManager(sail);
             var provider = modelManager.GetById(axConfig.RagEmbeddingModelId.Value);
             if (provider == null)
                 throw new InvalidOperationException($"ai_model_provider 中未找到 Id={axConfig.RagEmbeddingModelId.Value} 的向量模型配置。");

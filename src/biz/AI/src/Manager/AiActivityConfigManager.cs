@@ -1,3 +1,4 @@
+using saiflow.engine.Client;
 using mooSQL.data;
 using saiflow.data;
 using saiflow.AI.Entity;
@@ -14,7 +15,14 @@ namespace saiflow.AI.Manager
     /// </summary>
     public class AiActivityConfigManager : ManagerBase
     {
-        private static SQLBuilder Kit() => SailSqlAccess.UseRunSQL();
+        public AiActivityConfigManager(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
+        private SQLBuilder Kit() => Sail.UseRunSQL();
 
         #region  axconfig manager getdata 获取AI节点配置数据
         public AiActivityConfigEntity GetById(int id)

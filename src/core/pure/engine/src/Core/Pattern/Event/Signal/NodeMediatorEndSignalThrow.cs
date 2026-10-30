@@ -10,6 +10,7 @@ using saiflow.engine.Business.Manager;
 using saiflow.engine.Message;
 
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Signal
 {
     /// <summary>
@@ -18,8 +19,8 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
     /// </summary>
     internal class NodeMediatorEndSignalThrow : NodeMediator
     {
-        internal NodeMediatorEndSignalThrow(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorEndSignalThrow(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
@@ -31,14 +32,14 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
         {
             OnBeforeExecuteWorkItem();
 
-            ProcessInstanceManager pim = new ProcessInstanceManager();
+            ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
             var kit = SailSqlAccess.Sibling(Kit);
             var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id,
                 ActivityForwardContext.ActivityResource.AppRunner);
 
             //执行节点上的信号发布
             //Publish signal on the execution node
-            var msgDelegateService = new MessageDelegateService();
+            var msgDelegateService = new MessageDelegateService(Sail);
             msgDelegateService.PublishMessage(processInstance, LinkContext.CurrentActivity, ActivityForwardContext.FromActivityInstance);
 
             OnAfterExecuteWorkItem();

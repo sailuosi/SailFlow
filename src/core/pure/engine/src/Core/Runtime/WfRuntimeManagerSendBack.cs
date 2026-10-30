@@ -48,7 +48,7 @@ namespace saiflow.engine.Core.Runtime
                     }
                     else if (this.ProcessModel.IsMINode(prevActivity) == true)
                     {
-                        var aim = new ActivityInstanceManager();
+                        var aim = new ActivityInstanceManager(Sail);
                         var prevActivityInstance = aim.GetActivityInstanceLatest(SailSqlAccess.Sibling(kit), runningNode.ProcessInstanceId, prevActivityId);
                         if (prevActivityInstance.MainActivityInstanceId == null)
                         {
@@ -155,7 +155,7 @@ namespace saiflow.engine.Core.Runtime
         {
             foreach (var performer in performerList)
             {
-                var nodeSendBack = NodeSendBackFactory.CreateNodeReverter(sendbackOperation, kit);
+                var nodeSendBack = NodeSendBackFactory.CreateNodeReverter(sendbackOperation, kit, Sail);
                 sendbackOperation.BackwardToTaskPerformer = performer;
                 nodeSendBack.Execute();
             }
@@ -170,12 +170,12 @@ namespace saiflow.engine.Core.Runtime
         {
             //更新当前任务记录为退回状态
             //Update the current task record to sendback status
-            var tm = new TaskManager();
+            var tm = new TaskManager(Sail);
             tm.SendBack(SailSqlAccess.Sibling(kit), base.TaskView.Id, base.SendBackOperation.ActivityResource.AppRunner);
 
             //更新当前办理节点的状态（从准备或运行状态更新为退回状态）
             //Update the status of the current processing node (from ready or running status to sendback status)
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             aim.SendBack(SailSqlAccess.Sibling(kit), base.SendBackOperation.BackwardFromActivityInstance.Id, base.SendBackOperation.ActivityResource.AppRunner);
         }
     }

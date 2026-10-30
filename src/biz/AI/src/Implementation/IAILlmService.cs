@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using saiflow.WebUtility;
 using saiflow.AI.Entity;
+using saiflow.engine.Client;
 
 namespace saiflow.AI.Implementation
 {
@@ -13,7 +14,8 @@ namespace saiflow.AI.Implementation
         Task<ResponseResult<AIResponse>> InvokeAIChatServiceAsync(string baseUrl,
             string apiKey,
             IList<MultiMediaFile> mediaFileList,
-            AiActivityConfigEntity axConfig);
+            AiActivityConfigEntity axConfig,
+            SailClient sail = null);
 
         /// <summary>
         /// Invokes the LLM with a pre-built message list (for multi-turn RAG; RagMultiTurnService passes messages with history).

@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\core\pure\engine\sailflow.engine.csproj" />
+    <ProjectReference Include="..\..\core\ext\resource\sailflow.resource.csproj" />
     <ProjectReference Include="..\AI\sailflow.biz.AI.csproj" />
     <ProjectReference Include="..\docs\sailflow.biz.docs.csproj" />
   </ItemGroup>

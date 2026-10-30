@@ -10,13 +10,15 @@ using saiflow.engine.Common;
 using saiflow.engine.Event;
 using saiflow.engine.Executor;
 using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Client;
 using saiflow.WebUtility;
 
 namespace saiflow.engine.Core.Pattern.Auto
 {
     internal static class RuleExecutor
     {
-        internal static void ExecuteRule(RuleConfigDetail ruleConfig,
+        internal static void ExecuteRule(SailClient client,
+            RuleConfigDetail ruleConfig,
             Activity currentActivity,
             ActivityInstanceEntity currentActivityInstance,
             IEventService eventService)
@@ -24,8 +26,8 @@ namespace saiflow.engine.Core.Pattern.Auto
             if (ruleConfig == null || string.IsNullOrWhiteSpace(ruleConfig.RuleSetCode))
                 return;
 
-            var ruleSet = new RuleSetManager().GetByCode(ruleConfig.RuleSetCode);
-            var inputs = BuildRuleInputs(eventService, currentActivityInstance, currentActivity);
+            var ruleSet = new RuleSetManager(client).GetByCode(ruleConfig.RuleSetCode);
+            var inputs = BuildRuleInputs(client, eventService, currentActivityInstance, currentActivity);
             var result = new RuleSetExecutionManager().Execute(ruleSet, inputs);
 
             if (!result.IsSuccess)
@@ -36,8 +38,8 @@ namespace saiflow.engine.Core.Pattern.Auto
 
             var processInstanceId = eventService.GetProcessInstanceId();
             var kit = eventService.GetKit();
-            var processInstance = new ProcessInstanceManager().GetById(kit, processInstanceId);
-            var pvm = new ProcessVariableManager();
+            var processInstance = new ProcessInstanceManager(client).GetById(kit, processInstanceId);
+            var pvm = new ProcessVariableManager(client);
 
             foreach (var item in result.OutputVariables)
             {
@@ -69,7 +71,7 @@ namespace saiflow.engine.Core.Pattern.Auto
         /// if no <c>wf_variable</c> rows, merge all activity-scoped rows for this instance (legacy).
         /// Auto-run uses <see cref="AutoRunEventServiceAdapter.VariablesSnapshot"/>.
         /// </summary>
-        private static IDictionary<string, object> BuildRuleInputs(IEventService eventService, ActivityInstanceEntity activityInstance, Activity currentActivity)
+        private static IDictionary<string, object> BuildRuleInputs(SailClient client, IEventService eventService, ActivityInstanceEntity activityInstance, Activity currentActivity)
         {
             var dict = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
@@ -88,7 +90,7 @@ namespace saiflow.engine.Core.Pattern.Auto
             var kit = eventService.GetKit();
             if (kit == null || activityInstance == null || currentActivity == null)
                 return dict;
-            var pvm = new ProcessVariableManager();
+            var pvm = new ProcessVariableManager(client);
             var processInstanceId = eventService.GetProcessInstanceId();
             var activityInstanceId = activityInstance.Id;
             var processScope = ProcessVariableScopeEnum.Process.ToString();
@@ -106,18 +108,18 @@ namespace saiflow.engine.Core.Pattern.Auto
                 }
             }
 
-            var processInstance = new ProcessInstanceManager().GetById(kit, processInstanceId);
+            var processInstance = new ProcessInstanceManager(client).GetById(kit, processInstanceId);
             if (processInstance != null
                 && !string.IsNullOrWhiteSpace(processInstance.ProcessId)
                 && !string.IsNullOrWhiteSpace(processInstance.Version)
                 && !string.IsNullOrWhiteSpace(currentActivity.ActivityId))
             {
-                var vm = new VariableManager();
+                var vm = new VariableManager(client);
                 var defs = vm.GetList(processInstance.ProcessId, processInstance.Version, currentActivity.ActivityId);
                 var inputDefs = defs?.Where(IsWfVariableInput).ToList() ?? new List<VariableEntity>();
                 if (inputDefs.Count > 0)
                 {
-                    var aim = new ActivityInstanceManager();
+                    var aim = new ActivityInstanceManager(client);
                     foreach (var def in inputDefs)
                     {
                         var key = (def.Name ?? string.Empty).Trim();

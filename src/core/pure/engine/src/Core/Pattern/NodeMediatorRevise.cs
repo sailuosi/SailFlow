@@ -10,6 +10,7 @@ using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
@@ -18,14 +19,14 @@ namespace saiflow.engine.Core.Pattern
     /// </summary>
     internal class NodeMediatorRevise : NodeMediator
     {
-        internal NodeMediatorRevise(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorRevise(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
 
-        internal NodeMediatorRevise(SQLBuilder kit)
-            : base(kit)
+        internal NodeMediatorRevise(SQLBuilder kit, SailClient client)
+            : base(kit, client)
         {
 
         }
@@ -52,7 +53,7 @@ namespace saiflow.engine.Core.Pattern
 
                     if (canContinueForwardCurrentNode == true)
                     {
-                        var aim = new ActivityInstanceManager();
+                        var aim = new ActivityInstanceManager(Sail);
                         var backSrcActivityInstance = aim.GetById(backSrcActivityInstanceId.Value);
 
                         //取出下一步办理人员信息

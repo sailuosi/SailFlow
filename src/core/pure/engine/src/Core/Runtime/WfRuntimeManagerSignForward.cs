@@ -28,9 +28,9 @@ namespace saiflow.engine.Core.Runtime
                     base.ProcessModel,
                     base.ActivityResource,
                     false,
-                    kit);
+                    kit, Sail);
 
-                NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(signforwardExecutionContext, kit);
+                NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(signforwardExecutionContext, kit, Sail);
                 mediator.ExecuteWorkItem(null);
 
                 var result = base.WfExecutedResult;

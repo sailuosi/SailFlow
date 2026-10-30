@@ -16,6 +16,7 @@ using saiflow.engine.Core.Event;
 using saiflow.engine.Event;
 using saiflow.engine.Message;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Message
 {
     /// <summary>
@@ -24,8 +25,8 @@ namespace saiflow.engine.Core.Pattern.Event.Message
     /// </summary>
     internal class NodeMediatorEndMsgThrow : NodeMediator
     {
-        internal NodeMediatorEndMsgThrow(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorEndMsgThrow(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
@@ -41,14 +42,14 @@ namespace saiflow.engine.Core.Pattern.Event.Message
 
             //�����������
             //Set process instance completed
-            ProcessInstanceManager pim = new ProcessInstanceManager();
+            ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
             var kit = SailSqlAccess.Sibling(Kit);
             var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id,
                 ActivityForwardContext.ActivityResource.AppRunner);
 
             //ִ�нڵ��ϵ���Ϣ����
             //Publish messages on the execution node
-            var msgDelegateService = new MessageDelegateService();
+            var msgDelegateService = new MessageDelegateService(Sail);
             msgDelegateService.PublishMessage(processInstance, LinkContext.CurrentActivity, ActivityForwardContext.FromActivityInstance);
 
             //�����ǰ�����������̣�����������ɣ���������ת����һ�ڵ�
@@ -82,7 +83,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
             //��ʼִ����һ��
             //Start executing the next step
             var runAppResult = WfExecutedResult.Default();
-            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(runner, kit, ref runAppResult);
+            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(Sail, runner, kit, ref runAppResult);
             if (runAppResult.Status == WfExecutedStatus.Exception)
             {
                 throw new WfRuntimeException(LocalizeHelper.GetEngineMessage("nodemediatorend.ContinueMainProcessRunning.warn", runAppResult.Message));
@@ -97,7 +98,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
 
             void runtimeInstance_OnWfProcessRunning(object sender, WfEventArgs args)
             {
-                saiflow.engine.Event.EventExecutor.InvokeExternalEvent(kit,
+                saiflow.engine.Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessRunning,
                     runner.EventSubscriptionList,
                     runtimeInstance.ProcessInstanceId);
@@ -108,7 +109,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
                 runAppResult = args.WfExecutedResult;
                 if (runAppResult.Status == WfExecutedStatus.Success)
                 {
-                    saiflow.engine.Event.EventExecutor.InvokeExternalEvent(kit,
+                    saiflow.engine.Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessContinued,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -124,14 +125,14 @@ namespace saiflow.engine.Core.Pattern.Event.Message
             string mainActivityId,
             SQLBuilder kit)
         {
-            var pm = new ProcessInstanceManager();
+            var pm = new ProcessInstanceManager(Sail);
             var mainProcessInstance = pm.GetByActivity(kit, mainActivityInstanceId);
-            var processModel = ProcessModelFactory.CreateByProcessInstance(kit, mainProcessInstance);
+            var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, kit, mainProcessInstance);
             var nextSteps = processModel.GetNextActivityTreeView(mainActivityId);
 
             //��ȡ�����̵�����
             //The task of obtaining the mainstream process
-            var task = new TaskManager().GetTaskByActivity(SailSqlAccess.Sibling(kit), mainProcessInstance.Id, mainActivityInstanceId);
+            var task = new TaskManager(Sail).GetTaskByActivity(SailSqlAccess.Sibling(kit), mainProcessInstance.Id, mainActivityInstanceId);
             var runner = new WfAppRunner
             {
                 AppName = mainProcessInstance.AppName,

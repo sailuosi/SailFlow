@@ -1,3 +1,4 @@
+using saiflow.engine.Client;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,7 +15,14 @@ namespace saiflow.AI.Manager
     /// </summary>
     public class AiModelProviderManager : ManagerBase
     {
-        private static SQLBuilder Kit() => SailSqlAccess.UseRunSQL();
+        public AiModelProviderManager(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
+        private SQLBuilder Kit() => Sail.UseRunSQL();
 
         #region Obtain model data 获取模型数据
         public AiModelProviderEntity GetById(int id)

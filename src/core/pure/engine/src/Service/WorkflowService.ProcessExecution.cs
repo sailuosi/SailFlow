@@ -45,7 +45,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfExecutedResult Start()
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -78,7 +78,7 @@ namespace saiflow.engine.Service
                 startSem.Wait();
                 try
                 {
-                    runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(runner, ref startedResult);
+                    runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(Sail, runner, ref startedResult);
 
                     if (startedResult.Status == WfExecutedStatus.Exception)
                     {
@@ -106,7 +106,7 @@ namespace saiflow.engine.Service
                 startedResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 startedResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.startprocess.error", error);
-                LogManager.RecordLog(WfDefine.WF_PROCESS_START_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_START_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
             {
@@ -121,7 +121,7 @@ namespace saiflow.engine.Service
 
             void runtimeInstance_OnWfProcessStarting(object sender, WfEventArgs args)
             {
-                Event.EventExecutor.InvokeExternalEvent(kit,
+                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessStarting,
                         runner.EventSubscriptionList,
                         startedResult.ProcessInstanceIdStarted);
@@ -132,7 +132,7 @@ namespace saiflow.engine.Service
                 startedResult = args.WfExecutedResult;
                 if (startedResult.Status == WfExecutedStatus.Success)
                 {
-                    Event.EventExecutor.InvokeExternalEvent(kit, 
+                    Event.EventExecutor.InvokeExternalEvent(Sail, kit, 
                         EventFireTypeEnum.OnProcessStarted,
                         runner.EventSubscriptionList,
                         startedResult.ProcessInstanceIdStarted);
@@ -173,7 +173,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfExecutedResult StartByMessage()
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -192,7 +192,7 @@ namespace saiflow.engine.Service
 
         public WfExecutedResult StartByMessage(SQLBuilder kit)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(Sail);
             var entity = pm.GetByMessage(_wfAppRunner.MessageTopic);
             _wfAppRunner.ProcessId = entity.ProcessId;
             _wfAppRunner.ProcessCode = entity.ProcessCode;
@@ -242,7 +242,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfExecutedResult Run()
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -275,7 +275,7 @@ namespace saiflow.engine.Service
                 runSem.Wait();
                 try
                 {
-                    runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(runner, kit, ref runAppResult);
+                    runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(Sail, runner, kit, ref runAppResult);
                     if (runAppResult.Status == WfExecutedStatus.Exception)
                     {
                         return runAppResult;
@@ -301,7 +301,7 @@ namespace saiflow.engine.Service
                 runAppResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 runAppResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.runprocess.error", error);
-                LogManager.RecordLog(WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
             {
@@ -316,7 +316,7 @@ namespace saiflow.engine.Service
 
             void runtimeInstance_OnWfProcessRunning(object sender, WfEventArgs args)
             {
-                Event.EventExecutor.InvokeExternalEvent(kit,
+                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessRunning,
                     runner.EventSubscriptionList,
                     runtimeInstance.ProcessInstanceId); 
@@ -327,7 +327,7 @@ namespace saiflow.engine.Service
                 runAppResult = args.WfExecutedResult;
                 if (runAppResult.Status == WfExecutedStatus.Success)
                 {
-                    Event.EventExecutor.InvokeExternalEvent(kit,
+                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessContinued,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -384,7 +384,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfExecutedResult RunAuto()
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -417,7 +417,7 @@ namespace saiflow.engine.Service
                 runAutoSem.Wait();
                 try
                 {
-                    runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceRunAuto(runner, kit, ref runAppResult);
+                    runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceRunAuto(Sail, runner, kit, ref runAppResult);
                     if (runAppResult.Status == WfExecutedStatus.Exception)
                     {
                         return runAppResult;
@@ -443,7 +443,7 @@ namespace saiflow.engine.Service
                 runAppResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 runAppResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.runprocess.error", error);
-                LogManager.RecordLog(WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
             {
@@ -458,7 +458,7 @@ namespace saiflow.engine.Service
 
             void runtimeInstance_OnWfProcessRunning(object sender, WfEventArgs args)
             {
-                Event.EventExecutor.InvokeExternalEvent(kit,
+                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessRunning,
                     runner.EventSubscriptionList,
                     runtimeInstance.ProcessInstanceId);
@@ -469,7 +469,7 @@ namespace saiflow.engine.Service
                 runAppResult = args.WfExecutedResult;
                 if (runAppResult.Status == WfExecutedStatus.Success)
                 {
-                    Event.EventExecutor.InvokeExternalEvent(kit,
+                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessContinued,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -512,7 +512,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfExecutedResult Withdraw()
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -540,7 +540,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceWithdraw(runner, ref withdrawedResult);
+                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceWithdraw(Sail, runner, ref withdrawedResult);
 
                 //�����㳷�������������쳣�����Ϣ
                 //Not satisfied with withdraw operation, return exception
@@ -562,7 +562,7 @@ namespace saiflow.engine.Service
                 withdrawedResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 withdrawedResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.withdrawprocess.error", error);
-                LogManager.RecordLog(WfDefine.WF_PROCESS_WITHDRAW_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_WITHDRAW_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
             {
@@ -577,7 +577,7 @@ namespace saiflow.engine.Service
 
             void runtimeInstance_OnWfProcessWithdrawing(object sender, WfEventArgs args)
             {
-                Event.EventExecutor.InvokeExternalEvent(kit,
+                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessWithdrawing,
                     runner.EventSubscriptionList,
                     runtimeInstance.ProcessInstanceId);
@@ -588,7 +588,7 @@ namespace saiflow.engine.Service
                 withdrawedResult = args.WfExecutedResult;
                 if (withdrawedResult.Status == WfExecutedStatus.Success)
                 {
-                    Event.EventExecutor.InvokeExternalEvent(kit,
+                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessWithdrawn,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -631,7 +631,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfExecutedResult SendBack()
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -659,7 +659,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceSendBack(runner, ref sendbackResult);
+                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceSendBack(Sail, runner, ref sendbackResult);
 
                 if (sendbackResult.Status == WfExecutedStatus.Exception)
                 {
@@ -680,7 +680,7 @@ namespace saiflow.engine.Service
                 sendbackResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 sendbackResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.sendbackprocess.error", error);
-                LogManager.RecordLog(WfDefine.WF_PROCESS_SENDBACK_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_SENDBACK_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
             {
@@ -696,7 +696,7 @@ namespace saiflow.engine.Service
 
             void runtimeInstance_OnWfProcessSendBacking(object sender, WfEventArgs args)
             {
-                Event.EventExecutor.InvokeExternalEvent(kit,
+                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessSendBacking,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -707,7 +707,7 @@ namespace saiflow.engine.Service
                 sendbackResult = args.WfExecutedResult;
                 if (sendbackResult.Status == WfExecutedStatus.Success)
                 {
-                    Event.EventExecutor.InvokeExternalEvent(kit,
+                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessSendBacked,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -750,7 +750,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfExecutedResult Resend()
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -778,7 +778,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceResend(runner, ref resendResult);
+                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceResend(Sail, runner, ref resendResult);
 
                 if (resendResult.Status == WfExecutedStatus.Exception)
                 {
@@ -799,7 +799,7 @@ namespace saiflow.engine.Service
                 resendResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 resendResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.resendprocess.error", error);
-                LogManager.RecordLog(WfDefine.WF_PROCESS_RESEND_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RESEND_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
             {
@@ -814,7 +814,7 @@ namespace saiflow.engine.Service
 
             void runtimeInstance_OnWfProcessResending(object sender, WfEventArgs args)
             {
-                Event.EventExecutor.InvokeExternalEvent(kit,
+                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessResending,
                     runner.EventSubscriptionList,
                     runtimeInstance.ProcessInstanceId);
@@ -825,7 +825,7 @@ namespace saiflow.engine.Service
                 resendResult = args.WfExecutedResult;
                 if (resendResult.Status == WfExecutedStatus.Success)
                 {
-                    Event.EventExecutor.InvokeExternalEvent(kit,
+                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessResent,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -870,7 +870,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfExecutedResult Revise()
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -898,7 +898,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceRevise(runner, ref reviseResult);
+                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceRevise(Sail, runner, ref reviseResult);
 
                 if (reviseResult.Status == WfExecutedStatus.Success)
                 {
@@ -919,7 +919,7 @@ namespace saiflow.engine.Service
                 reviseResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 reviseResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.reviseprocess.error", error);
-                LogManager.RecordLog(WfDefine.WF_PROCESS_REVISE_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_REVISE_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
             {
@@ -934,7 +934,7 @@ namespace saiflow.engine.Service
 
             void runtimeInstance_OnWfProcessRevising(object sender, WfEventArgs args)
             {
-                Event.EventExecutor.InvokeExternalEvent(kit,
+                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessRevising,
                     runner.EventSubscriptionList,
                     runtimeInstance.ProcessInstanceId);
@@ -945,7 +945,7 @@ namespace saiflow.engine.Service
                 reviseResult = args.WfExecutedResult;
                 if (reviseResult.Status == WfExecutedStatus.Success)
                 {
-                    Event.EventExecutor.InvokeExternalEvent(kit,
+                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessRevised,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -990,7 +990,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfExecutedResult Reverse()
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -1018,7 +1018,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceReverse(runner, ref reversedResult);
+                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceReverse(Sail, runner, ref reversedResult);
 
                 if (reversedResult.Status == WfExecutedStatus.Exception)
                 {
@@ -1039,7 +1039,7 @@ namespace saiflow.engine.Service
                 reversedResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 reversedResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.reverseprocess.error", error);
-                LogManager.RecordLog(WfDefine.WF_PROCESS_REVERSE_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_REVERSE_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
             {
@@ -1054,7 +1054,7 @@ namespace saiflow.engine.Service
 
             void runtimeInstance_OnWfProcessReversing(object sender, WfEventArgs args)
             {
-                Event.EventExecutor.InvokeExternalEvent(kit,
+                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessReversing,
                     runner.EventSubscriptionList,
                     runtimeInstance.ProcessInstanceId);
@@ -1065,7 +1065,7 @@ namespace saiflow.engine.Service
                 reversedResult = args.WfExecutedResult;
                 if (reversedResult.Status == WfExecutedStatus.Success)
                 {
-                    Event.EventExecutor.InvokeExternalEvent(kit,
+                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessReversed,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -1108,7 +1108,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfExecutedResult Reject()
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -1139,7 +1139,7 @@ namespace saiflow.engine.Service
             try
             {
                 runner.NextActivityPerformers = FillNextActivityPerforms(runner, JumpOptionEnum.Startup);
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceReject(runner, ref rejectedResult);
+                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceReject(Sail, runner, ref rejectedResult);
                 if (rejectedResult.Status == WfExecutedStatus.Exception)
                 {
                     return rejectedResult;
@@ -1159,7 +1159,7 @@ namespace saiflow.engine.Service
                 rejectedResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 rejectedResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.rejectprocess.error", error);
-                LogManager.RecordLog(WfDefine.WF_PROCESS_REJECT_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_REJECT_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
             {
@@ -1174,7 +1174,7 @@ namespace saiflow.engine.Service
 
             void runtimeInstance_OnWfProcessRejecting(object sender, WfEventArgs args)
             {
-                Event.EventExecutor.InvokeExternalEvent(kit,
+                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessRejecting,
                     runner.EventSubscriptionList,
                     runtimeInstance.ProcessInstanceId);
@@ -1185,7 +1185,7 @@ namespace saiflow.engine.Service
                 rejectedResult = args.WfExecutedResult;
                 if (rejectedResult.Status == WfExecutedStatus.Success)
                 {
-                    Event.EventExecutor.InvokeExternalEvent(kit,
+                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessRejected,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -1229,7 +1229,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfExecutedResult Close()
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -1258,7 +1258,7 @@ namespace saiflow.engine.Service
             try
             {
                 runner.NextActivityPerformers = FillNextActivityPerforms(runner, JumpOptionEnum.End);
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceClose(runner, ref closedResult);
+                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceClose(Sail, runner, ref closedResult);
                 if (closedResult.Status == WfExecutedStatus.Exception)
                 {
                     return closedResult;
@@ -1276,7 +1276,7 @@ namespace saiflow.engine.Service
                 closedResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 closedResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.closeprocess.error", error);
-                LogManager.RecordLog(WfDefine.WF_PROCESS_CLOSE_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_CLOSE_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
             {
@@ -1291,7 +1291,7 @@ namespace saiflow.engine.Service
 
             void runtimeInstance_OnWfProcessClosing(object sender, WfEventArgs args)
             {
-                Event.EventExecutor.InvokeExternalEvent(kit,
+                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessClosing,
                     runner.EventSubscriptionList,
                     runtimeInstance.ProcessInstanceId);
@@ -1302,7 +1302,7 @@ namespace saiflow.engine.Service
                 closedResult = args.WfExecutedResult;
                 if (closedResult.Status == WfExecutedStatus.Success)
                 {
-                    Event.EventExecutor.InvokeExternalEvent(kit,
+                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessClosed,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -1345,7 +1345,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfExecutedResult Jump(JumpOptionEnum jumpOption = JumpOptionEnum.Default)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -1375,7 +1375,7 @@ namespace saiflow.engine.Service
             try
             {
                 runner.NextActivityPerformers = FillNextActivityPerforms(runner, jumpOption);
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceJump(runner, ref jumpResult);
+                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceJump(Sail, runner, ref jumpResult);
 
                 if (jumpResult.Status == WfExecutedStatus.Exception)
                 {
@@ -1396,7 +1396,7 @@ namespace saiflow.engine.Service
                 jumpResult.ExceptionType = WfExceptionType.Jump_OtherError;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 jumpResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.jumpprocess.error", error);
-                LogManager.RecordLog(WfDefine.WF_PROCESS_JUMP_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_JUMP_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
             {
@@ -1411,7 +1411,7 @@ namespace saiflow.engine.Service
 
             void runtimeInstance_OnWfProcessJumping(object sender, WfEventArgs args)
             {
-                Event.EventExecutor.InvokeExternalEvent(kit,
+                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessJumping,
                     runner.EventSubscriptionList,
                     runtimeInstance.ProcessInstanceId);
@@ -1422,7 +1422,7 @@ namespace saiflow.engine.Service
                 jumpResult = args.WfExecutedResult;
                 if (jumpResult.Status == WfExecutedStatus.Success)
                 {
-                    Event.EventExecutor.InvokeExternalEvent(kit,
+                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessJumped,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -1465,7 +1465,7 @@ namespace saiflow.engine.Service
             JumpOptionEnum jumpOption)
         {
             IDictionary<string, PerformerList> nextActivityPerformers = null;
-            var pm = ProcessModelFactory.CreateByProcess(runner.ProcessId, runner.Version);
+            var pm = ProcessModelFactory.CreateByProcess(Sail, runner.ProcessId, runner.Version);
             if (jumpOption == JumpOptionEnum.Default)
             {
                 nextActivityPerformers = runner.NextActivityPerformers;
@@ -1473,7 +1473,7 @@ namespace saiflow.engine.Service
             else if (jumpOption == JumpOptionEnum.Startup)
             {
                 var firstActivity = pm.GetFirstActivity();
-                var aim = new ActivityInstanceManager();
+                var aim = new ActivityInstanceManager(Sail);
                 var firstActivityInstance = aim.GetActivityInstanceLatest(runner.AppInstanceId, runner.ProcessId, firstActivity.ActivityId);
                 nextActivityPerformers = new Dictionary<string, PerformerList>();
                 var performer = new Performer(firstActivityInstance.CreatedUserId, firstActivityInstance.CreatedUserName);
@@ -1501,7 +1501,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfExecutedResult SignForward()
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -1529,7 +1529,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceSignForward(runner, ref signforwardResult);
+                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceSignForward(Sail, runner, ref signforwardResult);
 
                 if (signforwardResult.Status == WfExecutedStatus.Exception)
                 {
@@ -1550,7 +1550,7 @@ namespace saiflow.engine.Service
                 signforwardResult.Status = WfExecutedStatus.Failed;
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 signforwardResult.Message = LocalizeHelper.GetEngineMessage("workflowservice.signforwardprocess.error", error);
-                LogManager.RecordLog(WfDefine.WF_PROCESS_SIGN_FORWARD_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_SIGN_FORWARD_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             finally
             {
@@ -1565,7 +1565,7 @@ namespace saiflow.engine.Service
 
             void runtimeInstance_OnWfProcessSignForwarding(object sender, WfEventArgs args)
             {
-                Event.EventExecutor.InvokeExternalEvent(kit,
+                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessSignForwarding,
                     runner.EventSubscriptionList,
                     runtimeInstance.ProcessInstanceId);
@@ -1576,7 +1576,7 @@ namespace saiflow.engine.Service
                 signforwardResult = args.WfExecutedResult;
                 if (signforwardResult.Status == WfExecutedStatus.Success)
                 {
-                    Event.EventExecutor.InvokeExternalEvent(kit,
+                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessSignForwarded,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -1624,7 +1624,7 @@ namespace saiflow.engine.Service
             bool result = true;
             try
             {
-                var pim = new ProcessInstanceManager();
+                var pim = new ProcessInstanceManager(Sail);
                 pim.Resume(processInstanceId, runner);
             }
             catch (Exception ex)
@@ -1642,8 +1642,8 @@ namespace saiflow.engine.Service
             bool result = true;
             try
             {
-                var pim = new ProcessInstanceManager();
-                var taskMng = new TaskManager();
+                var pim = new ProcessInstanceManager(Sail);
+                var taskMng = new TaskManager(Sail);
                 TaskEntity taskentity = taskMng.GetTask(taskId);
                 pim.Suspend(taskentity.ProcessInstanceId, runner);
             }
@@ -1660,7 +1660,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public bool CancelProcess(WfAppRunner runner)
         {
-            var pim = new ProcessInstanceManager();
+            var pim = new ProcessInstanceManager(Sail);
             return pim.Cancel(runner);
         }
 
@@ -1670,7 +1670,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public bool DiscardProcess(WfAppRunner runner)
         {
-            var pim = new ProcessInstanceManager();
+            var pim = new ProcessInstanceManager(Sail);
             return pim.Discard(runner);
         }
 
@@ -1680,7 +1680,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public bool TerminateProcess(WfAppRunner terminator)
         {
-            var pim = new ProcessInstanceManager();
+            var pim = new ProcessInstanceManager(Sail);
             return pim.Terminate(terminator);
         }
 
@@ -1693,7 +1693,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void AgreeTask(int taskId)
         {
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             aim.Agree(taskId);
         }
 
@@ -1704,7 +1704,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void RefuseTask(int taskId)
         {
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             aim.Refuse(taskId);
         }
         #endregion

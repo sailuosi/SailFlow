@@ -24,9 +24,9 @@ namespace saiflow.engine.Core.Runtime
                     base.ProcessModel,
                     base.ActivityResource,
                     true,
-                    kit);
+                    kit, Sail);
 
-                NodeMediator mediator = new NodeMediatorRevise(runningExecutionContext, kit);
+                NodeMediator mediator = new NodeMediatorRevise(runningExecutionContext, kit, Sail);
                 mediator.ExecuteWorkItem(null);
 
                 var result = base.WfExecutedResult;

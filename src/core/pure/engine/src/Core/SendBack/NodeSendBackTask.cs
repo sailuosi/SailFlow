@@ -1,3 +1,4 @@
+using saiflow.engine.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,8 +18,8 @@ namespace saiflow.engine.Core.SendBack
     /// </summary>
     internal class NodeSendBackTask : NodeSendBack
     {
-        internal NodeSendBackTask(SendBackOperation sendbackOperation, SQLBuilder kit) 
-            : base(sendbackOperation, kit)
+        internal NodeSendBackTask(SendBackOperation sendbackOperation, SQLBuilder kit, SailClient client) 
+            : base(sendbackOperation, kit, client)
         {
 
         }

@@ -21,6 +21,12 @@ namespace saiflow.engine.Business.Manager
     /// </summary>
     internal class ActivityInstanceManager
     {
+        public ActivityInstanceManager(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
         private static SQLBuilder Sibling(SQLBuilder kit)
         {
             var next = kit.DBLive.useSQL();
@@ -38,7 +44,7 @@ namespace saiflow.engine.Business.Manager
         {
             try
             {
-                return SailClientAccess.UseRunSQL().useRepo<ActivityInstanceEntity, int>().GetById(activityInstanceId);
+                return Sail.UseRunSQL().useRepo<ActivityInstanceEntity, int>().GetById(activityInstanceId);
             }
             catch (System.Exception e)
             {
@@ -56,7 +62,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal ActivityInstanceEntity GetRunningNode(WfAppRunner runner)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetRunningNode(kit, runner, out _);
         }
 
@@ -67,7 +73,7 @@ namespace saiflow.engine.Business.Manager
         internal ActivityInstanceEntity GetRunningNode(WfAppRunner runner,
             out TaskViewEntity taskView)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetRunningNode(kit, runner, out taskView);
         }
 
@@ -82,7 +88,7 @@ namespace saiflow.engine.Business.Manager
             var taskId = runner.TaskId;
             taskView = null;
 
-            var tm = new TaskManager();
+            var tm = new TaskManager(Sail);
             ActivityInstanceEntity runningNode = null;
             if (taskId != null && taskId.Value > 0)
             {
@@ -96,7 +102,7 @@ namespace saiflow.engine.Business.Manager
             {
                 var message = LocalizeHelper.GetEngineMessage("activityinstancemanager.getrunningnode.error");
                 var e = new WorkflowException(message);
-                LogManager.RecordLog(message, LogEventType.Exception, LogPriority.Normal, null, e);
+                LogManager.RecordLog(Sail, message, LogEventType.Exception, LogPriority.Normal, null, e);
                 throw e;
             }
 
@@ -124,7 +130,7 @@ namespace saiflow.engine.Business.Manager
                 {
                     var msgException = LocalizeHelper.GetEngineMessage("activityinstancemanager.getrunningnode.unique.error");
                     var e = new WorkflowException(msgException);
-                    LogManager.RecordLog(LocalizeHelper.GetEngineMessage("activityinstancemanager.getrunningnode.error"),
+                    LogManager.RecordLog(Sail, LocalizeHelper.GetEngineMessage("activityinstancemanager.getrunningnode.error"),
                         LogEventType.Exception, LogPriority.Normal, null, e);
                     throw e;
                 }
@@ -193,7 +199,7 @@ namespace saiflow.engine.Business.Manager
         internal ActivityInstanceEntity GetActivityInstanceLatest(int processInstanceId,
             string activityId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetActivityInstanceLatest(kit, processInstanceId, activityId);
         }
 
@@ -228,7 +234,7 @@ namespace saiflow.engine.Business.Manager
             string processId,
             string activityId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetActivityInstanceLatest(kit, appInstanceId, processId, activityId);
         }
 
@@ -264,7 +270,7 @@ namespace saiflow.engine.Business.Manager
             string version,
             string activityId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return Sibling(kit)
                 .select("AI.*")
                 .from($"{SailSqlDialect.ActivityInstanceTable} AI")
@@ -320,7 +326,7 @@ namespace saiflow.engine.Business.Manager
         internal List<ActivityInstanceEntity> GetActivityInstanceListCompleted(string appInstanceId,
             string processId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return Sibling(kit)
                 .select("AI.*")
                 .from($"{SailSqlDialect.ActivityInstanceTable} AI")
@@ -340,7 +346,7 @@ namespace saiflow.engine.Business.Manager
         internal ActivityInstanceEntity GetPreviousActivityInstanceSimple(ActivityInstanceEntity runningNode,
             string previousActivityId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetPreviousActivityInstanceSimple(kit, runningNode, previousActivityId);
         }
 
@@ -389,7 +395,7 @@ namespace saiflow.engine.Business.Manager
         internal IList<ActivityInstanceEntity> GetActivityInstanceListCompletedSimple(int processInstanceId,
             string activityId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetActivityInstanceListCompletedSimple(kit, processInstanceId, activityId);
         }
 
@@ -417,7 +423,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal ActivityInstanceEntity GetByTask(int taskId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetByTask(kit, taskId);
         }
 
@@ -450,7 +456,7 @@ namespace saiflow.engine.Business.Manager
             string processId,
             string version = null)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetRunningActivityInstanceList(kit, appInstanceId, processId, version);
         }
 
@@ -481,7 +487,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal List<ActivityInstanceEntity> GetMultipleInstanceListCompleted(int mainActivityInstanceId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetMultipleInstanceListCompleted(kit, mainActivityInstanceId);
         }
 
@@ -509,7 +515,7 @@ namespace saiflow.engine.Business.Manager
         internal List<ActivityInstanceEntity> GetPreviousParallelMultipleInstanceListCompleted(ActivityInstanceEntity runningNode,
             string previousActivityId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetPreviousParallelMultipleInstanceListCompleted(kit, runningNode, previousActivityId);
         }
 
@@ -598,7 +604,7 @@ namespace saiflow.engine.Business.Manager
             int processInstanceId,
             short? activityState = null)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetActivityMulitipleInstanceWithState(kit, mainActivityInstanceId, processInstanceId, activityState);
         }
 
@@ -686,7 +692,7 @@ namespace saiflow.engine.Business.Manager
         internal List<ActivityInstanceEntity> GetValidActivityInstanceListOfMI(int mainActivityInstanceId,
             int processInstanceId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetValidActivityInstanceListOfMI(kit, mainActivityInstanceId, processInstanceId);
         }
 
@@ -1017,7 +1023,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal int Insert(ActivityInstanceEntity entity)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return Insert(kit, entity);
         }
 
@@ -1041,7 +1047,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal void Update(ActivityInstanceEntity entity)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             Update(kit, entity);
         }
 
@@ -1134,7 +1140,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal void Delete(int activityInstanceId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             Delete(kit, activityInstanceId);
         }
 
@@ -1149,7 +1155,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal void Agree(int taskId)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -1177,7 +1183,7 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         internal void Refuse(int taskId)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try

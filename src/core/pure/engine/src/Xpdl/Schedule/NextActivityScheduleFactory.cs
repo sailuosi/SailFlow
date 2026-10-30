@@ -1,4 +1,5 @@
-﻿using System;
+using saiflow.engine.Client;
+using System;
 using saiflow.hub.Localize;
 using saiflow.engine.Common;
 
@@ -12,14 +13,14 @@ namespace saiflow.engine.Xpdl.Schedule
         /// <summary>
         /// Create ActivitySchedule
         /// </summary>
-        internal static NextActivityScheduleBase CreateActivityScheduleGateway(IProcessModel processModel,
+        internal static NextActivityScheduleBase CreateActivityScheduleGateway(SailClient client, IProcessModel processModel,
             GatewaySplitJoinTypeEnum splitJoinType,
             Nullable<int> activityInstanceId = null)
         {
             NextActivityScheduleBase activitySchedule = null;
             if (splitJoinType == GatewaySplitJoinTypeEnum.Split)
             {
-                activitySchedule = new NextActivityScheduleSplit(processModel, activityInstanceId);
+                activitySchedule = new NextActivityScheduleSplit(processModel, activityInstanceId, client);
             }
             else if (splitJoinType == GatewaySplitJoinTypeEnum.Join)
             {

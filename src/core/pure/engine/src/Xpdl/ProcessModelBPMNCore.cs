@@ -5,6 +5,7 @@ using saiflow.engine.Common;
 using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Xpdl.Schedule;
 using saiflow.hub.Localize;
+using saiflow.engine.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace saiflow.engine.Xpdl
         /// Obtain the next node list accompanied by runtime condition information
         /// 获取下一步节点列表，伴随运行时条件信息
         /// </summary>
-        internal NextActivityMatchedResult GetNextActivityTreeListCore(IProcessModel processModel,
+        internal NextActivityMatchedResult GetNextActivityTreeListCore(SailClient client, IProcessModel processModel,
             string currentActivityId,
             Nullable<int> activityInstanceId,
             IDictionary<string, string> conditionKeyValuePair,
@@ -53,7 +54,7 @@ namespace saiflow.engine.Xpdl
                         }
                         else if (XPDLHelper.IsGatewayComponentNode(transition.ToActivity.ActivityType) == true)
                         {
-                            NextActivityScheduleBase activitySchedule = NextActivityScheduleFactory.CreateActivityScheduleGateway(processModel,
+                            NextActivityScheduleBase activitySchedule = NextActivityScheduleFactory.CreateActivityScheduleGateway(client, processModel,
                                 transition.ToActivity.GatewayDetail.SplitJoinType,
                                 activityInstanceId);
 
@@ -79,7 +80,7 @@ namespace saiflow.engine.Xpdl
                         else
                         {
                             var errMsg = string.Format("Unknown node type：{0}", transition.ToActivity.ActivityType.ToString());
-                            LogManager.RecordLog(LocalizeHelper.GetEngineMessage("processmodel.getnextactivitylist.error"),
+                            LogManager.RecordLog(client, LocalizeHelper.GetEngineMessage("processmodel.getnextactivitylist.error"),
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
@@ -103,7 +104,7 @@ namespace saiflow.engine.Xpdl
             }
             catch (System.Exception e)
             {
-                LogManager.RecordLog(LocalizeHelper.GetEngineMessage("processmodel.getnextactivitylist.error"),
+                LogManager.RecordLog(client, LocalizeHelper.GetEngineMessage("processmodel.getnextactivitylist.error"),
                     LogEventType.Exception,
                     LogPriority.Normal,
                     null,

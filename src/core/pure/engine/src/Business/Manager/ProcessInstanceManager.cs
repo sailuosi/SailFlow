@@ -20,6 +20,12 @@ namespace saiflow.engine.Business.Manager
     /// </summary>
     internal class ProcessInstanceManager
     {
+        public ProcessInstanceManager(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
         private static SQLBuilder Sibling(SQLBuilder kit)
         {
             var next = kit.DBLive.useSQL();
@@ -31,7 +37,7 @@ namespace saiflow.engine.Business.Manager
         #region Query
         internal ProcessInstanceEntity GetProcessInstanceLatest(string appInstanceId, string processId, string version)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetProcessInstanceLatest(kit, appInstanceId, processId, version);
         }
 
@@ -40,7 +46,7 @@ namespace saiflow.engine.Business.Manager
             => GetProcessInstanceCurrent(kit, appInstanceId, processId, version);
 
         internal ProcessInstanceEntity GetById(int processInstanceId)
-            => SailClientAccess.UseRunSQL().useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
+            => Sail.UseRunSQL().useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
 
         internal ProcessInstanceEntity GetById(SQLBuilder kit, int processInstanceId)
             => Sibling(kit).useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
@@ -60,7 +66,7 @@ namespace saiflow.engine.Business.Manager
 
         internal ProcessInstanceEntity GetByActivity(int activityInstanceId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetByActivity(kit, activityInstanceId);
         }
 
@@ -75,7 +81,7 @@ namespace saiflow.engine.Business.Manager
 
         internal User GetProcessInitiator(int processInstanceId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetProcessInitiator(kit, processInstanceId);
         }
 
@@ -87,7 +93,7 @@ namespace saiflow.engine.Business.Manager
 
         internal ProcessInstanceEntity GetProcessInstanceCurrent(string appInstanceId, string processId, string version)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetProcessInstanceCurrent(kit, appInstanceId, processId, version);
         }
 
@@ -102,7 +108,7 @@ namespace saiflow.engine.Business.Manager
 
         internal IEnumerable<ProcessInstanceEntity> GetProcessInstance(string appInstanceId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return Sibling(kit)
                 .select("*")
                 .from(SailSqlDialect.ProcessInstanceTable)
@@ -149,7 +155,7 @@ namespace saiflow.engine.Business.Manager
 
         internal ProcessInstanceEntity GetRunningProcessInstance(string appInstanceId, string processId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             var list = Sibling(kit)
                 .select("*")
                 .from(SailSqlDialect.ProcessInstanceTable)
@@ -165,7 +171,7 @@ namespace saiflow.engine.Business.Manager
 
         internal int GetProcessInstanceCount(string processId, string version)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return Sibling(kit)
                 .from(SailSqlDialect.ProcessInstanceTable)
                 .where("process_id", processId)
@@ -192,7 +198,7 @@ namespace saiflow.engine.Business.Manager
         #region Write
         internal int Insert(ProcessInstanceEntity entity)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return Insert(kit, entity);
         }
 
@@ -205,7 +211,7 @@ namespace saiflow.engine.Business.Manager
 
         internal void Update(ProcessInstanceEntity entity)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             Update(kit, entity);
         }
 
@@ -267,7 +273,7 @@ namespace saiflow.engine.Business.Manager
         #region Business rules
         internal ProcessInstanceEntity Complete(int processInstanceId, WfAppRunner runner)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return Complete(kit, processInstanceId, runner);
         }
 
@@ -292,7 +298,7 @@ namespace saiflow.engine.Business.Manager
 
         internal void Suspend(int processInstanceId, WfAppRunner runner)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             Suspend(kit, processInstanceId, runner);
         }
 
@@ -316,7 +322,7 @@ namespace saiflow.engine.Business.Manager
 
         internal void Resume(int processInstanceId, WfAppRunner runner)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             Resume(kit, processInstanceId, runner);
         }
 
@@ -340,7 +346,7 @@ namespace saiflow.engine.Business.Manager
 
         internal void RecallSubProcess(int invokedActivityInstanceId, WfAppRunner runner)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             RecallSubProcess(kit, invokedActivityInstanceId, runner);
         }
 
@@ -372,7 +378,7 @@ namespace saiflow.engine.Business.Manager
 
         internal void Reverse(int processInstanceId, WfAppRunner currentUser)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             Reverse(kit, processInstanceId, currentUser);
         }
 
@@ -395,7 +401,7 @@ namespace saiflow.engine.Business.Manager
 
         internal bool Cancel(WfAppRunner runner)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -435,7 +441,7 @@ namespace saiflow.engine.Business.Manager
 
         internal bool Discard(WfAppRunner runner)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -468,7 +474,7 @@ namespace saiflow.engine.Business.Manager
 
         internal bool Terminate(WfAppRunner runner)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -503,7 +509,7 @@ namespace saiflow.engine.Business.Manager
 
         internal bool SetOverdue(int processInstanceId, DateTime overdueDateTime, WfAppRunner runner)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return SetOverdue(kit, processInstanceId, overdueDateTime, runner);
         }
 
@@ -526,7 +532,7 @@ namespace saiflow.engine.Business.Manager
 
         internal bool Delete(int processInstanceId, bool isForced = false)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -563,7 +569,7 @@ namespace saiflow.engine.Business.Manager
 
         internal bool Delete(string processId, string version)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try

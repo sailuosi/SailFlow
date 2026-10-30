@@ -75,7 +75,7 @@ namespace saiflow.engine.Service
             }
             else
             {
-                var pm = new ProcessManager();
+                var pm = new ProcessManager(Sail);
                 var entity = pm.GetByVersion(processId, version);
                 _wfAppRunner.ProcessId = entity.ProcessId;
                 _wfAppRunner.Version = entity.Version;
@@ -96,7 +96,7 @@ namespace saiflow.engine.Service
         {
             if (_wfAppRunner.TaskId.HasValue == false)
             {
-                var tm = new TaskManager();
+                var tm = new TaskManager(Sail);
                 var task = tm.GetTaskOfMine(_wfAppRunner);
                 _wfAppRunner.TaskId = task.Id;
             }

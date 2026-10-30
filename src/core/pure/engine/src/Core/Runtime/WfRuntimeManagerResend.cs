@@ -26,9 +26,9 @@ namespace saiflow.engine.Core.Runtime
                     base.ProcessModel,
                     base.ActivityResource,
                     true,
-                    kit);
+                    kit, Sail);
 
-                NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(runningExecutionContext, kit);
+                NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(runningExecutionContext, kit, Sail);
                 mediator.LinkContext.FromActivityInstance = RunningActivityInstance;
                 var toActivityId = runningExecutionContext.ActivityResource.NextActivityPerformers.First().Key;
                 mediator.LinkContext.CurrentActivity = ProcessModel.GetActivity(toActivityId);

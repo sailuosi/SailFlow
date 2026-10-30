@@ -8,6 +8,7 @@ using saiflow.AI.Abstractions;
 using saiflow.AI.Entity;
 using saiflow.AI.Service;
 using saiflow.WebUtility;
+using saiflow.engine.Client;
 
 namespace saiflow.AI.Runtime
 {
@@ -17,6 +18,13 @@ namespace saiflow.AI.Runtime
     /// </summary>
     public sealed class DefaultAiNodeExecutor : IAiNodeExecutor
     {
+        public DefaultAiNodeExecutor(SailClient client)
+        {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
+        }
+
+        private readonly SailClient Sail;
+
         public async Task<AiNodeExecutionResult> ExecuteAsync(
             AiNodeExecutionRequest request,
             CancellationToken cancellationToken = default)
@@ -38,7 +46,7 @@ namespace saiflow.AI.Runtime
                 })
                 .ToList();
 
-            var aiModelDataService = new AiModelDataService();
+            var aiModelDataService = new AiModelDataService(Sail);
             var axConfigEntity = aiModelDataService.GetAiActivityConfigByProcessVersionActivity(
                 request.ProcessId, request.Version, request.ActivityId);
             if (axConfigEntity == null)
@@ -57,25 +65,25 @@ namespace saiflow.AI.Runtime
             string aiResponseMessage;
             if (string.Equals(serviceType, "RAG", StringComparison.OrdinalIgnoreCase))
             {
-                aiResponseMessage = await new RagMultiTurnService()
+                aiResponseMessage = await new RagMultiTurnService(Sail)
                     .InvokeWithHistoryAsync(axConfigEntity, mediaFileList, history)
                     .ConfigureAwait(false);
             }
             else if (string.Equals(serviceType, "LLM", StringComparison.OrdinalIgnoreCase))
             {
-                aiResponseMessage = await new LlmMultiTurnService()
+                aiResponseMessage = await new LlmMultiTurnService(Sail)
                     .InvokeWithHistoryAsync(axConfigEntity, mediaFileList, history)
                     .ConfigureAwait(false);
             }
             else if (string.Equals(serviceType, "Agent", StringComparison.OrdinalIgnoreCase))
             {
-                aiResponseMessage = await new AgentMultiTurnService()
+                aiResponseMessage = await new AgentMultiTurnService(Sail)
                     .InvokeWithHistoryAsync(axConfigEntity, mediaFileList, history, cancellationToken)
                     .ConfigureAwait(false);
             }
             else
             {
-                aiResponseMessage = await new AiFastCallingService()
+                aiResponseMessage = await new AiFastCallingService(Sail)
                     .InvokeAIServiceAsync(axConfigEntity, mediaFileList)
                     .ConfigureAwait(false);
             }

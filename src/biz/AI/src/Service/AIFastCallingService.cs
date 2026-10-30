@@ -4,6 +4,7 @@ using saiflow.AI.Manager;
 using saiflow.AI.Configuration;
 using saiflow.AI.Common;
 using saiflow.WebUtility;
+using saiflow.engine.Client;
 
 namespace saiflow.AI.Service
 {
@@ -14,8 +15,11 @@ namespace saiflow.AI.Service
     /// </summary>
     public class AiFastCallingService : IAiFastCallingService
     {
-        public AiFastCallingService()
+        private readonly SailClient Sail;
+
+        public AiFastCallingService(SailClient client)
         {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
         }
 
         #region 工作流节点执行 - 从 ai_activity_config、ai_model_provider 读取
@@ -42,7 +46,7 @@ namespace saiflow.AI.Service
             }
 
             // Get model provider configuration
-            var modelProviderManager = new AiModelProviderManager();
+            var modelProviderManager = new AiModelProviderManager(Sail);
             var modelProvider = modelProviderManager.GetById(axConfig.ModelProviderId.Value);
 
             if (modelProvider == null)
@@ -82,7 +86,7 @@ namespace saiflow.AI.Service
             var timeout = axConfig.Timeout;
 
             //using decryptedApiKey
-            var response = await aiLargeModelService.InvokeAIChatServiceAsync(baseUrl, decryptedApiKey, mediaFileList, axConfig);
+            var response = await aiLargeModelService.InvokeAIChatServiceAsync(baseUrl, decryptedApiKey, mediaFileList, axConfig, Sail);
 
             if (response.Status == 1)
             {

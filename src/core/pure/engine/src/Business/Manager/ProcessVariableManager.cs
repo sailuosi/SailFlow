@@ -20,6 +20,12 @@ namespace saiflow.engine.Business.Manager
     /// </summary>
     internal class ProcessVariableManager
     {
+        public ProcessVariableManager(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
         /// <summary>同库同事务的新 kit，避免链式 select 状态互相污染。</summary>
         private static SQLBuilder Sibling(SQLBuilder kit)
         {
@@ -30,7 +36,7 @@ namespace saiflow.engine.Business.Manager
         }
 
         internal ProcessVariableEntity GetVariableById(int variableId)
-            => SailClientAccess.UseRunSQL().useRepo<ProcessVariableEntity, int>().GetById(variableId);
+            => Sail.UseRunSQL().useRepo<ProcessVariableEntity, int>().GetById(variableId);
 
         internal ProcessVariableEntity GetVariableById(SQLBuilder kit, int variableId)
             => Sibling(kit).useRepo<ProcessVariableEntity, int>().GetById(variableId);
@@ -40,7 +46,7 @@ namespace saiflow.engine.Business.Manager
             string name,
             EventContext eventContext)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetVariable(kit, variableType, name, eventContext);
         }
 
@@ -63,7 +69,7 @@ namespace saiflow.engine.Business.Manager
 
         internal string GetVariableByScopePriority(string name, EventContext eventContext)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetVariableByScopePriority(kit, name, eventContext);
         }
 
@@ -82,7 +88,7 @@ namespace saiflow.engine.Business.Manager
             TaskViewEntity taskView,
             IDictionary<string, string> condition)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetVariableByTask(kit, taskView, condition);
         }
 
@@ -105,7 +111,7 @@ namespace saiflow.engine.Business.Manager
 
         internal IList<ProcessVariableEntity> GetVariableList(int processInstanceId)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetVariableList(kit, processInstanceId);
         }
 
@@ -135,13 +141,13 @@ namespace saiflow.engine.Business.Manager
 
         internal ProcessVariableEntity GetVariableEntity(ProcessVariableQuery query)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return Query(kit, query);
         }
 
         internal string GetVariableValue(ProcessVariableQuery query)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetVariableValue(kit, query);
         }
 
@@ -162,7 +168,7 @@ namespace saiflow.engine.Business.Manager
 
         internal ProcessVariableEntity GetVariableByProcess(int processInstanceId, string name)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetVariableByProcess(kit, processInstanceId, name);
         }
 
@@ -182,7 +188,7 @@ namespace saiflow.engine.Business.Manager
         internal ProcessVariableEntity GetVariableByActivity(
             int processInstanceId, int activityInstanceId, string name)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetVariableByActivity(kit, processInstanceId, activityInstanceId, name);
         }
 
@@ -206,7 +212,7 @@ namespace saiflow.engine.Business.Manager
             int activityInstanceId,
             IList<string> variableNameList)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetVariableListByActivity(kit, processInstanceId, activityInstanceId, variableNameList);
         }
 
@@ -233,7 +239,7 @@ namespace saiflow.engine.Business.Manager
 
         internal int SaveVariable(ProcessVariableEntity entity)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return SaveVariable(kit, entity);
         }
 
@@ -263,7 +269,7 @@ namespace saiflow.engine.Business.Manager
 
         internal bool ValidateProcessVariable(int processInstanceId, string expression)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return ValidateProcessVariable(kit, processInstanceId, expression);
         }
 
@@ -299,7 +305,7 @@ namespace saiflow.engine.Business.Manager
             => Sibling(kit).useRepo<ProcessVariableEntity>().Update(entity);
 
         internal void DeleteVariable(int variableId)
-            => SailClientAccess.UseRunSQL().useRepo<ProcessVariableEntity, int>().DeleteById(variableId);
+            => Sail.UseRunSQL().useRepo<ProcessVariableEntity, int>().DeleteById(variableId);
 
         internal void DeleteVariable(SQLBuilder kit, int variableId)
             => Sibling(kit).useRepo<ProcessVariableEntity, int>().DeleteById(variableId);

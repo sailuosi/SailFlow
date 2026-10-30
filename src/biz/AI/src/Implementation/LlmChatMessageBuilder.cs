@@ -10,6 +10,7 @@ using saiflow.AI.Configuration;
 using saiflow.AI.Entity;
 using saiflow.AI.Manager;
 using saiflow.AI.Service;
+using saiflow.engine.Client;
 
 namespace saiflow.AI.Implementation
 {
@@ -28,14 +29,17 @@ namespace saiflow.AI.Implementation
             string userMessage,
             AiActivityConfigEntity axConfig,
             IList<ChatHistoryMessage> historyChatMessageList = null,
-            int? memoryTurns = null)
+            int? memoryTurns = null,
+            SailClient sail = null)
         {
             if (serviceType == AiServiceTypeEnum.RAG)
             {
                 if (axConfig?.RagEmbeddingModelId == null || !axConfig.RagEmbeddingModelId.HasValue)
                     throw new InvalidOperationException("RAG 节点必须在 ai_activity_config 中设置 RagEmbeddingModelId，指向 ai_model_provider 中的向量模型 (model_type=vector_model)。");
+                if (sail == null)
+                    throw new ArgumentNullException(nameof(sail), "SailClient is required for RAG embedding provider lookup.");
 
-                var modelManager = new AiModelProviderManager();
+                var modelManager = new AiModelProviderManager(sail);
                 var embeddingProvider = modelManager.GetById(axConfig.RagEmbeddingModelId.Value);
                 if (embeddingProvider == null)
                     throw new InvalidOperationException($"ai_model_provider 中未找到 Id={axConfig.RagEmbeddingModelId.Value} 的向量模型配置。");

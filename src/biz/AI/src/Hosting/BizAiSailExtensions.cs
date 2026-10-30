@@ -22,7 +22,7 @@ public static class BizAiSailExtensions
                 Name = "BizAI",
                 Phase = SailFeaturePhase.ConfigureClient,
                 Order = 200,
-                ConfigureClient = (_, _) => AiRuntime.UseDefaultExecutor()
+                ConfigureClient = (client, _) => AiRuntime.UseDefaultExecutor(client)
             });
         }
 

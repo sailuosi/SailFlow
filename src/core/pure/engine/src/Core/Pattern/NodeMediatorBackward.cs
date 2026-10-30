@@ -11,6 +11,7 @@ using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Business.Entity;
 
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
@@ -19,8 +20,8 @@ namespace saiflow.engine.Core.Pattern
     /// </summary>
     internal class NodeMediatorBackward : NodeMediator
     {
-        internal NodeMediatorBackward(BackwardContext backwardContext, SQLBuilder kit)
-            : base(backwardContext, kit)
+        internal NodeMediatorBackward(BackwardContext backwardContext, SQLBuilder kit, SailClient client)
+            : base(backwardContext, kit, client)
         {
             
         }

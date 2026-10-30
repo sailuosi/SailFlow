@@ -8,6 +8,7 @@ using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Business.Entity;
 
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Auto
 {
     /// <summary>
@@ -16,14 +17,14 @@ namespace saiflow.engine.Core.Pattern.Auto
     /// </summary>
     internal class NodeMediatorScript : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
     {
-        internal NodeMediatorScript(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorScript(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
 
-        internal NodeMediatorScript(SQLBuilder kit)
-            : base(kit)
+        internal NodeMediatorScript(SQLBuilder kit, SailClient client)
+            : base(kit, client)
         {
 
         }

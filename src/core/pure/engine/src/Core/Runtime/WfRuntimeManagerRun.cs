@@ -36,7 +36,7 @@ namespace saiflow.engine.Core.Runtime
                         base.ProcessModel,
                         base.ActivityResource,
                         false,
-                        kit);
+                        kit, Sail);
                 }
                 else
                 {
@@ -46,12 +46,12 @@ namespace saiflow.engine.Core.Runtime
                         base.ProcessModel,
                         base.ActivityResource,
                         false,
-                        kit);
+                        kit, Sail);
                 }
 
                 OnProcessRunning(kit);
 
-                NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(runningExecutionContext, kit);
+                NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(runningExecutionContext, kit, Sail);
                 mediator.LinkContext.FromActivityInstance = RunningActivityInstance;
                 mediator.ExecuteWorkItem(null);
 
@@ -83,7 +83,7 @@ namespace saiflow.engine.Core.Runtime
         /// <param name="kit"></param>
         private void OnProcessRunning(SQLBuilder kit)
         {
-            EventExecutor.InvokeExternalEvent(kit,
+            EventExecutor.InvokeExternalEvent(Sail, kit,
                 EventFireTypeEnum.OnProcessRunning,
                 base.ActivityResource.AppRunner.EventSubscriptionList,
                 RunningActivityInstance.ProcessInstanceId);
@@ -96,11 +96,11 @@ namespace saiflow.engine.Core.Runtime
         /// <param name="kit"></param>
         private void OnProcessCompleted(SQLBuilder kit)
         {
-            var pim = new ProcessInstanceManager();
+            var pim = new ProcessInstanceManager(Sail);
             var entity = pim.GetById(kit, RunningActivityInstance.ProcessInstanceId);
             if (entity.ProcessState == (short)ProcessStateEnum.Completed)
             {
-                EventExecutor.InvokeExternalEvent(kit,
+                EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessCompleted,
                     base.ActivityResource.AppRunner.EventSubscriptionList,
                     RunningActivityInstance.ProcessInstanceId);

@@ -43,8 +43,8 @@ public sealed class SailClientBuilder
         return this;
     }
 
-    /// <summary>积极构建：得到 SailClient，并可选绑定到 <see cref="SailClientAccess"/>。</summary>
-    public SailClient Build(bool bindAccess = true)
+    /// <summary>积极构建：得到 <see cref="SailClient"/>，由宿主自行持有并注入工作类。</summary>
+    public SailClient Build()
     {
         foreach (var d in Services.OrderBy(x => x.Order)
                      .Where(x => x.Phase == SailFeaturePhase.ConfigureServices))
@@ -78,9 +78,6 @@ public sealed class SailClientBuilder
         {
             d.PostBuild?.Invoke(client, Services);
         }
-
-        if (bindAccess)
-            SailClientAccess.Use(client);
 
         return client;
     }

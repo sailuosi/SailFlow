@@ -17,6 +17,7 @@ using saiflow.engine.Core.Pattern.Gateway;
 using saiflow.engine.Business.Manager;
 using saiflow.engine.Xpdl.Node;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
@@ -37,33 +38,32 @@ namespace saiflow.engine.Core.Pattern
         /// <param name="forwardContext"></param>
         /// <param name="kit"></param>
         /// <returns></returns>
-        internal static NodeMediator CreateNodeMediator(ActivityForwardContext forwardContext,
-            SQLBuilder kit)
+        internal static NodeMediator CreateNodeMediator(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
         {
             if (forwardContext.CurrentActivity.ActivityType == ActivityTypeEnum.StartNode)        
             {
                 if (forwardContext.CurrentActivity.TriggerDetail == null || 
                     forwardContext.CurrentActivity.TriggerDetail.TriggerType == TriggerTypeEnum.None)
                 {
-                    return new NodeMediatorStart(forwardContext, kit);
+                    return new NodeMediatorStart(forwardContext, kit, client);
                 }
                 else if (forwardContext.CurrentActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Timer)
                 {
-                    return new NodeMediatorStartTimer(forwardContext, kit);
+                    return new NodeMediatorStartTimer(forwardContext, kit, client);
                 }
                 else if (forwardContext.CurrentActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Conditional)
                 {
-                    return new NodeMediatorStartConditional(forwardContext, kit);
+                    return new NodeMediatorStartConditional(forwardContext, kit, client);
                 }
                 else if (forwardContext.CurrentActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Message)
                 {
                     if (forwardContext.CurrentActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Catch)
                     {
-                        return new NodeMediatorStartMsgCatch(forwardContext, kit);
+                        return new NodeMediatorStartMsgCatch(forwardContext, kit, client);
                     }
                     else if (forwardContext.CurrentActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Throw)
                     {
-                        return new NodeMediatorStartMsgThrow(forwardContext, kit);
+                        return new NodeMediatorStartMsgThrow(forwardContext, kit, client);
                     }
                     else
                     {
@@ -77,11 +77,11 @@ namespace saiflow.engine.Core.Pattern
                 {
                     if (forwardContext.CurrentActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Catch)
                     {
-                        return new NodeMediatorStartSignalCatch(forwardContext, kit);
+                        return new NodeMediatorStartSignalCatch(forwardContext, kit, client);
                     }
                     else if (forwardContext.CurrentActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Throw)
                     {
-                        return new NodeMediatorStartSignalThrow(forwardContext, kit);
+                        return new NodeMediatorStartSignalThrow(forwardContext, kit, client);
                     }
                     else
                     {
@@ -103,21 +103,21 @@ namespace saiflow.engine.Core.Pattern
                 if (forwardContext.CurrentActivity.TriggerDetail == null || 
                     forwardContext.CurrentActivity.TriggerDetail.TriggerType == TriggerTypeEnum.None)
                 {
-                    return new NodeMediatorEnd(forwardContext, kit);
+                    return new NodeMediatorEnd(forwardContext, kit, client);
                 }
                 else if (forwardContext.CurrentActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Timer)
                 {
-                    return new NodeMediatorEndTimer(forwardContext, kit);
+                    return new NodeMediatorEndTimer(forwardContext, kit, client);
                 }
                 else if (forwardContext.CurrentActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Message)
                 {
                     if (forwardContext.CurrentActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Catch)
                     {
-                        return new NodeMediatorEndMsgCatch(forwardContext, kit);
+                        return new NodeMediatorEndMsgCatch(forwardContext, kit, client);
                     }
                     else if (forwardContext.CurrentActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Throw)
                     {
-                        return new NodeMediatorEndMsgThrow(forwardContext, kit);
+                        return new NodeMediatorEndMsgThrow(forwardContext, kit, client);
                     }
                     else
                     {
@@ -131,11 +131,11 @@ namespace saiflow.engine.Core.Pattern
                 {
                     if (forwardContext.CurrentActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Catch)
                     {
-                        return new NodeMediatorEndSignalCatch(forwardContext, kit);
+                        return new NodeMediatorEndSignalCatch(forwardContext, kit, client);
                     }
                     else if (forwardContext.CurrentActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Throw)
                     {
-                        return new NodeMediatorEndSignalThrow(forwardContext, kit);
+                        return new NodeMediatorEndSignalThrow(forwardContext, kit, client);
                     }
                     else
                     {
@@ -156,21 +156,21 @@ namespace saiflow.engine.Core.Pattern
             {
                 if (forwardContext.CurrentActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Timer)
                 {
-                    return new NodeMediatorInterTimerGo(forwardContext, kit);
+                    return new NodeMediatorInterTimerGo(forwardContext, kit, client);
                 }
                 else if (forwardContext.CurrentActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Conditional)
                 {
-                    return new NodeMediatorInterConditionalGo(forwardContext, kit);
+                    return new NodeMediatorInterConditionalGo(forwardContext, kit, client);
                 }
                 else if (forwardContext.CurrentActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Message)
                 {
                     if (forwardContext.CurrentActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Catch)
                     {
-                        return new NodeMediatorInterMsgCatchContinue(forwardContext, kit);
+                        return new NodeMediatorInterMsgCatchContinue(forwardContext, kit, client);
                     }
                     else if (forwardContext.CurrentActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Throw)
                     {
-                        return new NodeMediatorInterMsgThrow(forwardContext, kit);
+                        return new NodeMediatorInterMsgThrow(forwardContext, kit, client);
                     }
                     else
                     {
@@ -184,11 +184,11 @@ namespace saiflow.engine.Core.Pattern
                 {
                     if (forwardContext.CurrentActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Catch)
                     {
-                        return new NodeMediatorInterSignalCatchContinue(forwardContext, kit);
+                        return new NodeMediatorInterSignalCatchContinue(forwardContext, kit, client);
                     }
                     else if (forwardContext.CurrentActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Throw)
                     {
-                        return new NodeMediatorInterSignalThrow(forwardContext, kit);
+                        return new NodeMediatorInterSignalThrow(forwardContext, kit, client);
                     }
                     else
                     {
@@ -215,37 +215,37 @@ namespace saiflow.engine.Core.Pattern
                     if (!string.IsNullOrEmpty(controlParamSheet.SignForwardType)
                         && controlParamSheet.SignForwardType.ToUpper() != "NONE")
                     {
-                        return new NodeMediatorSignForward(forwardContext, kit);
+                        return new NodeMediatorSignForward(forwardContext, kit, client);
                     }
                     else
                     {
-                        return new NodeMediatorTask(forwardContext, kit);
+                        return new NodeMediatorTask(forwardContext, kit, client);
                     }
                 }
                 else if(forwardContext.FromActivityInstance.MainActivityInstanceId != null)
                 {
                     //加签子实例
                     //Signature forward sub instance
-                    return new NodeMediatorMultiSignForward(forwardContext, kit);
+                    return new NodeMediatorMultiSignForward(forwardContext, kit, client);
                 }
                 else
                 {
-                    return new NodeMediatorTask(forwardContext, kit);
+                    return new NodeMediatorTask(forwardContext, kit, client);
                 } 
             }
             else if (forwardContext.CurrentActivity.ActivityType == ActivityTypeEnum.ServiceNode)      
             {
                 if (IsRuleTaskActivity(forwardContext.CurrentActivity))
-                    return new NodeMediatorRule(forwardContext, kit);
-                return new NodeMediatorService(forwardContext, kit);
+                    return new NodeMediatorRule(forwardContext, kit, client);
+                return new NodeMediatorService(forwardContext, kit, client);
             }
             else if (forwardContext.CurrentActivity.ActivityType == ActivityTypeEnum.AIServiceNode)
             {
-                return new NodeMediatorAIService(forwardContext, kit);
+                return new NodeMediatorAIService(forwardContext, kit, client);
             }
             else if (forwardContext.CurrentActivity.ActivityType == ActivityTypeEnum.ScriptNode)
             {
-                return new NodeMediatorScript(forwardContext, kit);
+                return new NodeMediatorScript(forwardContext, kit, client);
             }
             else if (forwardContext.CurrentActivity.ActivityType == ActivityTypeEnum.MultiSignNode)
             {
@@ -253,11 +253,11 @@ namespace saiflow.engine.Core.Pattern
                 {
                     if (forwardContext.CurrentActivity.MultiSignDetail.ComplexType == ComplexTypeEnum.SignTogether)
                     {
-                        return new NodeMediatorMultiSignTogether(forwardContext, kit);
+                        return new NodeMediatorMultiSignTogether(forwardContext, kit, client);
                     }
                     else if (forwardContext.CurrentActivity.MultiSignDetail.ComplexType == ComplexTypeEnum.SignForward)
                     {
-                        return new NodeMediatorMultiSignForward(forwardContext, kit);
+                        return new NodeMediatorMultiSignForward(forwardContext, kit, client);
                     }
                     else
                     {
@@ -270,7 +270,7 @@ namespace saiflow.engine.Core.Pattern
                     //Distribution operation of signing the main node
                     if (forwardContext.CurrentActivity.MultiSignDetail.ComplexType == ComplexTypeEnum.SignForward)
                     {
-                        var aim = new ActivityInstanceManager();
+                        var aim = new ActivityInstanceManager(client);
                         var miChildList = aim.GetActivityMulitipleInstanceWithState(forwardContext.FromActivityInstance.Id, forwardContext.FromActivityInstance.ProcessInstanceId);
 
                         //加签的动态变量传入
@@ -281,16 +281,16 @@ namespace saiflow.engine.Core.Pattern
                             if (!string.IsNullOrEmpty(controlParamSheet.SignForwardType)
                                 && controlParamSheet.SignForwardType.ToUpper() != "NONE")
                             {
-                                return new NodeMediatorSignForward(forwardContext, kit);
+                                return new NodeMediatorSignForward(forwardContext, kit, client);
                             }
                             else
                             {
-                                return new NodeMediatorTask(forwardContext, kit);
+                                return new NodeMediatorTask(forwardContext, kit, client);
                             }
                         }
                         else if (miChildList.Count == 0)
                         {
-                            return new NodeMediatorTask(forwardContext, kit);
+                            return new NodeMediatorTask(forwardContext, kit, client);
                         }
                         else
                         {
@@ -309,7 +309,7 @@ namespace saiflow.engine.Core.Pattern
             }
             else if (forwardContext.CurrentActivity.ActivityType == ActivityTypeEnum.SubProcessNode)
             {
-                var nodeMediatorSubProcess = NodeMediatorFactory.CreateNodeMediatorSubProcess(forwardContext, forwardContext.CurrentActivity, kit);
+                var nodeMediatorSubProcess = NodeMediatorFactory.CreateNodeMediatorSubProcess(forwardContext, forwardContext.CurrentActivity, kit, client);
                 return nodeMediatorSubProcess;
             }
             else
@@ -350,52 +350,50 @@ namespace saiflow.engine.Core.Pattern
         /// <param name="processModel"></param>
         /// <param name="kit"></param>
         /// <returns></returns>
-        internal static NodeMediatorGateway CreateNodeMediatorGateway(Activity gActivity,
-            IProcessModel processModel,
-            SQLBuilder kit)
+        internal static NodeMediatorGateway CreateNodeMediatorGateway(Activity gActivity, IProcessModel processModel, SQLBuilder kit, SailClient client)
         {
             NodeMediatorGateway nodeMediator = null;
             if (gActivity.ActivityType == ActivityTypeEnum.GatewayNode)
             {
                 if (gActivity.GatewayDetail.DirectionType == GatewayDirectionEnum.AndSplit)
                 {
-                    nodeMediator = new NodeMediatorAndSplit(gActivity, processModel, kit);
+                    nodeMediator = new NodeMediatorAndSplit(gActivity, processModel, kit, client);
                 }
                 else if (gActivity.GatewayDetail.DirectionType == GatewayDirectionEnum.AndSplitMI)
                 {
-                    nodeMediator = new NodeMediatorAndSplitMI(gActivity, processModel, kit);
+                    nodeMediator = new NodeMediatorAndSplitMI(gActivity, processModel, kit, client);
                 }
                 else if (gActivity.GatewayDetail.DirectionType == GatewayDirectionEnum.OrSplit)
                 {
-                    nodeMediator = new NodeMediatorOrSplit(gActivity, processModel, kit);
+                    nodeMediator = new NodeMediatorOrSplit(gActivity, processModel, kit, client);
                 }
                 else if (gActivity.GatewayDetail.DirectionType == GatewayDirectionEnum.XOrSplit)
                 {
-                    nodeMediator = new NodeMediatorXOrSplit(gActivity, processModel, kit);
+                    nodeMediator = new NodeMediatorXOrSplit(gActivity, processModel, kit, client);
                 }
                 else if (gActivity.GatewayDetail.DirectionType == GatewayDirectionEnum.ApprovalOrSplit)
                 {
-                    nodeMediator = new NodeMediatorApprovalOrSplit(gActivity, processModel, kit);
+                    nodeMediator = new NodeMediatorApprovalOrSplit(gActivity, processModel, kit, client);
                 }
                 else if (gActivity.GatewayDetail.DirectionType == GatewayDirectionEnum.AndJoin)
                 {
-                    nodeMediator = new NodeMediatorAndJoin(gActivity, processModel, kit);
+                    nodeMediator = new NodeMediatorAndJoin(gActivity, processModel, kit, client);
                 }
                 else if (gActivity.GatewayDetail.DirectionType == GatewayDirectionEnum.AndJoinMI)
                 {
-                    nodeMediator = new NodeMediatorAndJoinMI(gActivity, processModel, kit);
+                    nodeMediator = new NodeMediatorAndJoinMI(gActivity, processModel, kit, client);
                 }
                 else if (gActivity.GatewayDetail.DirectionType == GatewayDirectionEnum.OrJoin)
                 {
-                    nodeMediator = new NodeMediatorOrJoin(gActivity, processModel, kit);
+                    nodeMediator = new NodeMediatorOrJoin(gActivity, processModel, kit, client);
                 }
                 else if (gActivity.GatewayDetail.DirectionType == GatewayDirectionEnum.XOrJoin)
                 {
-                    nodeMediator = new NodeMediatorXOrJoin(gActivity, processModel, kit);
+                    nodeMediator = new NodeMediatorXOrJoin(gActivity, processModel, kit, client);
                 }
                 else if (gActivity.GatewayDetail.DirectionType == GatewayDirectionEnum.EOrJoin)
                 {
-                    nodeMediator = new NodeMediatorEOrJoin(gActivity, processModel, kit);
+                    nodeMediator = new NodeMediatorEOrJoin(gActivity, processModel, kit, client);
                 }
                 else
                 {
@@ -415,10 +413,7 @@ namespace saiflow.engine.Core.Pattern
         /// Create Node Mediator Event
         /// 创建中间事件节点处理类实例
         /// </summary>
-        internal static NodeMediator CreateNodeMediatorEvent(ActivityForwardContext forwardContext,
-            Activity eventActivity,
-            IProcessModel processModel,
-            SQLBuilder kit)
+        internal static NodeMediator CreateNodeMediatorEvent(ActivityForwardContext forwardContext, Activity eventActivity, IProcessModel processModel, SQLBuilder kit, SailClient client)
         {
             NodeMediator nodeMediator = null;
             if (eventActivity.ActivityType == ActivityTypeEnum.IntermediateNode)
@@ -427,21 +422,21 @@ namespace saiflow.engine.Core.Pattern
                 {
                     if (eventActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Timer)
                     {
-                        nodeMediator = new NodeMediatorInterTimer(forwardContext, kit);
+                        nodeMediator = new NodeMediatorInterTimer(forwardContext, kit, client);
                     }
                     else if (eventActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Conditional)
                     {
-                        nodeMediator = new NodeMediatorInterConditional(forwardContext, kit);
+                        nodeMediator = new NodeMediatorInterConditional(forwardContext, kit, client);
                     }
                     else if (eventActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Message)
                     {
                         if (eventActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Catch)
                         {
-                            nodeMediator = new NodeMediatorInterMsgCatch(forwardContext, kit);
+                            nodeMediator = new NodeMediatorInterMsgCatch(forwardContext, kit, client);
                         }
                         else if (eventActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Throw)
                         {
-                            nodeMediator = new NodeMediatorInterMsgThrow(forwardContext, kit);
+                            nodeMediator = new NodeMediatorInterMsgThrow(forwardContext, kit, client);
                         }
                         else
                         {
@@ -453,11 +448,11 @@ namespace saiflow.engine.Core.Pattern
                     {
                         if (eventActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Catch)
                         {
-                            nodeMediator = new NodeMediatorInterSignalCatch(forwardContext, kit);
+                            nodeMediator = new NodeMediatorInterSignalCatch(forwardContext, kit, client);
                         }
                         else if (eventActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Throw)
                         {
-                            nodeMediator = new NodeMediatorInterSignalThrow(forwardContext, kit);
+                            nodeMediator = new NodeMediatorInterSignalThrow(forwardContext, kit, client);
                         }
                         else
                         {
@@ -473,25 +468,25 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else
                 {
-                    nodeMediator = new NodeMediatorIntermediate(forwardContext, kit);
+                    nodeMediator = new NodeMediatorIntermediate(forwardContext, kit, client);
                 }
             }
             else if(eventActivity.ActivityType == ActivityTypeEnum.ServiceNode)
             {
                 if (IsRuleTaskActivity(eventActivity))
-                    nodeMediator = new NodeMediatorRule(forwardContext, kit);
+                    nodeMediator = new NodeMediatorRule(forwardContext, kit, client);
                 else
-                    nodeMediator = new NodeMediatorService(forwardContext, kit);
+                    nodeMediator = new NodeMediatorService(forwardContext, kit, client);
                 nodeMediator.LinkContext.CurrentActivity = eventActivity;
             }
             else if(eventActivity.ActivityType == ActivityTypeEnum.AIServiceNode)
             {
-                nodeMediator = new NodeMediatorAIService(forwardContext, kit);
+                nodeMediator = new NodeMediatorAIService(forwardContext, kit, client);
                 nodeMediator.LinkContext.CurrentActivity = eventActivity;
             }
             else if (eventActivity.ActivityType == ActivityTypeEnum.ScriptNode)
             {
-                nodeMediator = new NodeMediatorScript(forwardContext, kit);
+                nodeMediator = new NodeMediatorScript(forwardContext, kit, client);
                 nodeMediator.LinkContext.CurrentActivity = eventActivity;
             }
             else
@@ -513,26 +508,27 @@ namespace saiflow.engine.Core.Pattern
         /// <returns></returns>
         internal static NodeMediator CreateNodeMediatorEnd(ActivityForwardContext forwardContext, 
             Activity endActivity, 
-            SQLBuilder kit)
+            SQLBuilder kit,
+            SailClient client)
         {
             if (endActivity.TriggerDetail == null 
                 || endActivity.TriggerDetail.TriggerType == TriggerTypeEnum.None)
             {
-                return new NodeMediatorEnd(forwardContext, kit);
+                return new NodeMediatorEnd(forwardContext, kit, client);
             }
             else if (endActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Timer)
             {
-                return new NodeMediatorEndTimer(forwardContext, kit);
+                return new NodeMediatorEndTimer(forwardContext, kit, client);
             }
             else if (endActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Message)
             {
                 if (endActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Catch)
                 {
-                    return new NodeMediatorEndMsgCatch(forwardContext, kit);
+                    return new NodeMediatorEndMsgCatch(forwardContext, kit, client);
                 }
                 else if (endActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Throw)
                 {
-                    return new NodeMediatorEndMsgThrow(forwardContext, kit);
+                    return new NodeMediatorEndMsgThrow(forwardContext, kit, client);
                 }
                 else
                 {
@@ -561,16 +557,17 @@ namespace saiflow.engine.Core.Pattern
         /// <returns></returns>
         internal static NodeMediator CreateNodeMediatorSubProcess(ActivityForwardContext forwardContext,
             Activity activity,
-            SQLBuilder kit)
+            SQLBuilder kit,
+            SailClient client)
         {
             var subProcessNode = (SubProcessNode)activity.Node;
             if (subProcessNode.SubProcessNested != null)
             {
-                return new NodeMediatorSubProcessNested(forwardContext, kit);
+                return new NodeMediatorSubProcessNested(forwardContext, kit, client);
             }
             else
             {
-                return new NodeMediatorSubProcess(forwardContext, kit);
+                return new NodeMediatorSubProcess(forwardContext, kit, client);
             }
         }
 
@@ -582,16 +579,17 @@ namespace saiflow.engine.Core.Pattern
         /// <param name="kit"></param>
         /// <returns></returns>
         internal static NodeMediator CreateNodeMediatorSubProcess(Activity activity,
-            SQLBuilder kit)
+            SQLBuilder kit,
+            SailClient client)
         {
             var subProcessNode = (SubProcessNode)activity.Node;
             if (subProcessNode.SubProcessNested != null)
             {
-                return new NodeMediatorSubProcessNested(kit);
+                return new NodeMediatorSubProcessNested(kit, client);
             }
             else
             {
-                return new NodeMediatorSubProcess(kit);
+                return new NodeMediatorSubProcess(kit, client);
             }
         }
     }

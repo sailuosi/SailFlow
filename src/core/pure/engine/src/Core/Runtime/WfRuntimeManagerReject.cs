@@ -22,12 +22,12 @@ namespace saiflow.engine.Core.Runtime
         {
             WfExecutedResult result = base.WfExecutedResult;
 
-            var tm = new TaskManager();
+            var tm = new TaskManager(Sail);
             tm.Complete(SailSqlAccess.Sibling(kit), this.TaskView.Id, base.AppRunner);
 
             //取消当前其它处于办理状态的节点
             //Cancel other nodes currently in processing status
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             var runningList = aim.GetRunningActivityInstanceList(SailSqlAccess.Sibling(kit), base.AppRunner.AppInstanceId, base.AppRunner.ProcessId, base.AppRunner.Version);
             foreach (var ai in runningList)
             {
@@ -37,7 +37,7 @@ namespace saiflow.engine.Core.Runtime
                 }
             }
 
-            var nodeMediatorBackward = new NodeMediatorBackward(base.BackwardContext, kit);
+            var nodeMediatorBackward = new NodeMediatorBackward(base.BackwardContext, kit, Sail);
             nodeMediatorBackward.CreateBackwardActivityTaskTransitionInstance(base.BackwardContext.ProcessInstance,
                 base.BackwardContext.BackwardFromActivityInstance,
                 BackwardTypeEnum.Sendback,

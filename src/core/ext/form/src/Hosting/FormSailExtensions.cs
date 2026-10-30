@@ -17,9 +17,9 @@ namespace saiflow.hub.Form.Hosting
                 Name = "Form",
                 Phase = SailFeaturePhase.ConfigureClient,
                 Order = 120,
-                ConfigureClient = (_, coll) =>
+                ConfigureClient = (client, coll) =>
                 {
-                    var formService = FormServiceFactory.Create();
+                    var formService = FormServiceFactory.Create(client);
                     coll.Properties[SailBuilderKeys.FormService] = formService;
                     FormServiceLocator.Register(formService);
                 }

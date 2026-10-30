@@ -136,7 +136,7 @@ namespace saiflow.biz.Bootstrap
             var seeded = seed ? EnsureMinimalSeed(kit) : 0;
 
             if (includeAi && registerAiExecutor)
-                AiRuntime.UseDefaultExecutor();
+                AiRuntime.UseDefaultExecutor(client);
 
             return new SailInitDbResult
             {

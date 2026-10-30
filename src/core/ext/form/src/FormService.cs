@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using saiflow.engine.Client;
 
 namespace saiflow.hub.Form
 {
@@ -12,6 +13,12 @@ namespace saiflow.hub.Form
     /// </summary>
     public class FormService : IFormService
     {
+        public FormService(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+        protected SailClient Sail { get; }
+
         /// <summary>
         /// Read from list
         /// 获取表单列表
@@ -19,7 +26,7 @@ namespace saiflow.hub.Form
         /// <returns></returns>
         public IList<Form> GetFormAll()
         {
-            var formManager = new FormManager();
+            var formManager = new FormManager(Sail);
             var itemList = formManager.GetAll();
             IList<Form> formList = new List<Form>();
             foreach (var item in itemList)
@@ -44,8 +51,8 @@ namespace saiflow.hub.Form
         {
             var fieldList = new List<FieldActivityEdit>();
             //get field summary list 
-            var formManager = new FormManager();
-            var fieldManager = new FieldManager();
+            var formManager = new FormManager(Sail);
+            var fieldManager = new FieldManager(Sail);
 
             var summartyFieldList = formManager.GetFieldSummaryList(int.Parse(formId)).ToList();
             var fieldActivityEditItem = fieldManager.GetFieldActivityEditListByForm(formId, 
@@ -107,7 +114,7 @@ namespace saiflow.hub.Form
         /// <param name="form"></param>
         public void SaveFieldActivityEditInfo(FieldActivityEditInfo info)
         {
-            var fm = new FieldManager();
+            var fm = new FieldManager(Sail);
             var itemDB = fm.GetFieldActivityEditListByForm(info.FormId.ToString(), info.ProcessId, info.ProcessVersion, info.ActivityId);
             if (itemDB != null)
             {
@@ -116,7 +123,7 @@ namespace saiflow.hub.Form
             }
             else
             {
-                var formManager = new FormManager();
+                var formManager = new FormManager(Sail);
                 var formDB = formManager.GetById(info.FormId);
 
                 var entity = new FieldActivityEditEntity();

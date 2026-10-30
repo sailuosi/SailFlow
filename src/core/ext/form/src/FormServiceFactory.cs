@@ -1,21 +1,12 @@
-﻿
+using saiflow.engine.Client;
+
 namespace saiflow.hub.Form
 {
-    /// <summary>
-    /// Form service factory
-    /// 表单服务的创建类
-    /// </summary>
     public class FormServiceFactory
     {
-        /// <summary>
-        /// Create method
-        /// 创建方法
-        /// </summary>
-        /// <returns></returns>
-        public static IFormService Create()
+        public static IFormService Create(SailClient client)
         {
-            var formService = new FormService();
-            return formService;
+            return new FormService(client);
         }
     }
 }

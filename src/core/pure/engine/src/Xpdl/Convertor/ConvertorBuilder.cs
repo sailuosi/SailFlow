@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Xml;
 using saiflow.WebUtility;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Xpdl.Convertor
 {
     /// <summary>
@@ -16,6 +17,13 @@ namespace saiflow.engine.Xpdl.Convertor
     /// </summary>
     public class ConvertorBuilder
     {
+        public ConvertorBuilder(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         #region Property and Constructor
         private XmlNode xmlNode;
         public XmlNode XMLNode
@@ -371,7 +379,7 @@ namespace saiflow.engine.Xpdl.Convertor
                 };
                 if (!string.IsNullOrWhiteSpace(code))
                 {
-                    var ruleSet = new RuleSetManager().GetByCode(code.Trim());
+                    var ruleSet = new RuleSetManager(Sail).GetByCode(code.Trim());
                     if (ruleSet != null)
                         detail.MergeFrom(ruleSet);
                 }

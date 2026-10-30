@@ -1,6 +1,7 @@
 using saiflow.AI.Entity;
 using saiflow.AI.Utility;
 using saiflow.WebUtility;
+using saiflow.engine.Client;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -17,7 +18,8 @@ namespace saiflow.AI.Implementation
         public async Task<ResponseResult<AIResponse>> InvokeAIChatServiceAsync(string baseUrl,
             string apiKey,
             IList<MultiMediaFile> mediaFileList,
-            AiActivityConfigEntity axConfig)
+            AiActivityConfigEntity axConfig,
+            SailClient sail = null)
         {
             var modelName = axConfig.ModelName;
             var systemPrompt = axConfig.SystemPrompt;

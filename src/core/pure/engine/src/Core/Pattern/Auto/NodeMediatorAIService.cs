@@ -9,6 +9,7 @@ using System;
 using System.Text;
 
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Auto
 {
     /// <summary>
@@ -17,14 +18,14 @@ namespace saiflow.engine.Core.Pattern.Auto
     /// </summary>
     internal class NodeMediatorAIService : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
     {
-        internal NodeMediatorAIService(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorAIService(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
 
-        internal NodeMediatorAIService(SQLBuilder kit)
-            : base(kit)
+        internal NodeMediatorAIService(SQLBuilder kit, SailClient client)
+            : base(kit, client)
         {
 
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +15,7 @@ using saiflow.hub.Essential;
 using saiflow.hub.Essential.Entity;
 using saiflow.WebUtility;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Message
 {
     /// <summary>
@@ -23,6 +24,13 @@ namespace saiflow.engine.Message
     /// </summary>
     public class SignalDelegateService
     {
+        public SignalDelegateService(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         #region Signal Publish
         /// <summary>
         /// Build Singal Published
@@ -70,12 +78,12 @@ namespace saiflow.engine.Message
             var appRunner = signalRunnerView.WfAppRunner;
             var topic = appRunner.MessageTopic;
 
-            var jim = new JobInfoManager();
+            var jim = new JobInfoManager(Sail);
             var jobInfoList = jim.GetJobSubscribedByTopic(topic);
             foreach (var jobInfo in jobInfoList)
             {
                 var signalResult = SignalConsumedResult.Default();
-                IWorkflowService wfService = new WorkflowService();
+                IWorkflowService wfService = new WorkflowService(Sail);
                 WfExecutedResult wfResult = WfExecutedResult.Default();
 
                 var actvityType = EnumHelper.ParseEnum<ActivityTypeEnum>(jobInfo.ActivityType);
@@ -154,13 +162,13 @@ namespace saiflow.engine.Message
             var resultList = new List<SignalConsumedResult>();
             //封装下一步的步骤信息
             //Encapsulate the next step information
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             var runningActivityInstanceList = aim.GetActivityInstanceList(jobInfo.ProcessId, jobInfo.Version, jobInfo.ActivityId);
             foreach (var activityInstance in runningActivityInstanceList)
             {
                 var signalResult = SignalConsumedResult.Default();
                 var runner = GetRunnerFromActivityInstance(signalRunner, jobInfo, activityInstance);
-                var wfService = new WorkflowService();
+                var wfService = new WorkflowService(Sail);
                 var wfResult = wfService.RunProcessAuto(runner);
                 if (wfResult.Status == WfExecutedStatus.Success)
                 {

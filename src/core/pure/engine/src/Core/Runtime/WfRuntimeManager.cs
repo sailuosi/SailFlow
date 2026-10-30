@@ -9,6 +9,7 @@ using saiflow.engine.Core.Event;
 using saiflow.engine.Core.SendBack;
 using saiflow.engine.Xpdl;
 using saiflow.engine.Xpdl.Node;
+using saiflow.engine.Client;
 
 namespace saiflow.engine.Core.Runtime
 {
@@ -38,6 +39,7 @@ namespace saiflow.engine.Core.Runtime
         internal SendBackOperation SendBackOperation { get; set; }
 
         internal WfExecutedResult WfExecutedResult { get; set; }
+        internal SailClient Sail { get; set; }
 
         internal WfRuntimeManager()
         {
@@ -61,13 +63,13 @@ namespace saiflow.engine.Core.Runtime
             catch (WfRuntimeException rx)
             {
                 WfExecutedResult.Status = WfExecutedStatus.Exception;
-                LogManager.RecordLog(WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, AppRunner, rx);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, AppRunner, rx);
                 throw;
             }
             catch (System.Exception e)
             {
                 WfExecutedResult.Status = WfExecutedStatus.Failed;
-                LogManager.RecordLog(WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, AppRunner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, AppRunner, e);
                 throw;
             }
             finally

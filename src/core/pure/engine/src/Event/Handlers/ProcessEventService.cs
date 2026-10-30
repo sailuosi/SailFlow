@@ -10,6 +10,7 @@ using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 using saiflow.engine.Event;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Event.Handlers
 {
     /// <summary>
@@ -18,9 +19,8 @@ namespace saiflow.engine.Event.Handlers
     /// </summary>
     public class ProcessEventService : EventServiceBase, IEventService
     {
-        #region Property and Constructor
-        public ProcessEventService(SQLBuilder kit, EventContext context) 
-            : base(kit, context)
+#region Property and Constructor
+        public ProcessEventService(SQLBuilder kit, EventContext context, SailClient client) : base(kit, context, client)
         {
             
         }
@@ -34,7 +34,7 @@ namespace saiflow.engine.Event.Handlers
         /// <returns></returns>
         public override T GetInstance<T>(int id)
         {
-            var pim = new ProcessInstanceManager();
+            var pim = new ProcessInstanceManager(Sail);
             var kit = SailSqlAccess.Sibling(Kit);
             var entity = pim.GetById(kit, id);
             return entity as T;

@@ -15,6 +15,7 @@ using saiflow.engine.Core.Runtime;
 using saiflow.engine.Core.Result;
 using saiflow.engine.Core.Event;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Timer
 {
     /// <summary>
@@ -23,8 +24,8 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
     /// </summary>
     internal class NodeMediatorEndTimer : NodeMediator
     {
-        internal NodeMediatorEndTimer(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorEndTimer(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
@@ -36,7 +37,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
         {
             OnBeforeExecuteWorkItem();
 
-            ProcessInstanceManager pim = new ProcessInstanceManager();
+            ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
             var kit = SailSqlAccess.Sibling(Kit);
             var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id,
                 ActivityForwardContext.ActivityResource.AppRunner);
@@ -70,7 +71,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
             //开始执行下一步
             //Start executing the next step
             var runAppResult = WfExecutedResult.Default();
-            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(runner, kit, ref runAppResult);
+            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(Sail, runner, kit, ref runAppResult);
             if (runAppResult.Status == WfExecutedStatus.Exception)
             {
                 throw new WfRuntimeException(LocalizeHelper.GetEngineMessage("nodemediatorend.ContinueMainProcessRunning.warn", runAppResult.Message));
@@ -85,7 +86,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
 
             void runtimeInstance_OnWfProcessRunning(object sender, WfEventArgs args)
             {
-                EventExecutor.InvokeExternalEvent(kit,
+                EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessRunning,
                     runner.EventSubscriptionList,
                     runtimeInstance.ProcessInstanceId);
@@ -96,7 +97,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
                 runAppResult = args.WfExecutedResult;
                 if (runAppResult.Status == WfExecutedStatus.Success)
                 {
-                    EventExecutor.InvokeExternalEvent(kit,
+                    EventExecutor.InvokeExternalEvent(Sail, kit,
                         EventFireTypeEnum.OnProcessContinued,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
@@ -112,14 +113,14 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
             string mainActivityId,
             SQLBuilder kit)
         {
-            var pm = new ProcessInstanceManager();
+            var pm = new ProcessInstanceManager(Sail);
             var mainProcessInstance = pm.GetByActivity(kit, mainActivityInstanceId);
-            var processModel = ProcessModelFactory.CreateByProcessInstance(kit, mainProcessInstance);
+            var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, kit, mainProcessInstance);
             var nextSteps = processModel.GetNextActivityTreeView(mainActivityId);
 
             //获取主流程的任务
             //The task of obtaining the mainstream process
-            var task = new TaskManager().GetTaskByActivity(SailSqlAccess.Sibling(kit), mainProcessInstance.Id, mainActivityInstanceId);
+            var task = new TaskManager(Sail).GetTaskByActivity(SailSqlAccess.Sibling(kit), mainProcessInstance.Id, mainActivityInstanceId);
             var runner = new WfAppRunner
             {
                 AppName = mainProcessInstance.AppName,

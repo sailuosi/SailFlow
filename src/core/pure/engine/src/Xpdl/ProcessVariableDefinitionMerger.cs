@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using saiflow.engine.Business.Manager;
+using saiflow.engine.Client;
 using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Xpdl.Node;
 
@@ -12,7 +13,7 @@ namespace saiflow.engine.Xpdl
     /// </summary>
     public static class ProcessVariableDefinitionMerger
     {
-        public static void ApplyFromDatabase(Process process, string processId, string version)
+        public static void ApplyFromDatabase(SailClient client, Process process, string processId, string version)
         {
             if (process == null || string.IsNullOrEmpty(processId))
                 return;
@@ -20,15 +21,15 @@ namespace saiflow.engine.Xpdl
             if (string.IsNullOrEmpty(version))
                 version = "1";
 
-            ApplyToActivities(process.ActivityList, processId, version);
+            ApplyToActivities(client, process.ActivityList, processId, version);
         }
 
-        private static void ApplyToActivities(IList<Activity> activities, string processId, string version)
+        private static void ApplyToActivities(SailClient client, IList<Activity> activities, string processId, string version)
         {
             if (activities == null)
                 return;
 
-            var vm = new VariableManager();
+            var vm = new VariableManager(client);
 
             foreach (var activity in activities)
             {
@@ -47,7 +48,7 @@ namespace saiflow.engine.Xpdl
                         ? spn.SubProcessNested.ProcessId
                         : processId;
 
-                    ApplyFromDatabase(spn.SubProcessNested, subProcessId, version);
+                    ApplyFromDatabase(client, spn.SubProcessNested, subProcessId, version);
                 }
             }
         }

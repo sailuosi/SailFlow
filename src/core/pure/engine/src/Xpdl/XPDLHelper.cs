@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +12,7 @@ using saiflow.engine.Business.Manager;
 using saiflow.engine.Utility;
 using saiflow.engine.Xpdl.Node;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Xpdl
 {
     /// <summary>
@@ -126,13 +127,14 @@ namespace saiflow.engine.Xpdl
         /// Get message catch activity
         /// 获取跨流程XML的消息节点实体对象
         /// </summary>
-        public static Activity GetMessageCatchActivity(ProcessInstanceEntity processInstance,
+        public static Activity GetMessageCatchActivity(SailClient client,
+            ProcessInstanceEntity processInstance,
             Activity throwActivity,
             ActivityInstanceEntity throwActivityInstance,
             out ProcessEntity catchProcessEntity)
         {
             Activity catchActivity = null;
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(client);
             var processEntity = pm.GetByVersion(processInstance.ProcessId, processInstance.Version);
             var xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(processEntity.XmlContent);

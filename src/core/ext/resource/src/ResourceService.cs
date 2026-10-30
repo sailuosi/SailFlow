@@ -1,4 +1,5 @@
-﻿using System;
+using saiflow.engine.Client;
+using System;
 using System.Collections.Generic;
 using saiflow.data;
 
@@ -10,6 +11,13 @@ namespace saiflow.hub.Resource
     /// </summary>
     public partial class ResourceService : IResourceService
     {
+        public ResourceService(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         /// <summary>
         /// Get All Roles
         /// 获取全部角色
@@ -17,7 +25,7 @@ namespace saiflow.hub.Resource
         /// <returns></returns>
         public IList<Role> GetRoleAll()
         {
-            var rm = new RoleManager();
+            var rm = new RoleManager(Sail);
             var itemList = rm.GetAll();
             IList<Role> roleList = new List<Role>();
             foreach (var item in itemList)
@@ -40,7 +48,7 @@ namespace saiflow.hub.Resource
         /// <returns></returns>
         public IList<User> GetUserAll()
         {
-            var um = new UserManager();
+            var um = new UserManager(Sail);
             var itemList = um.GetAll();
             IList<User> userList = new List<User>();    
             foreach (var item in itemList)
@@ -65,7 +73,7 @@ namespace saiflow.hub.Resource
         public User GetUserById(string id)
         {
             User user = null;
-            var um = new UserManager();
+            var um = new UserManager(Sail);
             var userEntity = um.GetById(int.Parse(id));
             if (userEntity != null)
             {
@@ -87,7 +95,7 @@ namespace saiflow.hub.Resource
         /// <returns></returns>
         public IList<User> GetUserListByRoles(string[] roleIDs)
         {
-            var rum = new RoleUserManager();
+            var rum = new RoleUserManager(Sail);
             return rum.GetUserListByRoles(roleIDs);
         }
 
@@ -97,7 +105,7 @@ namespace saiflow.hub.Resource
         /// </summary>
         public IList<User> GetUserListByRole(string roleId)
         {
-            var rum = new RoleUserManager();
+            var rum = new RoleUserManager(Sail);
             var userList = rum.GetUserListByRole(roleId);
             return userList;
         }
@@ -110,7 +118,7 @@ namespace saiflow.hub.Resource
         /// <returns></returns>
         public IList<User> GetUserListByRoleCode(string roleCode)
         {
-            var rum = new RoleUserManager();
+            var rum = new RoleUserManager(Sail);
             var userList = rum.GetUserListByRoleCode(roleCode);
             return userList;
         }
@@ -124,12 +132,12 @@ namespace saiflow.hub.Resource
             IList<User> userList = null;
             if (receiverType == 0)
             {
-                var rum = new RoleUserManager();
+                var rum = new RoleUserManager(Sail);
                 userList = rum.GetUserListByRoles(roleIDs);
             }
             else
             {
-                IDeptService deptService = DeptServiceFactory.CreateDeptService();
+                IDeptService deptService = DeptServiceFactory.CreateDeptService(Sail);
                 userList = deptService.GetUserListByDeptRank(roleIDs, curUserId, receiverType);
             }
             return userList;
@@ -143,7 +151,7 @@ namespace saiflow.hub.Resource
         /// <returns></returns>
         public IList<Role> FillUsersIntoRoles(string[] roleIDs)
         {
-            var rum = new RoleUserManager();
+            var rum = new RoleUserManager(Sail);
             var ruvList = rum.GetUserByRoleIDs(roleIDs);
 
             var newRoleList = rum.GetRoleListByRoleUserView(ruvList);
@@ -158,7 +166,7 @@ namespace saiflow.hub.Resource
         /// <returns></returns>
         public Role GetRoleByCode(string roleCode)
         {
-            var rm = new RoleManager();
+            var rm = new RoleManager(Sail);
             var roleEntity = rm.GetByCode(roleCode);
             var role = new Role
             {

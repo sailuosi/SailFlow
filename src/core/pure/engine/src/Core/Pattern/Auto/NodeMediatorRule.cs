@@ -6,6 +6,7 @@ using saiflow.engine.Event;
 using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Business.Entity;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Auto
 {
     /// <summary>
@@ -13,13 +14,13 @@ namespace saiflow.engine.Core.Pattern.Auto
     /// </summary>
     internal class NodeMediatorRule : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
     {
-        internal NodeMediatorRule(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorRule(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
         }
 
-        internal NodeMediatorRule(SQLBuilder kit)
-            : base(kit)
+        internal NodeMediatorRule(SQLBuilder kit, SailClient client)
+            : base(kit, client)
         {
         }
 
@@ -41,7 +42,7 @@ namespace saiflow.engine.Core.Pattern.Auto
             }
 
             var eventService = GetInnerEventService();
-            RuleExecutor.ExecuteRule(currentActivity.RuleConfigDetail, currentActivity, activityInstance, eventService);
+            RuleExecutor.ExecuteRule(Sail, currentActivity.RuleConfigDetail, currentActivity, activityInstance, eventService);
         }
 
         public NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,

@@ -45,23 +45,23 @@ namespace saiflow.engine.Xpdl
         /// <summary>
         /// Create by Process
         /// </summary>
-        public static IProcessModel CreateByProcess(ProcessEntity entity)
+        public static IProcessModel CreateByProcess(SailClient client, ProcessEntity entity)
         {
-            IProcessModel processModel = new ProcessModelBPMN(entity);
+            IProcessModel processModel = new ProcessModelBPMN(client, entity);
             return processModel;
         }
 
         /// <summary>
         /// Create by Process version — cache-backed.
         /// </summary>
-        public static IProcessModel CreateByProcess(string processId, string version)
+        public static IProcessModel CreateByProcess(SailClient client, string processId, string version)
         {
             var cacheKey = $"{processId}:{version}";
             if (_modelCache.TryGetValue(cacheKey, out var cached))
                 return cached;
 
-            var kit = SailClientAccess.UseRunSQL();
-            var processModel = CreateByProcess(kit, processId, version);
+            var kit = client.UseRunSQL();
+            var processModel = CreateByProcess(client, kit, processId, version);
             _modelCache.TryAdd(cacheKey, processModel);
             return processModel;
         }
@@ -69,7 +69,7 @@ namespace saiflow.engine.Xpdl
         /// <summary>
         /// Create by Process version
         /// </summary>
-        private static IProcessModel CreateByProcess(SQLBuilder kit,
+        private static IProcessModel CreateByProcess(SailClient client, SQLBuilder kit,
             string processId,
             string version)
         {
@@ -79,7 +79,7 @@ namespace saiflow.engine.Xpdl
                 throw new WfXpdlException(LocalizeHelper.GetEngineMessage("processmodel.factory.processnullexception"));
             }
 
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(client);
             var entity = pm.GetByVersion(kit, processId, version, false);
 
             if (entity == null)
@@ -87,36 +87,36 @@ namespace saiflow.engine.Xpdl
                 throw new WfXpdlException(LocalizeHelper.GetEngineMessage("processmodel.factory.processnullexception"));
             }
 
-            IProcessModel processModel = new ProcessModelBPMN(entity);
+            IProcessModel processModel = new ProcessModelBPMN(client, entity);
             return processModel;
         }
 
         /// <summary>
         /// Create by Process instance
         /// </summary>
-        public static IProcessModel CreateByProcessInstance(ProcessInstanceEntity processInstance)
+        public static IProcessModel CreateByProcessInstance(SailClient client, ProcessInstanceEntity processInstance)
         {
-            var kit = SailClientAccess.UseRunSQL();
-            return CreateByProcessInstance(kit, processInstance);
+            var kit = client.UseRunSQL();
+            return CreateByProcessInstance(client, kit, processInstance);
         }
 
         /// <summary>
         /// Create by Process instance
         /// </summary>
-        public static IProcessModel CreateByProcessInstance(SQLBuilder kit,
+        public static IProcessModel CreateByProcessInstance(SailClient client, SQLBuilder kit,
             ProcessInstanceEntity processInstance)
         {
             IProcessModel processModel = null;
             if (processInstance.SubProcessType == null)
             {
                 //Single process
-                processModel = CreateByProcess(kit, processInstance.ProcessId, processInstance.Version);
+                processModel = CreateByProcess(client, kit, processInstance.ProcessId, processInstance.Version);
             }
             else if (processInstance.SubProcessType != null
                 && !string.IsNullOrEmpty(processInstance.SubProcessId))
             {
                 //Sub process
-                processModel = CreateSubByProcessInstance(kit, processInstance);
+                processModel = CreateSubByProcessInstance(client, kit, processInstance);
             }
             return processModel;
         }
@@ -124,28 +124,28 @@ namespace saiflow.engine.Xpdl
         /// <summary>
         /// Create by task
         /// </summary>
-        public static IProcessModel CreateByTask(TaskViewEntity taskView)
+        public static IProcessModel CreateByTask(SailClient client, TaskViewEntity taskView)
         {
-            var kit = SailClientAccess.UseRunSQL();
-            return CreateByTask(kit, taskView);
+            var kit = client.UseRunSQL();
+            return CreateByTask(client, kit, taskView);
         }
 
         /// <summary>
         /// Create by task
         /// </summary>
-        public static IProcessModel CreateByTask(SQLBuilder kit, TaskViewEntity taskView)
+        public static IProcessModel CreateByTask(SailClient client, SQLBuilder kit, TaskViewEntity taskView)
         {
             IProcessModel processModel = null;
             if (taskView.SubProcessType == null)
             {
                 //Single process
-                processModel = CreateByProcess(kit, taskView.ProcessId, taskView.Version);
+                processModel = CreateByProcess(client, kit, taskView.ProcessId, taskView.Version);
             }
             else if (taskView.SubProcessType != null
                 && !string.IsNullOrEmpty(taskView.SubProcessId))
             {
                 //Sub process
-                processModel = CreateSubByTask(kit, taskView);
+                processModel = CreateSubByTask(client, kit, taskView);
             }
             return processModel;
         }
@@ -153,7 +153,7 @@ namespace saiflow.engine.Xpdl
         /// <summary>
         /// Create by sub process node
         /// </summary>
-        public static IProcessModel CreateSubByNode(SQLBuilder kit,
+        public static IProcessModel CreateSubByNode(SailClient client, SQLBuilder kit,
             SubProcessNode subProcessNode)
         {
             ProcessEntity entity = null;
@@ -162,7 +162,7 @@ namespace saiflow.engine.Xpdl
                 if (subProcessNode.SubProcessNested == null)
                 {
                     //Referenced from outer
-                    var pm = new ProcessManager();
+                    var pm = new ProcessManager(client);
                     entity = pm.GetById(kit, subProcessNode.SubProcessDefId);
                 }
                 else
@@ -177,7 +177,7 @@ namespace saiflow.engine.Xpdl
                 throw new WfXpdlException(LocalizeHelper.GetEngineMessage("processmodel.factory.processnullexception"));
             }
 
-            IProcessModel processModel = new ProcessModelBPMN(entity);
+            IProcessModel processModel = new ProcessModelBPMN(client, entity);
             return processModel;
         }
 
@@ -199,13 +199,13 @@ namespace saiflow.engine.Xpdl
         /// <summary>
         /// Create sub process by process instance
         /// </summary>
-        private static IProcessModel CreateSubByProcessInstance(SQLBuilder kit,
+        private static IProcessModel CreateSubByProcessInstance(SailClient client, SQLBuilder kit,
             ProcessInstanceEntity processInstance)
         {
             var subProcessType = SubProcessTypeEnum.None;
             if (processInstance.SubProcessType != null) subProcessType = EnumHelper.TryParseEnum<SubProcessTypeEnum>(
                 processInstance.SubProcessType.ToString());
-            var processModel = CreateSubInternal(kit, processInstance.ProcessId, processInstance.Version, subProcessType, processInstance.SubProcessDefId,
+            var processModel = CreateSubInternal(client, kit, processInstance.ProcessId, processInstance.Version, subProcessType, processInstance.SubProcessDefId,
                 processInstance.SubProcessId);
             return processModel;
         }
@@ -213,13 +213,13 @@ namespace saiflow.engine.Xpdl
         /// <summary>
         /// Create sub process by task
         /// </summary>
-        private static IProcessModel CreateSubByTask(SQLBuilder kit,
+        private static IProcessModel CreateSubByTask(SailClient client, SQLBuilder kit,
             TaskViewEntity taskView)
         {
             var subProcessType = SubProcessTypeEnum.None;
             if (taskView.SubProcessType != null) subProcessType = EnumHelper.TryParseEnum<SubProcessTypeEnum>(
                 taskView.SubProcessType.ToString());
-            var processModel = CreateSubInternal(kit, taskView.ProcessId, taskView.Version, subProcessType, taskView.SubProcessDefId,
+            var processModel = CreateSubInternal(client, kit, taskView.ProcessId, taskView.Version, subProcessType, taskView.SubProcessDefId,
                 taskView.SubProcessId);
             return processModel;
         }
@@ -227,14 +227,15 @@ namespace saiflow.engine.Xpdl
         /// <summary>
         /// Create sub process internal
         /// </summary>
-        private static IProcessModel CreateSubInternal(SQLBuilder kit,
+        private static IProcessModel CreateSubInternal(SailClient client,
+            SQLBuilder kit,
             string processId,
             string version,
             Nullable<SubProcessTypeEnum> subProcessType,
             int subProcessDefId,
             string subProcessId)
         {
-            var pm = new ProcessManager();
+            var pm = new ProcessManager(client);
             ProcessEntity processEntity = null;
             if (subProcessType.HasValue 
                 && subProcessType.Value == SubProcessTypeEnum.Referenced)
@@ -264,7 +265,7 @@ namespace saiflow.engine.Xpdl
                 processEntity.Version = "1";
                 processEntity.XmlContent = xmlSubProcessNode.OuterXml;
             }
-            IProcessModel processModel = new ProcessModelBPMN(processEntity);
+            IProcessModel processModel = new ProcessModelBPMN(client, processEntity);
             return processModel;
         }
     }

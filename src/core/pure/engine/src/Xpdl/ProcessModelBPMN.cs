@@ -13,6 +13,7 @@ using saiflow.hub.Form;
 using saiflow.hub.Localize;
 using saiflow.hub.Resource;
 using saiflow.WebUtility;
+using saiflow.engine.Client;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -60,6 +61,7 @@ namespace saiflow.engine.Xpdl
         /// Process Entity
         /// </summary>
         public ProcessEntity ProcessEntity { get; set; }
+        public SailClient Sail { get; }
        
         /// <summary>
         /// Convert process model from xml
@@ -111,8 +113,10 @@ namespace saiflow.engine.Xpdl
         /// Constructor
         /// </summary>
         /// <param name="entity"></param>
-        public ProcessModelBPMN(ProcessEntity entity)
+        public ProcessModelBPMN(SailClient client, ProcessEntity entity)
         {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
+
             ProcessEntity = entity;
         }
         #endregion
@@ -165,7 +169,7 @@ namespace saiflow.engine.Xpdl
 
             if (ProcessEntity != null && activity != null && !string.IsNullOrEmpty(activity.ActivityId))
             {
-                var vm = new VariableManager();
+                var vm = new VariableManager(Sail);
                 var defs = vm.GetList(ProcessEntity.ProcessId, ProcessEntity.Version, activity.ActivityId);
                 if (defs != null)
                 {
@@ -356,10 +360,10 @@ namespace saiflow.engine.Xpdl
         {
             try
             {
-                using (var kit = saiflow.engine.Client.SailClientAccess.UseRunSQL())
+                using (var kit = Sail.UseRunSQL())
                 {
                     var processModelBPMNCore = new ProcessModelBPMNCore();
-                    return processModelBPMNCore.GetNextActivityTreeListCore(this, startActivity.ActivityId, null, conditionKeyValuePair, kit);
+                    return processModelBPMNCore.GetNextActivityTreeListCore(Sail, this, startActivity.ActivityId, null, conditionKeyValuePair, kit);
                 }
             }
             catch (System.Exception e)
@@ -468,7 +472,7 @@ namespace saiflow.engine.Xpdl
         /// </summary>
         public IList<NodeView> GetFirstActivityTreeView(Activity startActivity, IDictionary<string, string> conditions)
         {
-            using (var kit = saiflow.engine.Client.SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 var nextResult = GetNextActivityListView(startActivity.ActivityId, null, conditions, kit);
                 return nextResult.StepList;
@@ -487,7 +491,7 @@ namespace saiflow.engine.Xpdl
         /// </summary>
         public IList<NodeView> GetNextActivityTreeView(string currentActivityId)
         {
-            using (var kit = saiflow.engine.Client.SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 var nextResult = GetNextActivityListView(currentActivityId, null, null, kit);
                 return nextResult.StepList;
@@ -502,7 +506,7 @@ namespace saiflow.engine.Xpdl
         /// </summary>
         public IList<NodeView> GetNextActivityTreeView(string currentActivityId, IDictionary<string, string> conditions)
         {
-            using (var kit = saiflow.engine.Client.SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 var nextResult = GetNextActivityListView(currentActivityId, null, conditions, kit);
                 return nextResult.StepList;
@@ -552,7 +556,7 @@ namespace saiflow.engine.Xpdl
                 //Transiton方式的流转定义
                 //Definition of Transition Mode Flow
                 var processModelBPMNCore = new ProcessModelBPMNCore();
-                var nextStepResult = processModelBPMNCore.GetNextActivityTreeListCore(this, currentActivity.ActivityId, activityInstanceId, conditions, kit);
+                var nextStepResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, this, currentActivity.ActivityId, activityInstanceId, conditions, kit);
                 nextTreeResult.Message = nextStepResult.Message;
 
                 foreach (var child in nextStepResult.Root)
@@ -641,7 +645,7 @@ namespace saiflow.engine.Xpdl
             //先获取未加运行时表达式(为了过滤前端用户选择的步骤)的下一步节点列表
             //定义时的条件变量需要传入，返回的是解析后的下一步活动列表
             var processModelBPMNCore = new ProcessModelBPMNCore();
-            NextActivityMatchedResult result = processModelBPMNCore.GetNextActivityTreeListCore(this, currentActivityId,
+            NextActivityMatchedResult result = processModelBPMNCore.GetNextActivityTreeListCore(Sail, this, currentActivityId,
                 activityInstanceId,
                 conditionKeyValuePair,
                 kit);

@@ -7,6 +7,7 @@ using saiflow.AI.Entity;
 using saiflow.AI.Implementation;
 using saiflow.AI.Manager;
 using saiflow.WebUtility;
+using saiflow.engine.Client;
 
 namespace saiflow.AI.Service
 {
@@ -16,6 +17,13 @@ namespace saiflow.AI.Service
     /// </summary>
     public class RagMultiTurnService
     {
+        public RagMultiTurnService(SailClient client)
+        {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
+        }
+
+        private readonly SailClient Sail;
+
         /// <summary>
         /// Invokes the LLM: uses memory_turns from axConfig and sends history merged with the current turn.
         /// </summary>
@@ -35,7 +43,7 @@ namespace saiflow.AI.Service
             if (!axConfig.ModelProviderId.HasValue)
                 throw new InvalidOperationException("ModelProviderId is not set in AxConfig");
 
-            var modelProviderManager = new AiModelProviderManager();
+            var modelProviderManager = new AiModelProviderManager(Sail);
             var modelProvider = modelProviderManager.GetById(axConfig.ModelProviderId.Value);
             if (modelProvider == null)
                 throw new InvalidOperationException($"AIModelProvider not found for ModelProviderId: {axConfig.ModelProviderId.Value}");
@@ -60,7 +68,8 @@ namespace saiflow.AI.Service
                 userMessage,
                 axConfig,
                 historyChatMessageList,
-                memoryTurns);
+                memoryTurns,
+                Sail);
 
             var aiLlmService = AiLlmServiceFactory.CreateLargeModelServcie(modelProvider.ModelProvider);
             var response = await aiLlmService.InvokeAIChatServiceWithMessagesAsync(baseUrl, decryptedApiKey, messages, axConfig);

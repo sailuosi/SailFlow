@@ -1,16 +1,24 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
 using saiflow.data;
+using saiflow.engine.Client;
 
 namespace saiflow.hub.Resource
 {
     /// <summary>用户。终态：SailSqlAccess / kit。</summary>
     internal class UserManager
     {
+        public UserManager(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         internal List<UserEntity> GetAll()
         {
-            var kit = SailSqlAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return kit
                 .select("*")
                 .from("sys_user")
@@ -21,7 +29,7 @@ namespace saiflow.hub.Resource
 
         internal UserEntity GetByName(string userName)
         {
-            var kit = SailSqlAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return kit
                 .select("*")
                 .from("sys_user")
@@ -30,6 +38,6 @@ namespace saiflow.hub.Resource
         }
 
         internal UserEntity GetById(int id)
-            => SailSqlAccess.UseRunSQL().useRepo<UserEntity, int>().GetById(id);
+            => Sail.UseRunSQL().useRepo<UserEntity, int>().GetById(id);
     }
 }

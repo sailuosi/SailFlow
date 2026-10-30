@@ -1,5 +1,6 @@
 using saiflow.AI.Entity;
 using saiflow.WebUtility;
+using saiflow.engine.Client;
 
 namespace saiflow.AI.Implementation
 {
@@ -17,8 +18,9 @@ namespace saiflow.AI.Implementation
             string baseUrl,
             string apiKey,
             IList<MultiMediaFile> mediaFileList,
-            AiActivityConfigEntity axConfig)
-            => _inner.InvokeAIChatServiceAsync(baseUrl, apiKey, mediaFileList, axConfig);
+            AiActivityConfigEntity axConfig,
+            SailClient sail = null)
+            => _inner.InvokeAIChatServiceAsync(baseUrl, apiKey, mediaFileList, axConfig, sail);
 
         public Task<ResponseResult<AIResponse>> InvokeAIChatServiceWithMessagesAsync(
             string baseUrl,

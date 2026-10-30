@@ -4,6 +4,7 @@ using mooSQL.data;
 using saiflow.engine.Common;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
+using saiflow.engine.Client;
 
 namespace saiflow.engine.Event
 {
@@ -16,14 +17,17 @@ namespace saiflow.engine.Event
         #region Property, Abstract and Constructor
         public EventContext EventContext { get; set; }
         public SQLBuilder Kit { get; set; }
+        public SailClient Sail { get; }
 
         public abstract T GetInstance<T>(int id) where T : class;
 
         public EventServiceBase(SQLBuilder kit,
-            EventContext context)
+            EventContext context,
+            SailClient client)
         {
             Kit = kit;
             EventContext = context;
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
         }
         #endregion
 
@@ -120,7 +124,7 @@ namespace saiflow.engine.Event
                 };
             }
             var kit = SailSqlAccess.Sibling(Kit);
-            var pvm = new ProcessVariableManager();
+            var pvm = new ProcessVariableManager(Sail);
             pvm.SaveVariable(kit, processVariable);
         }
 
@@ -134,7 +138,7 @@ namespace saiflow.engine.Event
         public string GetVariable(ProcessVariableScopeEnum variableType, string name)
         {
             var kit = SailSqlAccess.Sibling(Kit);
-            var pvm = new ProcessVariableManager();
+            var pvm = new ProcessVariableManager(Sail);
             var variable = pvm.GetVariable(kit, variableType, name, this.EventContext);
             return variable;
         }
@@ -148,7 +152,7 @@ namespace saiflow.engine.Event
         public string GetVariableByScopePriority(string name)
         {
             var kit = SailSqlAccess.Sibling(Kit);
-            var pvm = new ProcessVariableManager();
+            var pvm = new ProcessVariableManager(Sail);
             var variable = pvm.GetVariableByScopePriority(kit, name, this.EventContext);
             return variable;
         }

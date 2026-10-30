@@ -1,3 +1,4 @@
+using saiflow.engine.Client;
 using System;
 using System.Collections.Generic;
 using mooSQL.data;
@@ -10,12 +11,19 @@ namespace saiflow.AI.Service
 {
     public class AiModelDataService : IAiModelDataService
     {
-        private static SQLBuilder Kit() => SailSqlAccess.UseRunSQL();
+        public AiModelDataService(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
+        private SQLBuilder Kit() => Sail.UseRunSQL();
 
         #region AIModel Data Service
         public AiModelProviderEntity GetModelById(int id)
         {
-            var modelManager = new AiModelProviderManager();
+            var modelManager = new AiModelProviderManager(Sail);
             var entity = modelManager.GetById(id);
 
             return entity;
@@ -23,7 +31,7 @@ namespace saiflow.AI.Service
 
         public List<AiModelProviderEntity> GetModelListAll()
         {
-            var modelManager = new AiModelProviderManager();
+            var modelManager = new AiModelProviderManager(Sail);
             var list = modelManager.GetAll();
 
             return list;
@@ -31,13 +39,13 @@ namespace saiflow.AI.Service
 
         public List<AiModelProviderEntity> GetModelListByType(string modelType)
         {
-            var modelManager = new AiModelProviderManager();
+            var modelManager = new AiModelProviderManager(Sail);
             return modelManager.GetByModelType(modelType ?? string.Empty);
         }
 
         public int CreateModel(AiModelProviderEntity modelEntity)
         {
-            var modelManager = new AiModelProviderManager();
+            var modelManager = new AiModelProviderManager(Sail);
             modelEntity.ApiUUID = Guid.NewGuid().ToString();
             var secrentKey = ApiKeyCryptoHelper.Encrypt(modelEntity.ApiKey, modelEntity.ApiUUID);
             modelEntity.ApiKey = secrentKey;
@@ -47,7 +55,7 @@ namespace saiflow.AI.Service
 
         public Boolean UpdateModel(AiModelProviderEntity modelEntity)
         {
-            var modelManager = new AiModelProviderManager();
+            var modelManager = new AiModelProviderManager(Sail);
             using (var kit = Kit())
             {
                 kit.beginTransaction();
@@ -72,7 +80,7 @@ namespace saiflow.AI.Service
 
         public void DeleteModel(int modelId)
         {
-            var modelManager = new AiModelProviderManager();
+            var modelManager = new AiModelProviderManager(Sail);
             modelManager.DeleteAgent(modelId);
         }
         #endregion
@@ -80,7 +88,7 @@ namespace saiflow.AI.Service
         #region AxConfig Data Service
         public AiActivityConfigEntity GetAiActivityConfigByProcessVersionActivity(string processId, string version, string activityId)
         {
-            var axConfigManager = new AiActivityConfigManager();
+            var axConfigManager = new AiActivityConfigManager(Sail);
             var axConfigEntity = axConfigManager.GetByProcessVersionActivity(processId, version, activityId);
             return axConfigEntity;
         }
@@ -91,7 +99,7 @@ namespace saiflow.AI.Service
         /// </summary>
         public void SaveAiActivityConfigInfo(AiActivityConfigEntity axConfigEntity)
         {
-            var axConfigManager = new AiActivityConfigManager();
+            var axConfigManager = new AiActivityConfigManager(Sail);
             using (var kit = Kit())
             {
                 kit.beginTransaction();
@@ -123,7 +131,7 @@ namespace saiflow.AI.Service
 
         public void DeleteAiActivityConfig(string processId, string version, string activityId)
         {
-            var axConfigManager = new AiActivityConfigManager();
+            var axConfigManager = new AiActivityConfigManager(Sail);
             axConfigManager.Delete(processId, version, activityId);
         }
         #endregion

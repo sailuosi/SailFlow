@@ -1,3 +1,4 @@
+using saiflow.engine.Client;
 using saiflow.engine.Common;
 using saiflow.data;
 using mooSQL.data;
@@ -13,8 +14,8 @@ namespace saiflow.engine.Core.Pattern.Gateway
     /// </summary>
     internal class NodeMediatorAndJoin : NodeMediatorGateway, ICompleteGatewayAutomaticlly
     {
-        internal NodeMediatorAndJoin(Activity activity, IProcessModel processModel, SQLBuilder kit)
-            : base(activity, processModel, kit)
+        internal NodeMediatorAndJoin(Activity activity, IProcessModel processModel, SQLBuilder kit, SailClient client)
+            : base(activity, processModel, kit, client)
         {
 
         }

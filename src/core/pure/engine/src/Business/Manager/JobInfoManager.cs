@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
 using saiflow.data;
@@ -12,9 +12,15 @@ namespace saiflow.engine.Business.Manager
     /// </summary>
     public class JobInfoManager
     {
+        public JobInfoManager(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
         public List<JobInfoEntity> GetJobSubscribedByTopic(string topic)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return GetJobSubscribedByTopic(kit, topic);
         }
 

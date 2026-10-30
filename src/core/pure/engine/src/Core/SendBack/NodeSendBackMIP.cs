@@ -1,3 +1,4 @@
+using saiflow.engine.Client;
 using saiflow.data;
 using mooSQL.data;
 using saiflow.engine.Business.Entity;
@@ -11,8 +12,8 @@ namespace saiflow.engine.Core.SendBack
     /// </summary>
     internal class NodeSendBackMIP : NodeSendBack
     {
-        internal NodeSendBackMIP(SendBackOperation sendbackOperation, SQLBuilder kit)
-            : base(sendbackOperation, kit)
+        internal NodeSendBackMIP(SendBackOperation sendbackOperation, SQLBuilder kit, SailClient client)
+            : base(sendbackOperation, kit, client)
         {
 
         }

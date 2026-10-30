@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using saiflow.AI.Common;
+using saiflow.engine.Client;
 
 namespace saiflow.AI.Implementation
 {
@@ -30,7 +31,8 @@ namespace saiflow.AI.Implementation
         public async Task<ResponseResult<AIResponse>> InvokeAIChatServiceAsync(string baseUrl,
             string apiKey,
             IList<MultiMediaFile> mediaFileList,
-            AiActivityConfigEntity axConfig)
+            AiActivityConfigEntity axConfig,
+            SailClient sail = null)
         {
             var modelName = axConfig.ModelName;
             var systemPrompt = axConfig.SystemPrompt;
@@ -78,7 +80,8 @@ namespace saiflow.AI.Implementation
                     mediaFileList,
                     systemPrompt,
                     userMessage,
-                    axConfig);
+                    axConfig,
+                    sail: sail);
 
                 // Build request object
                 var request = new CustomApiChatRequest

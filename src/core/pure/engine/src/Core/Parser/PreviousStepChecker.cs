@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
@@ -13,6 +13,7 @@ using saiflow.engine.Business.Manager;
 using saiflow.engine.Business.SqlProvider;
 using saiflow.WebUtility;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Parser
 {
     /// <summary>
@@ -21,7 +22,14 @@ namespace saiflow.engine.Core.Parser
     /// </summary>
     internal class PreviousStepChecker
     {
-        private static SQLBuilder Kit() => SailSqlAccess.UseRunSQL();
+        public PreviousStepChecker(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
+        private SQLBuilder Kit() => Sail.UseRunSQL();
         /// <summary>
         /// Retrieve the previous node tree
         /// 获取上一步节点树
@@ -29,7 +37,7 @@ namespace saiflow.engine.Core.Parser
         internal IList<NodeView> GetPreviousActivityTree(int taskId, out Boolean hasGatewayPassed)
         {
             hasGatewayPassed = false;
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             var runningNode = aim.GetByTask(taskId);
             var nodeList = GetPreviousActivityTree(runningNode, out hasGatewayPassed);
             return nodeList;
@@ -43,7 +51,7 @@ namespace saiflow.engine.Core.Parser
         internal IList<NodeView> GetPreviousActivityTree(WfAppRunner runner, out Boolean hasGatewayPassed)
         {
             hasGatewayPassed = false;
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             var runningNode = aim.GetRunningNode(runner);
             var nodeList = GetPreviousActivityTree(runningNode, out hasGatewayPassed);
             return nodeList;
@@ -55,12 +63,12 @@ namespace saiflow.engine.Core.Parser
         /// </summary>
         private IList<NodeView> GetPreviousActivityTree(ActivityInstanceEntity runningNode, out Boolean hasGatewayPassed)
         {
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
 
             //获取前置节点列表
             //Get the list of previous nodes
-            var processInstance = (new ProcessInstanceManager()).GetById(runningNode.ProcessInstanceId);
-            var processModel = ProcessModelFactory.CreateByProcessInstance(processInstance);
+            var processInstance = (new ProcessInstanceManager(Sail)).GetById(runningNode.ProcessInstanceId);
+            var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, processInstance);
             var previousActivityList = GetPreviousActivityList(runningNode, processModel, out hasGatewayPassed);
 
             //封装返回结果集合
@@ -297,7 +305,7 @@ namespace saiflow.engine.Core.Parser
             out bool hasPassedGatewayNode)
         {
             hasPassedGatewayNode = false;
-            var tim = new TransitionInstanceManager();
+            var tim = new TransitionInstanceManager(Sail);
             var transitionList = tim.GetTransitionInstanceList(runningNode.AppInstanceId,
                 runningNode.ProcessId,
                 runningNode.ProcessInstanceId).ToList();
@@ -330,7 +338,7 @@ namespace saiflow.engine.Core.Parser
                 backSrcActivityInstanceId = runningNode.Id;
             }
 
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             var runningTransitionList = transitionList
                 .Where(o => o.ToActivityInstanceId == backSrcActivityInstanceId)
                 .ToList();
@@ -365,7 +373,7 @@ namespace saiflow.engine.Core.Parser
                 .Where(o => o.ToActivityInstanceId == toActivityInstanceId)
                 .ToList();
 
-            var aim = new ActivityInstanceManager();
+            var aim = new ActivityInstanceManager(Sail);
             foreach (var entity in previousTransitionList)
             {
                 var activityType = EnumHelper.ParseEnum<ActivityTypeEnum>(entity.FromActivityType.ToString());

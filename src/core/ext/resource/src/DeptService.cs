@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using mooSQL.data;
 using saiflow.data;
+using saiflow.engine.Client;
 
 namespace saiflow.hub.Resource
 {
@@ -30,10 +31,10 @@ namespace saiflow.hub.Resource
         /// 2) Query of stored procedures
         /// 3) Other extensions
         /// </summary>
-        public static IDeptService CreateDeptService()
+        public static IDeptService CreateDeptService(SailClient client)
         {
-            IDeptService deptService = new DeptServiceQuery();
-            //IDeptService deptService = new DeptServiceSP();
+            IDeptService deptService = new DeptServiceQuery(client);
+            //IDeptService deptService = new DeptServiceSP(client);
             return deptService;
         }
     }
@@ -44,7 +45,14 @@ namespace saiflow.hub.Resource
     /// </summary>
     public class DeptServiceQuery : IDeptService
     {
-        private static SQLBuilder Kit() => SailSqlAccess.UseRunSQL();
+        public DeptServiceQuery(SailClient client)
+        {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
+        private SQLBuilder Kit() => Sail.UseRunSQL();
 
         private static int[] ParseRoleIds(string[] roleIds)
         {

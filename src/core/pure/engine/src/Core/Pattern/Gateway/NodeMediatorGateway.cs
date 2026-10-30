@@ -9,6 +9,7 @@ using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 using saiflow.engine.Xpdl;
 using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Client;
 
 namespace saiflow.engine.Core.Pattern.Gateway
 {
@@ -50,14 +51,17 @@ namespace saiflow.engine.Core.Pattern.Gateway
             {
                 if (activityInstanceManager == null)
                 {
-                    activityInstanceManager = new ActivityInstanceManager();
+                    activityInstanceManager = new ActivityInstanceManager(Sail);
                 }
                 return activityInstanceManager;
             }
         }
         
-        internal NodeMediatorGateway(Activity gActivity, IProcessModel processModel, SQLBuilder kit)
+        protected SailClient Sail { get; }
+
+        internal NodeMediatorGateway(Activity gActivity, IProcessModel processModel, SQLBuilder kit, SailClient client)
         {
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
             _gatewayActivity = gActivity;
             _processModel = processModel;
             _kit = kit;
@@ -71,7 +75,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
             ProcessInstanceEntity processInstance,
             WfAppRunner runner)
         {
-            ActivityInstanceManager aim = new ActivityInstanceManager();
+            ActivityInstanceManager aim = new ActivityInstanceManager(Sail);
             this.GatewayActivityInstance = aim.CreateActivityInstanceObject(processInstance.AppName,
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,
@@ -106,7 +110,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
             WfAppRunner runner,
             SQLBuilder kit)
         {
-            var tim = new TransitionInstanceManager();
+            var tim = new TransitionInstanceManager(Sail);
             var transitionInstanceObject = tim.CreateTransitionInstanceObject(processInstance,
                 transitionId,
                 fromActivityInstance,

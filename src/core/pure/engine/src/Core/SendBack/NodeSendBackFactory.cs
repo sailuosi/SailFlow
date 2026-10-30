@@ -1,3 +1,4 @@
+using saiflow.engine.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,22 +24,22 @@ namespace saiflow.engine.Core.SendBack
         /// <param name="sendbackOperation"></param>
         /// <param name="kit"></param>
         /// <returns></returns>
-        internal static NodeSendBack CreateNodeReverter(SendBackOperation sendbackOperation, SQLBuilder kit)
+        internal static NodeSendBack CreateNodeReverter(SendBackOperation sendbackOperation, SQLBuilder kit, SailClient client)
         {
             NodeSendBack nodeSendBack = null;
             if (sendbackOperation.CurrentNodeOperationType == SendBackOperationTypeEnum.Normal)
             {
                 if (sendbackOperation.PreviousNodeOperationType == SendBackOperationTypeEnum.Normal)
                 {
-                    nodeSendBack = new NodeSendBackTask(sendbackOperation, kit);
+                    nodeSendBack = new NodeSendBackTask(sendbackOperation, kit, client);
                 }
                 else if (sendbackOperation.PreviousNodeOperationType == SendBackOperationTypeEnum.MISPreviousIsLastOne)
                 {
-                    nodeSendBack = new NodeSendBackToMISPrevious(sendbackOperation, kit);
+                    nodeSendBack = new NodeSendBackToMISPrevious(sendbackOperation, kit, client);
                 }
                 else if (sendbackOperation.PreviousNodeOperationType == SendBackOperationTypeEnum.MIPAllIsInCompletedState)
                 {
-                    nodeSendBack = new NodeSendBackToMIPPrevious(sendbackOperation, kit);
+                    nodeSendBack = new NodeSendBackToMIPPrevious(sendbackOperation, kit, client);
                 }
                 else
                 {
@@ -52,15 +53,15 @@ namespace saiflow.engine.Core.SendBack
             {
                 if (sendbackOperation.CurrentMultipleInstanceDetailType == SendBackOperationTypeEnum.MISFirstOneIsRunning)
                 {
-                    nodeSendBack = new NodeSendBackMISReady(sendbackOperation, kit);
+                    nodeSendBack = new NodeSendBackMISReady(sendbackOperation, kit, client);
                 }
                 else if(sendbackOperation.CurrentMultipleInstanceDetailType == SendBackOperationTypeEnum.MISOneIsRunning)
                 {
-                    nodeSendBack = new NodeSendBackMIS(sendbackOperation, kit);
+                    nodeSendBack = new NodeSendBackMIS(sendbackOperation, kit, client);
                 }
                 else if(sendbackOperation.CurrentMultipleInstanceDetailType == SendBackOperationTypeEnum.MIPOneIsRunning)
                 {
-                    nodeSendBack = new NodeSendBackMIP(sendbackOperation, kit);
+                    nodeSendBack = new NodeSendBackMIP(sendbackOperation, kit, client);
                 }
                 else
                 {

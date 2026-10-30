@@ -7,6 +7,7 @@ using saiflow.engine.Xpdl.Entity;
 using System;
 using System.Threading.Tasks;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Executor
 {
     /// <summary>
@@ -15,6 +16,13 @@ namespace saiflow.engine.Executor
     /// </summary>
     public class WorkflowExecutor : IWorkflowExecutor
     {
+        public WorkflowExecutor(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
+
         #region Property
         private WfAppRunner _wfAppRunner = new WfAppRunner();
         private IProcessModel _processModel;
@@ -55,13 +63,13 @@ namespace saiflow.engine.Executor
             }
             else
             {
-                var pm = new ProcessManager();
+                var pm = new ProcessManager(Sail);
                 var entity = pm.GetByVersion(processId, version);
                 _wfAppRunner.ProcessId = entity.ProcessId;
                 _wfAppRunner.Version = entity.Version;
             }
 
-            _processModel = ProcessModelFactory.CreateByProcess(processId, version);
+            _processModel = ProcessModelFactory.CreateByProcess(Sail, processId, version);
 
             return this;
         }
@@ -77,7 +85,7 @@ namespace saiflow.engine.Executor
             _wfAppRunner.ProcessId = processEntity.ProcessId;
             _wfAppRunner.Version = processEntity.Version;
 
-            _processModel = ProcessModelFactory.CreateByProcess(processEntity);
+            _processModel = ProcessModelFactory.CreateByProcess(Sail, processEntity);
 
             return this;
         }
@@ -150,7 +158,7 @@ namespace saiflow.engine.Executor
             {
                 result.Status = WfExecutedStatus.Failed;
                 result.Message = $"Auto orchestration execution failed: {ex.Message}";
-                LogManager.RecordLog(WfDefine.WF_WORKFLOW_EXECUTOR_RUN_ERROR, LogEventType.Error, LogPriority.High, _wfAppRunner, ex);
+                LogManager.RecordLog(Sail, WfDefine.WF_WORKFLOW_EXECUTOR_RUN_ERROR, LogEventType.Error, LogPriority.High, _wfAppRunner, ex);
             }
 
             return Task.FromResult(result);

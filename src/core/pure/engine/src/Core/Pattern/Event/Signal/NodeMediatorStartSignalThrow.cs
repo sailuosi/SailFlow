@@ -8,6 +8,7 @@ using saiflow.engine.Business.Manager;
 using saiflow.engine.Message;
 using System.CodeDom.Compiler;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Signal
 {
     /// <summary>
@@ -16,8 +17,8 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
     /// </summary>
     internal class NodeMediatorStartSignalThrow : NodeMediator
     {
-        internal NodeMediatorStartSignalThrow(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorStartSignalThrow(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
@@ -29,7 +30,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
         {
             try
             {
-                ProcessInstanceManager pim = new ProcessInstanceManager();
+                ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
                 var kit = SailSqlAccess.Sibling(Kit);
                 var newId = pim.Insert(kit, ActivityForwardContext.ProcessInstance);
                 ActivityForwardContext.ProcessInstance.Id = newId;
@@ -74,7 +75,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
 
             //执行节点上的信号发布
             //Signal release on the execution node
-            var signalDelegateService = new SignalDelegateService();
+            var signalDelegateService = new SignalDelegateService(Sail);
             signalDelegateService.PublishSignal(processInstance, LinkContext.FromActivity, fromActivityInstance);
 
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Successed);

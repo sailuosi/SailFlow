@@ -12,6 +12,7 @@ using saiflow.engine.Xpdl;
 using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Message;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Message
 {
     /// <summary>
@@ -20,9 +21,8 @@ namespace saiflow.engine.Core.Pattern.Event.Message
     /// </summary>
     internal class NodeMediatorInterMsgCatch : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
     {
-        internal NodeMediatorInterMsgCatch(ActivityForwardContext forwardContext,
-            SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorInterMsgCatch(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }

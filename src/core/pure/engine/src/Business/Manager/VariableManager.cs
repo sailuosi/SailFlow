@@ -15,6 +15,12 @@ namespace saiflow.engine.Business.Manager
     /// </summary>
     public class VariableManager
     {
+        public VariableManager(SailClient client)
+        {
+            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+        }
+
+        protected SailClient Sail { get; }
         private const string VariableColumns =
             "id, process_id, version, activity_id, name, type, direction, default_value, " +
             "is_required, is_referenced, source_ref, source_variable_name, sort_order, description, " +
@@ -25,7 +31,7 @@ namespace saiflow.engine.Business.Manager
             if (string.IsNullOrEmpty(processId) || string.IsNullOrEmpty(version) || string.IsNullOrEmpty(activityId))
                 return new List<VariableEntity>();
 
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return kit
                 .select(VariableColumns)
                 .from(SailSqlDialect.VariableTable)
@@ -38,11 +44,11 @@ namespace saiflow.engine.Business.Manager
         }
 
         public VariableEntity GetById(int id)
-            => SailClientAccess.UseRunSQL().useRepo<VariableEntity, int>().GetById(id);
+            => Sail.UseRunSQL().useRepo<VariableEntity, int>().GetById(id);
 
         public int Insert(VariableEntity entity)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             return Insert(kit, entity);
         }
 
@@ -56,7 +62,7 @@ namespace saiflow.engine.Business.Manager
 
         public void Update(VariableEntity entity)
         {
-            var kit = SailClientAccess.UseRunSQL();
+            var kit = Sail.UseRunSQL();
             Update(kit, entity);
         }
 
@@ -67,14 +73,14 @@ namespace saiflow.engine.Business.Manager
         }
 
         public void Delete(int id)
-            => SailClientAccess.UseRunSQL().useRepo<VariableEntity, int>().DeleteById(id);
+            => Sail.UseRunSQL().useRepo<VariableEntity, int>().DeleteById(id);
 
         public void Delete(SQLBuilder kit, int id)
             => kit.useRepo<VariableEntity, int>().DeleteById(id);
 
         public void DeleteByProcessActivity(string processId, string version, string activityId)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
@@ -91,7 +97,7 @@ namespace saiflow.engine.Business.Manager
 
         public void SaveList(string processId, string version, string activityId, IList<VariableEntity> list)
         {
-            using (var kit = SailClientAccess.UseRunSQL())
+            using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try

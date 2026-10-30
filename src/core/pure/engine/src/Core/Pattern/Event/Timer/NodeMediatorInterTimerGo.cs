@@ -13,6 +13,7 @@ using saiflow.engine.Business.Manager;
 using saiflow.engine.Xpdl;
 using saiflow.engine.Xpdl.Entity;
 
+using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Timer
 {
     /// <summary>
@@ -21,8 +22,8 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
     /// </summary>
     internal class NodeMediatorInterTimerGo : NodeMediator
     {
-        internal NodeMediatorInterTimerGo(ActivityForwardContext forwardContext, SQLBuilder kit)
-            : base(forwardContext, kit)
+        internal NodeMediatorInterTimerGo(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
+            : base(forwardContext, kit, client)
         {
 
         }
@@ -122,7 +123,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
             {
                 //并发多实例分支判断(AndSplit Multiple)
                 //Concurrent multi instance branch judgment (AndSplit Multiple)
-                var processModel = ProcessModelFactory.CreateByProcessInstance(SailSqlAccess.Sibling(kit),
+                var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, SailSqlAccess.Sibling(kit),
                     processInstance);
                 var activityNode = processModel.GetActivity(fromActivityInstance.ActivityId);
                 isParallel = processModel.IsAndSplitMI(activityNode);
