@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
+    <PackageId>saiflow.data</PackageId>
+    <Version>3.5.0</Version>
+    <Title>Sailflow Data Access Layer</Title>
+    <Description>Data access layer for saiflow.NET via mooSQL (SailDbAccess / SQLBuilder / SooRepository).</Description>
+    <Product>saiflow.NET</Product>
+    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\moo-sqlm\mooSQL2024\ext\mooSQL.Ext.csproj" />
+  </ItemGroup>
+
+</Project>

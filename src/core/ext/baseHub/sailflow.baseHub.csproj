@@ -15,8 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\saiflow.data\saiflow.data.csproj" />
-    <ProjectReference Include="..\..\..\..\moo-sqlm\mooSQL2024\ext\mooSQL.Ext.csproj" />
+    <ProjectReference Include="..\..\pure\basis\sailflow.basis.csproj" />
   </ItemGroup>
 
 </Project>
