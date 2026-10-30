@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using PdfDocument = iTextSharp.text.Document;
 
 namespace saiflow.biz.Utility
 {
@@ -23,7 +24,7 @@ namespace saiflow.biz.Utility
         {
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? ".");
             using var stream = new FileStream(outputPath, FileMode.Create, FileAccess.Write);
-            var document = new Document(PageSize.A4, 50f, 50f, 60f, 60f);
+            var document = new PdfDocument(PageSize.A4, 50f, 50f, 60f, 60f);
             PdfWriter.GetInstance(document, stream);
             document.Open();
 
@@ -38,7 +39,7 @@ namespace saiflow.biz.Utility
         public static byte[] GenerateProcessDocumentBytes(string title, IDictionary<string, string> fields)
         {
             using var ms = new MemoryStream();
-            var document = new Document(PageSize.A4, 50f, 50f, 60f, 60f);
+            var document = new PdfDocument(PageSize.A4, 50f, 50f, 60f, 60f);
             PdfWriter.GetInstance(document, ms);
             document.Open();
 
@@ -54,7 +55,7 @@ namespace saiflow.biz.Utility
         public static byte[] GenerateFromContent(string title, string content)
         {
             using var ms = new MemoryStream();
-            var document = new Document(PageSize.A4, 50f, 50f, 60f, 60f);
+            var document = new PdfDocument(PageSize.A4, 50f, 50f, 60f, 60f);
             PdfWriter.GetInstance(document, ms);
             document.Open();
 
@@ -70,7 +71,7 @@ namespace saiflow.biz.Utility
             return ms.ToArray();
         }
 
-        private static void AddContent(Document document, string title, IDictionary<string, string> fields)
+        private static void AddContent(PdfDocument document, string title, IDictionary<string, string> fields)
         {
             var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18f, HeaderColor);
             var metaFont = FontFactory.GetFont(FontFactory.HELVETICA, 9f, new BaseColor(120, 120, 120));

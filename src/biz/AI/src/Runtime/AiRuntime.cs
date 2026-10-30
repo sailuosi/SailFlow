@@ -1,4 +1,7 @@
+using System;
+using mooSQL.data;
 using saiflow.AI.Abstractions;
+using saiflow.AI.Entity;
 
 namespace saiflow.AI.Runtime
 {
@@ -22,6 +25,23 @@ namespace saiflow.AI.Runtime
         public static void UseExecutor(IAiNodeExecutor executor)
         {
             AiNodeExecutorLocator.Register(executor);
+        }
+
+        /// <summary>
+        /// Ensures AI-related tables exist (ai_model_provider / ai_activity_config).
+        /// Call from host startup when AI is enabled; not part of core engine schema.
+        /// </summary>
+        public static string EnsureTables(SQLBuilder kit)
+        {
+            if (kit == null)
+                throw new ArgumentNullException(nameof(kit));
+
+            var wk = kit.useDBInit();
+            wk.autoMode()
+                .createTable<AiModelProviderEntity>()
+                .createTable<AiActivityConfigEntity>();
+
+            return wk.WorkingProgress?.ToString() ?? string.Empty;
         }
     }
 }

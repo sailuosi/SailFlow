@@ -6,7 +6,7 @@
     <Version>3.5.0</Version>
     <Title>Sailflow AI Contracts</Title>
     <LangVersion>14.0</LangVersion>
-    <Description>AI contracts/abstractions for Sailflow (node executor, entities, service interfaces). Implementations live in sailflow.biz.AI.</Description>
+    <Description>Minimal AI scheduling contracts for Sailflow (IAiNodeExecutor). Entities and LLM/RAG/Agent implementations live in sailflow.biz.AI.</Description>
     <Product>saiflow.NET</Product>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -14,9 +14,5 @@
     <RootNamespace>saiflow.AI</RootNamespace>
     <AssemblyName>saiflow.AI</AssemblyName>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\basis\sailflow.basis.csproj" />
-  </ItemGroup>
 
 </Project>
