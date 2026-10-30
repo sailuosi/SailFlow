@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackageId>saiflow.hub</PackageId>
+    <Version>3.5.0</Version>
+    <Title>Sailflow Core Module</Title>
+    <Description>Core module for saiflow.NET. Provides essential workflow engine functionality including email services and message queue integration.</Description>
+    <Product>saiflow.NET</Product>
+    <PackageProjectUrl>https://github.com/besley/slickflow</PackageProjectUrl>
+    <Copyright>@2014-2025</Copyright>
+    <RepositoryUrl>https://github.com/besley/saiflow.git</RepositoryUrl>
+    <Company>Hangzhou, Ligong</Company>
+    <Authors>Besley</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.10.0" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\saiflow.data\saiflow.data.csproj" />
+    <ProjectReference Include="..\..\..\..\moo-sqlm\mooSQL2024\ext\mooSQL.Ext.csproj" />
+  </ItemGroup>
+
+</Project>

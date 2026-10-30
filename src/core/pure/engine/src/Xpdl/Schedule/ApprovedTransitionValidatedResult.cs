@@ -1,0 +1,46 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using saiflow.engine.Business;
+using saiflow.engine.Xpdl.Entity;
+
+namespace saiflow.engine.Xpdl.Schedule
+{
+    /// <summary>
+    /// Approval transition validate type
+    /// 审批转移检验类型
+    /// </summary>
+    internal enum ApprovedTransitionValidatedTypeEnum
+    {
+        Default = 0,
+
+        Successed = 1,
+
+        MultipleInstance = 2
+    }
+
+    /// <summary>
+    /// Approval transition validate result object
+    /// 审批转移检验结果对象
+    /// </summary>
+    internal class ApprovedTransitionValidatedResult
+    {
+        internal List<Transition> TransitionList { get; set; }
+        internal ApprovedTransitionValidatedTypeEnum ValidatedType { get; set; }
+
+        internal static ApprovedTransitionValidatedResult Default()
+        {
+            var result = new ApprovedTransitionValidatedResult();
+            result.ValidatedType = ApprovedTransitionValidatedTypeEnum.Default;
+            return result;
+        }
+
+        internal static ApprovedTransitionValidatedResult Success()
+        {
+            var result = new ApprovedTransitionValidatedResult();
+            result.ValidatedType = ApprovedTransitionValidatedTypeEnum.Successed;
+            return result;
+        }
+    }
+}

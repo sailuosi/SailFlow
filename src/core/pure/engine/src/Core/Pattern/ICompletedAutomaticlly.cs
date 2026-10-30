@@ -1,0 +1,40 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using saiflow.engine.Common;
+using saiflow.data;
+using mooSQL.data;
+using saiflow.engine.Business.Entity;
+using saiflow.engine.Xpdl.Entity;
+
+namespace saiflow.engine.Core.Pattern
+{
+    /// <summary>
+    /// Complete Automatically
+    /// </summary>
+    internal interface ICompletedAutomaticlly
+    {
+        NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,
+            string transitionId,
+            Activity fromActivity,
+            ActivityInstanceEntity fromActivityInstance,
+            Activity currentActivity,
+            ActivityInstanceEntity currentActivityInstance,
+            WfAppRunner runner,
+            SQLBuilder kit);
+    }
+
+    /// <summary>
+    /// Complete Automatically
+    /// </summary>
+    internal interface ICompleteGatewayAutomaticlly
+    {
+        NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,
+            string transitionId,
+            Activity fromActivity,
+            ActivityInstanceEntity fromActivityInstance,
+            WfAppRunner runner,
+            SQLBuilder kit);
+    }
+}

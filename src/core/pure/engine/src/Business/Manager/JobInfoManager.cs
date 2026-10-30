@@ -1,0 +1,33 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using mooSQL.data;
+using saiflow.data;
+using saiflow.engine.Business.Entity;
+using saiflow.engine.Client;
+
+namespace saiflow.engine.Business.Manager
+{
+    /// <summary>
+    /// 作业数据。终态：Client/kit，无 Session/SailDbAccess。
+    /// </summary>
+    public class JobInfoManager
+    {
+        public List<JobInfoEntity> GetJobSubscribedByTopic(string topic)
+        {
+            var kit = SailClientAccess.UseRunSQL();
+            return GetJobSubscribedByTopic(kit, topic);
+        }
+
+        public List<JobInfoEntity> GetJobSubscribedByTopic(SQLBuilder kit, string topic)
+        {
+            return kit
+                .select("*")
+                .from("wf_job_info")
+                .where("topic", topic)
+                .where("job_status", "Subscribed")
+                .orderBy("id DESC")
+                .query<JobInfoEntity>()
+                .ToList();
+        }
+    }
+}

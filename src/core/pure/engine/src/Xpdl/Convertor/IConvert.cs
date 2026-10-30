@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using saiflow.engine.Xpdl.Entity;
+
+namespace saiflow.engine.Xpdl.Convertor
+{
+    /// <summary>
+    /// Node Convert Interface
+    /// 节点转变实体
+    /// </summary>
+    public interface IConvert
+    {
+       public Activity Convert();
+    }
+}

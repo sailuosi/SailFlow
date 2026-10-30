@@ -1,0 +1,70 @@
+using System;
+using saiflow.data;
+using mooSQL.data;
+using saiflow.engine.Common;
+using saiflow.engine.Event;
+using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Business.Entity;
+
+namespace saiflow.engine.Core.Pattern.Auto
+{
+    /// <summary>
+    /// Business rule task mediator
+    /// </summary>
+    internal class NodeMediatorRule : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
+    {
+        internal NodeMediatorRule(ActivityForwardContext forwardContext, SQLBuilder kit)
+            : base(forwardContext, kit)
+        {
+        }
+
+        internal NodeMediatorRule(SQLBuilder kit)
+            : base(kit)
+        {
+        }
+
+        public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, WfAppRunner runner, SQLBuilder kit)
+        {
+            var activityInstance = CreateActivityInstanceObject(toActivity, processInstance, runner);
+            base.InsertActivityInstance(activityInstance, kit);
+            return activityInstance;
+        }
+
+        internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
+        {
+            var currentActivity = LinkContext.CurrentActivity;
+            if (currentActivity == null
+                || currentActivity.RuleConfigDetail == null
+                || string.IsNullOrWhiteSpace(currentActivity.RuleConfigDetail.RuleSetCode))
+            {
+                throw new WorkflowException("RuleTask configuration is missing ruleSetCode.");
+            }
+
+            var eventService = GetInnerEventService();
+            RuleExecutor.ExecuteRule(currentActivity.RuleConfigDetail, currentActivity, activityInstance, eventService);
+        }
+
+        public NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,
+            string transitionId,
+            Activity fromActivity,
+            ActivityInstanceEntity fromActivityInstance,
+            Activity toActivity,
+            ActivityInstanceEntity toActivityInstance,
+            WfAppRunner runner,
+            SQLBuilder kit)
+        {
+            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), toActivityInstance, runner);
+            LinkContext.CurrentActivityInstance = toActivityInstance;
+            base.InsertTransitionInstance(processInstance,
+                transitionId,
+                fromActivityInstance,
+                toActivityInstance,
+                TransitionTypeEnum.Forward,
+                TransitionFlyingTypeEnum.NotFlying,
+                runner,
+                kit);
+
+            return NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Successed);
+        }
+    }
+}

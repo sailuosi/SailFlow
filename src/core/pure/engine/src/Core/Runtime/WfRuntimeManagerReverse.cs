@@ -1,0 +1,43 @@
+using saiflow.data;
+using mooSQL.data;
+using saiflow.engine.Business.Manager;
+using saiflow.engine.Common;
+using saiflow.engine.Core.Result;
+using saiflow.engine.Core.Pattern;
+
+namespace saiflow.engine.Core.Runtime
+{
+    /// <summary>
+    /// Handling of reverse methods
+    /// 流程返签时的运行时
+    /// </summary>
+    internal class WfRuntimeManagerReverse : WfRuntimeManager
+    {
+        /// <summary>
+        /// Reverse execute method
+        /// 返签执行方法
+        /// </summary>
+        /// <param name="kit"></param>
+        internal override void ExecuteInstanceImp(SQLBuilder kit)
+        {
+            //修改流程实例为返签状态
+            //Modify the process instance to a reverse status
+            var pim = new ProcessInstanceManager();
+            pim.Reverse(kit, base.BackwardContext.ProcessInstance.Id, base.AppRunner);
+
+            var nodeMediatorBackward = new NodeMediatorBackward(base.BackwardContext, kit);
+            nodeMediatorBackward.CreateBackwardActivityTaskTransitionInstance(base.BackwardContext.ProcessInstance,
+                base.BackwardContext.BackwardFromActivityInstance,
+                BackwardTypeEnum.Reversed,
+                base.BackwardContext.BackwardToTargetTransitionId,
+                TransitionTypeEnum.Backward,
+                TransitionFlyingTypeEnum.NotFlying,
+                base.ActivityResource,
+                kit);
+
+            WfExecutedResult result = base.WfExecutedResult;
+            result.BackwardTaskReceiver = base.BackwardContext.BackwardTaskReceiver;
+            result.Status = WfExecutedStatus.Success;
+        }
+    }
+}

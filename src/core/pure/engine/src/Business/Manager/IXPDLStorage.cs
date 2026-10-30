@@ -1,0 +1,20 @@
+﻿using System;
+using System.Xml;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using saiflow.engine.Business.Entity;
+
+namespace saiflow.engine.Business.Manager
+{
+    /// <summary>
+    /// Process definition database storage interface
+    /// 流程定义数据库存储接口
+    /// </summary>
+    public interface IXPDLStorage
+    {
+        XmlDocument Read(ProcessEntity entity);
+        void Save(string filePath, XmlDocument xmlDoc);
+    }
+}
