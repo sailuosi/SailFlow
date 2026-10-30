@@ -787,7 +787,7 @@ namespace saiflow.engine.Business.Manager
             if (JobAdminConfig.EMailSendUtility_SendEMailFlag == true)
             {
                 var userId = entity.AssignedUserId;
-                var rm = new ResourceService();
+                var rm = ResourceServiceLocator.Resolve();
                 var user = rm.GetUserById(userId);
 
                 if (user != null && !string.IsNullOrEmpty(user.EMail))

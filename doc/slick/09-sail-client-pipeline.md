@@ -1,8 +1,8 @@
 # 09 · SailClient 外层管道设计（Builder / Collection / UseXxx）
 
-> 状态：**Phase A/B/C（Form）已落地**（Resource 解耦仍待 Phase C 余量）  
+> 状态：**Phase A/B/C（Form + Resource）已落地**  
 > 对齐对象：ASP.NET Core `WebApplicationBuilder` / `IServiceCollection` / `UseXxx` 扩展管道  
-> 关联现状：`SailClient`、`SailClientAssembler`、`SailClientAccess`、`saiflow.biz` 引导、`AiNodeExecutorLocator` / `FormServiceLocator`
+> 关联现状：`SailClient`、`SailClientAssembler`、`SailClientAccess`、`saiflow.biz` 引导、`AiNodeExecutorLocator` / `FormServiceLocator` / `ResourceServiceLocator`
 
 ---
 
@@ -21,6 +21,7 @@
 ```csharp
 builder.Services.UseBizAI()
                 .UseBizDocs()
+                .UseResource()
                 .UseForm()
                 .UseSchema(o => o.Seed = true);
 ```
@@ -69,6 +70,7 @@ builder.Services.UseBizAI()
 │   builder.Services                                      │
 │       .UseDatabase(db)                                  │
 │       .UseBizAI()                                       │
+│       .UseResource()                                    │
 │       .UseForm()                                        │
 │       .UseSchema(o => { o.IncludeAi = true; });         │
 │   var client = builder.Build();   // or lazy Ensure()   │
@@ -83,10 +85,10 @@ builder.Services.UseBizAI()
 └─────────────────────────────────────────────────────────┘
          ▲ 注册回调来自各包的 UseXxx
          │
-┌────────┴────────┐  ┌──────────────┐  ┌────────────────┐
-│ sailflow.biz.AI │  │ sailflow.form│  │ sailflow.biz   │
-│ UseBizAI()      │  │ UseForm()    │  │ UseSchema()    │
-└─────────────────┘  └──────────────┘  └────────────────┘
+┌────────┴────────┐  ┌──────────────┐  ┌────────────────┐  ┌─────────────────┐
+│ sailflow.biz.AI │  │ sailflow.form│  │ sailflow.resource│ │ sailflow.biz    │
+│ UseBizAI()      │  │ UseForm()    │  │ UseResource()  │  │ UseSchema()     │
+└─────────────────┘  └──────────────┘  └────────────────┘  └─────────────────┘
 ```
 
 ### 3.1 程序集归属
@@ -399,7 +401,7 @@ public static class XxxSailBuilderExtensions
 | `UseConfiguration(IConfiguration)` | engine（Builder 方法已有） | — | 配置 |
 | `UseEventHub(ISailEventHub)` | engine | ConfigureClient | 替换默认 Event stub |
 | `UseForm()` | form | ConfigureClient | 注册 `IFormService` → Locator |
-| `UseResource()` | resource | ConfigureClient | 注册 `IResourceService` |
+| `UseResource()` | resource | ConfigureClient | 注册 `IResourceService` → Locator |
 | `UseBizAI()` | biz.AI | ConfigureClient + PostBuild | `AiNodeExecutorLocator` + `AiRuntime.EnsureTables` |
 | `UseBizDocs()` | biz.docs | ConfigureClient | 文档 LocalService 相关（若需） |
 | `UseSchema(...)` | biz host | PostBuild | 核心表 + 种子；可组合 AI 表 |
@@ -482,7 +484,7 @@ public sealed class BizAiOptions
 }
 ```
 
-### 5.5 具体实现示例：`UseForm`（为后续解耦做准备）
+### 5.5 具体实现示例：`UseForm` / `UseResource`
 
 ```csharp
 namespace saiflow.hub.Form.Hosting; // 位于 sailflow.form
@@ -498,23 +500,46 @@ public static class FormSailExtensions
             Order = 120,
             ConfigureClient = (_, coll) =>
             {
-                // 过渡：写入 Properties；WorkflowService 改为 FormServiceLocator.Resolve()
-                coll.Properties[SailBuilderKeys.FormService] = FormServiceFactory.Create();
-                FormServiceLocator.Register(
-                    (IFormService)coll.Properties[SailBuilderKeys.FormService]!);
+                var formService = FormServiceFactory.Create();
+                coll.Properties[SailBuilderKeys.FormService] = formService;
+                FormServiceLocator.Register(formService);
             }
         });
     }
 }
 ```
 
-引擎侧最终改为：
-
 ```csharp
-FormService = FormServiceLocator.Resolve(); // 不再 FormServiceFactory.Create()
+namespace saiflow.hub.Resource.Hosting; // 位于 sailflow.resource
+
+public static class ResourceSailExtensions
+{
+    public static ISailCollection UseResource(this ISailCollection services)
+    {
+        return services.AddFeature(new SailFeatureDescriptor
+        {
+            Name = "Resource",
+            Phase = SailFeaturePhase.ConfigureClient,
+            Order = 110,
+            ConfigureClient = (_, coll) =>
+            {
+                var resourceService = ResourceServiceFactory.Create();
+                coll.Properties[SailBuilderKeys.ResourceService] = resourceService;
+                ResourceServiceLocator.Register(resourceService);
+            }
+        });
+    }
+}
 ```
 
-从而 **engine 不再 ProjectReference form**（与 AI 解耦同构）。
+引擎侧：
+
+```csharp
+ResourceService = ResourceServiceLocator.Resolve();
+FormService = FormServiceLocator.Resolve();
+```
+
+从而 **engine 不再 ProjectReference form / resource**（与 AI 解耦同构）。
 
 ### 5.6 具体实现示例：`UseSchema`（biz host）
 
@@ -571,8 +596,8 @@ using saiflow.hub.Form.Hosting;
 var builder = SailClient.CreateBuilder(configuration);
 builder.Services
     .UseDatabase(dbInstance)          // 或 UseDatabase(dbFactory)
+    .UseResource()
     .UseForm()
-    .UseResource()                    // 规划中
     .UseBizAI()
     .UseBizDocs()                     // 规划中
     .UseSchema(o =>
@@ -613,8 +638,9 @@ builder.Services.AddSingleton(sp =>
     var sailBuilder = SailClient.CreateBuilder(config);
     sailBuilder.Services
         .UseDatabase(db)
-        .UseBizAI()
+        .UseResource()
         .UseForm()
+        .UseBizAI()
         .UseSchema();
 
     // 可选：把同一 IServiceCollection 挂上，供高级扩展使用
@@ -638,6 +664,7 @@ builder.Services.AddSingleton(sp =>
 | `AiRuntime.EnsureTables(kit)` | `UseBizAI` PostBuild 或 `UseSchema(IncludeAi)` |
 | `SailSchemaInitializer.InitDb(client)` | `UseSchema` + 可选 Seed；或保留方法供脚本调用 |
 | `FormServiceFactory.Create()` in engine | `UseForm()` + `FormServiceLocator` |
+| `ResourceServiceFactory.Create()` / `new ResourceService()` in engine | `UseResource()` + `ResourceServiceLocator` |
 | 静态 Locator 散落 | 逐步收敛到 Collection Properties / 统一 `SailServiceLocator` |
 
 ### 7.2 分阶段落地（建议）
@@ -654,9 +681,9 @@ builder.Services.AddSingleton(sp =>
 1. `UseBizAI` / `UseSchema` 扩展。
 2. 示例宿主改为管道写法；`SailSchemaInitializer.InitDb` 标记为过时包装。
 
-**Phase C — Form / Resource 解耦**
+**Phase C — Form / Resource 解耦（已完成）**
 
-1. `FormServiceLocator` / `ResourceServiceLocator`（或统一 Locator）。
+1. `FormServiceLocator` / `ResourceServiceLocator`。
 2. `UseForm` / `UseResource`。
 3. 去掉 engine → form / resource 的实现型 ProjectReference（仅保留 baseHub 契约）。
 
@@ -727,7 +754,15 @@ src/biz/host/src/Hosting/
 
 src/core/ext/form/src/Hosting/
   FormSailExtensions.cs
-  FormServiceLocator.cs            # Phase C
+
+src/core/ext/baseHub/src/Form/
+  FormServiceLocator.cs
+
+src/core/ext/resource/src/Hosting/
+  ResourceSailExtensions.cs
+
+src/core/ext/baseHub/src/Resource/
+  ResourceServiceLocator.cs
 ```
 
 ---
@@ -768,6 +803,6 @@ Debug.Assert(ReferenceEquals(a, b));
 2. **SailClient** 仍是唯一运行根；Builder 只负责装配。  
 3. **积极 / 懒构建**均支持；业务自选。  
 4. **引擎提供管道**；**业务包提供 UseXxx**；宿主只编排扩展调用。  
-5. 与 AI/Form 解耦路线一致：实现注册进管道，引擎只依赖契约/Locator。  
+5. 与 AI/Form/Resource 解耦路线一致：实现注册进管道，引擎只依赖契约/Locator。  
 
 本文档作为后续实现与 Code Review 的基准；实现 PR 应按第 7.2 节分阶段提交。

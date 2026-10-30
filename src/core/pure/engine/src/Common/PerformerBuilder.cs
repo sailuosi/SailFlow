@@ -39,7 +39,7 @@ namespace saiflow.engine.Common
             if (roleList.Count() > 0)
             {
                 var roleIDs = roleList.Select(x => x.Id).ToArray();
-                var resourceService = ResourceServiceFactory.Create();
+                var resourceService = ResourceServiceLocator.Resolve();
                 var userList = resourceService.GetUserListByRoles(roleIDs);
                 performerList = new PerformerList();
 
