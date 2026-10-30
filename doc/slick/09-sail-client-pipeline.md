@@ -1,8 +1,8 @@
 # 09 · SailClient 外层管道设计（Builder / Collection / UseXxx）
 
-> 状态：**Phase A/B/C（Form + Resource）已落地**  
-> 对齐对象：ASP.NET Core `WebApplicationBuilder` / `IServiceCollection` / `UseXxx` 扩展管道  
-> 关联现状：`SailClient`、`SailClientAssembler`、`SailClientAccess`、`saiflow.biz` 引导、`AiNodeExecutorLocator` / `FormServiceLocator` / `ResourceServiceLocator`
+> 状态：**Phase A/B/C（Form + Resource）已落地；静态 Access 已移除（实例下传）**  
+> 对齐对象：ASP.NET Core `WebApplicationBuilder` / `IServiceCollection` / `UseXxx` 扩展管道；取库对齐 mooSQL `DBInstance`  
+> 关联现状：`SailClient`、`SailClientAssembler`、`SailClientBuilder` / `SailClientHost`、`WorkflowService(SailClient)`、`saiflow.biz` 引导、`AiNodeExecutorLocator` / `FormServiceLocator` / `ResourceServiceLocator`
 
 ---
 
@@ -10,12 +10,12 @@
 
 ### 1.1 目标
 
-`SailClient` 是业务侧的**应用级根实例**（类比 ASP.NET 的 `WebApplication` / 顶级 App）：
+`SailClient` 是业务侧的**应用级根实例**（类比 ASP.NET 的 `WebApplication` / 顶级 App；取库根对齐 mooSQL `DBInstance`）：
 
-- **在业务侧构建**，不在引擎内部隐式 new。
+- **在业务侧构建并持有**，不在引擎内部隐式 new，也不经进程静态 Access 取库。
 - 构建时机由业务决定：
-  - **积极构建**：Startup / `Program.cs` 显式 `Build()` 并 `SailClientAccess.Use(client)`。
-  - **懒构建**：首次访问时由 `SailClientHost` / `SailClientAccess` 触发 `Build()`。
+  - **积极构建**：Startup / `Program.cs` 显式 `Build()`，保存返回的 `SailClient`，再注入 `WorkflowService` / Managers / DI。
+  - **懒构建**：首次访问时由 `SailClientHost.GetOrCreate()` 触发 `Build()`（仅缓存实例，**不写静态 Access**）。
 - 组件与服务的注册采用 **Collection + Fluent Builder + 扩展方法**，形如：
 
 ```csharp
@@ -24,6 +24,9 @@ builder.Services.UseBizAI()
                 .UseResource()
                 .UseForm()
                 .UseSchema(o => o.Seed = true);
+
+var sail = builder.Build();
+var wf = new WorkflowService(sail);   // 必须传入 SailClient
 ```
 
 ### 1.2 原则
@@ -32,13 +35,14 @@ builder.Services.UseBizAI()
 |------|------|
 | 引擎只提供管道骨架 | `ISailCollection` / `SailClientBuilder` / 核心插槽契约在 `engine`（或 `basis`） |
 | 业务包只写扩展 | `UseBizAI` / `UseForm` 等在各自程序集，对 `ISailCollection` 扩展 |
-| Build 一次、只读运行 | `Build()` 之后集合冻结；运行期通过 `SailClient` / Locator 解析 |
-| 可与 MS DI 共存 | Collection 可桥接 `IServiceCollection`，但不强制宿主使用 MS DI |
-| 兼容现状 | 保留 `SailClientAssembler` 一段时间，内部改为调用 Builder；`SailClientAccess` 仍为进程内入口 |
+| Build 一次、实例下传 | `Build()` 之后集合冻结；运行期由宿主注入的 `SailClient` 经 ctor/属性下传到 `WorkflowService` / Managers / Runtime / NodeMediator；Locator 仍可用于可选能力 |
+| 禁止静态取库 | 已删除 `SailClientAccess`；`SailSqlAccess` 仅保留 `Sibling(kit)`（纯函数）。业务代码用 `Sail.UseRunSQL()` |
+| 可与 MS DI 共存 | Collection 可桥接 `IServiceCollection`，但不强制宿主使用 MS DI；常见写法 `AddSingleton(sail)` + `new WorkflowService(sail)` |
+| 兼容现状 | 保留 `SailClientAssembler` 一段时间，内部由 Builder 调用 |
 
 ### 1.3 非目标（本阶段不做）
 
-- 不重写引擎内部 `Manager` 的取库方式（仍可用 `SailClientAccess.UseRunSQL()`）。
+- Form / Resource Locator 去静态（另议题）；localize 保持引擎依赖。
 - 不把 `SailClient` 变成完整 IoC 容器替代品；它是**应用根 + 注册总线**，解析可委托给简单 Locator 或 `IServiceProvider`。
 - 不强制多 `SailClient` 实例并存（默认同进程单例；多租户可后续扩展 `named client`）。
 
@@ -54,7 +58,9 @@ builder.Services.UseBizAI()
 | `services.AddXxx()` / `app.UseXxx()` | `builder.Services.UseXxx()`（统一用 Use 前缀，表示“启用某能力包”） |
 | `builder.Build()` | `builder.Build()` → `SailClient` |
 | `Program.cs` / Startup | 业务宿主（ASP.NET Host、控制台、WinService 等） |
-| 懒加载 Host | `SailClientHost.GetOrCreate(...)` / `SailClientAccess.Ensure(...)` |
+| 懒加载 Host | `SailClientHost.GetOrCreate()`（仅缓存实例） |
+| `db.useSQL()` | `client.UseRunSQL()` / 属性名在引擎内为 `Sail` |
+| 事务兄弟 kit | `SailSqlAccess.Sibling(kit)` |
 
 说明：ASP.NET 里 `Add*` 偏 DI 注册、`Use*` 偏中间件。Sailflow 外层管道更接近“能力包启用”，**统一命名为 `UseXxx`**，避免与 MS DI 的 `Add*` 混淆；若未来桥接 `IServiceCollection`，扩展内部再 `services.AddSingleton<...>()`。
 
@@ -73,15 +79,16 @@ builder.Services.UseBizAI()
 │       .UseResource()                                    │
 │       .UseForm()                                        │
 │       .UseSchema(o => { o.IncludeAi = true; });         │
-│   var client = builder.Build();   // or lazy Ensure()   │
-│   SailClientAccess.Use(client);                         │
+│   var client = builder.Build();   // 宿主持有；或 lazy GetOrCreate() │
+│   var wf = new WorkflowService(client);                     │
 └──────────────────────────┬──────────────────────────────┘
-                           │ Build
+                           │ Build + 实例注入
                            ▼
 ┌─────────────────────────────────────────────────────────┐
 │  SailClient (应用根实例)                                 │
 │   · DBFactory / Dialect / Config（已有插槽）             │
 │   · Features / Locators（AI、Form、Resource…）           │
+│   · 下传 → WorkflowService / Managers / Runtime / Mediator│
 └─────────────────────────────────────────────────────────┘
          ▲ 注册回调来自各包的 UseXxx
          │
@@ -98,7 +105,8 @@ builder.Services.UseBizAI()
 | `ISailCollection` / `SailCollection` | `sailflow.engine`（`saiflow.engine.Client.Hosting`） | 管道契约与默认实现 |
 | `SailClientBuilder` | 同上 | Fluent 构建器 |
 | `SailFeatureDescriptor` / 启动钩子 | 同上 | 描述“注册了什么、Build 时做什么” |
-| `SailClient` / `SailClientAccess` | `sailflow.engine`（已有） | 运行根与进程入口 |
+| `SailClient` | `sailflow.engine`（已有） | 运行根；由宿主持有并注入工作类 |
+| `SailSqlAccess.Sibling` | `sailflow.basis`（graph 镜像） | 事务兄弟 kit；无静态绑定 |
 | `UseBizAI` | `sailflow.biz.AI` | AI 执行器 + AI 表 |
 | `UseBizDocs` | `sailflow.biz.docs` | PDF LocalService 等 |
 | `UseForm` | `sailflow.form` | `IFormService` 注册 |
@@ -237,8 +245,8 @@ public sealed class SailClientBuilder
         return this;
     }
 
-    /// <summary>积极构建：立即得到 SailClient，并可选绑定到 SailClientAccess。</summary>
-    public SailClient Build(bool bindAccess = true)
+    /// <summary>积极构建：得到 SailClient，由宿主自行持有并注入工作类（不再绑定静态 Access）。</summary>
+    public SailClient Build()
     {
         // 1) ConfigureServices phase
         foreach (var d in Services.OrderBy(x => x.Order)
@@ -266,9 +274,6 @@ public sealed class SailClientBuilder
         foreach (var d in Services.OrderBy(x => x.Order)
                                   .Where(x => x.Phase == SailFeatureLifetime.PostBuild))
             d.PostBuild?.Invoke(client, Services);
-
-        if (bindAccess)
-            SailClientAccess.Use(client);
 
         return client;
     }
@@ -303,7 +308,8 @@ public partial class SailClient
 namespace saiflow.engine.Client.Hosting;
 
 /// <summary>
-/// 懒构建入口：首次 Get() 时执行 builder 工厂。
+/// 懒构建入口：首次 GetOrCreate 时执行 builder 工厂。
+/// 仅缓存实例，不写进程静态 Access。
 /// </summary>
 public static class SailClientHost
 {
@@ -333,7 +339,7 @@ public static class SailClientHost
             if (_builderFactory == null)
                 throw new InvalidOperationException(
                     "Call SailClientHost.Configure(() => { var b = SailClient.CreateBuilder(); ...; return b; }) first.");
-            _client = _builderFactory().Build(bindAccess: true);
+            _client = _builderFactory().Build();
             return _client;
         }
     }
@@ -344,18 +350,29 @@ public static class SailClientHost
         {
             _client = null;
             _builderFactory = null;
-            SailClientAccess.Clear();
         }
     }
 }
 ```
 
-`SailClientAccess` 可增加：
+> **已删除** `SailClientAccess`（`Use` / `Ensure` / `UseRunSQL` / `Clear`）。运行期入口是宿主持有的 `SailClient` 实例，或 `SailClientHost.GetOrCreate()` 返回值。
 
-```csharp
-public static SailClient Ensure()
-    => IsConfigured ? Required : SailClientHost.GetOrCreate();
+### 4.7 实例下传（对齐 mooSQL）
+
 ```
+Host Build SailClient
+        │
+        ▼
+WorkflowService(Sail)
+        ├── Managers(Sail)           → Sail.UseRunSQL() / 入口 kit
+        ├── WfRuntimeManager(Sail)
+        │         └── NodeMediator(Sail + Kit)
+        └── Sail.UseRunSQL() → SQLBuilder kit（事务边界在 Service 入口）
+```
+
+- Managers / `WorkflowService`：**必须** `ctor(SailClient)`；属性名在引擎内为 `Sail`（避免与命名空间 `Client` 冲突）。
+- 无 kit 参数的方法：`var kit = Sail.UseRunSQL()`；事务路径继续下传同一 kit 或 `SailSqlAccess.Sibling(kit)`。
+- 消息委托等：持有 `SailClient` 再 `new WorkflowService(Sail)`。
 
 ---
 
@@ -606,7 +623,8 @@ builder.Services
         o.Seed = env.IsDevelopment();
     });
 
-var sail = builder.Build();           // 内部 SailClientAccess.Use(sail)
+var sail = builder.Build();           // 宿主持有；不再 bindAccess
+var wf = new WorkflowService(sail);   // 或挂到 DI：AddSingleton(sail) + AddSingleton<WorkflowService>(...)
 ```
 
 ### 6.2 懒构建
@@ -624,7 +642,8 @@ SailClientHost.Configure(() =>
 
 // 任意首次用到流程时：
 var client = SailClientHost.GetOrCreate();
-// 或 Manager 路径：SailClientAccess.Ensure().UseRunSQL();
+var kit = client.UseRunSQL();
+var wf = new WorkflowService(client);
 ```
 
 ### 6.3 与 ASP.NET Core 宿主组合
@@ -646,8 +665,11 @@ builder.Services.AddSingleton(sp =>
     // 可选：把同一 IServiceCollection 挂上，供高级扩展使用
     sailBuilder.Services.ServiceCollection = builder.Services;
 
-    return sailBuilder.Build(bindAccess: true);
+    return sailBuilder.Build();
 });
+
+builder.Services.AddSingleton(sp =>
+    new WorkflowService(sp.GetRequiredService<SailClient>()));
 ```
 
 ---
@@ -659,13 +681,16 @@ builder.Services.AddSingleton(sp =>
 | 现状 | 新管道 |
 |------|--------|
 | `SailClientAssembler.Assemble(db, config)` | `CreateBuilder().UseDatabase(db).UseConfiguration(config).Build()` |
-| `SailClientAccess.Use(client)` | `Build(bindAccess: true)` 默认完成 |
-| `AiRuntime.UseDefaultExecutor()` | `UseBizAI()` |
+| `SailClientAccess.Use(client)` / `UseRunSQL()` | **已删除**；宿主持有 `SailClient`，`Sail.UseRunSQL()`；工作类 ctor 注入 |
+| `Build(bindAccess: true)` | `Build()` 仅返回实例 |
+| `new WorkflowService()` / `new XxxManager()` | 必须 `new ...(SailClient)` |
+| `SailSqlAccess.UseRunSQL()` | `Sail.UseRunSQL()`；`Sibling(kit)` 保留 |
+| `AiRuntime.UseDefaultExecutor()` | `UseBizAI()` → `AiRuntime.UseDefaultExecutor(client)` |
 | `AiRuntime.EnsureTables(kit)` | `UseBizAI` PostBuild 或 `UseSchema(IncludeAi)` |
 | `SailSchemaInitializer.InitDb(client)` | `UseSchema` + 可选 Seed；或保留方法供脚本调用 |
-| `FormServiceFactory.Create()` in engine | `UseForm()` + `FormServiceLocator` |
-| `ResourceServiceFactory.Create()` / `new ResourceService()` in engine | `UseResource()` + `ResourceServiceLocator` |
-| 静态 Locator 散落 | 逐步收敛到 Collection Properties / 统一 `SailServiceLocator` |
+| `FormServiceFactory.Create()` in engine | `UseForm()` + `FormServiceLocator`（`Create(SailClient)`） |
+| `ResourceServiceFactory.Create()` / `new ResourceService()` in engine | `UseResource()` + `ResourceServiceLocator`（`Create(SailClient)`） |
+| 静态 Locator 散落 | 逐步收敛到 Collection Properties / 统一 `SailServiceLocator`（另议题） |
 
 ### 7.2 分阶段落地（建议）
 
@@ -686,6 +711,12 @@ builder.Services.AddSingleton(sp =>
 1. `FormServiceLocator` / `ResourceServiceLocator`。
 2. `UseForm` / `UseResource`。
 3. 去掉 engine → form / resource 的实现型 ProjectReference（仅保留 baseHub 契约）。
+
+**Phase C′ — SailClient 实例下传（已完成）**
+
+1. 删除 `SailClientAccess`；`SailSqlAccess` 仅留 `Sibling`。
+2. `Build()` 不再 `bindAccess`；`SailClientHost` 只缓存实例。
+3. Managers / `WorkflowService` / Runtime / NodeMediator / Parser / Message 经 ctor 持有 `Sail`。
 
 **Phase D — 可选 MS DI 桥**
 
@@ -724,7 +755,7 @@ public static SailInitDbResult InitDb(SailClient client, ...)
 
 ### 8.4 与 BeeFlow / 文档 08 的关系
 
-现有注释指向「业务不持有 DBInstance、经 Client 取 SQLBuilder」。本管道**强化**该约定：Database 只在 Builder 期注入一次，运行期一律 `client.UseRunSQL()` / `SailClientAccess.UseRunSQL()`。
+现有注释指向「业务不持有 DBInstance、经 Client 取 SQLBuilder」。本管道**强化**该约定：Database 只在 Builder 期注入一次，运行期一律经实例 `Sail.UseRunSQL()`（及事务路径下传的 kit / `Sibling`），禁止静态 Access。
 
 ---
 
@@ -734,7 +765,7 @@ public static SailInitDbResult InitDb(SailClient client, ...)
 src/core/pure/engine/src/Client/
   SailClient.cs                    # 已有；增加 CreateBuilder partial
   SailClientAssembler.cs           # 已有；保留
-  SailClientAccess.cs              # 已有；增加 Ensure()
+  # SailClientAccess.cs            # 已删除（改实例下传）
   Hosting/
     ISailCollection.cs
     SailCollection.cs
@@ -779,9 +810,9 @@ var client = SailClient.CreateBuilder(config)
         .UseSchema(o => o.Seed = true))
     .Build();
 
-Debug.Assert(SailClientAccess.IsConfigured);
 Debug.Assert(AiNodeExecutorLocator.IsRegistered);
 _ = client.UseRunSQL(); // 可取库
+var wf = new WorkflowService(client);
 ```
 
 懒构建验收：
@@ -794,6 +825,8 @@ var a = SailClientHost.GetOrCreate();
 var b = SailClientHost.GetOrCreate();
 Debug.Assert(ReferenceEquals(a, b));
 ```
+
+编译期：无参 `WorkflowService` / 主要 Manager ctor 已删，漏传直接 CS 错误。`src` 内无 `SailClientAccess` / `SailSqlAccess.UseRunSQL` 引用。
 
 ---
 
