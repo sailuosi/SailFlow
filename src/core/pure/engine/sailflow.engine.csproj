@@ -3,33 +3,9 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <PackageId>saiflow.engine</PackageId>
-    <Authors>Besley</Authors>
-    <Company>Hangzhou, Ligong</Company>
-    <Product>saiflow.NET</Product>
-    <Copyright>@2014-2025</Copyright>
-    <AssemblyVersion>3.5.0.0</AssemblyVersion>
-    <FileVersion>3.5.0.0</FileVersion>
-    <Description>Open Source Workflow Engine based on .NET. saiflow.NET 3.5.0 adds AI big model integration, marking an important milestone version. The integration includes three core features: Text-to-BPMN Flowchart Generation, Image Classification, and RAG-Enhanced Retrieval.</Description>
-    <Version>3.5.0</Version>
-    <Title>saiflow.NET</Title>
-    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/besley/slickflow</PackageProjectUrl>
-    <PackageIcon>slickflow80.png</PackageIcon>
-    <!-- <PackageReadmeFile>README.md</PackageReadmeFile> -->
-    <RepositoryUrl>https://github.com/besley/saiflow.git</RepositoryUrl>
-    <PackageReleaseNotes>saiflow.NET 3.5.0 adds AI big model integration, marking an important milestone version. The integration includes three core features:
-
-1. Text-to-BPMN Flowchart Generation
-   Uses text descriptions to generate corresponding BPMN flowcharts after semantic search and analysis by the big model.
-
-2. Image Classification
-   Uses the big model to identify specific category attributes of images. Configure prompt word information, and the big model analyzes and identifies image classification. The processing process for multimodal files is similar and can be extended.
-
-3. RAG-Enhanced Retrieval
-   Integrates vector database, compares the similarity of knowledge base records according to the vector value of user's search terms, and then generates response information from the large model.
-
-Project: https://github.com/besley/slickflow</PackageReleaseNotes>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Description></Description>
     <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>false</IncludeSource>
   </PropertyGroup>

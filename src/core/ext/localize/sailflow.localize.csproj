@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <Title>Sailflow Localization Module</Title>
+    <Description>Localization module for saiflow.NET with multiple language support. Provides internationalization capabilities for global users, supporting multiple languages including English and Chinese.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="obj\**\*.cs" />
+    <Compile Remove="bin\**\*.cs" />
+    <Compile Remove="Resource\**" />
+    <EmbeddedResource Remove="Resource\**" />
+    <None Remove="Resource\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="src\Designer\en.json" />
+    <None Remove="src\Designer\zh.json" />
+    <None Remove="src\Engine\en.json" />
+    <None Remove="src\Engine\zh.json" />
+    <None Remove="src\Job\en.json" />
+    <None Remove="src\Job\zh.json" />
+    <None Remove="src\Web\en.json" />
+    <None Remove="src\Web\zh.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="src\Designer\en.json" />
+    <EmbeddedResource Include="src\Designer\zh.json" />
+    <EmbeddedResource Include="src\Engine\en.json" />
+    <EmbeddedResource Include="src\Engine\zh.json" />
+    <EmbeddedResource Include="src\Job\en.json" />
+    <EmbeddedResource Include="src\Job\zh.json" />
+    <EmbeddedResource Include="src\Web\en.json" />
+    <EmbeddedResource Include="src\Web\zh.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+</Project>
