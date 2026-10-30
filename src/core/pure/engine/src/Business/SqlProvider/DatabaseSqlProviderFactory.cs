@@ -288,54 +288,54 @@ namespace saiflow.engine.Business.SqlProvider
             if (activityState == (short)ActivityStateEnum.Ready
                 || activityState == (short)ActivityStateEnum.Running)
             {
-                sqlBuilder.And(SailSqlDialect.MapField("ActivityState"), Data.Operator.Eq, "@activityState");
-                sqlBuilder.And(SailSqlDialect.MapField("TaskState"), Data.Operator.Nq, 32);
+                sqlBuilder.And(SailSqlDialect.MapField("ActivityState"), Operator.Eq, "@activityState");
+                sqlBuilder.And(SailSqlDialect.MapField("TaskState"), Operator.Nq, 32);
             }
             else if (activityState == (short)ActivityStateEnum.Completed)
             {
-                sqlBuilder.And(SailSqlDialect.MapField("TaskState"), Data.Operator.Eq, 4);
+                sqlBuilder.And(SailSqlDialect.MapField("TaskState"), Operator.Eq, 4);
             }
 
             parameters["@activityState"] = activityState;
 
             if (activityState == 1)
             {
-                sqlBuilder.And(SailSqlDialect.MapField("MainActivityState"), Data.Operator.Nq, 4);
+                sqlBuilder.And(SailSqlDialect.MapField("MainActivityState"), Operator.Nq, 4);
             }
 
             if (!string.IsNullOrEmpty(query.AppInstanceId))
             {
-                sqlBuilder.And(SailSqlDialect.MapField("AppInstanceId"), Data.Operator.Eq, "@appInstanceId");
+                sqlBuilder.And(SailSqlDialect.MapField("AppInstanceId"), Operator.Eq, "@appInstanceId");
                 parameters["@appInstanceId"] = query.AppInstanceId;
             }
 
             if (!string.IsNullOrEmpty(query.ProcessId))
             {
-                sqlBuilder.And(SailSqlDialect.MapField("ProcessId"), Data.Operator.Eq, "@processId");
+                sqlBuilder.And(SailSqlDialect.MapField("ProcessId"), Operator.Eq, "@processId");
                 parameters["@processId"] = query.ProcessId;
             }
 
             if (!string.IsNullOrEmpty(query.Version))
             {
-                sqlBuilder.And(SailSqlDialect.MapField("Version"), Data.Operator.Eq, "@version");
+                sqlBuilder.And(SailSqlDialect.MapField("Version"), Operator.Eq, "@version");
                 parameters["@version"] = query.Version;
             }
 
             if (!string.IsNullOrEmpty(query.UserId))
             {
-                sqlBuilder.And(SailSqlDialect.MapField("AssignedUserId"), Data.Operator.Eq, "@assignedUserId");
+                sqlBuilder.And(SailSqlDialect.MapField("AssignedUserId"), Operator.Eq, "@assignedUserId");
                 parameters["@assignedUserId"] = query.UserId;
             }
 
             if (!string.IsNullOrEmpty(query.EndedUserId))
             {
-                sqlBuilder.And(SailSqlDialect.MapField("EndedUserId"), Data.Operator.Eq, "@endedUserId");
+                sqlBuilder.And(SailSqlDialect.MapField("EndedUserId"), Operator.Eq, "@endedUserId");
                 parameters["@endedUserId"] = query.EndedUserId;
             }
 
             if (!string.IsNullOrEmpty(query.AppName))
             {
-                sqlBuilder.And(SailSqlDialect.MapField("AppName"), Data.Operator.Like, "@appName");
+                sqlBuilder.And(SailSqlDialect.MapField("AppName"), Operator.Like, "@appName");
                 parameters["@appName"] = string.Format("%{0}%", query.AppName);
             }
             sqlBuilder.OrderBy(SailSqlDialect.MapField("TaskId"), true);

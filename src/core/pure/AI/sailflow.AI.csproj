@@ -5,6 +5,7 @@
     <PackageId>saiflow.AI</PackageId>
     <Version>3.5.0</Version>
     <Title>Sailflow AI Module</Title>
+	  <LangVersion>14.0</LangVersion>
     <Description></Description>
     <Product>saiflow.NET</Product>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>

@@ -3,6 +3,7 @@
   <PropertyGroup>
 	  <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
     <PackageId>saiflow.data</PackageId>
+	  <LangVersion>14.0</LangVersion>
     <Version>3.5.0</Version>
     <Title>Sailflow Data Access Layer</Title>
     <Description>Data access layer for saiflow.NET via mooSQL (SailDbAccess / SQLBuilder / SooRepository).</Description>
