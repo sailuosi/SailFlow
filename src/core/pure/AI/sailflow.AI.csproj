@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+	<TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
     <PackageId>saiflow.AI</PackageId>
     <Version>3.5.0</Version>
     <Title>Sailflow AI Module</Title>
@@ -19,9 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\saiflow.data\saiflow.data.csproj" />
-    <ProjectReference Include="..\saiflow.WebUtility\saiflow.WebUtility.csproj" />
-    <ProjectReference Include="..\..\..\..\moo-sqlm\mooSQL2024\ext\mooSQL.Ext.csproj" />
+    <ProjectReference Include="..\basis\sailflow.basis.csproj" />
   </ItemGroup>
 
 </Project>

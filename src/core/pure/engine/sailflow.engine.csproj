@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+	 <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
     <PackageId>saiflow.engine</PackageId>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
@@ -24,63 +24,16 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.11" />
-    <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
     <PackageReference Include="iTextSharp" Version="5.5.13.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- mooSQL��Client/DBFactory ʹ�� DBInstance��SQLBuilder������װ������Ӧ������ -->
-    <ProjectReference Include="..\..\..\..\moo-sqlm\mooSQL2024\pure\mooSQL.Pure.csproj" />
+    <ProjectReference Include="..\..\ext\baseHub\sailflow.baseHub.csproj" />
+    <ProjectReference Include="..\..\ext\form\sailflow.form.csproj" />
+    <ProjectReference Include="..\..\ext\localize\sailflow.localize.csproj" />
+    <ProjectReference Include="..\..\ext\resource\sailflow.resource.csproj" />
+    <ProjectReference Include="..\AI\sailflow.AI.csproj" />
+    <ProjectReference Include="..\basis\sailflow.basis.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\saiflow.AI\saiflow.AI.csproj">
-      <PrivateAssets>All</PrivateAssets>
-      <IncludeAssets>All</IncludeAssets>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\saiflow.data\saiflow.data.csproj">
-      <PrivateAssets>All</PrivateAssets>
-      <IncludeAssets>All</IncludeAssets>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\saiflow.hub.Form\saiflow.hub.Form.csproj">
-      <PrivateAssets>All</PrivateAssets>
-      <IncludeAssets>All</IncludeAssets>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\saiflow.hub.Localize\saiflow.hub.Localize.csproj">
-      <PrivateAssets>All</PrivateAssets>
-      <IncludeAssets>All</IncludeAssets>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\saiflow.hub.Resource\saiflow.hub.Resource.csproj">
-      <PrivateAssets>All</PrivateAssets>
-      <IncludeAssets>All</IncludeAssets>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\saiflow.hub\saiflow.hub.csproj">
-      <PrivateAssets>All</PrivateAssets>
-      <IncludeAssets>All</IncludeAssets>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\saiflow.WebUtility\saiflow.WebUtility.csproj">
-      <PrivateAssets>All</PrivateAssets>
-      <IncludeAssets>All</IncludeAssets>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="slickflow80.png" Pack="true" PackagePath="\" />
-  </ItemGroup>
-
-  <!-- Bundle Package Strategy -->
-  <!-- In development: Use ProjectReference for faster builds -->
-  <!-- When packing: Script will convert ProjectReference to PackageReference -->
-  <!-- This allows saiflow.engine to depend on other packages instead of including assemblies -->
-  
-  <!-- Note: The pack-bundle.ps1 script will temporarily convert ProjectReference to PackageReference during packing -->
-  <!-- This ensures saiflow.engine is a metapackage that depends on all other Sailflow packages -->
 
 </Project>
