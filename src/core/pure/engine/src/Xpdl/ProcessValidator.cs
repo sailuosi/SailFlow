@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using saiflow.engine.Common;
 using saiflow.engine.Xpdl.Entity;
 using System.Xml;
 using saiflow.engine.Utility;
@@ -79,7 +80,7 @@ namespace saiflow.engine.Xpdl
             {
                 var toActivityId = t.ToActivityId;
                 var activity = ProcessModelHelper.GetActivity(process, toActivityId);
-                if (activity.ActivityType == Engine.Common.ActivityTypeEnum.EndNode)
+                if (activity.ActivityType == ActivityTypeEnum.EndNode)
                 {
                     return true;
                 }

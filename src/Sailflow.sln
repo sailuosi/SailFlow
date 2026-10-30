@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sailflow.biz", "biz\sailflo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sailflow.graph", "core\ext\graph\sailflow.graph.csproj", "{2CDC5926-E6B6-6F31-D04B-A997124D1F6F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sailflow.biz.AI", "biz\AI\sailflow.biz.AI.csproj", "{B6336CD1-E894-45AC-96FB-33E68302721B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -203,6 +205,18 @@ Global
 		{2CDC5926-E6B6-6F31-D04B-A997124D1F6F}.Release|x64.Build.0 = Release|Any CPU
 		{2CDC5926-E6B6-6F31-D04B-A997124D1F6F}.Release|x86.ActiveCfg = Release|Any CPU
 		{2CDC5926-E6B6-6F31-D04B-A997124D1F6F}.Release|x86.Build.0 = Release|Any CPU
+		{B6336CD1-E894-45AC-96FB-33E68302721B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6336CD1-E894-45AC-96FB-33E68302721B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6336CD1-E894-45AC-96FB-33E68302721B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B6336CD1-E894-45AC-96FB-33E68302721B}.Debug|x64.Build.0 = Debug|Any CPU
+		{B6336CD1-E894-45AC-96FB-33E68302721B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B6336CD1-E894-45AC-96FB-33E68302721B}.Debug|x86.Build.0 = Debug|Any CPU
+		{B6336CD1-E894-45AC-96FB-33E68302721B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6336CD1-E894-45AC-96FB-33E68302721B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6336CD1-E894-45AC-96FB-33E68302721B}.Release|x64.ActiveCfg = Release|Any CPU
+		{B6336CD1-E894-45AC-96FB-33E68302721B}.Release|x64.Build.0 = Release|Any CPU
+		{B6336CD1-E894-45AC-96FB-33E68302721B}.Release|x86.ActiveCfg = Release|Any CPU
+		{B6336CD1-E894-45AC-96FB-33E68302721B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -221,6 +235,7 @@ Global
 		{BCA8D918-3CDA-AAEC-F79D-EF4DC9CF8E86} = {6E70F97A-BA6E-40E3-AB97-A297156B59E5}
 		{B65DF8D1-1C70-43E6-86B8-1E15FC0325A5} = {D3E492C5-3AEA-31B8-30B6-F93786C05194}
 		{2CDC5926-E6B6-6F31-D04B-A997124D1F6F} = {146E78C7-7F02-432F-BE74-245DC883BEC1}
+		{B6336CD1-E894-45AC-96FB-33E68302721B} = {D3E492C5-3AEA-31B8-30B6-F93786C05194}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EE3D1824-95FD-495A-8651-88E42B1AFDC3}

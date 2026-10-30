@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace saiflow.AI.Common
 {
-    internal enum AiServiceTypeEnum
+    public enum AiServiceTypeEnum
     {
         None = 0,
 

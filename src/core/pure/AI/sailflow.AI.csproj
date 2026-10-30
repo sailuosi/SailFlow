@@ -1,23 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
     <PackageId>saiflow.AI</PackageId>
     <Version>3.5.0</Version>
-    <Title>Sailflow AI Module</Title>
-	  <LangVersion>14.0</LangVersion>
-    <Description></Description>
+    <Title>Sailflow AI Contracts</Title>
+    <LangVersion>14.0</LangVersion>
+    <Description>AI contracts/abstractions for Sailflow (node executor, entities, service interfaces). Implementations live in sailflow.biz.AI.</Description>
     <Product>saiflow.NET</Product>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>saiflow.AI</RootNamespace>
+    <AssemblyName>saiflow.AI</AssemblyName>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="LiteDB" Version="5.0.21" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.8" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\basis\sailflow.basis.csproj" />

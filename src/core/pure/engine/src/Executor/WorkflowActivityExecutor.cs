@@ -1,5 +1,4 @@
-using saiflow.AI.Entity;
-using saiflow.AI.Service;
+using saiflow.AI.Abstractions;
 using saiflow.data;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Client;
@@ -317,194 +316,83 @@ namespace saiflow.engine.Executor
                 if (service.AIServiceType == AiServiceTypeEnum.None)
                     continue;
 
-                if (service.AIServiceType == AiServiceTypeEnum.LLM)
-                    ExecuteLlmService(currentActivity, service, context);
-                else if (service.AIServiceType == AiServiceTypeEnum.RAG)
-                    ExecuteLlmService(currentActivity, service, context);
-                else if (service.AIServiceType == AiServiceTypeEnum.Agent)
-                    ExecuteLlmService(currentActivity, service, context);
+                if (service.AIServiceType == AiServiceTypeEnum.LLM
+                    || service.AIServiceType == AiServiceTypeEnum.RAG
+                    || service.AIServiceType == AiServiceTypeEnum.Agent)
+                {
+                    ExecuteAiServiceViaContract(currentActivity, service, context);
+                }
                 else
+                {
                     throw new WorkflowException($"Unsupported AI service type: {service.AIServiceType}");
+                }
             }
         }
 
-        public void ExecuteLlmService(Activity currentActivity, AiServiceDetail service, AutoExecutionContext context)
+        /// <summary>
+        /// Dispatches an AI node through <see cref="IAiNodeExecutor"/> (business implementation).
+        /// Engine only assembles variables and writes results back.
+        /// </summary>
+        public void ExecuteAiServiceViaContract(Activity currentActivity, AiServiceDetail service, AutoExecutionContext context)
         {
             string processId = context.Runner?.ProcessId;
             string version = context.Runner?.Version;
             if (string.IsNullOrEmpty(processId) || string.IsNullOrEmpty(version))
                 throw new WorkflowException("ProcessId and Version are required for AI service execution.");
 
-            List<MultiMediaFile> mediaFileList = context.Variables
-                .Select(kv => new MultiMediaFile
-                {
-                    Name = kv.Key,
-                    Content = kv.Value ?? string.Empty,
-                    MeidaType = MultiMediaTypeEnum.Text
-                })
-                .ToList();
-
-            var aiModelDataService = new AiModelDataService();
-            var axConfigEntity = aiModelDataService.GetAiActivityConfigByProcessVersionActivity(processId, version, currentActivity.ActivityId);
-            if (axConfigEntity == null)
-                throw new WorkflowException($"AI activity config not found for ProcessId={processId}, Version={version}, ActivityId={currentActivity.ActivityId}.");
-
-            // Substitute process variables in system prompt (e.g. {{industry_name}} for multi-industry aichatapp)
-            var industryName = GetVariableFromContext(context, "industry_name");
-            if (!string.IsNullOrEmpty(axConfigEntity.SystemPrompt))
-                axConfigEntity.SystemPrompt = axConfigEntity.SystemPrompt.Replace("{{industry_name}}", industryName ?? string.Empty);
-
-            var historyChatMessageList = GetChatHistoryFromContext(context);
-
-            string aiResponseMessage;
-            if (service.AIServiceType == AiServiceTypeEnum.RAG)
+            var variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (context.Variables != null)
             {
-                var ragMultiTurnService = new RagMultiTurnService();
-                aiResponseMessage = ragMultiTurnService
-                    .InvokeWithHistoryAsync(axConfigEntity, mediaFileList, historyChatMessageList)
-                    .GetAwaiter()
-                    .GetResult();
-            }
-            else if (service.AIServiceType == AiServiceTypeEnum.LLM)
-            {
-                var llmMultiTurnService = new LlmMultiTurnService();
-                aiResponseMessage = llmMultiTurnService
-                    .InvokeWithHistoryAsync(axConfigEntity, mediaFileList, historyChatMessageList)
-                    .GetAwaiter()
-                    .GetResult();
-            }
-            else if (service.AIServiceType == AiServiceTypeEnum.Agent)
-            {
-                var agentMultiTurnService = new AgentMultiTurnService();
-                aiResponseMessage = agentMultiTurnService
-                    .InvokeWithHistoryAsync(axConfigEntity, mediaFileList, historyChatMessageList)
-                    .GetAwaiter()
-                    .GetResult();
-            }
-            else
-            {
-                var aiFastCallingService = new AiFastCallingService();
-                aiResponseMessage = aiFastCallingService.InvokeAIServiceAsync(axConfigEntity, mediaFileList).GetAwaiter().GetResult();
+                foreach (var kv in context.Variables)
+                    variables[kv.Key] = kv.Value ?? string.Empty;
             }
 
-            // After obtaining the AI reply, append current turn (user + assistant) into chat_history
-            // so that downstream AI nodes (LLM or RAG) see the latest multi-turn context.
-            // For non user-facing AI nodes (such as JSON contact extractors), we only record the user message
-            // and avoid injecting raw JSON into chat_history.
+            var request = new AiNodeExecutionRequest
+            {
+                ServiceType = service.AIServiceType.ToString(),
+                ProcessId = processId,
+                Version = version,
+                ActivityId = currentActivity.ActivityId,
+                ToolSetName = service.ToolSetName,
+                Variables = variables,
+                NotifyClientEnabled = IsNotifyClientEnabled(currentActivity)
+            };
+
+            AiNodeExecutionResult aiResult;
             try
             {
-                var userMessage = GetVariableFromContext(context, "user_message");
-                var responseForHistory = (service.AIServiceType == AiServiceTypeEnum.RAG
-                    || service.AIServiceType == AiServiceTypeEnum.Agent)
-                    ? aiResponseMessage
-                    : null;
-                UpdateChatHistoryInContext(context, userMessage, responseForHistory);
+                aiResult = AiNodeExecutorLocator.Resolve()
+                    .ExecuteAsync(request)
+                    .GetAwaiter()
+                    .GetResult();
             }
-            catch
+            catch (InvalidOperationException ex) when (!AiNodeExecutorLocator.IsRegistered)
             {
-                // Do not break workflow if history serialization fails
+                throw new WorkflowException(ex.Message);
             }
 
-            var currentVariableList = currentActivity.VariableList;
-            var currentOutputVariable = currentVariableList?.FirstOrDefault(a => a.DirectionType == VariableDirectionTypeEnum.Output);
-            string outputVarName = currentOutputVariable?.Name;
+            var aiResponseMessage = aiResult?.ResponseText ?? string.Empty;
+
+            if (aiResult?.VariableUpdates != null)
+            {
+                foreach (var kv in aiResult.VariableUpdates)
+                    context.Variables[kv.Key] = kv.Value ?? string.Empty;
+            }
+
+            var currentOutputVariable = currentActivity.VariableList?
+                .FirstOrDefault(a => a.DirectionType == VariableDirectionTypeEnum.Output);
+            var outputVarName = currentOutputVariable?.Name;
             if (!string.IsNullOrEmpty(outputVarName))
                 context.Variables[outputVarName] = aiResponseMessage;
             else
                 context.Variables["AIServiceResult"] = aiResponseMessage;
 
-            // Sync to ai_response for downstream plugins (MessageService, CustomerSaveService) to persist the conversation.
-            // Only user-facing RAG nodes should update ai_response; internal LLM nodes that output JSON (e.g. contact_json)
-            // must NOT overwrite the last natural-language reply shown to the end user.
-            if (service.AIServiceType == AiServiceTypeEnum.RAG
-                || service.AIServiceType == AiServiceTypeEnum.Agent)
+            if (aiResult?.NotifyClientPayload != null
+                && _notifyClientCallback != null
+                && !string.IsNullOrEmpty(_notifyClientSessionId))
             {
-                context.Variables["ai_response"] = aiResponseMessage ?? string.Empty;
+                _notifyClientCallback(_notifyClientSessionId, aiResult.NotifyClientPayload);
             }
-
-            if ((service.AIServiceType == AiServiceTypeEnum.RAG || service.AIServiceType == AiServiceTypeEnum.Agent)
-                && IsNotifyClientEnabled(currentActivity) && _notifyClientCallback != null && !string.IsNullOrEmpty(_notifyClientSessionId))
-            {
-                var nodeTypeLabel = service.AIServiceType == AiServiceTypeEnum.Agent ? "Agent" : "RAG";
-                var completedMsg = service.AIServiceType == AiServiceTypeEnum.Agent
-                    ? "Agent node execution completed"
-                    : "RAG node execution completed";
-                _notifyClientCallback(_notifyClientSessionId, new
-                {
-                    type = "node_response",
-                    data = new
-                    {
-                        NodeId = currentActivity.ActivityId,
-                        NodeName = currentActivity.ActivityName,
-                        NodeType = nodeTypeLabel,
-                        ResponseData = new { reply = aiResponseMessage },
-                        Timestamp = DateTime.UtcNow,
-                        Message = completedMsg
-                    }
-                });
-            }
-        }
-
-        /// <summary>
-        /// Reads chat_history (JSON array) from process variables and deserializes to history message list for multi-turn RAG.
-        /// Example format: [{"role":"user","content":"..."},{"role":"assistant","content":"..."}]
-        /// </summary>
-        private static IList<ChatHistoryMessage> GetChatHistoryFromContext(AutoExecutionContext context)
-        {
-            if (context?.Variables == null) return null;
-            if (!context.Variables.TryGetValue("chat_history", out var raw) || raw == null)
-                return null;
-            var json = raw.ToString();
-            if (string.IsNullOrWhiteSpace(json)) return null;
-            try
-            {
-                var list = JsonSerializer.Deserialize<List<ChatHistoryMessage>>(json,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                return list?.Count > 0 ? list : null;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Appends the current turn (user message + AI response) to chat_history
-        /// and writes it back to process variables as JSON.
-        /// </summary>
-        private static void UpdateChatHistoryInContext(AutoExecutionContext context, string userMessage, string aiResponse)
-        {
-            if (context?.Variables == null)
-                return;
-
-            var history = GetChatHistoryFromContext(context)?.ToList() ?? new List<ChatHistoryMessage>();
-
-            if (!string.IsNullOrWhiteSpace(userMessage))
-            {
-                history.Add(new ChatHistoryMessage
-                {
-                    Role = "user",
-                    Content = userMessage
-                });
-            }
-
-            if (!string.IsNullOrWhiteSpace(aiResponse))
-            {
-                history.Add(new ChatHistoryMessage
-                {
-                    Role = "assistant",
-                    Content = aiResponse
-                });
-            }
-
-            if (history.Count == 0)
-                return;
-
-            var json = JsonSerializer.Serialize(history, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
-            context.Variables["chat_history"] = json;
         }
 
         public bool IsNotifyClientEnabled(Activity activity)

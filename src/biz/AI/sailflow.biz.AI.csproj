@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
+    <PackageId>saiflow.biz.AI</PackageId>
+    <Version>3.5.0</Version>
+    <Title>Sailflow AI Business Implementations</Title>
+    <LangVersion>14.0</LangVersion>
+    <Description>Business-side AI implementations (LLM/RAG/Agent, providers, Supabase RAG). Registers IAiNodeExecutor for the workflow engine.</Description>
+    <Product>saiflow.NET</Product>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>saiflow.AI</RootNamespace>
+    <AssemblyName>saiflow.biz.AI</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\core\pure\AI\sailflow.AI.csproj" />
+  </ItemGroup>
+
+</Project>
