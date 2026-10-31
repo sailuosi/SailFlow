@@ -6,7 +6,6 @@ namespace saiflow.engine.Config
     /// </summary>
     public static class JobAdminConfig
     {
-        public const bool DefaultSendEmailFlag = false;
         public const string DefaultLocalHostWebApp = "http://localhost/sfmvc/";
         public const string DefaultSmtpAccount = "test@abc.com";
         public const string DefaultSmtpPassword = "123456789";
@@ -14,7 +13,6 @@ namespace saiflow.engine.Config
         public const int DefaultSmtpPort = 25;
 
         // 兼容旧引用名（默认值）
-        internal static readonly bool EMailSendUtility_SendEMailFlag = DefaultSendEmailFlag;
         internal static readonly string EMailSendUtility_LocalHostWebApp = DefaultLocalHostWebApp;
         internal static readonly string EMailSendUtility_SendEMailAccount = DefaultSmtpAccount;
         internal static readonly string EMailSendUtility_SendEMailPassword = DefaultSmtpPassword;

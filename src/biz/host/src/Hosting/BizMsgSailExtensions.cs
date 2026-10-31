@@ -24,4 +24,11 @@ public static class BizMsgSailExtensions
         ArgumentNullException.ThrowIfNull(builder);
         return builder.UseRabbitMq(configure);
     }
+
+    /// <summary>可选：启用默认待办 SMTP 邮件（显式调用才发信）。</summary>
+    public static ISailCollection UseBizTaskMail(this ISailCollection services) =>
+        services.UseDefaultTaskMail();
+
+    public static SailClientBuilder UseBizTaskMail(this SailClientBuilder builder) =>
+        builder.UseDefaultTaskMail();
 }

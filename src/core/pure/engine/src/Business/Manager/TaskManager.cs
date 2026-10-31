@@ -6,9 +6,8 @@ using System.Text;
 using mooSQL.data;
 using saiflow.data;
 using saiflow.hub.Localize;
-using saiflow.hub.Resource;
 using saiflow.engine.Common;
-using saiflow.engine.Utility;
+using saiflow.engine.Hooks;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Xpdl.Common;
 using saiflow.engine.Business.Result;
@@ -292,7 +291,7 @@ namespace saiflow.engine.Business.Manager
             WfAppRunner runner)
         {
             return Insert(kit, activityInstance, performer.UserId, performer.UserName,
-                runner.UserId, runner.UserName);
+                runner.UserId, runner.UserName, null, runner);
         }
 
         private int Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
@@ -300,7 +299,8 @@ namespace saiflow.engine.Business.Manager
             string performerName,
             string runnerId,
             string runnerName,
-            int? entrustedTaskId = null)
+            int? entrustedTaskId = null,
+            WfAppRunner runner = null)
         {
             var entity = new TaskEntity
             {
@@ -326,40 +326,8 @@ namespace saiflow.engine.Business.Manager
 
             int taskId = Insert(kit, entity);
             entity.Id = taskId;
-            SendTaskEMails(entity);
+            Sail.CapabilityDispatcher.FireTaskLifecycle(kit, entity, activityInstance, runner, TaskNotifyKind.Created);
             return taskId;
-        }
-
-        /// <summary>
-        /// Send email notification messages
-        /// email template can be modified by customers
-        /// the customers can use their own email html template, this is only a demo
-        /// internal static readonly string EMailSendUtility_SendEMailTitle = "新待办事项提醒邮件！";
-        /// internal static readonly string EMailSendUtility_SendEMailContent = @" < h1 >新待办任务提醒</h1>" +
-        ///        "<p>您有一条新的待办任务： " +
-        ///        "<a href='http://localhost/sfmvc/order/{0}'>请在此处填写具体的业务单据名称和单据序号</a>  " +
-        ///        "请您及时登录业务系统处理！谢谢！</p>";
-        /// 发送任务邮件
-        /// </summary>
-        private void SendTaskEMails(TaskEntity entity)
-        {
-            //判断是否需要发送待办邮件
-            //Determine whether to send a to-do email
-            if (Sail.Config.SendEmailFlag)
-            {
-                var userId = entity.AssignedUserId;
-                var rm = ResourceServiceLocator.Resolve();
-                var user = rm.GetUserById(userId);
-
-                if (user != null && !string.IsNullOrEmpty(user.EMail))
-                {
-                    var title = Sail.Messages.GetEngineMessage("taskmanager.emailtemplate.title");
-                    var body = Sail.Messages.GetEngineMessage("taskmanager.emailtemplate.body");
-                    body = string.Format(body, Sail.Config.LocalHostWebApp, entity.AppName, entity.AppInstanceId);
-                    var emailSendUtility = new EMailSendUtility(Sail, entity.Id);
-                    emailSendUtility.SendEMailAsync(title, body, user.EMail);
-                }
-            }
         }
 
         /// <summary>
@@ -435,7 +403,12 @@ namespace saiflow.engine.Business.Manager
         }
 
         internal void Complete(SQLBuilder kit, int taskId, WfAppRunner runner)
-            => EndTaskState(kit, taskId, TaskStateEnum.Completed, runner);
+        {
+            EndTaskState(kit, taskId, TaskStateEnum.Completed, runner);
+            var task = GetTask(kit, taskId);
+            var activityInstance = new ActivityInstanceManager(Sail).GetById(kit, task.ActivityInstanceId);
+            Sail.CapabilityDispatcher.FireTaskLifecycle(kit, task, activityInstance, runner, TaskNotifyKind.Completed);
+        }
 
         internal void Withdraw(SQLBuilder kit, long taskId, WfAppRunner runner)
             => EndTaskState(kit, taskId, TaskStateEnum.Withdrawed, runner);

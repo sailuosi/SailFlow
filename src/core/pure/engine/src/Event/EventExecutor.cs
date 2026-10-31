@@ -1,17 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Data;
-using saiflow.data;
 using mooSQL.data;
-using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
-using saiflow.engine.Common;
+using saiflow.engine.Client;
 using saiflow.engine.Core;
 using saiflow.engine.Xpdl.Entity;
 
-using saiflow.engine.Client;
 namespace saiflow.engine.Event
 {
     /// <summary>
@@ -20,17 +15,56 @@ namespace saiflow.engine.Event
     /// </summary>
     internal class EventExecutor
     {
+        /// <summary>
+        /// 当前 <see cref="Execute"/> 会真正 Invoke 订阅回调的类型：
+        /// 流程级 OnProcess*（含 Starting/Started/Running/Continued/Completed 及 Withdraw/SendBack/Resend/Reverse/Jump/SignForward/Revise/Reject/Close 等 *ing/*ed）、
+        /// 活动级 OnActivity*、任务级 OnTaskCreated/OnTaskCompleted。
+        /// 其它枚举值（OnSuccess/OnError/OnWarning/None）不在此路径执行。
+        /// </summary>
+        private static readonly HashSet<EventFireTypeEnum> ProcessScopeEvents = new()
+        {
+            EventFireTypeEnum.OnProcessStarting,
+            EventFireTypeEnum.OnProcessStarted,
+            EventFireTypeEnum.OnProcessRunning,
+            EventFireTypeEnum.OnProcessContinued,
+            EventFireTypeEnum.OnProcessCompleted,
+            EventFireTypeEnum.OnProcessWithdrawing,
+            EventFireTypeEnum.OnProcessWithdrawn,
+            EventFireTypeEnum.OnProcessSendBacking,
+            EventFireTypeEnum.OnProcessSendBacked,
+            EventFireTypeEnum.OnProcessResending,
+            EventFireTypeEnum.OnProcessResent,
+            EventFireTypeEnum.OnProcessReversing,
+            EventFireTypeEnum.OnProcessReversed,
+            EventFireTypeEnum.OnProcessJumping,
+            EventFireTypeEnum.OnProcessJumped,
+            EventFireTypeEnum.OnProcessSignForwarding,
+            EventFireTypeEnum.OnProcessSignForwarded,
+            EventFireTypeEnum.OnProcessRevising,
+            EventFireTypeEnum.OnProcessRevised,
+            EventFireTypeEnum.OnProcessRejecting,
+            EventFireTypeEnum.OnProcessRejected,
+            EventFireTypeEnum.OnProcessClosing,
+            EventFireTypeEnum.OnProcessClosed,
+        };
+
+        private static readonly HashSet<EventFireTypeEnum> ActivityScopeEvents = new()
+        {
+            EventFireTypeEnum.OnActivityCreated,
+            EventFireTypeEnum.OnActivityExecuting,
+            EventFireTypeEnum.OnActivityExecuted,
+            EventFireTypeEnum.OnActivityCompleted,
+            EventFireTypeEnum.OnTaskCreated,
+            EventFireTypeEnum.OnTaskCompleted,
+        };
+
         public EventExecutor(SailClient client)
         {
-            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
         }
 
         protected SailClient Sail { get; }
 
-        /// <summary>
-        /// Call program methods for external business applications
-        /// 调用外部业务应用的程序方法
-        /// </summary>
         internal static void InvokeExternalEvent(SailClient client, SQLBuilder kit,
             EventFireTypeEnum eventType,
             Activity currentActivity,
@@ -51,17 +85,11 @@ namespace saiflow.engine.Event
                     eventContext);
         }
 
-        /// <summary>
-        /// Call program methods for external business applications
-        /// 调用外部业务应用的程序方法
-        /// </summary>
         internal static void InvokeExternalEvent(SailClient client, SQLBuilder kit,
             EventFireTypeEnum eventType,
             EventSubscriptionList eventList,
             int processInstanceId)
         {
-            //过滤注册事件类型
-            //Filter registration event types
             var eventListFiltered = eventList.Where(k => k.Key == eventType);
             if (eventListFiltered != null)
             {
@@ -78,17 +106,11 @@ namespace saiflow.engine.Event
             }
         }
 
-        /// <summary>
-        /// Call program methods for external business applications
-        /// 调用外部业务应用的程序方法
-        /// </summary>
         internal static void InvokeExternalEvent(SailClient client, SQLBuilder kit,
             EventFireTypeEnum eventType,
             EventSubscriptionList eventList,
             EventContext context)
         {
-            //过滤注册事件类型
-            //Filter registration event types
             var eventListFiltered = eventList.Where(k => k.Key == eventType);
 
             if (eventListFiltered != null)
@@ -97,10 +119,6 @@ namespace saiflow.engine.Event
             }
         }
 
-        /// <summary>
-        /// Execution event subscription list method
-        /// 执行事件订阅列表方法
-        /// </summary>
         private static void Execute(SailClient client, SQLBuilder kit,
             EventContext context,
             IEnumerable<KeyValuePair<EventFireTypeEnum, Func<EventContext, IEventService, Boolean>>> eventList)
@@ -111,33 +129,25 @@ namespace saiflow.engine.Event
             }
         }
 
-        /// <summary>
-        /// Execution event subscription method
-        /// 执行事件订阅方法
-        /// </summary>
         private static object Execute(SailClient client, SQLBuilder kit,
             EventContext context,
             KeyValuePair<EventFireTypeEnum, Func<EventContext, IEventService, Boolean>> item)
         {
-            var result = false;
-            if (item.Key == EventFireTypeEnum.OnProcessStarted
-                || item.Key == EventFireTypeEnum.OnProcessRunning
-                || item.Key == EventFireTypeEnum.OnProcessCompleted)
+            if (ProcessScopeEvents.Contains(item.Key))
             {
                 var eventService = EventServiceFactory.CreateEventService(EventScopeTypeEnum.Process, kit, context, client);
                 eventService.SetActivityResource(context.ActivityResource);
-                result = item.Value(context, eventService as IEventService);
+                return item.Value(context, eventService as IEventService);
             }
-            else if (item.Key == EventFireTypeEnum.OnActivityCreated
-                || item.Key == EventFireTypeEnum.OnActivityExecuting
-                || item.Key == EventFireTypeEnum.OnActivityExecuted
-                || item.Key == EventFireTypeEnum.OnActivityCompleted)
+
+            if (ActivityScopeEvents.Contains(item.Key))
             {
                 var eventService = EventServiceFactory.CreateEventService(EventScopeTypeEnum.Activity, kit, context, client);
                 eventService.SetActivityResource(context.ActivityResource);
-                result = item.Value(context, eventService as IEventService);
+                return item.Value(context, eventService as IEventService);
             }
-            return result;
+
+            return false;
         }
     }
 }

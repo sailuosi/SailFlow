@@ -45,6 +45,7 @@ namespace saiflow.biz.Bootstrap
                 .createTable<JobInfoEntity>()
                 .createTable<RuleSetEntity>()
                 .createTable<JobLogEntity>()
+                .createTable<HookOutboxEntity>()
                 .createTable<UserEntity>()
                 .createTable<RoleEntity>()
                 .createTable<RoleUserEntity>()

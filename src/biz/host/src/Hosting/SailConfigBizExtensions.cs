@@ -71,10 +71,6 @@ public static class SailConfigBizExtensions
         if (int.TryParse(configuration["Email:SmtpPort"], out var port) && port > 0)
             config.SmtpPort = port;
 
-        if (bool.TryParse(configuration["Email:SendEmailFlag"]
-                          ?? configuration["Sailflow:SendEmailFlag"], out var sendFlag))
-            config.SendEmailFlag = sendFlag;
-
         config.LocalHostWebApp = configuration["Sailflow:LocalHostWebApp"]
                                  ?? configuration["Email:LocalHostWebApp"]
                                  ?? config.LocalHostWebApp;
@@ -120,10 +116,6 @@ public static class SailConfigBizExtensions
         var expiredEnabled = Get("Sailflow:ExpiredDaysEnabled") ?? Get("ExpiredDaysEnabled");
         if (bool.TryParse(expiredEnabled, out var enabled))
             config.ExpiredDaysEnabled = enabled;
-
-        var sendFlag = Get("SendEMailFlag") ?? Get("Sailflow:SendEmailFlag");
-        if (bool.TryParse(sendFlag, out var send))
-            config.SendEmailFlag = send;
 
         var webApp = Get("LocalHostWebApp");
         if (!string.IsNullOrEmpty(webApp))

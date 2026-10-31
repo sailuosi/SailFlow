@@ -45,9 +45,6 @@ public class SailConfig
     /// <summary>SMTP 是否 SSL。</summary>
     public bool SmtpSsl { get; set; }
 
-    /// <summary>是否发送待办邮件。</summary>
-    public bool SendEmailFlag { get; set; } = JobAdminConfig.DefaultSendEmailFlag;
-
     /// <summary>邮件正文中的业务站点基址。</summary>
     public string LocalHostWebApp { get; set; } = JobAdminConfig.DefaultLocalHostWebApp;
 
@@ -85,7 +82,6 @@ public class SailConfig
         if (source.SmtpPassword != null)
             SmtpPassword = source.SmtpPassword;
         SmtpSsl = source.SmtpSsl;
-        SendEmailFlag = source.SendEmailFlag;
         if (source.LocalHostWebApp != null)
             LocalHostWebApp = source.LocalHostWebApp;
         if (source.WorkflowFileStorageType != null)

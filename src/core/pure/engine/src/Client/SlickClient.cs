@@ -1,6 +1,7 @@
 using System;
 using mooSQL.data;
 using saiflow.engine.Actions;
+using saiflow.engine.Hooks;
 using saiflow.engine.Rules;
 using saiflow.hub.Essential.Common;
 using saiflow.hub.Localize;
@@ -85,10 +86,23 @@ public partial class SailClient
         return this;
     }
 
+    private WorkflowCapabilityRegistry _capabilities;
+    private WorkflowCapabilityDispatcher _capabilityDispatcher;
+
     private RuleEngineRegistry _ruleEngines;
     private ActionMethodRegistry _actionMethods;
     private ScriptMethodRegistry _scriptMethods;
     private ServiceMethodRegistry _serviceMethods;
+
+    /// <summary>Gate / Hook / Notifier 注册表（Client 级）。</summary>
+    public WorkflowCapabilityRegistry Capabilities => _capabilities ??= new WorkflowCapabilityRegistry(this);
+
+    /// <summary>与 <see cref="Capabilities"/> 同义。</summary>
+    public WorkflowCapabilityRegistry Hooks => Capabilities;
+
+    /// <summary>Gate / Hook / Notifier 分发器。</summary>
+    public WorkflowCapabilityDispatcher CapabilityDispatcher =>
+        _capabilityDispatcher ??= new WorkflowCapabilityDispatcher(this);
 
     /// <summary>
     /// 规则引擎注册表（按 <c>wf_rule_set.mode</c> 调度）。实现由业务侧 <see cref="useRuleEngine"/> 挂载。
@@ -124,6 +138,27 @@ public partial class SailClient
             return MessageQueue;
         throw new InvalidOperationException(
             "No IMessageQueueService registered on SailClient. Call UseBizMsg() / UseRabbitMq() / useMessageQueue(...).");
+    }
+
+    /// <summary>注册 Gate（同名后注册覆盖）。</summary>
+    public SailClient useWorkflowGate(IWorkflowGate gate, HookRegistrationOptions options = null)
+    {
+        Capabilities.RegisterGate(gate, options ?? new HookRegistrationOptions());
+        return this;
+    }
+
+    /// <summary>注册 Hook（同名后注册覆盖）。</summary>
+    public SailClient useWorkflowHook(IWorkflowHook hook, HookRegistrationOptions options = null)
+    {
+        Capabilities.RegisterHook(hook, options ?? new HookRegistrationOptions());
+        return this;
+    }
+
+    /// <summary>注册待办 Notifier（同名后注册覆盖）。</summary>
+    public SailClient useTaskNotifier(ITaskNotifier notifier, HookRegistrationOptions options = null)
+    {
+        Capabilities.RegisterNotifier(notifier, options ?? new HookRegistrationOptions());
+        return this;
     }
 
     /// <summary>注册规则引擎实现（可多次调用以挂多种 mode）。</summary>

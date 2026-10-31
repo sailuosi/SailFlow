@@ -80,7 +80,10 @@ namespace saiflow.engine.Event
 
         OnActivityCompleted = 43,
 
-        OnTaskCreaed = 60,
+        /// <summary>发送/Run 等推进落库前；仅 Gate。</summary>
+        OnValidating = 50,
+
+        OnTaskCreated = 60,
 
         OnTaskCompleted = 61,
 

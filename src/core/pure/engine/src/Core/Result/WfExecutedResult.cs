@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using saiflow.engine.Common;
+using saiflow.engine.Hooks;
 
 namespace saiflow.engine.Core.Result
 {
@@ -14,6 +15,12 @@ namespace saiflow.engine.Core.Result
     {
         public WfExecutedStatus Status { get; set; }
         public String Message { get; set; }
+
+        /// <summary>Gate 业务拒绝码（非引擎事故）。</summary>
+        public string ValidationCode { get; set; }
+
+        /// <summary>Gate 结构化校验明细。</summary>
+        public IList<HookValidationItem> ValidationDetails { get; set; }
         /// <summary>Optional AI reply from RAG/LLM node (e.g. ai_response variable). Used by workflow_completed so clients get business reply instead of engine status.</summary>
         public String AiResponse { get; set; }
         public String ExceptionType { get; set; }
@@ -49,6 +56,20 @@ namespace saiflow.engine.Core.Result
         public static WfExecutedResult Default()
         {
             return new WfExecutedResult();
+        }
+
+        /// <summary>应用 Gate <see cref="HookResult.Reject"/>，不包 runprocess.error 模板。</summary>
+        public void ApplyGateReject(HookResult gateResult)
+        {
+            if (gateResult == null || gateResult.IsOk)
+                return;
+
+            Status = WfExecutedStatus.Failed;
+            Message = gateResult.Message ?? string.Empty;
+            ValidationCode = gateResult.Code;
+            ValidationDetails = gateResult.Details != null
+                ? new List<HookValidationItem>(gateResult.Details)
+                : null;
         }
     }
 
