@@ -1,3 +1,4 @@
+using saiflow.assignee.Adapt;
 using saiflow.assignee.Builtin;
 using saiflow.engine.Assignee;
 using saiflow.engine.Client;
@@ -18,8 +19,18 @@ public static class SailAssigneeExtensions
         var registry = new AssigneeCapabilityRegistry();
         RegisterBuiltins(registry);
         var pipeline = new AssigneePipeline(registry) { Sail = client };
+        WireBpmnConfigReaders(pipeline, client);
         client.useAssigneePipeline(pipeline);
         return client;
+    }
+
+    /// <summary>挂上 BPMN ConfigPair 读取（显式 sf:assigneeResolve / sf:leaveJudge 优先）。</summary>
+    public static void WireBpmnConfigReaders(AssigneePipeline pipeline, SailClient client)
+    {
+        ArgumentNullException.ThrowIfNull(pipeline);
+        ArgumentNullException.ThrowIfNull(client);
+        pipeline.ResolveConfigReader = req => BpmnAssigneeConfigReader.ReadResolve(client, req);
+        pipeline.LeaveConfigReader = req => BpmnAssigneeConfigReader.ReadLeave(client, req);
     }
 
     public static SailClient useAssigneeResolver(this SailClient client, IAssigneeResolver resolver)
@@ -105,6 +116,7 @@ public static class SailAssigneeExtensions
         var registry = new AssigneeCapabilityRegistry();
         RegisterBuiltins(registry);
         pipeline = new AssigneePipeline(registry) { Sail = client };
+        WireBpmnConfigReaders(pipeline, client);
         client.useAssigneePipeline(pipeline);
         return pipeline;
     }

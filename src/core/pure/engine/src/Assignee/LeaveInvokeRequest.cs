@@ -9,6 +9,10 @@ namespace saiflow.engine.Assignee
     {
         public int ProcessInstanceId { get; set; }
         public int ActivityInstanceId { get; set; }
+        /// <summary>流程定义 Id（读 BPMN ConfigPair 用）。</summary>
+        public string ProcessId { get; set; }
+        /// <summary>流程版本（读 BPMN ConfigPair 用）。</summary>
+        public string Version { get; set; }
         public ActivityInstanceEntity CurrentActivityInstance { get; set; }
         public ActivityInstanceEntity MainActivityInstance { get; set; }
         /// <summary>会签子活动快照（由 AIM 预加载）；LeaveJudge 只读。</summary>

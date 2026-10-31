@@ -29,6 +29,8 @@ namespace saiflow.engine.Xpdl
         public static readonly string Sf_StrXmlPath_GroupBehaviours = "bpmn:extensionElements/sf:groupBehaviours";
         public static readonly string Sf_StrXmlPath_GatewayDetail = "bpmn:extensionElements/sf:gatewayDetail";
         public static readonly string Sf_StrXmlPath_MultiSignDetail = "bpmn:extensionElements/sf:multiSignDetail";
+        public static readonly string Sf_StrXmlPath_AssigneeResolve = "bpmn:extensionElements/sf:assigneeResolve";
+        public static readonly string Sf_StrXmlPath_LeaveJudge = "bpmn:extensionElements/sf:leaveJudge";
         public static readonly string Sf_StrXmlPath_Performers = "bpmn:extensionElements/sf:performers";
         public static readonly string Sf_StrXmlPath_SubInfoes = "bpmn:extensionElements/sf:subInfoes";
         public static readonly string Sf_StrXmlPath_Sections = "bpmn:extensionElements/sf:sections";

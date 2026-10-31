@@ -1229,12 +1229,28 @@ namespace saiflow.engine.Business.Manager
 
             // S1：优先 IAssigneePipeline.TryCanLeave（含 Legacy 会签推断）；未处理则双轨回落
             var pipeline = Sail.AssigneePipeline;
+            string leaveProcessId = mainActivityInstance.ProcessId;
+            string leaveVersion = null;
+            try
+            {
+                var pi = new ProcessInstanceManager(Sail).GetById(
+                    kit, mainActivityInstance.ProcessInstanceId.Value);
+                leaveProcessId = pi?.ProcessId ?? leaveProcessId;
+                leaveVersion = pi?.Version;
+            }
+            catch
+            {
+                /* 读版本失败时仍尝试 Leave；Pipeline 可再自查 */
+            }
+
             if (pipeline != null
                 && pipeline.TryCanLeave(
                     new LeaveInvokeRequest
                     {
                         ProcessInstanceId = mainActivityInstance.ProcessInstanceId.Value,
                         ActivityInstanceId = currentActivityInstance.Id.Value,
+                        ProcessId = leaveProcessId,
+                        Version = leaveVersion,
                         CurrentActivityInstance = currentActivityInstance,
                         MainActivityInstance = mainActivityInstance,
                         ChildActivityInstances = childActivityInstanceList

@@ -55,6 +55,7 @@ namespace saiflow.engine.Xpdl.Convertor
             var convertorBuilder = ConvertorBuilderFactory.Create(XMLNode, XMLNamespaceManager, activity);
             convertorBuilder.ConvertGeneral()
                 .ConvertPartakers()
+                .ConvertAssigneeConfig()
                 .ConvertActions()
                 .ConvertSections()
                 .ConvertServices()

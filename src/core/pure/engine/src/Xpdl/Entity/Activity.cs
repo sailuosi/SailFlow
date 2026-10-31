@@ -68,6 +68,26 @@ namespace saiflow.engine.Xpdl.Entity
         public MultiSignDetail MultiSignDetail { get; set; }
 
         /// <summary>
+        /// BPMN sf:assigneeResolve@type（定范围 Type 字符串；空则走 Legacy/runner）。
+        /// </summary>
+        public string AssigneeResolveType { get; set; }
+
+        /// <summary>
+        /// BPMN sf:assigneeResolve@params（JSON 对象字符串）。
+        /// </summary>
+        public string AssigneeResolveParams { get; set; }
+
+        /// <summary>
+        /// BPMN sf:leaveJudge@type（流出判定 Type 字符串）。
+        /// </summary>
+        public string LeaveJudgeType { get; set; }
+
+        /// <summary>
+        /// BPMN sf:leaveJudge@params（JSON 对象字符串）。
+        /// </summary>
+        public string LeaveJudgeParams { get; set; }
+
+        /// <summary>
         /// Skip Detail
         /// </summary>
         public SkipDetail SkipDetail { get; set; }

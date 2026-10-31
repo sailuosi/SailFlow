@@ -297,6 +297,30 @@ namespace saiflow.engine.Xpdl.Convertor
         }
 
         /// <summary>
+        /// Convert AssigneeResolve / LeaveJudge ConfigPair（sf:assigneeResolve / sf:leaveJudge）。
+        /// </summary>
+        public ConvertorBuilder ConvertAssigneeConfig()
+        {
+            var resolveNode = XMLNode.SelectSingleNode(
+                XPDLDefinition.Sf_StrXmlPath_AssigneeResolve, XMLNamespaceManager);
+            if (resolveNode != null)
+            {
+                mActivityEntity.AssigneeResolveType = XMLHelper.GetXmlAttribute(resolveNode, "type");
+                mActivityEntity.AssigneeResolveParams = XMLHelper.GetXmlAttribute(resolveNode, "params");
+            }
+
+            var leaveNode = XMLNode.SelectSingleNode(
+                XPDLDefinition.Sf_StrXmlPath_LeaveJudge, XMLNamespaceManager);
+            if (leaveNode != null)
+            {
+                mActivityEntity.LeaveJudgeType = XMLHelper.GetXmlAttribute(leaveNode, "type");
+                mActivityEntity.LeaveJudgeParams = XMLHelper.GetXmlAttribute(leaveNode, "params");
+            }
+
+            return this;
+        }
+
+        /// <summary>
         /// Convert Services
         /// 转换Services节点
         /// </summary>
