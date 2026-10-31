@@ -6,15 +6,13 @@ using System.Threading.Tasks;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 using saiflow.engine.Common;
-using saiflow.engine.Config;
 using saiflow.hub.Localize;
 using saiflow.engine.Client;
 
 namespace saiflow.engine.Utility
 {
     /// <summary>
-    /// EMail send utility — SMTP configuration is read from JobAdminConfig,
-    /// which can be initialised via JobAdminConfig.Configure(IConfiguration).
+    /// EMail send utility — SMTP 取自已注册的 <see cref="SailClient.Config"/>。
     /// </summary>
     public class EMailSendUtility
     {
@@ -34,21 +32,22 @@ namespace saiflow.engine.Utility
         /// </summary>
         public async Task SendEMailAsync(string title, string body, string receiveEmail)
         {
+            var cfg = Sail.Config;
             var smtp = new SmtpClient
             {
                 Credentials = new System.Net.NetworkCredential(
-                    JobAdminConfig.SmtpAccount,
-                    JobAdminConfig.SmtpPassword),
-                Host      = JobAdminConfig.SmtpHost,
-                Port      = JobAdminConfig.SmtpPort,
-                EnableSsl = JobAdminConfig.SmtpSsl,
+                    cfg.SmtpAccount,
+                    cfg.SmtpPassword),
+                Host      = cfg.SmtpHost,
+                Port      = cfg.SmtpPort,
+                EnableSsl = cfg.SmtpSsl,
             };
 
             var mail = new MailMessage
             {
                 Subject         = title,
                 Body            = body,
-                From            = new MailAddress(JobAdminConfig.SmtpAccount),
+                From            = new MailAddress(cfg.SmtpAccount),
                 BodyEncoding    = Encoding.UTF8,
                 IsBodyHtml      = true,
             };

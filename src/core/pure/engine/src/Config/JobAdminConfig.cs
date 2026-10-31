@@ -1,53 +1,24 @@
-using System;
-using Microsoft.Extensions.Configuration;
-
 namespace saiflow.engine.Config
 {
     /// <summary>
-    /// JOB Administration Variables Setting
-    /// 作业参数定义 — 可通过 IConfiguration (appsettings.json) 覆盖默认值
+    /// 作业 / 邮件相关默认常量（形状默认值，非运行时配置源）。
+    /// 运行值请使用 <see cref="Client.SailConfig"/>，由业务侧注册。
     /// </summary>
-    public class JobAdminConfig
+    public static class JobAdminConfig
     {
-        // ── Default fallback values ────────────────────────────────────────────
-        internal static readonly bool   EMailSendUtility_SendEMailFlag        = false;
-        internal static readonly string EMailSendUtility_LocalHostWebApp      = "http://localhost/sfmvc/";
-        internal static readonly string EMailSendUtility_SendEMailAccount     = "test@abc.com";
-        internal static readonly string EMailSendUtility_SendEMailPassword    = "123456789";
-        internal static readonly string EMailSendUtility_SendEMailHost        = "smtp.abc.com";
-        internal static readonly int    EMailSendUtility_SendEMailHostPort    = 25;
+        public const bool DefaultSendEmailFlag = false;
+        public const string DefaultLocalHostWebApp = "http://localhost/sfmvc/";
+        public const string DefaultSmtpAccount = "test@abc.com";
+        public const string DefaultSmtpPassword = "123456789";
+        public const string DefaultSmtpHost = "smtp.abc.com";
+        public const int DefaultSmtpPort = 25;
 
-        // ── Runtime config (loaded once via Configure()) ───────────────────────
-        private static string _smtpHost     = EMailSendUtility_SendEMailHost;
-        private static int    _smtpPort     = EMailSendUtility_SendEMailHostPort;
-        private static string _smtpAccount  = EMailSendUtility_SendEMailAccount;
-        private static string _smtpPassword = EMailSendUtility_SendEMailPassword;
-        private static bool   _smtpSsl      = false;
-        private static bool   _configured   = false;
-
-        public static string SmtpHost     => _smtpHost;
-        public static int    SmtpPort     => _smtpPort;
-        public static string SmtpAccount  => _smtpAccount;
-        public static string SmtpPassword => _smtpPassword;
-        public static bool   SmtpSsl      => _smtpSsl;
-
-        /// <summary>
-        /// Initialize from IConfiguration (call once at application startup).
-        /// 应用启动时调用，从 appsettings.json 加载 SMTP 配置。
-        /// Section path: Email:SmtpHost / Email:SmtpPort / Email:Username / Email:Password / Email:EnableSsl
-        /// </summary>
-        public static void Configure(IConfiguration configuration)
-        {
-            if (configuration == null || _configured) return;
-
-            _smtpHost     = configuration["Email:SmtpHost"]     ?? _smtpHost;
-            _smtpAccount  = configuration["Email:Username"]     ?? _smtpAccount;
-            _smtpPassword = configuration["Email:Password"]     ?? _smtpPassword;
-            bool.TryParse(configuration["Email:EnableSsl"],     out _smtpSsl);
-            int.TryParse(configuration["Email:SmtpPort"],       out var port);
-            if (port > 0) _smtpPort = port;
-
-            _configured = true;
-        }
+        // 兼容旧引用名（默认值）
+        internal static readonly bool EMailSendUtility_SendEMailFlag = DefaultSendEmailFlag;
+        internal static readonly string EMailSendUtility_LocalHostWebApp = DefaultLocalHostWebApp;
+        internal static readonly string EMailSendUtility_SendEMailAccount = DefaultSmtpAccount;
+        internal static readonly string EMailSendUtility_SendEMailPassword = DefaultSmtpPassword;
+        internal static readonly string EMailSendUtility_SendEMailHost = DefaultSmtpHost;
+        internal static readonly int EMailSendUtility_SendEMailHostPort = DefaultSmtpPort;
     }
 }

@@ -1,30 +1,38 @@
-﻿using saiflow.engine.Utility;
-using saiflow.engine.Business.Manager;
+﻿using saiflow.engine.Business.Manager;
+using saiflow.engine.Client;
 
 namespace saiflow.engine.Storage
 {
     /// <summary>
     /// Factory method for external storage
-    /// 外部存储的工厂方法
+    /// 外部存储的工厂方法（存储策略取自已注册的 <see cref="SailConfig"/> 形状）。
     /// </summary>
     internal class XPDLStorageFactory
     {
         /// <summary>
-        /// Create XPDL storage
-        /// 创建外部存储方法实例
+        /// Create XPDL storage from <see cref="SailClient.Config"/>.
         /// </summary>
-        /// <returns></returns>
-        internal static IXPDLStorage CreateXPDLStorage()
+        internal static IXPDLStorage CreateXPDLStorage(SailClient client)
         {
-            IXPDLStorage localStorage = null;
-            //读取本地文件XML存储方式
-            //Read local file XML storage method
-            var storageType = ConfigHelper.GetAppSettingString("WorkflowFileStorageType");
-            if (!string.IsNullOrEmpty(storageType) && storageType == "localfile")
+            if (client?.Config == null)
+                return null;
+
+            return CreateXPDLStorage(client.Config);
+        }
+
+        internal static IXPDLStorage CreateXPDLStorage(SailConfig config)
+        {
+            if (config == null)
+                return null;
+
+            var storageType = config.WorkflowFileStorageType;
+            if (!string.IsNullOrEmpty(storageType)
+                && string.Equals(storageType, "localfile", System.StringComparison.OrdinalIgnoreCase))
             {
-                localStorage = new XPDLLocalStorage();
+                return new XPDLLocalStorage(config.WorkflowFileServer);
             }
-            return localStorage;
+
+            return null;
         }
     }
 }

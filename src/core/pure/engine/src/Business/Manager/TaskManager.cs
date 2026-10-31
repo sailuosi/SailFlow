@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using mooSQL.data;
 using saiflow.data;
-using saiflow.engine.Config;
 using saiflow.hub.Localize;
 using saiflow.hub.Resource;
 using saiflow.engine.Common;
@@ -346,7 +345,7 @@ namespace saiflow.engine.Business.Manager
         {
             //判断是否需要发送待办邮件
             //Determine whether to send a to-do email
-            if (JobAdminConfig.EMailSendUtility_SendEMailFlag == true)
+            if (Sail.Config.SendEmailFlag)
             {
                 var userId = entity.AssignedUserId;
                 var rm = ResourceServiceLocator.Resolve();
@@ -356,7 +355,7 @@ namespace saiflow.engine.Business.Manager
                 {
                     var title = Sail.Messages.GetEngineMessage("taskmanager.emailtemplate.title");
                     var body = Sail.Messages.GetEngineMessage("taskmanager.emailtemplate.body");
-                    body = string.Format(body, JobAdminConfig.EMailSendUtility_LocalHostWebApp, entity.AppName, entity.AppInstanceId);
+                    body = string.Format(body, Sail.Config.LocalHostWebApp, entity.AppName, entity.AppInstanceId);
                     var emailSendUtility = new EMailSendUtility(Sail, entity.Id);
                     emailSendUtility.SendEMailAsync(title, body, user.EMail);
                 }

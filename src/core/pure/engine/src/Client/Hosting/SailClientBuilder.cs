@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Microsoft.Extensions.Configuration;
 using mooSQL.data;
 
 namespace saiflow.engine.Client.Hosting;
@@ -12,19 +11,17 @@ public sealed class SailClientBuilder
 {
     public ISailCollection Services { get; } = new SailCollection();
 
-    public IConfiguration? Configuration { get; private set; }
-
     /// <summary>尚未 Build 的数据库工厂；也可由 UseDatabase 写入 Properties。</summary>
     public SailDBFactory? DbFactory { get; set; }
 
     /// <summary>可选：Build 前指定的缓存；未设则默认 <see cref="MemorySooCache"/>。</summary>
     public ISooCache? Cache { get; set; }
 
-    public SailClientBuilder UseConfiguration(IConfiguration configuration)
-    {
-        Configuration = configuration;
-        return this;
-    }
+    /// <summary>可选：Build 前登记的配置形状（或委托）。</summary>
+    public SailConfig? Config { get; set; }
+
+    /// <summary>可选：对默认 Config 的就地修改。</summary>
+    public Action<SailConfig>? ConfigAction { get; set; }
 
     public SailClientBuilder UseDatabase(SailDBFactory factory)
     {
@@ -42,13 +39,33 @@ public sealed class SailClientBuilder
 
     /// <summary>
     /// 注册缓存（对齐 mooSQL <c>builder.useCache(...)</c> / <c>client.useCache(...)</c>）。
-    /// 默认不调用时，Build/EnsurePorts 会挂 <see cref="MemorySooCache"/>。
     /// </summary>
     public SailClientBuilder UseCache(ISooCache cache)
     {
         ArgumentNullException.ThrowIfNull(cache);
         Cache = cache;
         Services.UseCache(cache);
+        return this;
+    }
+
+    /// <summary>
+    /// 注册运行参数形状（类比 mooSQL <c>useDataBase(List&lt;DBPosition&gt;)</c>）。
+    /// 不解析 IConfiguration / AppSettings；业务侧可先装载再传入。
+    /// </summary>
+    public SailClientBuilder UseConfig(SailConfig config)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+        Config = config;
+        Services.UseConfig(config);
+        return this;
+    }
+
+    /// <summary>登记对默认配置形状的修改。</summary>
+    public SailClientBuilder UseConfig(Action<SailConfig> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        ConfigAction = configure;
+        Services.UseConfig(configure);
         return this;
     }
 
@@ -81,7 +98,27 @@ public sealed class SailClientBuilder
                 "SailDBFactory is required. Call builder.UseDatabase(...) or Services.UseDatabase(...) before Build().");
         }
 
-        var client = SailClientAssembler.Assemble(dbFactory, Configuration);
+        var client = SailClientAssembler.Assemble(dbFactory);
+
+        var config = Config;
+        if (config == null
+            && Services.Properties.TryGetValue(SailBuilderKeys.Config, out var configBox))
+        {
+            config = configBox as SailConfig;
+        }
+
+        if (config != null)
+            client.useConfig(config);
+
+        var configAction = ConfigAction;
+        if (configAction == null
+            && Services.Properties.TryGetValue(SailBuilderKeys.ConfigAction, out var actionBox))
+        {
+            configAction = actionBox as Action<SailConfig>;
+        }
+
+        if (configAction != null)
+            client.useConfig(configAction);
 
         var cache = Cache;
         if (cache == null
@@ -92,7 +129,6 @@ public sealed class SailClientBuilder
 
         if (cache != null)
             client.useCache(cache);
-        // else：EnsurePorts / Cache getter 会创建默认 MemorySooCache
 
         foreach (var d in Services.OrderBy(x => x.Order)
                      .Where(x => x.Phase == SailFeaturePhase.ConfigureClient))

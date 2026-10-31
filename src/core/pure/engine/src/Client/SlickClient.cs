@@ -60,6 +60,28 @@ public partial class SailClient
         return this;
     }
 
+    /// <summary>
+    /// 注册运行参数形状（对齐 mooSQL <c>useDataBase(List&lt;DBPosition&gt;)</c>：登记形状，不解析配置源）。
+    /// </summary>
+    public SailClient useConfig(SailConfig config)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+        if (Config == null)
+            Config = new SailConfig(this);
+        Config.Apply(config);
+        return this;
+    }
+
+    /// <summary>就地修改已挂载的 <see cref="Config"/>。</summary>
+    public SailClient useConfig(Action<SailConfig> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        if (Config == null)
+            Config = new SailConfig(this);
+        Config.Configure(configure);
+        return this;
+    }
+
     /// <summary>确保起步插槽已挂载。</summary>
     public void EnsurePorts()
     {
@@ -68,7 +90,7 @@ public partial class SailClient
         if (Dialect == null)
             throw new InvalidOperationException("SailClient.Dialect is required.");
         if (Config == null)
-            throw new InvalidOperationException("SailClient.Config is required.");
+            Config = new SailConfig(this);
 
         Dialect.MountDbFactory(DBFactory);
         if (Dialect.Event == null)

@@ -78,7 +78,7 @@ namespace saiflow.engine.Service
         public ProcessFileEntity GetProcessFileById(int id)
         {
             var pm = new ProcessManager(Sail);
-            var entity = pm.GetProcessFileById(id, XPDLStorageFactory.CreateXPDLStorage());
+            var entity = pm.GetProcessFileById(id, XPDLStorageFactory.CreateXPDLStorage(Sail));
             return entity;
         }
 
@@ -100,7 +100,7 @@ namespace saiflow.engine.Service
         public ProcessFileEntity GetProcessFile(string processId, string version)
         {
             var pm = new ProcessManager(Sail);
-            var entity = pm.GetProcessFile(processId, version, XPDLStorageFactory.CreateXPDLStorage());
+            var entity = pm.GetProcessFile(processId, version, XPDLStorageFactory.CreateXPDLStorage(Sail));
             return entity;
         }
 
