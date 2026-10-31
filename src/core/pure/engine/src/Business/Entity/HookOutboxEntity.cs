@@ -54,6 +54,9 @@ namespace saiflow.engine.Business.Entity
 
         [SooColumn(Name = "updated_at")]
         public DateTime? UpdatedAt { get; set; }
+
+        [SooColumn(Name = "leased_until")]
+        public DateTime? LeasedUntil { get; set; }
     }
 
     public static class HookOutboxKinds

@@ -40,7 +40,11 @@ namespace saiflow.engine.Business.Manager
         }
 
         /// <summary>CAS Pending→Processing，返回成功认领的行（due 且未死信）。</summary>
-        public IList<HookOutboxEntity> TryClaimPending(SQLBuilder kit, int limit, int maxAttempts = HookOutboxOptions.DefaultMaxAttempts)
+        public IList<HookOutboxEntity> TryClaimPending(
+            SQLBuilder kit,
+            int limit,
+            int maxAttempts = HookOutboxOptions.DefaultMaxAttempts,
+            int leaseSeconds = HookOutboxOptions.DefaultLeaseSeconds)
         {
             _ = maxAttempts;
             var now = DateTime.UtcNow;
@@ -55,11 +59,59 @@ namespace saiflow.engine.Business.Manager
                 if (candidate.NextRetryAt != null && candidate.NextRetryAt > now)
                     continue;
 
-                if (TryClaimOne(kit, candidate.Id, out var row))
+                if (TryClaimOne(kit, candidate.Id, leaseSeconds, out var row))
                     claimed.Add(row);
             }
 
             return claimed;
+        }
+
+        /// <summary>
+        /// 回收僵尸 Processing：lease 过期，或无 lease 且 UpdatedAt 早于 staleBeforeUtc。
+        /// </summary>
+        public int ReclaimStaleProcessing(SQLBuilder kit, DateTime staleBeforeUtc, DateTime? nowUtc = null)
+        {
+            var now = nowUtc ?? DateTime.UtcNow;
+            var clip = Sibling(kit).useClip();
+            clip.from<HookOutboxEntity>(out var o);
+            clip.where(() => o.Status, HookOutboxStatus.Processing);
+            var rows = clip.select(o).queryList();
+            var reclaimed = 0;
+
+            foreach (var row in rows)
+            {
+                var isStale = row.LeasedUntil.HasValue
+                    ? row.LeasedUntil < now
+                    : row.UpdatedAt.HasValue && row.UpdatedAt < staleBeforeUtc;
+
+                if (!isStale)
+                    continue;
+
+                var update = Sibling(kit).useClip();
+                update.setTable<HookOutboxEntity>(out var u);
+                update.set(() => u.Status, HookOutboxStatus.Pending);
+                update.set(() => u.LeasedUntil, (DateTime?)null);
+                update.set(() => u.UpdatedAt, now);
+                update.where(() => u.Id, row.Id);
+                update.where(() => u.Status, HookOutboxStatus.Processing);
+                if (update.doUpdate() > 0)
+                    reclaimed++;
+            }
+
+            return reclaimed;
+        }
+
+        public void ResetProcessing(SQLBuilder kit, int id)
+        {
+            var repo = Sibling(kit).useRepo<HookOutboxEntity>();
+            var row = repo.GetById(id);
+            if (row == null || row.Status != HookOutboxStatus.Processing)
+                return;
+
+            row.Status = HookOutboxStatus.Pending;
+            row.LeasedUntil = null;
+            row.UpdatedAt = DateTime.UtcNow;
+            repo.Update(row);
         }
 
         public void MarkSucceeded(SQLBuilder kit, HookOutboxEntity row)
@@ -114,13 +166,16 @@ namespace saiflow.engine.Business.Manager
         public IList<HookOutboxEntity> QueryDead(SQLBuilder kit, int limit = 100) =>
             QueryByStatus(kit, HookOutboxStatus.Dead, limit);
 
-        private bool TryClaimOne(SQLBuilder kit, int id, out HookOutboxEntity row)
+        private bool TryClaimOne(SQLBuilder kit, int id, int leaseSeconds, out HookOutboxEntity row)
         {
             row = null;
+            var now = DateTime.UtcNow;
+            var leasedUntil = now.AddSeconds(Math.Max(1, leaseSeconds));
             var clip = Sibling(kit).useClip();
             clip.setTable<HookOutboxEntity>(out var o);
             clip.set(() => o.Status, HookOutboxStatus.Processing);
-            clip.set(() => o.UpdatedAt, DateTime.UtcNow);
+            clip.set(() => o.UpdatedAt, now);
+            clip.set(() => o.LeasedUntil, leasedUntil);
             clip.where(() => o.Id, id);
             clip.where(() => o.Status, HookOutboxStatus.Pending);
             if (clip.doUpdate() <= 0)

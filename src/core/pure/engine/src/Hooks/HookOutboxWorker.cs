@@ -39,7 +39,14 @@ namespace saiflow.engine.Hooks
                 claimKit.beginTransaction();
                 try
                 {
-                    claimed = om.TryClaimPending(claimKit, batchSize, Options.MaxAttempts);
+                    var now = DateTime.UtcNow;
+                    var staleBefore = now.AddSeconds(-Options.ProcessingStaleSeconds);
+                    om.ReclaimStaleProcessing(claimKit, staleBefore, now);
+                    claimed = om.TryClaimPending(
+                        claimKit,
+                        batchSize,
+                        Options.MaxAttempts,
+                        Options.LeaseSeconds);
                     claimKit.commit();
                 }
                 catch (Exception ex)
@@ -64,7 +71,9 @@ namespace saiflow.engine.Hooks
         public int ProcessPending(SQLBuilder kit, int limit, int maxAttempts)
         {
             var om = new HookOutboxManager(Sail);
-            var claimed = om.TryClaimPending(kit, limit, maxAttempts);
+            var now = DateTime.UtcNow;
+            om.ReclaimStaleProcessing(kit, now.AddSeconds(-Options.ProcessingStaleSeconds), now);
+            var claimed = om.TryClaimPending(kit, limit, maxAttempts, Options.LeaseSeconds);
             return Dispatcher.DispatchClaimedOutbox(claimed, maxAttempts);
         }
     }

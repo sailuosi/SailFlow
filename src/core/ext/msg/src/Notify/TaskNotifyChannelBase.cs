@@ -9,7 +9,10 @@ namespace saiflow.msg.Notify
     /// <summary>待办推送通道骨架：模板方法 + 默认失败隔离（不向外抛）。</summary>
     public abstract class TaskNotifyChannelBase : ITaskNotifier
     {
-        /// <summary>可选：推送失败时业务侧记录（在 OnFailed 之后调用）。</summary>
+        /// <summary>
+        /// 可选：推送失败时业务侧记录（在 OnFailed 之后调用）。
+        /// Outbox 死信（<c>HookOutboxStatus.Dead</c>）由 Worker 单独治理，与此回调无关；需 Outbox 重试请设 <see cref="RethrowFailures"/>。
+        /// </summary>
         public ITaskNotifyFailureHandler FailureHandler { get; set; }
 
         public abstract string Name { get; }

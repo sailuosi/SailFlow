@@ -63,7 +63,10 @@ namespace saiflow.engine.Hooks
 
                 var result = gate.Handler.Validate(ctx);
                 if (result != null && !result.IsOk)
+                {
+                    Sail.CapabilityMetrics?.IncrementGateReject();
                     return result;
+                }
             }
 
             return HookResult.Ok();
@@ -83,6 +86,7 @@ namespace saiflow.engine.Hooks
                 if (!MatchesHook(hook, ctx, eventType))
                     continue;
                 hook.Handler.Handle(ctx);
+                Sail.CapabilityMetrics?.IncrementSyncHook();
             }
         }
 
@@ -119,6 +123,8 @@ namespace saiflow.engine.Hooks
                     om.InsertPending(kit, row);
                 else
                     om.InsertPending(Sail.UseRunSQL(), row);
+
+                Sail.CapabilityMetrics?.IncrementOutboxEnqueue();
             }
         }
 
@@ -154,6 +160,8 @@ namespace saiflow.engine.Hooks
                     om.InsertPending(kit, row);
                 else
                     om.InsertPending(Sail.UseRunSQL(), row);
+
+                Sail.CapabilityMetrics?.IncrementOutboxEnqueue();
             }
         }
 
@@ -240,6 +248,7 @@ namespace saiflow.engine.Hooks
                         kit.commit();
                     }
 
+                    Sail.CapabilityMetrics?.IncrementOutboxSucceeded();
                     processed++;
                 }
                 catch (Exception ex)
@@ -251,8 +260,10 @@ namespace saiflow.engine.Hooks
                         kit.commit();
                     }
 
+                    Sail.CapabilityMetrics?.IncrementOutboxFailed();
                     if (row.Status == HookOutboxStatus.Dead)
                     {
+                        Sail.CapabilityMetrics?.IncrementOutboxDead();
                         Trace.TraceWarning(
                             $"[saiflow] Hook outbox dead-letter id={row.Id} kind={row.Kind} handler={row.HandlerName}: {ex.Message}");
                     }
@@ -348,6 +359,7 @@ namespace saiflow.engine.Hooks
                 throw new InvalidOperationException("Notify outbox payload is empty.");
 
             await notifier.Handler.NotifyAsync(ctx, cancellationToken).ConfigureAwait(false);
+            Sail.CapabilityMetrics?.IncrementNotifierDispatch();
         }
 
         private static WorkflowHookContext BuildHookContextFromTask(

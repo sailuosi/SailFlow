@@ -104,6 +104,9 @@ public partial class SailClient
     public WorkflowCapabilityDispatcher CapabilityDispatcher =>
         _capabilityDispatcher ??= new WorkflowCapabilityDispatcher(this);
 
+    /// <summary>Gate / Hook / Outbox 轻量指标（默认 no-op）。</summary>
+    public IWorkflowCapabilityMetrics CapabilityMetrics { get; set; } = NullWorkflowCapabilityMetrics.Instance;
+
     /// <summary>
     /// 规则引擎注册表（按 <c>wf_rule_set.mode</c> 调度）。实现由业务侧 <see cref="useRuleEngine"/> 挂载。
     /// </summary>

@@ -86,29 +86,23 @@ namespace saiflow.engine.Service
                         return startedResult;
                     }
 
-                    var dispatcher = Sail.CapabilityDispatcher;
-                    var startActivity = runtimeInstance.ProcessModel?.GetStartActivity();
-                    var gateCtx = dispatcher.BuildHookContextFromRuntime(
+                    var gateCtx = WorkflowCapabilityPipeline.BuildGateContext(
+                        Sail,
+                        kit,
                         runner,
                         0,
                         runtimeInstance.RunningActivityInstance,
                         null,
-                        EventFireTypeEnum.OnValidating,
                         WorkflowOperation.Start);
+                    var startActivity = runtimeInstance.ProcessModel?.GetStartActivity();
                     if (startActivity != null)
                     {
                         gateCtx.ActivityId = startActivity.ActivityId;
                         gateCtx.ActivityCode = startActivity.ActivityCode;
                     }
 
-                    gateCtx.Version = runner.Version;
-                    gateCtx.ProcessCode = runner.ProcessCode ?? gateCtx.ProcessCode;
-                    var gateResult = dispatcher.RunGates(kit, gateCtx);
-                    if (gateResult != null && !gateResult.IsOk)
-                    {
-                        startedResult.ApplyGateReject(gateResult);
+                    if (!WorkflowCapabilityPipeline.TryGate(Sail, kit, gateCtx, startedResult))
                         return startedResult;
-                    }
 
                     //���¼�
                     //Register event
@@ -162,17 +156,16 @@ namespace saiflow.engine.Service
                         runner.EventSubscriptionList,
                         startedResult.ProcessInstanceIdStarted);
 
-                    var hookDispatcher = Sail.CapabilityDispatcher;
-                    var hookCtx = hookDispatcher.BuildHookContextFromRuntime(
+                    var hookCtx = WorkflowCapabilityPipeline.BuildHookContext(
+                        Sail,
+                        kit,
                         runner,
                         startedResult.ProcessInstanceIdStarted,
                         runtimeInstance.RunningActivityInstance,
                         runtimeInstance.TaskView?.Id,
                         EventFireTypeEnum.OnProcessStarted,
                         WorkflowOperation.Start);
-                    hookCtx.Version = runner.Version;
-                    hookDispatcher.RunSyncHooks(kit, hookCtx, EventFireTypeEnum.OnProcessStarted);
-                    hookDispatcher.EnqueueAsyncHooks(kit, hookCtx, EventFireTypeEnum.OnProcessStarted);
+                    WorkflowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessStarted);
                 }
                 waitHandler.Set();
             }
@@ -318,22 +311,16 @@ namespace saiflow.engine.Service
                         return runAppResult;
                     }
 
-                    var dispatcher = Sail.CapabilityDispatcher;
-                    var processInstance = (new ProcessInstanceManager(Sail)).GetById(kit, runtimeInstance.ProcessInstanceId);
-                    var gateCtx = dispatcher.BuildHookContextFromRuntime(
+                    var gateCtx = WorkflowCapabilityPipeline.BuildGateContext(
+                        Sail,
+                        kit,
                         runner,
                         runtimeInstance.ProcessInstanceId,
                         runtimeInstance.RunningActivityInstance,
                         runtimeInstance.TaskView?.Id,
-                        EventFireTypeEnum.OnValidating,
                         WorkflowOperation.Run);
-                    gateCtx.Version = processInstance?.Version ?? runner.Version;
-                    var gateResult = dispatcher.RunGates(kit, gateCtx);
-                    if (gateResult != null && !gateResult.IsOk)
-                    {
-                        runAppResult.ApplyGateReject(gateResult);
+                    if (!WorkflowCapabilityPipeline.TryGate(Sail, kit, gateCtx, runAppResult))
                         return runAppResult;
-                    }
 
                     //ע���¼�������
                     //Register event
@@ -386,17 +373,16 @@ namespace saiflow.engine.Service
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
 
-                    var hookDispatcher = Sail.CapabilityDispatcher;
-                    var hookCtx = hookDispatcher.BuildHookContextFromRuntime(
+                    var hookCtx = WorkflowCapabilityPipeline.BuildHookContext(
+                        Sail,
+                        kit,
                         runner,
                         runtimeInstance.ProcessInstanceId,
                         runtimeInstance.RunningActivityInstance,
                         runtimeInstance.TaskView?.Id,
                         EventFireTypeEnum.OnProcessContinued,
                         WorkflowOperation.Run);
-                    hookCtx.Version = runner.Version;
-                    hookDispatcher.RunSyncHooks(kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
-                    hookDispatcher.EnqueueAsyncHooks(kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
+                    WorkflowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
                 }
                 waitHandler.Set();
             }
@@ -614,6 +600,18 @@ namespace saiflow.engine.Service
                 {
                     return withdrawedResult;
                 }
+
+                var withdrawGateCtx = WorkflowCapabilityPipeline.BuildGateContext(
+                    Sail,
+                    kit,
+                    runner,
+                    runtimeInstance.ProcessInstanceId,
+                    runtimeInstance.RunningActivityInstance,
+                    runtimeInstance.TaskView?.Id,
+                    WorkflowOperation.Withdraw);
+                if (!WorkflowCapabilityPipeline.TryGate(Sail, kit, withdrawGateCtx, withdrawedResult))
+                    return withdrawedResult;
+
                 //ע���¼�������
                 //Register event
                 WfRuntimeManagerFactory.RegisterEvent(runtimeInstance,
@@ -658,6 +656,17 @@ namespace saiflow.engine.Service
                         EventFireTypeEnum.OnProcessWithdrawn,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
+
+                    var hookCtx = WorkflowCapabilityPipeline.BuildHookContext(
+                        Sail,
+                        kit,
+                        runner,
+                        runtimeInstance.ProcessInstanceId,
+                        runtimeInstance.RunningActivityInstance,
+                        runtimeInstance.TaskView?.Id,
+                        EventFireTypeEnum.OnProcessWithdrawn,
+                        WorkflowOperation.Withdraw);
+                    WorkflowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessWithdrawn);
                 }
                 waitHandler.Set();
             }
@@ -732,6 +741,17 @@ namespace saiflow.engine.Service
                     return sendbackResult;
                 }
 
+                var sendBackGateCtx = WorkflowCapabilityPipeline.BuildGateContext(
+                    Sail,
+                    kit,
+                    runner,
+                    runtimeInstance.ProcessInstanceId,
+                    runtimeInstance.RunningActivityInstance,
+                    runtimeInstance.TaskView?.Id,
+                    WorkflowOperation.SendBack);
+                if (!WorkflowCapabilityPipeline.TryGate(Sail, kit, sendBackGateCtx, sendbackResult))
+                    return sendbackResult;
+
                 //ע���¼�������
                 //Register event
                 WfRuntimeManagerFactory.RegisterEvent(runtimeInstance, 
@@ -777,6 +797,17 @@ namespace saiflow.engine.Service
                         EventFireTypeEnum.OnProcessSendBacked,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
+
+                    var hookCtx = WorkflowCapabilityPipeline.BuildHookContext(
+                        Sail,
+                        kit,
+                        runner,
+                        runtimeInstance.ProcessInstanceId,
+                        runtimeInstance.RunningActivityInstance,
+                        runtimeInstance.TaskView?.Id,
+                        EventFireTypeEnum.OnProcessSendBacked,
+                        WorkflowOperation.SendBack);
+                    WorkflowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessSendBacked);
                 }
                 waitHandler.Set();
             }
@@ -851,6 +882,17 @@ namespace saiflow.engine.Service
                     return resendResult;
                 }
 
+                var resendGateCtx = WorkflowCapabilityPipeline.BuildGateContext(
+                    Sail,
+                    kit,
+                    runner,
+                    runtimeInstance.ProcessInstanceId,
+                    runtimeInstance.RunningActivityInstance,
+                    runtimeInstance.TaskView?.Id,
+                    WorkflowOperation.Resend);
+                if (!WorkflowCapabilityPipeline.TryGate(Sail, kit, resendGateCtx, resendResult))
+                    return resendResult;
+
                 //ע���¼�������
                 //Register event
                 WfRuntimeManagerFactory.RegisterEvent(runtimeInstance, 
@@ -895,6 +937,17 @@ namespace saiflow.engine.Service
                         EventFireTypeEnum.OnProcessResent,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
+
+                    var hookCtx = WorkflowCapabilityPipeline.BuildHookContext(
+                        Sail,
+                        kit,
+                        runner,
+                        runtimeInstance.ProcessInstanceId,
+                        runtimeInstance.RunningActivityInstance,
+                        runtimeInstance.TaskView?.Id,
+                        EventFireTypeEnum.OnProcessResent,
+                        WorkflowOperation.Resend);
+                    WorkflowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessResent);
                 }
                 waitHandler.Set();
             }
@@ -971,6 +1024,17 @@ namespace saiflow.engine.Service
                     return reviseResult;
                 }
 
+                var reviseGateCtx = WorkflowCapabilityPipeline.BuildGateContext(
+                    Sail,
+                    kit,
+                    runner,
+                    runtimeInstance.ProcessInstanceId,
+                    runtimeInstance.RunningActivityInstance,
+                    runtimeInstance.TaskView?.Id,
+                    WorkflowOperation.Revise);
+                if (!WorkflowCapabilityPipeline.TryGate(Sail, kit, reviseGateCtx, reviseResult))
+                    return reviseResult;
+
                 //ע���¼�������
                 //Register event
                 WfRuntimeManagerFactory.RegisterEvent(runtimeInstance, 
@@ -1015,6 +1079,17 @@ namespace saiflow.engine.Service
                         EventFireTypeEnum.OnProcessRevised,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
+
+                    var hookCtx = WorkflowCapabilityPipeline.BuildHookContext(
+                        Sail,
+                        kit,
+                        runner,
+                        runtimeInstance.ProcessInstanceId,
+                        runtimeInstance.RunningActivityInstance,
+                        runtimeInstance.TaskView?.Id,
+                        EventFireTypeEnum.OnProcessRevised,
+                        WorkflowOperation.Revise);
+                    WorkflowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessRevised);
                 }
                 waitHandler.Set();
             }
@@ -1091,6 +1166,17 @@ namespace saiflow.engine.Service
                     return reversedResult;
                 }
 
+                var reverseGateCtx = WorkflowCapabilityPipeline.BuildGateContext(
+                    Sail,
+                    kit,
+                    runner,
+                    runtimeInstance.ProcessInstanceId,
+                    runtimeInstance.RunningActivityInstance,
+                    runtimeInstance.TaskView?.Id,
+                    WorkflowOperation.Reverse);
+                if (!WorkflowCapabilityPipeline.TryGate(Sail, kit, reverseGateCtx, reversedResult))
+                    return reversedResult;
+
                 //ע���¼�������
                 //Register event
                 WfRuntimeManagerFactory.RegisterEvent(runtimeInstance, 
@@ -1135,6 +1221,17 @@ namespace saiflow.engine.Service
                         EventFireTypeEnum.OnProcessReversed,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
+
+                    var hookCtx = WorkflowCapabilityPipeline.BuildHookContext(
+                        Sail,
+                        kit,
+                        runner,
+                        runtimeInstance.ProcessInstanceId,
+                        runtimeInstance.RunningActivityInstance,
+                        runtimeInstance.TaskView?.Id,
+                        EventFireTypeEnum.OnProcessReversed,
+                        WorkflowOperation.Reverse);
+                    WorkflowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessReversed);
                 }
                 waitHandler.Set();
             }
@@ -1211,6 +1308,17 @@ namespace saiflow.engine.Service
                     return rejectedResult;
                 }
 
+                var rejectGateCtx = WorkflowCapabilityPipeline.BuildGateContext(
+                    Sail,
+                    kit,
+                    runner,
+                    runtimeInstance.ProcessInstanceId,
+                    runtimeInstance.RunningActivityInstance,
+                    runtimeInstance.TaskView?.Id,
+                    WorkflowOperation.Reject);
+                if (!WorkflowCapabilityPipeline.TryGate(Sail, kit, rejectGateCtx, rejectedResult))
+                    return rejectedResult;
+
                 //ע���¼�������
                 //Register event
                 WfRuntimeManagerFactory.RegisterEvent(runtimeInstance,
@@ -1255,6 +1363,17 @@ namespace saiflow.engine.Service
                         EventFireTypeEnum.OnProcessRejected,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
+
+                    var hookCtx = WorkflowCapabilityPipeline.BuildHookContext(
+                        Sail,
+                        kit,
+                        runner,
+                        runtimeInstance.ProcessInstanceId,
+                        runtimeInstance.RunningActivityInstance,
+                        runtimeInstance.TaskView?.Id,
+                        EventFireTypeEnum.OnProcessRejected,
+                        WorkflowOperation.Reject);
+                    WorkflowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessRejected);
                 }
                 waitHandler.Set();
             }
@@ -1330,6 +1449,17 @@ namespace saiflow.engine.Service
                     return closedResult;
                 }
 
+                var closeGateCtx = WorkflowCapabilityPipeline.BuildGateContext(
+                    Sail,
+                    kit,
+                    runner,
+                    runtimeInstance.ProcessInstanceId,
+                    runtimeInstance.RunningActivityInstance,
+                    runtimeInstance.TaskView?.Id,
+                    WorkflowOperation.Close);
+                if (!WorkflowCapabilityPipeline.TryGate(Sail, kit, closeGateCtx, closedResult))
+                    return closedResult;
+
                 //ע���¼�������
                 //Register event
                 WfRuntimeManagerFactory.RegisterEvent(runtimeInstance,
@@ -1372,6 +1502,17 @@ namespace saiflow.engine.Service
                         EventFireTypeEnum.OnProcessClosed,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
+
+                    var hookCtx = WorkflowCapabilityPipeline.BuildHookContext(
+                        Sail,
+                        kit,
+                        runner,
+                        runtimeInstance.ProcessInstanceId,
+                        runtimeInstance.RunningActivityInstance,
+                        runtimeInstance.TaskView?.Id,
+                        EventFireTypeEnum.OnProcessClosed,
+                        WorkflowOperation.Close);
+                    WorkflowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessClosed);
                 }
                 waitHandler.Set();
             }
@@ -1448,6 +1589,17 @@ namespace saiflow.engine.Service
                     return jumpResult;
                 }
 
+                var jumpGateCtx = WorkflowCapabilityPipeline.BuildGateContext(
+                    Sail,
+                    kit,
+                    runner,
+                    runtimeInstance.ProcessInstanceId,
+                    runtimeInstance.RunningActivityInstance,
+                    runtimeInstance.TaskView?.Id,
+                    WorkflowOperation.Jump);
+                if (!WorkflowCapabilityPipeline.TryGate(Sail, kit, jumpGateCtx, jumpResult))
+                    return jumpResult;
+
                 //ע���¼�������
                 //Register event
                 WfRuntimeManagerFactory.RegisterEvent(runtimeInstance, 
@@ -1492,6 +1644,17 @@ namespace saiflow.engine.Service
                         EventFireTypeEnum.OnProcessJumped,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
+
+                    var hookCtx = WorkflowCapabilityPipeline.BuildHookContext(
+                        Sail,
+                        kit,
+                        runner,
+                        runtimeInstance.ProcessInstanceId,
+                        runtimeInstance.RunningActivityInstance,
+                        runtimeInstance.TaskView?.Id,
+                        EventFireTypeEnum.OnProcessJumped,
+                        WorkflowOperation.Jump);
+                    WorkflowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessJumped);
                 }
                 waitHandler.Set();
             }
@@ -1601,6 +1764,18 @@ namespace saiflow.engine.Service
                 {
                     return signforwardResult;
                 }
+
+                var signForwardGateCtx = WorkflowCapabilityPipeline.BuildGateContext(
+                    Sail,
+                    kit,
+                    runner,
+                    runtimeInstance.ProcessInstanceId,
+                    runtimeInstance.RunningActivityInstance,
+                    runtimeInstance.TaskView?.Id,
+                    WorkflowOperation.SignForward);
+                if (!WorkflowCapabilityPipeline.TryGate(Sail, kit, signForwardGateCtx, signforwardResult))
+                    return signforwardResult;
+
                 //ע���¼�������
                 //Register event
                 WfRuntimeManagerFactory.RegisterEvent(runtimeInstance, 
@@ -1646,6 +1821,17 @@ namespace saiflow.engine.Service
                         EventFireTypeEnum.OnProcessSignForwarded,
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
+
+                    var hookCtx = WorkflowCapabilityPipeline.BuildHookContext(
+                        Sail,
+                        kit,
+                        runner,
+                        runtimeInstance.ProcessInstanceId,
+                        runtimeInstance.RunningActivityInstance,
+                        runtimeInstance.TaskView?.Id,
+                        EventFireTypeEnum.OnProcessSignForwarded,
+                        WorkflowOperation.SignForward);
+                    WorkflowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessSignForwarded);
                 }
                 waitHandler.Set();
             }

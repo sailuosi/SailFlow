@@ -71,6 +71,13 @@ namespace saiflow.engine.Core.Result
                 ? new List<HookValidationItem>(gateResult.Details)
                 : null;
         }
+
+        /// <summary>Gate 业务拒绝（§14 #9：Status=Failed 且带 ValidationCode，非新枚举值）。</summary>
+        public bool IsValidationReject() =>
+            Status == WfExecutedStatus.Failed && ValidationCode != null;
+
+        /// <summary>同 <see cref="IsValidationReject"/>，供 API 语义命名。</summary>
+        public bool IsBusinessValidationFailure() => IsValidationReject();
     }
 
     /// <summary>
