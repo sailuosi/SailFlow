@@ -12,6 +12,9 @@ public class AssigneePipeline : IAssigneePipeline
 {
     public AssigneeCapabilityRegistry Registry { get; }
 
+    /// <summary>业务回调（BusinessCallback Type）；宿主/biz 可往里 Register。</summary>
+    public AssigneeBusinessCallbackRegistry Callbacks { get; } = new();
+
     public SailClient? Sail { get; set; }
 
     /// <summary>可选：显式 BPMN ConfigPair 读取（优先于 Legacy 推断）。</summary>
@@ -83,11 +86,13 @@ public class AssigneePipeline : IAssigneePipeline
 
     protected virtual void WireSail(IAssigneeResolver resolver)
     {
-        if (Sail == null)
-            return;
-        if (resolver is Builtin.RoleGroupAssigneeResolver rg)
+        if (resolver is Builtin.RoleGroupAssigneeResolver rg && Sail != null)
             rg.Sail = Sail;
-        if (resolver is Builtin.ProcessRelativeAssigneeResolver pr)
+        if (resolver is Builtin.ProcessRelativeAssigneeResolver pr && Sail != null)
             pr.Sail = Sail;
+        if (resolver is Builtin.BusinessCallbackAssigneeResolver bc)
+            bc.Callbacks = Callbacks;
+        if (resolver is Builtin.FallbackAssigneeResolver fb)
+            fb.Registry = Registry;
     }
 }

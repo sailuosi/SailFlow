@@ -98,11 +98,38 @@ public static class SailAssigneeExtensions
         registry.Register(new ProcessRelativeAssigneeResolver());
         registry.Register(new StarterPickAssigneeResolver());
         registry.Register(new ApproverPickAssigneeResolver());
+        // S4 扩展型（可继承 / 业务同码覆盖）
+        registry.Register(new UnitMapAssigneeResolver());
+        registry.Register(new JobRelativeAssigneeResolver());
+        registry.Register(new BusinessCallbackAssigneeResolver());
+        registry.Register(new ExpressionAssigneeResolver());
+        registry.Register(new FallbackAssigneeResolver());
         registry.Register(new RaceLeaveJudge());
         registry.Register(new CollaborateLeaveJudge());
         registry.Register(new GroupRaceLeaveJudge());
         registry.Register(new GroupCollaborateLeaveJudge());
         registry.Register(new CaptainLeaveJudge());
+    }
+
+    /// <summary>注册业务回调（BusinessCallback.Params.callback）。</summary>
+    public static SailClient useAssigneeBusinessCallback(
+        this SailClient client,
+        IAssigneeBusinessCallback callback)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(callback);
+        EnsurePipeline(client).Callbacks.Register(callback);
+        return client;
+    }
+
+    public static SailClient useAssigneeBusinessCallback(
+        this SailClient client,
+        string name,
+        Func<AssigneeResolveContext, PerformerList> resolve)
+    {
+        ArgumentNullException.ThrowIfNull(resolve);
+        EnsurePipeline(client).Callbacks.Register(name, resolve);
+        return client;
     }
 
     private static AssigneePipeline EnsurePipeline(SailClient client)

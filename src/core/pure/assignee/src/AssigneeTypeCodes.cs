@@ -10,6 +10,18 @@ public static class AssigneeResolveTypeCodes
     public const string StarterPick = "StarterPick";
     public const string ApproverPick = "ApproverPick";
     public const string Fallback = "Fallback";
+
+    /// <summary>单位映射：Params.unitField + maps[unit]→userIds。</summary>
+    public const string UnitMap = "UnitMap";
+
+    /// <summary>岗位相对：Params.jobCode；可继承 LookupByJob 接 HR。</summary>
+    public const string JobRelative = "JobRelative";
+
+    /// <summary>业务回调：Params.callback → <see cref="AssigneeBusinessCallbackRegistry"/>。</summary>
+    public const string BusinessCallback = "BusinessCallback";
+
+    /// <summary>表达式：Params.expression / userIdsField，从 Conditions 取值。</summary>
+    public const string Expression = "Expression";
 }
 
 /// <summary>内置 LeaveJudge Type 码（静态 string，禁止改成 enum）。</summary>
