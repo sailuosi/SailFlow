@@ -64,34 +64,74 @@ namespace saiflow.biz.Bootstrap
         }
 
         /// <summary>
-        /// 早期 createTable 在 IsColumnAttributeRequired=false 且仅 PK 有 SooColumn 时可能只建出 Id 列。
-        /// 缺 FormName 等列时重建空表（有数据则跳过，避免误删）。
+        /// SQLite 下 mooSQL createTable 流式 DDL 不会落地 INTEGER PRIMARY KEY AUTOINCREMENT
+        ///（buildConstrainPK 默认为空），导致 Insert 跳过 Id 后 NOT NULL 失败。
+        /// 此处用原生 DDL 保证自增主键；空表可安全重建。
         /// </summary>
         public static void EnsureFormTables(SQLBuilder kit)
         {
             if (kit == null)
                 throw new ArgumentNullException(nameof(kit));
 
+            EnsureSqliteIdentityTable(
+                kit,
+                "FbForm",
+                @"CREATE TABLE FbForm (
+  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  FormName TEXT NULL,
+  FormCode TEXT NULL,
+  Version TEXT NULL,
+  FieldSummary TEXT NULL,
+  TemplateContent TEXT NULL,
+  HTMLContent TEXT NULL,
+  Description TEXT NULL,
+  CreatedDate TEXT NULL,
+  LastUpdatedDate TEXT NULL
+)");
+
+            EnsureSqliteIdentityTable(
+                kit,
+                "FbFormFieldActivityEdit",
+                @"CREATE TABLE FbFormFieldActivityEdit (
+  Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  ProcessDefId INTEGER NULL,
+  ProcessId TEXT NULL,
+  ProcessName TEXT NULL,
+  ProcessVersion TEXT NULL,
+  ActivityId TEXT NULL,
+  ActivityName TEXT NULL,
+  FormId INTEGER NULL,
+  FormName TEXT NULL,
+  FormVersion TEXT NULL,
+  FieldsPermission TEXT NULL
+)");
+        }
+
+        static void EnsureSqliteIdentityTable(SQLBuilder kit, string tableName, string createSql)
+        {
+            var needRebuild = true;
             try
             {
-                // 探测关键列；失败则视为表结构残缺
-                kit.exeNonQuery("SELECT FormName FROM FbForm WHERE 1=0");
+                // 已是 rowid 自增主键则跳过
+                var sql = kit.exeQuery(
+                    "SELECT sql FROM sqlite_master WHERE type='table' AND name='" + tableName + "'");
+                if (sql.Rows.Count > 0)
+                {
+                    var ddl = Convert.ToString(sql.Rows[0][0]) ?? "";
+                    if (ddl.IndexOf("PRIMARY KEY", StringComparison.OrdinalIgnoreCase) >= 0
+                        && ddl.IndexOf("AUTOINCREMENT", StringComparison.OrdinalIgnoreCase) >= 0)
+                        needRebuild = false;
+                }
             }
             catch
             {
-                try { kit.exeNonQuery("DROP TABLE IF EXISTS FbForm"); } catch { /* ignore */ }
-                kit.useDBInit().autoMode().createTable<FormEntity>();
+                needRebuild = true;
             }
 
-            try
-            {
-                kit.exeNonQuery("SELECT FormName FROM FbFormFieldActivityEdit WHERE 1=0");
-            }
-            catch
-            {
-                try { kit.exeNonQuery("DROP TABLE IF EXISTS FbFormFieldActivityEdit"); } catch { /* ignore */ }
-                kit.useDBInit().autoMode().createTable<FieldActivityEditEntity>();
-            }
+            if (!needRebuild) return;
+
+            try { kit.exeNonQuery("DROP TABLE IF EXISTS " + tableName); } catch { /* ignore */ }
+            kit.exeNonQuery(createSql);
         }
 
         /// <summary>

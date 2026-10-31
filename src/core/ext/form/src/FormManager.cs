@@ -38,8 +38,11 @@ namespace saiflow.hub.Form
             entity.LastUpdatedDate = DateTime.Now;
             if (string.IsNullOrEmpty(entity.Version))
                 entity.Version = "1";
-            Sail.UseRunSQL().useRepo<FormEntity>().Insert(entity);
-            return entity.Id ?? 0;
+            // Identity 列 Insert 会跳过 Id；须走 InsertReturnId 回填（依赖 INTEGER PRIMARY KEY AUTOINCREMENT）
+            var idObj = Sail.UseRunSQL().useRepo<FormEntity, int>().InsertReturnId(entity);
+            var id = Convert.ToInt32(idObj);
+            entity.Id = id;
+            return id;
         }
 
         internal void Update(FormEntity entity)
