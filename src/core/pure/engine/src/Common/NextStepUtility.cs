@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+using saiflow.engine.Client;
 
 namespace saiflow.engine.Common
 {
@@ -17,35 +14,33 @@ namespace saiflow.engine.Common
         /// Deserialize the next personnel list based on the text content
         /// 根据文本内容反序列化下一步人员列表
         /// </summary>
-        /// <param name="jsonNextStep"></param>
-        /// <returns></returns>
-        public static IDictionary<string, PerformerList> DeserializeNextStepPerformers(string jsonNextStep)
+        public static IDictionary<string, PerformerList> DeserializeNextStepPerformers(
+            string jsonNextStep,
+            IJsonSerializer json)
         {
             IDictionary<string, PerformerList> nextSteps = null;
             if (!string.IsNullOrEmpty(jsonNextStep))
             {
-                //反序列化步骤数据
-                //Deserialize step data
-                nextSteps = JsonConvert.DeserializeObject<IDictionary<string, PerformerList>>(jsonNextStep);
+                nextSteps = json.Deserialize<IDictionary<string, PerformerList>>(jsonNextStep);
             }
             return nextSteps;
         }
 
         /// <summary>
-        /// List of personnel involved in deserialization steps
-        /// 反序列化步骤人员列表
+        /// List of personnel involved in serialization steps
+        /// 序列化步骤人员列表
         /// </summary>
-        /// <param name="nextSteps"></param>
-        /// <returns></returns>
-        public static string SerializeNextStepPerformers(IDictionary<string, PerformerList> nextSteps)
+        public static string SerializeNextStepPerformers(
+            IDictionary<string, PerformerList> nextSteps,
+            IJsonSerializer json)
         {
             var jsonNextSteps = string.Empty;
-            if (nextSteps != null 
-                && nextSteps.Count > 0 
-                && nextSteps.First().Value != null 
+            if (nextSteps != null
+                && nextSteps.Count > 0
+                && nextSteps.First().Value != null
                 && nextSteps.First().Value.Count > 0)
             {
-                jsonNextSteps = JsonConvert.SerializeObject(nextSteps);
+                jsonNextSteps = json.Serialize(nextSteps);
             }
             return jsonNextSteps;
         }
@@ -54,8 +49,8 @@ namespace saiflow.engine.Common
         /// Generate the next step performer list
         /// 生成下一步人员列表
         /// </summary>
-        public static IDictionary<string, PerformerList> CreateNextStepPerformerList(string activityId, 
-            string userId, 
+        public static IDictionary<string, PerformerList> CreateNextStepPerformerList(string activityId,
+            string userId,
             string userName)
         {
             var performerList = PerformerBuilder.CreatePerformerList(userId, userName);

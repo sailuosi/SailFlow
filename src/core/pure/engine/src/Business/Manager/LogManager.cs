@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-using Newtonsoft.Json;
 using mooSQL.data;
 using saiflow.data;
 using saiflow.engine.Common;
@@ -55,7 +54,7 @@ namespace saiflow.engine.Business.Manager
 
                 if (extraObject != null)
                 {
-                    var jsonData = JsonConvert.SerializeObject(extraObject);
+                    var jsonData = Sail.JsonSerializer.Serialize(extraObject);
                     log.RequestData = jsonData.Length > 2000 ? jsonData.Substring(0, 2000) : jsonData;
                 }
 

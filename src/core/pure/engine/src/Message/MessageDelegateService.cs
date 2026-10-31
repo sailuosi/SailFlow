@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Newtonsoft.Json;
 using saiflow.engine.Common;
 using saiflow.engine.Core.Result;
 using saiflow.engine.Service;
@@ -58,7 +57,7 @@ namespace saiflow.engine.Message
             msgRunnerView.ActivityEntity = catchActivity;
             msgRunnerView.WfAppRunner = appRunner;
 
-            var jsonRunner = JsonConvert.SerializeObject(msgRunnerView);
+            var jsonRunner = Sail.JsonSerializer.Serialize(msgRunnerView);
 
             Sail.GetMessageQueueRequired().Publish(topic, jsonRunner);
         }
@@ -75,7 +74,7 @@ namespace saiflow.engine.Message
         {
             var msgResult = MessageConsumedResult.Default();
             var topic = entity.Topic;
-            var msgRunnerView = JsonConvert.DeserializeObject<MessageRunnerView>(entity.Line);
+            var msgRunnerView = Sail.JsonSerializer.Deserialize<MessageRunnerView>(entity.Line);
 
             if (!string.IsNullOrEmpty(topic))
             {
@@ -178,7 +177,8 @@ namespace saiflow.engine.Message
                 runner.ActivityInstanceId = runningActivityInstance.Id;
                 if (!string.IsNullOrEmpty(runningActivityInstance.NextStepPerformers))
                 {
-                    runner.NextActivityPerformers = NextStepUtility.DeserializeNextStepPerformers(runningActivityInstance.NextStepPerformers);
+                    runner.NextActivityPerformers = NextStepUtility.DeserializeNextStepPerformers(
+                        runningActivityInstance.NextStepPerformers, Sail.JsonSerializer);
                 }
             }
 

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using saiflow.engine.Common;
 using saiflow.engine.Core.Result;
 using saiflow.engine.Service;
@@ -55,7 +54,7 @@ namespace saiflow.engine.Message
             var signalRunnerView = new SignalRunnerView();
             signalRunnerView.WfAppRunner = appRunner;
 
-            var jsonRunner = JsonConvert.SerializeObject(signalRunnerView);
+            var jsonRunner = Sail.JsonSerializer.Serialize(signalRunnerView);
 
             Sail.GetMessageQueueRequired().Publish(topic, jsonRunner);
         }
@@ -72,7 +71,7 @@ namespace saiflow.engine.Message
         {
             var resultList = new List<SignalConsumedResult>();
             //get signal runner info
-            var signalRunnerView = JsonConvert.DeserializeObject<SignalRunnerView>(entity.Line);
+            var signalRunnerView = Sail.JsonSerializer.Deserialize<SignalRunnerView>(entity.Line);
             var appRunner = signalRunnerView.WfAppRunner;
             var topic = appRunner.MessageTopic;
 
@@ -212,7 +211,8 @@ namespace saiflow.engine.Message
 
             if (!string.IsNullOrEmpty(activityInstance.NextStepPerformers))
             {
-                runner.NextActivityPerformers = NextStepUtility.DeserializeNextStepPerformers(activityInstance.NextStepPerformers);
+                runner.NextActivityPerformers = NextStepUtility.DeserializeNextStepPerformers(
+                    activityInstance.NextStepPerformers, Sail.JsonSerializer);
             }
             return runner;
         }

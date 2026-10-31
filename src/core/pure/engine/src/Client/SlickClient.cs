@@ -137,10 +137,23 @@ public partial class SailClient
     /// </summary>
     public IMessageQueueService MessageQueue { get; private set; }
 
+    /// <summary>
+    /// JSON 序列化插槽（下一步执行人 / MQ 载荷 / Hook Outbox / 日志等）。
+    /// 实现由业务侧 <see cref="useJsonSerializer"/> / UseBizJson 挂载。
+    /// </summary>
+    public IJsonSerializer JsonSerializer { get; private set; }
+
     /// <summary>注册消息队列实现（覆盖已有）。</summary>
     public SailClient useMessageQueue(IMessageQueueService messageQueue)
     {
         MessageQueue = messageQueue ?? throw new ArgumentNullException(nameof(messageQueue));
+        return this;
+    }
+
+    /// <summary>注册 JSON 序列化实现（覆盖已有）。</summary>
+    public SailClient useJsonSerializer(IJsonSerializer serializer)
+    {
+        JsonSerializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
         return this;
     }
 

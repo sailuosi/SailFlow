@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using mooSQL.data;
-using Newtonsoft.Json;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 using saiflow.engine.Client;
@@ -141,7 +140,7 @@ namespace saiflow.engine.Hooks
                 if (!MatchesHook(hook, ctx, eventType))
                     continue;
 
-                var payload = JsonConvert.SerializeObject(ctx);
+                var payload = Sail.JsonSerializer.Serialize(ctx);
                 var row = new HookOutboxEntity
                 {
                     Kind = HookOutboxKinds.Hook,
@@ -178,7 +177,7 @@ namespace saiflow.engine.Hooks
                 if (!MatchesNotifier(notifier, ctx))
                     continue;
 
-                var payload = JsonConvert.SerializeObject(ctx);
+                var payload = Sail.JsonSerializer.Serialize(ctx);
                 var row = new HookOutboxEntity
                 {
                     Kind = HookOutboxKinds.Notify,
@@ -376,7 +375,7 @@ namespace saiflow.engine.Hooks
             if (hook?.Handler == null)
                 throw new InvalidOperationException($"Hook handler '{row.HandlerName}' not registered.");
 
-            var ctx = JsonConvert.DeserializeObject<WorkflowHookContext>(row.PayloadJson);
+            var ctx = Sail.JsonSerializer.Deserialize<WorkflowHookContext>(row.PayloadJson);
             if (ctx == null)
                 throw new InvalidOperationException("Hook outbox payload is empty.");
 
@@ -390,7 +389,7 @@ namespace saiflow.engine.Hooks
             if (notifier?.Handler == null)
                 throw new InvalidOperationException($"Notifier '{row.HandlerName}' not registered.");
 
-            var ctx = JsonConvert.DeserializeObject<TaskNotifyContext>(row.PayloadJson);
+            var ctx = Sail.JsonSerializer.Deserialize<TaskNotifyContext>(row.PayloadJson);
             if (ctx == null)
                 throw new InvalidOperationException("Notify outbox payload is empty.");
 

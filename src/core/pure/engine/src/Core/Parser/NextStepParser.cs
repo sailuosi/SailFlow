@@ -76,7 +76,7 @@ namespace saiflow.engine.Core.Parser
                 var mainActivityInstance = aim.GetById(mainActivityInstanceId);
                 if (mainActivityInstance != null)
                 {
-                    nextSteps = NextStepUtility.DeserializeNextStepPerformers(mainActivityInstance.NextStepPerformers);
+                    nextSteps = NextStepUtility.DeserializeNextStepPerformers(mainActivityInstance.NextStepPerformers, Sail.JsonSerializer);
                 }
             }
 
@@ -94,7 +94,7 @@ namespace saiflow.engine.Core.Parser
                     if (gatewayActivityInstance != null
                         && !string.IsNullOrEmpty(gatewayActivityInstance.NextStepPerformers))
                     {
-                        nextSteps = NextStepUtility.DeserializeNextStepPerformers(gatewayActivityInstance.NextStepPerformers);
+                        nextSteps = NextStepUtility.DeserializeNextStepPerformers(gatewayActivityInstance.NextStepPerformers, Sail.JsonSerializer);
                     }
                 }
                 else if (XPDLHelper.IsInterTimerEventComponentNode(nextActivity) == true)
@@ -105,7 +105,7 @@ namespace saiflow.engine.Core.Parser
                     if (timerActivityInstance != null
                         && !string.IsNullOrEmpty(timerActivityInstance.NextStepPerformers))
                     {
-                        nextSteps = NextStepUtility.DeserializeNextStepPerformers(timerActivityInstance.NextStepPerformers);
+                        nextSteps = NextStepUtility.DeserializeNextStepPerformers(timerActivityInstance.NextStepPerformers, Sail.JsonSerializer);
                     }
                 }
             }

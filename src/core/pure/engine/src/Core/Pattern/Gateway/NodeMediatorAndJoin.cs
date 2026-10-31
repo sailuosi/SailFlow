@@ -64,7 +64,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
 
                 //写入默认第一次的预选步骤用户列表
                 //Write the default user list for the first pre selection step
-                joinActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers);
+                joinActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
 
                 base.InsertActivityInstance(joinActivityInstance,
                     kit);

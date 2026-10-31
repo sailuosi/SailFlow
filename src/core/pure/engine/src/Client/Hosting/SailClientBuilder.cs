@@ -113,6 +113,14 @@ public sealed class SailClientBuilder
         return this;
     }
 
+    /// <summary>注册 JSON 序列化实现（下一步执行人 / MQ 载荷 / Hook Outbox / 日志等）。</summary>
+    public SailClientBuilder UseJsonSerializer(IJsonSerializer serializer)
+    {
+        ArgumentNullException.ThrowIfNull(serializer);
+        Services.UseJsonSerializer(serializer);
+        return this;
+    }
+
     public SailClientBuilder ConfigureServices(Action<ISailCollection> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -206,6 +214,12 @@ public sealed class SailClientBuilder
             && mqBox is IMessageQueueService messageQueue)
         {
             client.useMessageQueue(messageQueue);
+        }
+
+        if (Services.Properties.TryGetValue(SailBuilderKeys.JsonSerializer, out var jsonBox)
+            && jsonBox is IJsonSerializer jsonSerializer)
+        {
+            client.useJsonSerializer(jsonSerializer);
         }
 
         SailWorkflowCapabilityExtensions.ApplyPendingRegistrations(client, Services);

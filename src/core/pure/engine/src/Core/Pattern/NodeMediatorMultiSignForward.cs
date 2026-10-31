@@ -152,7 +152,8 @@ namespace saiflow.engine.Core.Pattern
                             //更新主节点的执行人员列表
                             //Set the next node to enter the waiting processing state
                             mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
-                                base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers);
+                                base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
+                                Sail.JsonSerializer);
                             base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
                             canContinueForwardCurrentNode = false;
                             base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.ForwardToNextSequenceTask;
@@ -219,7 +220,8 @@ namespace saiflow.engine.Core.Pattern
                             //更新主节点的执行人员列表
                             //Update the list of executing personnel for the main node
                             mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
-                                base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers);
+                                base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
+                                Sail.JsonSerializer);
                             base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
                             canContinueForwardCurrentNode = false;
                             base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.ForwardToNextSequenceTask;
@@ -270,7 +272,8 @@ namespace saiflow.engine.Core.Pattern
                             //更新主节点的执行人员列表
                             //Update the list of executing personnel for the main node
                             mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
-                                base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers);
+                                base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
+                                Sail.JsonSerializer);
                             base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
                             canContinueForwardCurrentNode = false;
                             base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.WaitingForCompletedMore;
@@ -290,7 +293,8 @@ namespace saiflow.engine.Core.Pattern
                             //更新主节点的执行人员列表
                             //Update the list of executing personnel for the main node
                             mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
-                                base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers);
+                                base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
+                                Sail.JsonSerializer);
                             base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
                             canContinueForwardCurrentNode = false;
                             base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.WaitingForCompletedMore;

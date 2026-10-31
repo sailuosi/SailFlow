@@ -37,7 +37,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
 
             //存储下一步步骤人员信息
             //Store personnel information for the next step
-            timerActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers);
+            timerActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
 
             //延时时间信息
             //Overdue datetime

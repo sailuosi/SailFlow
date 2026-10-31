@@ -37,7 +37,7 @@ namespace saiflow.engine.Core.Pattern.Event.Conditional
             var condActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, runner);
             //存储下一步步骤人员信息
             //Store performer information for the next step
-            condActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers);
+            condActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
             condActivityInstance.AssignedUserIds = WfDefine.SYSTEM_JOBTIMER_USER_ID;
             condActivityInstance.AssignedUserNames = WfDefine.SYSTEM_JOBTIMER_USER_NAME;
 

@@ -11,6 +11,7 @@ public static class SailBuilderKeys
     public static readonly object ScriptMethods = new();
     public static readonly object ServiceMethods = new();
     public static readonly object MessageQueue = new();
+    public static readonly object JsonSerializer = new();
     public static readonly object FormService = new();
     public static readonly object ResourceService = new();
     public static readonly object LocalizeMessages = new();

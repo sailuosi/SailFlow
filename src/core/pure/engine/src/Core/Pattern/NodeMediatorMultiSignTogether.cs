@@ -137,7 +137,8 @@ namespace saiflow.engine.Core.Pattern
                                 //更新主节点的执行人员列表
                                 //Update the list of executing personnel for the main node
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
-                                    base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers);
+                                    base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
+                                    Sail.JsonSerializer);
                                 base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
 
                                 canContinueForwardCurrentNode = false;
@@ -206,7 +207,8 @@ namespace saiflow.engine.Core.Pattern
                                 //更新主节点的执行人员列表
                                 //Update the list of executing personnel for the main node
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
-                                    base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers);
+                                    base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
+                                    Sail.JsonSerializer);
                                 base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
 
                                 canContinueForwardCurrentNode = false;
@@ -258,7 +260,8 @@ namespace saiflow.engine.Core.Pattern
                                 //更新主节点的执行人员列表
                                 //Update the list of executing personnel for the main node
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
-                                    base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers);
+                                    base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
+                                    Sail.JsonSerializer);
                                 base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
 
                                 canContinueForwardCurrentNode = false;
@@ -279,7 +282,8 @@ namespace saiflow.engine.Core.Pattern
                                 //更新主节点的执行人员列表
                                 //Update the list of executing personnel for the main node
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
-                                    base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers);
+                                    base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
+                                    Sail.JsonSerializer);
                                 base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
 
                                 canContinueForwardCurrentNode = false;

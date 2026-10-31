@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
 using saiflow.engine.Common;
 using saiflow.data;
 using mooSQL.data;
@@ -36,7 +35,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
 
             //写入默认第一次的预选步骤用户列表
             //Write the default user list for the first pre selection step
-            msgCatchActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers);
+            msgCatchActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
             base.InsertActivityInstance(msgCatchActivityInstance, kit);
 
             return msgCatchActivityInstance;
