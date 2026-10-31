@@ -17,8 +17,6 @@
 
   <ItemGroup>
     <PackageReference Include="IronPython" Version="3.4.1" />
-    <PackageReference Include="NRules" Version="1.0.4" />
-    <PackageReference Include="NRules.Fluent" Version="1.0.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 

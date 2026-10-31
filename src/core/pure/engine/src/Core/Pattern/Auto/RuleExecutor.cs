@@ -28,7 +28,7 @@ namespace saiflow.engine.Core.Pattern.Auto
 
             var ruleSet = new RuleSetManager(client).GetByCode(ruleConfig.RuleSetCode);
             var inputs = BuildRuleInputs(client, eventService, currentActivityInstance, currentActivity);
-            var result = new RuleSetExecutionManager().Execute(ruleSet, inputs);
+            var result = new RuleSetExecutionManager(client).Execute(ruleSet, inputs);
 
             if (!result.IsSuccess)
                 throw new WorkflowException($"RuleTask execution failed: {result.Message}");

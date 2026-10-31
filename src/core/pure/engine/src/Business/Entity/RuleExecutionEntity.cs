@@ -16,7 +16,7 @@ namespace saiflow.engine.Business.Entity
     }
 
     /// <summary>
-    /// Fact passed to NRules.
+    /// 规则输入事实（NRules Fluent 等引擎可复用）。
     /// </summary>
     public class RuleInputFact
     {
@@ -24,7 +24,7 @@ namespace saiflow.engine.Business.Entity
     }
 
     /// <summary>
-    /// Fact for storing rule outputs.
+    /// 规则输出事实（NRules Fluent 等引擎可复用）。
     /// </summary>
     public class RuleOutputFact
     {

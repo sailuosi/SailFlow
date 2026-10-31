@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
+using saiflow.engine.Rules;
 
 namespace saiflow.engine.Client.Hosting;
 
@@ -69,6 +71,14 @@ public sealed class SailClientBuilder
         return this;
     }
 
+    /// <summary>注册规则引擎（按 mode 扩展；可多次调用）。</summary>
+    public SailClientBuilder UseRuleEngine(IRuleEngine engine)
+    {
+        ArgumentNullException.ThrowIfNull(engine);
+        Services.UseRuleEngine(engine);
+        return this;
+    }
+
     public SailClientBuilder ConfigureServices(Action<ISailCollection> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -129,6 +139,13 @@ public sealed class SailClientBuilder
 
         if (cache != null)
             client.useCache(cache);
+
+        if (Services.Properties.TryGetValue(SailBuilderKeys.RuleEngines, out var enginesBox)
+            && enginesBox is List<IRuleEngine> engines)
+        {
+            foreach (var engine in engines)
+                client.useRuleEngine(engine);
+        }
 
         foreach (var d in Services.OrderBy(x => x.Order)
                      .Where(x => x.Phase == SailFeaturePhase.ConfigureClient))

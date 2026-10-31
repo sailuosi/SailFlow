@@ -1,5 +1,6 @@
 using System;
 using mooSQL.data;
+using saiflow.engine.Rules;
 using saiflow.hub.Localize;
 
 namespace saiflow.engine.Client;
@@ -82,6 +83,20 @@ public partial class SailClient
         return this;
     }
 
+    private RuleEngineRegistry _ruleEngines;
+
+    /// <summary>
+    /// 规则引擎注册表（按 <c>wf_rule_set.mode</c> 调度）。实现由业务侧 <see cref="useRuleEngine"/> 挂载。
+    /// </summary>
+    public RuleEngineRegistry RuleEngines => _ruleEngines ??= new RuleEngineRegistry();
+
+    /// <summary>注册规则引擎实现（可多次调用以挂多种 mode）。</summary>
+    public SailClient useRuleEngine(IRuleEngine engine)
+    {
+        RuleEngines.Register(engine);
+        return this;
+    }
+
     /// <summary>确保起步插槽已挂载。</summary>
     public void EnsurePorts()
     {
@@ -97,6 +112,8 @@ public partial class SailClient
             Dialect.MountEvent(new SailEventHubStub(this));
         if (_cache == null)
             _cache = CreateDefaultCache();
+        if (_ruleEngines == null)
+            _ruleEngines = new RuleEngineRegistry();
     }
 
     private ISooCache CreateDefaultCache()

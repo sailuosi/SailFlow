@@ -8,12 +8,15 @@ namespace saiflow.engine.Xpdl
     /// <summary>
     /// Expression Parser
     /// </summary>
-    internal class ExpressionParser
+    /// <summary>
+    /// Expression Parser（公开供规则引擎等扩展使用，如 bindingsJson when 表达式）。
+    /// </summary>
+    public class ExpressionParser
     {
         /// <summary>
         /// Parse expresson
         /// </summary>
-        internal static bool Parse(string expressionReplaced)
+        public static bool Parse(string expressionReplaced)
         {
             Expression e = System.Linq.Dynamic.DynamicExpression.Parse(typeof(Boolean), expressionReplaced);
             LambdaExpression LE = Expression.Lambda(e);
@@ -26,7 +29,7 @@ namespace saiflow.engine.Xpdl
         /// Replace parameter values in conditional expressions
         /// 取代条件表达式中的参数值
         /// </summary>
-        internal static string ReplaceParameterToValue(string expression, IDictionary<string, string> dictoinary)
+        public static string ReplaceParameterToValue(string expression, IDictionary<string, string> dictoinary)
         {
             foreach (KeyValuePair<string, string> p in dictoinary)
             {

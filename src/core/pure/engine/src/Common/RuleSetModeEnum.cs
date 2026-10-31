@@ -3,18 +3,19 @@ using System;
 namespace saiflow.engine.Common
 {
     /// <summary>
-    /// Values for <c>wf_rule_set.mode</c> (stored string matches <see cref="RuleSetModeHelper.PersistedRuleTypes"/> / <see cref="RuleSetModeHelper.PersistedBindingsJson"/>).
+    /// 内置 mode 的枚举便利值（自定义引擎可只用字符串 mode，不必进本枚举）。
+    /// 持久化字符串见 <see cref="RuleSetModeHelper"/>。
     /// </summary>
     public enum RuleSetModeEnum
     {
-        /// <summary>NRules: JSON with a <c>ruleTypes</c> array.</summary>
+        /// <summary>内置：NRules Fluent（bizRule <c>NRulesRuleTypesEngine</c>）。</summary>
         RuleTypes = 0,
 
-        /// <summary>JSON DSL: <c>rules</c> / when / set in <c>rule_content</c>.</summary>
+        /// <summary>内置：JSON DSL（bizRule <c>BindingsJsonRuleEngine</c>）。</summary>
         BindingsJson = 1
     }
 
-    /// <summary>Maps enum to/from persisted varchar in <c>wf_rule_set.mode</c>.</summary>
+    /// <summary>内置 mode 与 <c>wf_rule_set.mode</c> 字符串约定。</summary>
     public static class RuleSetModeHelper
     {
         public const string PersistedRuleTypes = "ruleTypes";
