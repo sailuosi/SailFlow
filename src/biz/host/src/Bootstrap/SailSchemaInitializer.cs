@@ -95,7 +95,8 @@ namespace saiflow.biz.Bootstrap
             {
                 new ProcessEntity
                 {
-                    ProcessId = "slick-seed-hello",
+                    Id = 1,
+                    ProcessId = "sail-seed-hello",
                     ProcessName = "Sail Seed Hello",
                     ProcessCode = "SEED_HELLO",
                     Version = "1",
@@ -105,7 +106,7 @@ namespace saiflow.biz.Bootstrap
                     XmlContent = MinimalBpmnXml(),
                     StartType = 0,
                     EndType = 0,
-                    Description = "任务 1½ 最小种子（可删）",
+                    Description = "最小种子（可删）",
                     CreatedDateTime = now
                 }
             };
@@ -150,7 +151,7 @@ namespace saiflow.biz.Bootstrap
         {
             return
                 "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<Package><Process id=\"slick-seed-hello\" name=\"Sail Seed Hello\"></Process></Package>";
+                "<Package><Process id=\"sail-seed-hello\" name=\"Sail Seed Hello\"></Process></Package>";
         }
     }
 

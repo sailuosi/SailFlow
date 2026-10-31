@@ -34,7 +34,7 @@ namespace saiflow.biz.query
             clip.where(() => t.ProcessState, (short)2);
             clip.where(() => t.ActivityType == 4 || t.WorkItemType == 1);
             clip.where(() => t.ActivityState, (short)1);
-            clip.where(() => t.TaskState, 32, "<>");
+            clip.where(() => t.TaskState, (short)32, "<>");
             clip.orderByDesc(() => t.Id);
             clip.top(10);
             return clip.select(t).queryList().ToList();
@@ -48,7 +48,7 @@ namespace saiflow.biz.query
             clip.where(() => t.ProcessState, (short)2);
             clip.where(() => t.ActivityType == 4 || t.WorkItemType == 1);
             clip.where(() => t.ActivityState, (short)4);
-            clip.where(() => t.TaskState, 32, "<>");
+            clip.where(() => t.TaskState, (short)32, "<>");
             clip.orderByDesc(() => t.Id);
             clip.top(10);
             return clip.select(t).queryList().ToList();
@@ -85,8 +85,8 @@ namespace saiflow.biz.query
             clip.where(() => t.ProcessState, (short)2);
             clip.where(() => t.ActivityType == 4 || t.WorkItemType == 1);
             clip.where(() => t.ActivityState, (short)1);
-            clip.where(() => t.IsEMailSent, (byte)0);
-            clip.where(() => t.TaskState, 32, "<>");
+            clip.where(() => t.IsEMailSent, (byte?)0);
+            clip.where(() => t.TaskState, (short)32, "<>");
             return clip.select(t).queryList().ToList();
         }
 
@@ -145,7 +145,7 @@ namespace saiflow.biz.query
             var tm = new TaskManager(Sail);
             var task = tm.GetTask(taskId);
             var aim = new ActivityInstanceManager(Sail);
-            var activityInstance = aim.GetById(task.ActivityInstanceId);
+            var activityInstance = aim.GetById(task.ActivityInstanceId ?? throw new InvalidOperationException("Task ActivityInstanceId is required."));
 
             if (aim.IsMultipleInstanceChildren(activityInstance) == true)
             {
@@ -158,8 +158,8 @@ namespace saiflow.biz.query
                     if (mergeType == MergeTypeEnum.Sequence)
                     {
                         var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.Id,
-                            mainActivityInstance.ProcessInstanceId,
+                            mainActivityInstance.Id.Value,
+                            mainActivityInstance.ProcessInstanceId.Value,
                             (short)ActivityStateEnum.Suspended).ToList();
                         short allNum = (short)mainActivityInstance.AssignedUserIds.Split(',').Length;
                         short maxOrder = 0;
@@ -195,8 +195,8 @@ namespace saiflow.biz.query
                     else if (mergeType == MergeTypeEnum.Parallel)
                     {
                         var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.Id,
-                            mainActivityInstance.ProcessInstanceId,
+                            mainActivityInstance.Id.Value,
+                            mainActivityInstance.ProcessInstanceId.Value,
                             null).ToList();
                         var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed).ToList().Count();
                         var completedCount = sqList
@@ -233,8 +233,8 @@ namespace saiflow.biz.query
                         || signforwardType == SignForwardTypeEnum.SignForwardBefore)
                     {
                         var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.Id,
-                            mainActivityInstance.ProcessInstanceId,
+                            mainActivityInstance.Id.Value,
+                            mainActivityInstance.ProcessInstanceId.Value,
                             (short)ActivityStateEnum.Suspended).ToList();
 
                         short maxOrder = 0;
@@ -269,8 +269,8 @@ namespace saiflow.biz.query
                     else if (signforwardType == SignForwardTypeEnum.SignForwardParallel)
                     {
                         var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.Id,
-                            mainActivityInstance.ProcessInstanceId,
+                            mainActivityInstance.Id.Value,
+                            mainActivityInstance.ProcessInstanceId.Value,
                             null).ToList();
 
                         var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed).ToList().Count();
@@ -319,7 +319,7 @@ namespace saiflow.biz.query
                 || activityState == (short)ActivityStateEnum.Running)
             {
                 clip.where(() => t.ActivityState, (short)activityState);
-                clip.where(() => t.TaskState, 32, "<>");
+                clip.where(() => t.TaskState, (short)32, "<>");
             }
             else if (activityState == (short)ActivityStateEnum.Completed)
             {
@@ -385,7 +385,7 @@ namespace saiflow.biz.query
             {
                 imageList.Add(new NodeImage
                 {
-                    Id = a.Id,
+                    Id = a.Id ?? 0,
                     ActivityName = a.ActivityName
                 });
             }
@@ -402,7 +402,7 @@ namespace saiflow.biz.query
             {
                 imageList.Add(new TransitionImage
                 {
-                    Id = t.Id,
+                    Id = t.Id ?? 0,
                     TransitionId = t.TransitionId
                 });
             }
