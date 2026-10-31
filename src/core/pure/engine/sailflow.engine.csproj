@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="sailflow.engine.tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\AI\sailflow.AI.csproj" />
     <ProjectReference Include="..\baseHub\sailflow.baseHub.csproj" />
     <ProjectReference Include="..\basis\sailflow.basis.csproj" />

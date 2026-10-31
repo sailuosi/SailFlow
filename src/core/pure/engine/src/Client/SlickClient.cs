@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using mooSQL.data;
 using saiflow.engine.Actions;
 using saiflow.engine.Hooks;
@@ -106,6 +107,15 @@ public partial class SailClient
 
     /// <summary>Gate / Hook / Outbox 轻量指标（默认 no-op）。</summary>
     public IWorkflowCapabilityMetrics CapabilityMetrics { get; set; } = NullWorkflowCapabilityMetrics.Instance;
+
+    /// <summary>Gate / Hook 行为（Sync 硬超时等）。</summary>
+    public WorkflowCapabilityOptions CapabilityOptions { get; set; } = new();
+
+    /// <summary>Outbox Worker / drain 运行参数（<see cref="Hosting.SailHookOutboxDrainExtensions.UseHookOutboxDrain"/> 可覆盖）。</summary>
+    public HookOutboxOptions HookOutboxOptions { get; set; } = new();
+
+    /// <summary><see cref="Hooks.HookOutboxDrainLoop.StartBackground"/> 返回的 CTS（<c>autoStart</c> 或宿主手动启动时赋值）。</summary>
+    public CancellationTokenSource HookOutboxDrainCts { get; set; }
 
     /// <summary>
     /// 规则引擎注册表（按 <c>wf_rule_set.mode</c> 调度）。实现由业务侧 <see cref="useRuleEngine"/> 挂载。

@@ -14,7 +14,7 @@ namespace saiflow.engine.Hooks
             if (client == null)
                 throw new ArgumentNullException(nameof(client));
 
-            options ??= new HookOutboxOptions();
+            options ??= client.HookOutboxOptions ?? new HookOutboxOptions();
             var worker = new HookOutboxWorker(client, options);
             var poll = options.PollInterval;
 
@@ -50,6 +50,7 @@ namespace saiflow.engine.Hooks
             if (client == null)
                 throw new ArgumentNullException(nameof(client));
 
+            options ??= client.HookOutboxOptions ?? new HookOutboxOptions();
             var cts = new CancellationTokenSource();
             _ = Task.Run(() => RunAsync(client, options, cts.Token), cts.Token);
             return cts;

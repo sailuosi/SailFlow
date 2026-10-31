@@ -164,7 +164,82 @@ namespace saiflow.engine.Business.Manager
         }
 
         public IList<HookOutboxEntity> QueryDead(SQLBuilder kit, int limit = 100) =>
-            QueryByStatus(kit, HookOutboxStatus.Dead, limit);
+            QueryDead(kit, limit, processCode: null, handlerName: null);
+
+        public IList<HookOutboxEntity> QueryDead(
+            SQLBuilder kit,
+            int limit,
+            string processCode,
+            string handlerName)
+        {
+            var rows = QueryByStatus(kit, HookOutboxStatus.Dead, Math.Max(limit, 1) * 5);
+            IEnumerable<HookOutboxEntity> filtered = rows;
+            if (!string.IsNullOrEmpty(processCode))
+            {
+                filtered = filtered.Where(r =>
+                    string.Equals(r.ProcessCode, processCode, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrEmpty(handlerName))
+            {
+                filtered = filtered.Where(r =>
+                    string.Equals(r.HandlerName, handlerName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return filtered.OrderBy(x => x.Id).Take(limit).ToList();
+        }
+
+        public int CountByStatus(SQLBuilder kit, string status)
+        {
+            var clip = Sibling(kit).useClip();
+            clip.from<HookOutboxEntity>(out var o);
+            clip.where(() => o.Status, status);
+            return clip.select(o).queryList().Count();
+        }
+
+        public int ResetDeadBatch(SQLBuilder kit, IEnumerable<int> ids)
+        {
+            if (ids == null)
+                return 0;
+
+            var count = 0;
+            foreach (var id in ids)
+            {
+                if (ResetDeadIfDead(kit, id))
+                    count++;
+            }
+
+            return count;
+        }
+
+        public int ResetAllDead(SQLBuilder kit, int limit = 500)
+        {
+            var dead = QueryDead(kit, limit);
+            var count = 0;
+            foreach (var row in dead)
+            {
+                if (ResetDeadIfDead(kit, row.Id))
+                    count++;
+            }
+
+            return count;
+        }
+
+        private bool ResetDeadIfDead(SQLBuilder kit, int id)
+        {
+            var repo = Sibling(kit).useRepo<HookOutboxEntity>();
+            var row = repo.GetById(id);
+            if (row == null || row.Status != HookOutboxStatus.Dead)
+                return false;
+
+            row.Status = HookOutboxStatus.Pending;
+            row.Attempt = 0;
+            row.NextRetryAt = null;
+            row.LastError = null;
+            row.UpdatedAt = DateTime.UtcNow;
+            repo.Update(row);
+            return true;
+        }
 
         private bool TryClaimOne(SQLBuilder kit, int id, int leaseSeconds, out HookOutboxEntity row)
         {

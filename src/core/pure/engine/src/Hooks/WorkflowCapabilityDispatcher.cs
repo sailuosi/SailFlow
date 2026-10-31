@@ -81,11 +81,47 @@ namespace saiflow.engine.Hooks
             ctx.EventType = eventType;
             EnsureProcessCode(kit, ctx);
 
+            var timeoutMs = Sail.CapabilityOptions?.SyncHookTimeoutMs ?? 0;
+
             foreach (var hook in Registry.Hooks.Where(h => h.Mode == HookMode.Sync))
             {
                 if (!MatchesHook(hook, ctx, eventType))
                     continue;
-                hook.Handler.Handle(ctx);
+
+                if (timeoutMs <= 0)
+                {
+                    hook.Handler.Handle(ctx);
+                }
+                else
+                {
+                    // Dedicated thread + Join: avoids sync-over-async deadlocks on ASP.NET sync contexts.
+                    Exception handlerError = null;
+                    var worker = new Thread(() =>
+                    {
+                        try
+                        {
+                            hook.Handler.Handle(ctx);
+                        }
+                        catch (Exception ex)
+                        {
+                            handlerError = ex;
+                        }
+                    })
+                    {
+                        IsBackground = true,
+                        Name = "saiflow-sync-hook:" + hook.Name,
+                    };
+                    worker.Start();
+                    if (!worker.Join(timeoutMs))
+                    {
+                        Sail.CapabilityMetrics?.IncrementSyncHookTimeout();
+                        throw new WorkflowSyncHookTimeoutException(hook.Name, timeoutMs);
+                    }
+
+                    if (handlerError != null)
+                        throw handlerError;
+                }
+
                 Sail.CapabilityMetrics?.IncrementSyncHook();
             }
         }

@@ -16,7 +16,7 @@ namespace saiflow.engine.Hooks
         public HookOutboxWorker(SailClient client, HookOutboxOptions options = null)
         {
             Sail = client ?? throw new ArgumentNullException(nameof(client));
-            Options = options ?? new HookOutboxOptions();
+            Options = options ?? client.HookOutboxOptions ?? new HookOutboxOptions();
             Dispatcher = new WorkflowCapabilityDispatcher(client);
         }
 

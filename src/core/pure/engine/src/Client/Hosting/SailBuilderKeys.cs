@@ -15,4 +15,5 @@ public static class SailBuilderKeys
     public static readonly object ResourceService = new();
     public static readonly object LocalizeMessages = new();
     public static readonly object WorkflowCapabilities = new();
+    public static readonly object HookOutboxDrain = new();
 }

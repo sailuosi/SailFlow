@@ -10,6 +10,7 @@ namespace saiflow.engine.Hooks
         void IncrementOutboxFailed();
         void IncrementOutboxDead();
         void IncrementNotifierDispatch();
+        void IncrementSyncHookTimeout();
     }
 
     public sealed class NullWorkflowCapabilityMetrics : IWorkflowCapabilityMetrics
@@ -23,6 +24,7 @@ namespace saiflow.engine.Hooks
         public void IncrementOutboxFailed() { }
         public void IncrementOutboxDead() { }
         public void IncrementNotifierDispatch() { }
+        public void IncrementSyncHookTimeout() { }
     }
 
     /// <summary>进程内计数，供测试或简易观测。</summary>
@@ -35,6 +37,7 @@ namespace saiflow.engine.Hooks
         private long _outboxFailed;
         private long _outboxDead;
         private long _notifierDispatch;
+        private long _syncHookTimeout;
 
         public long GateReject => _gateReject;
         public long SyncHook => _syncHook;
@@ -43,6 +46,7 @@ namespace saiflow.engine.Hooks
         public long OutboxFailed => _outboxFailed;
         public long OutboxDead => _outboxDead;
         public long NotifierDispatch => _notifierDispatch;
+        public long SyncHookTimeout => _syncHookTimeout;
 
         public void IncrementGateReject() => System.Threading.Interlocked.Increment(ref _gateReject);
         public void IncrementSyncHook() => System.Threading.Interlocked.Increment(ref _syncHook);
@@ -51,5 +55,6 @@ namespace saiflow.engine.Hooks
         public void IncrementOutboxFailed() => System.Threading.Interlocked.Increment(ref _outboxFailed);
         public void IncrementOutboxDead() => System.Threading.Interlocked.Increment(ref _outboxDead);
         public void IncrementNotifierDispatch() => System.Threading.Interlocked.Increment(ref _notifierDispatch);
+        public void IncrementSyncHookTimeout() => System.Threading.Interlocked.Increment(ref _syncHookTimeout);
     }
 }
