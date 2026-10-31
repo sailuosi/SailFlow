@@ -1,24 +1,14 @@
-
-using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace saiflow.engine.Event
 {
     /// <summary>
-    /// Event Utility
-    /// 事件工具类
+    /// Event Utility — 参数拼装（Action / Script / Service / 扩展 handler 共用）。
     /// </summary>
-    internal class EventUtil
+    public static class EventUtil
     {
-        /// <summary>
-        /// Construct JSON string for the final object
-        /// 构造最终对象的Json字符串
-        /// </summary>
-        /// <param name="arguments"></param>
-        /// <param name="eventService"></param>
-        /// <returns></returns>
-        internal static string CompositeJsonValue(string arguments, IEventService eventService)
+        public static string CompositeJsonValue(string arguments, IEventService eventService)
         {
             var jsonValue = string.Empty;
             var arguValue = string.Empty;
@@ -41,14 +31,7 @@ namespace saiflow.engine.Event
             return jsonValue;
         }
 
-        /// <summary>
-        /// If it is a simple string, add double quotation marks
-        /// 如果是简单字符串, 加双引号
-        /// jack => "jack"
-        /// </summary>
-        /// <param name="jsonValue"></param>
-        /// <returns></returns>
-        internal static string FormatJsonStringIfSimple(string jsonValue)
+        public static string FormatJsonStringIfSimple(string jsonValue)
         {
             jsonValue = jsonValue.TrimStart().TrimEnd();
             if ((jsonValue.StartsWith('{') && jsonValue.EndsWith('}'))
@@ -62,14 +45,7 @@ namespace saiflow.engine.Event
             }
         }
 
-        /// <summary>
-        /// Construct JSON string for the final object
-        /// 构造最终对象的Json字符串
-        /// </summary>
-        /// <param name="arguments"></param>
-        /// <param name="eventService"></param>
-        /// <returns></returns>
-        internal static IDictionary<string, object> CompositeSqlParametersValue(string arguments, IEventService eventService)
+        public static IDictionary<string, object> CompositeSqlParametersValue(string arguments, IEventService eventService)
         {
             var parameters = new Dictionary<string, object>();
 
@@ -83,14 +59,7 @@ namespace saiflow.engine.Event
             return parameters;
         }
 
-        /// <summary>
-        /// Construct JSON string for the final object
-        /// 构造最终对象的Json字符串
-        /// </summary>
-        /// <param name="arguments"></param>
-        /// <param name="eventService"></param>
-        /// <returns></returns>
-        internal static IDictionary<string, string> CompositeKeyValue(string arguments, IEventService eventService)
+        public static IDictionary<string, string> CompositeKeyValue(string arguments, IEventService eventService)
         {
             var dictionary = new Dictionary<string, string>();
             var arguValue = string.Empty;
@@ -103,14 +72,7 @@ namespace saiflow.engine.Event
             return dictionary;
         }
 
-        /// <summary>
-        /// Construct a variable value list
-        /// 构造可变数值列表
-        /// </summary>
-        /// <param name="arguments"></param>
-        /// <param name="eventService"></param>
-        /// <returns></returns>
-        internal static object[] CompositeParameterValues(string arguments, IEventService eventService)
+        public static object[] CompositeParameterValues(string arguments, IEventService eventService)
         {
             var arguList = arguments.Split(',');
             object[] valueArray = new object[arguList.Length];

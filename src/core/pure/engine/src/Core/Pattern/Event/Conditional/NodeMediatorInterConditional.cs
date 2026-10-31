@@ -13,7 +13,6 @@ using saiflow.engine.Xpdl;
 using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Core.Runtime;
 using Microsoft.VisualBasic;
-using static IronPython.Modules._ast;
 
 using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Conditional

@@ -10,7 +10,6 @@ using saiflow.engine.Xpdl.Common;
 using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Core.Result;
-using static IronPython.Modules._ast;
 
 using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern

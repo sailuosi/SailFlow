@@ -6,7 +6,6 @@ using saiflow.engine.Common;
 using saiflow.engine.Core.Result;
 using saiflow.engine.Core.Pattern;
 using saiflow.engine.Core.Pattern.Event;
-using static IronPython.Modules._ast;
 
 namespace saiflow.engine.Core.Runtime
 {

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>saiflow.action</PackageId>
+    <RootNamespace>saiflow.action</RootNamespace>
+    <AssemblyName>saiflow.action</AssemblyName>
+    <Description>Action/Script method extensions for sailflow (IronPython handlers).</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="IronPython" Version="3.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\pure\engine\sailflow.engine.csproj" />
+  </ItemGroup>
+
+</Project>

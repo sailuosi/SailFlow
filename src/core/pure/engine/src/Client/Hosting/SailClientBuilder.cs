@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
+using saiflow.engine.Actions;
 using saiflow.engine.Rules;
 
 namespace saiflow.engine.Client.Hosting;
@@ -79,6 +80,30 @@ public sealed class SailClientBuilder
         return this;
     }
 
+    /// <summary>注册 Action 方法处理器（可多次；同 Method 后注册覆盖）。</summary>
+    public SailClientBuilder UseActionMethod(IActionMethodHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        Services.UseActionMethod(handler);
+        return this;
+    }
+
+    /// <summary>注册 Script 方法处理器。</summary>
+    public SailClientBuilder UseScriptMethod(IScriptMethodHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        Services.UseScriptMethod(handler);
+        return this;
+    }
+
+    /// <summary>注册 Service 方法处理器。</summary>
+    public SailClientBuilder UseServiceMethod(IServiceMethodHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        Services.UseServiceMethod(handler);
+        return this;
+    }
+
     public SailClientBuilder ConfigureServices(Action<ISailCollection> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -145,6 +170,27 @@ public sealed class SailClientBuilder
         {
             foreach (var engine in engines)
                 client.useRuleEngine(engine);
+        }
+
+        if (Services.Properties.TryGetValue(SailBuilderKeys.ActionMethods, out var actionsBox)
+            && actionsBox is List<IActionMethodHandler> actions)
+        {
+            foreach (var handler in actions)
+                client.useActionMethod(handler);
+        }
+
+        if (Services.Properties.TryGetValue(SailBuilderKeys.ScriptMethods, out var scriptsBox)
+            && scriptsBox is List<IScriptMethodHandler> scripts)
+        {
+            foreach (var handler in scripts)
+                client.useScriptMethod(handler);
+        }
+
+        if (Services.Properties.TryGetValue(SailBuilderKeys.ServiceMethods, out var servicesBox)
+            && servicesBox is List<IServiceMethodHandler> serviceHandlers)
+        {
+            foreach (var handler in serviceHandlers)
+                client.useServiceMethod(handler);
         }
 
         foreach (var d in Services.OrderBy(x => x.Order)

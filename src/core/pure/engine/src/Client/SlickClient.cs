@@ -1,5 +1,6 @@
 using System;
 using mooSQL.data;
+using saiflow.engine.Actions;
 using saiflow.engine.Rules;
 using saiflow.hub.Localize;
 
@@ -84,16 +85,49 @@ public partial class SailClient
     }
 
     private RuleEngineRegistry _ruleEngines;
+    private ActionMethodRegistry _actionMethods;
+    private ScriptMethodRegistry _scriptMethods;
+    private ServiceMethodRegistry _serviceMethods;
 
     /// <summary>
     /// 规则引擎注册表（按 <c>wf_rule_set.mode</c> 调度）。实现由业务侧 <see cref="useRuleEngine"/> 挂载。
     /// </summary>
     public RuleEngineRegistry RuleEngines => _ruleEngines ??= new RuleEngineRegistry();
 
+    /// <summary>Action 方法注册表（LocalService/SQL/WebApi 等内置；Python 由 sailflow.action 挂载）。</summary>
+    public ActionMethodRegistry ActionMethods => _actionMethods ??= new ActionMethodRegistry();
+
+    /// <summary>Script 方法注册表（SQL 内置；Python 由 sailflow.action 挂载）。</summary>
+    public ScriptMethodRegistry ScriptMethods => _scriptMethods ??= new ScriptMethodRegistry();
+
+    /// <summary>Service 方法注册表（LocalService/WebApi 等内置）。</summary>
+    public ServiceMethodRegistry ServiceMethods => _serviceMethods ??= new ServiceMethodRegistry();
+
     /// <summary>注册规则引擎实现（可多次调用以挂多种 mode）。</summary>
     public SailClient useRuleEngine(IRuleEngine engine)
     {
         RuleEngines.Register(engine);
+        return this;
+    }
+
+    /// <summary>注册 Action 方法处理器（可覆盖同 Method）。</summary>
+    public SailClient useActionMethod(IActionMethodHandler handler)
+    {
+        ActionMethods.Register(handler);
+        return this;
+    }
+
+    /// <summary>注册 Script 方法处理器（可覆盖同 Method）。</summary>
+    public SailClient useScriptMethod(IScriptMethodHandler handler)
+    {
+        ScriptMethods.Register(handler);
+        return this;
+    }
+
+    /// <summary>注册 Service 方法处理器（可覆盖同 Method）。</summary>
+    public SailClient useServiceMethod(IServiceMethodHandler handler)
+    {
+        ServiceMethods.Register(handler);
         return this;
     }
 
@@ -114,6 +148,14 @@ public partial class SailClient
             _cache = CreateDefaultCache();
         if (_ruleEngines == null)
             _ruleEngines = new RuleEngineRegistry();
+        if (_actionMethods == null)
+            _actionMethods = new ActionMethodRegistry();
+        if (_scriptMethods == null)
+            _scriptMethods = new ScriptMethodRegistry();
+        if (_serviceMethods == null)
+            _serviceMethods = new ServiceMethodRegistry();
+
+        BuiltinActionMethods.RegisterAll(_actionMethods, _scriptMethods, _serviceMethods);
     }
 
     private ISooCache CreateDefaultCache()
