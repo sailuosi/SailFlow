@@ -19,7 +19,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\core\pure\engine\sailflow.engine.csproj" />
     <ProjectReference Include="..\..\core\ext\action\sailflow.action.csproj" />
+    <ProjectReference Include="..\..\core\ext\msg\sailflow.msg.csproj" />
     <ProjectReference Include="..\..\core\ext\bizRule\sailflow.bizRule.csproj" />
+
 
     <ProjectReference Include="..\..\core\ext\resource\sailflow.resource.csproj" />
     <ProjectReference Include="..\..\core\ext\localize\sailflow.localize.csproj" />

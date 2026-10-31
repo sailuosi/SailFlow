@@ -4,6 +4,7 @@ using System.Linq;
 using mooSQL.data;
 using saiflow.engine.Actions;
 using saiflow.engine.Rules;
+using saiflow.hub.Essential.Common;
 
 namespace saiflow.engine.Client.Hosting;
 
@@ -104,6 +105,14 @@ public sealed class SailClientBuilder
         return this;
     }
 
+    /// <summary>注册消息队列实现（Message/Signal Throw 发布）。</summary>
+    public SailClientBuilder UseMessageQueue(IMessageQueueService messageQueue)
+    {
+        ArgumentNullException.ThrowIfNull(messageQueue);
+        Services.UseMessageQueue(messageQueue);
+        return this;
+    }
+
     public SailClientBuilder ConfigureServices(Action<ISailCollection> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -191,6 +200,12 @@ public sealed class SailClientBuilder
         {
             foreach (var handler in serviceHandlers)
                 client.useServiceMethod(handler);
+        }
+
+        if (Services.Properties.TryGetValue(SailBuilderKeys.MessageQueue, out var mqBox)
+            && mqBox is IMessageQueueService messageQueue)
+        {
+            client.useMessageQueue(messageQueue);
         }
 
         foreach (var d in Services.OrderBy(x => x.Order)

@@ -10,7 +10,6 @@ using saiflow.engine.Business.Entity;
 using saiflow.engine.Xpdl.Common;
 using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Business.Manager;
-using saiflow.hub.Essential.Common;
 using saiflow.hub.Essential;
 using saiflow.hub.Essential.Entity;
 using saiflow.WebUtility;
@@ -58,8 +57,7 @@ namespace saiflow.engine.Message
 
             var jsonRunner = JsonConvert.SerializeObject(signalRunnerView);
 
-            var signalService = RabbitMQServiceFactory.CreateSignal();
-            signalService.Publish(topic, jsonRunner);
+            Sail.GetMessageQueueRequired().Publish(topic, jsonRunner);
         }
         #endregion
 

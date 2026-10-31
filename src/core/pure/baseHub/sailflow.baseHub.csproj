@@ -5,13 +5,9 @@
     <PackageId>saiflow.hub</PackageId>
     <Version>3.5.0</Version>
     <Title>Sailflow Core Module</Title>
-    <Description>Core module for saiflow.NET. Provides essential workflow engine functionality including email services and message queue integration.</Description>
+    <Description>Core hub contracts for saiflow.NET: resource/form/localize ports, message mediators, and shared essential types.</Description>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\pure\basis\sailflow.basis.csproj" />

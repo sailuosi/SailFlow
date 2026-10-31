@@ -2,6 +2,7 @@ using System;
 using mooSQL.data;
 using saiflow.engine.Actions;
 using saiflow.engine.Rules;
+using saiflow.hub.Essential.Common;
 using saiflow.hub.Localize;
 
 namespace saiflow.engine.Client;
@@ -102,6 +103,28 @@ public partial class SailClient
 
     /// <summary>Service 方法注册表（LocalService/WebApi 等内置）。</summary>
     public ServiceMethodRegistry ServiceMethods => _serviceMethods ??= new ServiceMethodRegistry();
+
+    /// <summary>
+    /// 消息队列插槽（Message/Signal Throw 发布）。实现由业务侧 <see cref="useMessageQueue"/> / UseBizMsg 挂载。
+    /// 未挂载时为 null；EnsurePorts 不会自动创建。
+    /// </summary>
+    public IMessageQueueService MessageQueue { get; private set; }
+
+    /// <summary>注册消息队列实现（覆盖已有）。</summary>
+    public SailClient useMessageQueue(IMessageQueueService messageQueue)
+    {
+        MessageQueue = messageQueue ?? throw new ArgumentNullException(nameof(messageQueue));
+        return this;
+    }
+
+    /// <summary>取得已挂载的消息队列；未注册时抛明确异常。</summary>
+    public IMessageQueueService GetMessageQueueRequired()
+    {
+        if (MessageQueue != null)
+            return MessageQueue;
+        throw new InvalidOperationException(
+            "No IMessageQueueService registered on SailClient. Call UseBizMsg() / UseRabbitMq() / useMessageQueue(...).");
+    }
 
     /// <summary>注册规则引擎实现（可多次调用以挂多种 mode）。</summary>
     public SailClient useRuleEngine(IRuleEngine engine)

@@ -1,0 +1,27 @@
+using System;
+using saiflow.engine.Client.Hosting;
+using saiflow.msg;
+using saiflow.msg.Hosting;
+
+namespace saiflow.biz.Hosting;
+
+/// <summary>
+/// Biz composition：启用消息队列（RabbitMQ）。
+/// </summary>
+public static class BizMsgSailExtensions
+{
+    /// <summary>
+    /// 注册 RabbitMQ <c>IMessageQueueService</c>；之后仍可用 <c>UseMessageQueue</c> 覆盖自定义实现。
+    /// </summary>
+    public static ISailCollection UseBizMsg(this ISailCollection services, Action<RabbitMqOptions> configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        return services.UseRabbitMq(configure);
+    }
+
+    public static SailClientBuilder UseBizMsg(this SailClientBuilder builder, Action<RabbitMqOptions> configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        return builder.UseRabbitMq(configure);
+    }
+}
