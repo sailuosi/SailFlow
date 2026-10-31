@@ -94,17 +94,6 @@ namespace saiflow.engine.Service
         }
 
         /// <summary>
-        /// Obtain process definition data (including only basic attributes)
-        /// 获取流程定义数据（只包括基本属性）
-        /// </summary>
-        public IList<ProcessEntity> GetProcessListSimple()
-        {
-            var pm = new ProcessManager(Sail);
-            var list = pm.GetListSimple();
-            return list;
-        }
-
-        /// <summary>
         /// Get process file
         /// 流程定义的XML文件获取
         /// </summary>

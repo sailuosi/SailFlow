@@ -169,16 +169,6 @@ namespace saiflow.engine.Business.Manager
             return EnumHelper.GetFirst<ProcessInstanceEntity>(list);
         }
 
-        internal int GetProcessInstanceCount(string processId, string version)
-        {
-            var kit = Sail.UseRunSQL();
-            return Sibling(kit)
-                .from(SailSqlDialect.ProcessInstanceTable)
-                .where("process_id", processId)
-                .where("version", version)
-                .count();
-        }
-
         internal bool CheckSubProcessInstanceCompleted(SQLBuilder kit, int activityInstanceId, string activityId)
         {
             var list = Sibling(kit)

@@ -168,7 +168,6 @@ namespace saiflow.engine.Service
         Boolean DiscardProcess(WfAppRunner discarder);
         Boolean TerminateProcess(WfAppRunner terminator);
         Boolean SetTaskRead(WfAppRunner runner);
-        Boolean SetTaskEMailSent(int taskId);
         WfDataManagedResult EntrustTask(TaskEntrustedEntity entrusted, bool cancalOriginalTask = true);
         void CancelEntrustedTask(int id);
         Boolean ReplaceTask(int taskId, List<TaskReplacedEntity> replaced, WfAppRunner runner);
@@ -176,31 +175,19 @@ namespace saiflow.engine.Service
         void SetActivityJobTimerCompleted(int activityInstanceId);
         void SetProcessJobTimerCompleted(int processInstanceId);
         int SaveProcessVariable(ProcessVariableEntity entity);
-        
-        IList<NodeImage> GetActivityInstanceCompleted(int taskId);
-        IList<NodeImage> GetActivityInstanceCompleted(WfAppRunner runner);
-        IList<TransitionImage> GetTransitionInstanceList(TransitionInstanceQuery query);
+
         User GetProcessInitiator(int processInstanceId);
 
-        IList<ActivityInstanceEntity> GetRunningActivityInstance(TaskQuery query);
         TaskViewEntity GetTaskView(int taskId);
         TaskViewEntity GetTaskView(int processInstanceId, int activityInstanceId);
         TaskViewEntity GetTaskView(string appInstanceId, string processId, string userId);
-        IList<TaskViewEntity> GetRunningTasks(TaskQuery query);
-        IList<TaskViewEntity> GetReadyTasks(TaskQuery query);
-        IList<TaskViewEntity> GetCompletedTasks(TaskQuery query);
-        IList<TaskViewEntity> GetTaskListEMailUnSent();
         [Obsolete("replaced by the GetRunningTask, mainly used to run forward method internal")]
         ActivityInstanceEntity GetRunningNode(WfAppRunner runner);
-        TaskViewEntity GetFirstRunningTask(int activityInstanceId);
-        IList<Performer> GetTaskPerformers(WfAppRunner runner);
 
         ProcessInstanceEntity GetRunningProcessInstance(WfAppRunner runner);
         ProcessInstanceEntity GetProcessInstance(int processInstanceId);
         IList<ProcessInstanceEntity> GetProcessInstance(string appInstanceId);
         ProcessInstanceEntity GetProcessInstanceByActivity(int activityInstanceId);
-        Int32 GetProcessInstanceCount(string prcessId, string version);
-        Boolean IsLastTask(int taskId);
         void UpdateProcessInstance(ProcessInstanceEntity entity);
 
         IList<ActivityInstanceEntity> GetActivityInstanceList(int processInstanceId);
@@ -212,7 +199,6 @@ namespace saiflow.engine.Service
         ProcessEntity GetProcessByName(string processName, string version = null);
         ProcessEntity GetProcessByCode(string processCode, string version = null);
         IList<ProcessEntity> GetProcessList();
-        IList<ProcessEntity> GetProcessListSimple();
 
         ProcessFileEntity GetProcessFile(string processId, string version);
         ProcessFileEntity GetProcessFileById(int id);

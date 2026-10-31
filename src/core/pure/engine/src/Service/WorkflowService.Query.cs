@@ -372,74 +372,6 @@ namespace saiflow.engine.Service
         }
 
         /// <summary>
-        /// Get activity instance completed
-        /// 获取已经完成的节点
-        /// </summary>
-        public IList<NodeImage> GetActivityInstanceCompleted(int taskId)
-        {
-            IList<NodeImage> imageList = new List<NodeImage>();
-
-            var tm = new TaskManager(Sail);
-            var task = tm.GetTaskView(taskId);
-
-            var am = new ActivityInstanceManager(Sail);
-            var list = am.GetActivityInstanceListCompleted(task.AppInstanceId, task.ProcessId);
-
-            foreach (ActivityInstanceEntity a in list)
-            {
-                imageList.Add(new NodeImage
-                {
-                    Id = a.Id,
-                    ActivityName = a.ActivityName
-                });
-            }
-            return imageList;
-        }
-
-        /// <summary>
-        /// Get activity instance completed
-        /// 获取已经完成的节点记录
-        /// </summary>
-        public IList<NodeImage> GetActivityInstanceCompleted(WfAppRunner runner)
-        {
-            IList<NodeImage> imageList = new List<NodeImage>();
-            var am = new ActivityInstanceManager(Sail);
-            var list = am.GetActivityInstanceListCompleted(runner.AppInstanceId, runner.ProcessId);
-
-            foreach (ActivityInstanceEntity a in list)
-            {
-                imageList.Add(new NodeImage
-                { 
-                    Id = a.Id, 
-                    ActivityName = a.ActivityName 
-                });
-            }
-            return imageList;
-        }
-
-        /// <summary>
-        /// Get transition instance list
-        /// 获取转移实例记录
-        /// </summary>
-        public IList<TransitionImage> GetTransitionInstanceList(TransitionInstanceQuery query)
-        {
-            IList<TransitionImage> imageList = new List<TransitionImage>();
-            var tm = new TransitionInstanceManager(Sail);
-            var list = tm.GetTransitionInstanceList(query.AppInstanceId, query.ProcessId, query.Version).ToList();
-
-            foreach (TransitionInstanceEntity t in list)
-            {
-                imageList.Add(new TransitionImage
-                {
-                    Id = t.Id,
-                    TransitionId = t.TransitionId
-                });
-            }
-
-            return imageList;
-        }
-
-        /// <summary>
         /// Get activity entity
         /// 获取当前活动实体
         /// </summary>
@@ -576,16 +508,6 @@ namespace saiflow.engine.Service
         }
 
         /// <summary>
-        /// Get process instance count
-        /// 判断流程实例是否存在
-        /// </summary>
-        public Int32 GetProcessInstanceCount(string processId, string version)
-        {
-            var pim = new ProcessInstanceManager(Sail);
-            return pim.GetProcessInstanceCount(processId, version);
-        }
-
-        /// <summary>
         /// Get process initiator
         /// 获取流程发起人信息
         /// </summary>
@@ -636,37 +558,6 @@ namespace saiflow.engine.Service
         {
             var tim = new TransitionInstanceManager(Sail);
             return tim.GetTargetActivityInstanceList(fromActivityInstanceId);
-        }
-
-        /// <summary>
-        /// Get task performers
-        /// 获取当前等待办理节点的任务分配人列表
-        /// </summary>
-        public IList<Performer> GetTaskPerformers(WfAppRunner runner)
-        {
-            var tm = new TaskManager(Sail);
-            var tasks = tm.GetReadyTaskOfApp(runner).ToList();
-
-            Performer performer;
-            IList<Performer> performerList = new List<Performer>();
-            foreach (var task in tasks)
-            {
-                performer = new Performer(task.AssignedUserId, task.AssignedUserName);
-                performerList.Add(performer);
-            }
-            return performerList;
-        }
-
-        /// <summary>
-        /// Determine whether the current task is the last task
-        /// (Suitable for scenarios with simple nodes or multiple instance nodes)
-        /// 判断当前任务是否是最后一个任务
-        /// (适应于简单节点或者多实例节点的场景)
-        /// </summary>
-        public Boolean IsLastTask(int taskId)
-        {
-            var tm = new TaskManager(Sail);
-            return tm.IsLastTask(taskId);
         }
 
         /// <summary>
@@ -756,17 +647,6 @@ namespace saiflow.engine.Service
             var aim = new ActivityInstanceManager(Sail);
             bool isMine = aim.IsMineTask(entity, userId);
             return isMine;
-        }
-
-        /// <summary>
-        /// Get running activity instance
-        /// 获取正在运行中的活动实例
-        /// </summary>
-        public IList<ActivityInstanceEntity> GetRunningActivityInstance(TaskQuery query)
-        {
-            var aim = new ActivityInstanceManager(Sail);
-            var list = aim.GetRunningActivityInstanceList(query.AppInstanceId, query.ProcessId, query.Version).ToList();
-            return list;
         }
 
         /// <summary>
@@ -961,27 +841,6 @@ namespace saiflow.engine.Service
         }
 
         /// <summary>
-        /// Set task email send status
-        /// 更新任务邮件发送状态
-        /// </summary>
-        public Boolean SetTaskEMailSent(int taskId)
-        {
-            bool isSetOK = false;
-            try
-            {
-                var taskManager = new TaskManager(Sail);
-                taskManager.SetTaskEMailSent(taskId);
-                isSetOK = true;
-            }
-            catch (System.Exception)
-            {
-                throw;
-            }
-
-            return isSetOK;
-        }
-
-        /// <summary>
         /// Get task view
         /// 获取任务视图
         /// </summary>
@@ -1011,72 +870,6 @@ namespace saiflow.engine.Service
         {
             var tm = new TaskManager(Sail);
             return tm.GetTaskOfMine(appInstanceId, processId, userId);
-        }
-
-        /// <summary>
-        /// Get running tasks
-        /// 获取运行中的任务
-        /// </summary>
-        public IList<TaskViewEntity> GetRunningTasks(TaskQuery query)
-        {
-            var taskManager = new TaskManager(Sail);
-            var taskList = taskManager.GetRunningTasks(query);
-            if (taskList != null)
-                return taskList.ToList();
-            else
-                return null;
-        }
-
-        /// <summary>
-        /// Get first runnint task of activity instance
-        /// 获取活动实例下的第一个任务记录
-        /// </summary>
-        public TaskViewEntity GetFirstRunningTask(int activityInstanceId)
-        {
-            var taskManager = new TaskManager(Sail);
-            var taskView = taskManager.GetFirstRunningTask(activityInstanceId);
-            return taskView;
-        }
-
-        /// <summary>
-        /// Get tasks in ready status
-        /// 获取待办任务
-        /// </summary>
-        public IList<TaskViewEntity> GetReadyTasks(TaskQuery query)
-        {
-            var taskManager = new TaskManager(Sail);
-            var taskList = taskManager.GetReadyTasks(query);
-
-            if (taskList != null)
-                return taskList.ToList();
-            else
-                return null;
-        }
-
-        /// <summary>
-        /// Get tasks in completed status
-        /// 获取办结任务列表
-        /// </summary>
-        public IList<TaskViewEntity> GetCompletedTasks(TaskQuery query)
-        {
-            var taskManager = new TaskManager(Sail);
-            var taskList = taskManager.GetCompletedTasks(query);
-
-            if (taskList != null)
-                return taskList.ToList();
-            else
-                return null;
-        }
-
-        /// <summary>
-        /// Get task list about email unsent
-        /// 获取未发送邮件通知的待办任务列表
-        /// </summary>
-        public IList<TaskViewEntity> GetTaskListEMailUnSent()
-        {
-            var taskManager = new TaskManager(Sail);
-            var taskList = taskManager.GetTaskListEMailUnSent();
-            return taskList;
         }
         #endregion
     }

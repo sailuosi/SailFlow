@@ -314,30 +314,6 @@ namespace saiflow.engine.Business.Manager
                 .ToList();
         }
 
-        /// <summary>
-        /// List of process definition records for obtaining basic attributes
-        /// 获取基本属性的流程定义记录列表
-        /// </summary>
-        public List<ProcessEntity> GetListSimple()
-        {
-            var kit = Sail.UseRunSQL().from(SailSqlDialect.ProcessEntityTable);
-            if (SailSqlDialect.IsSqlServer)
-            {
-                kit.select(@"Id, ProcessId, ProcessName, ProcessCode, Version, Status, AppType, PackageType, PackageId,
-                    PageUrl, Icon, StartType, StartExpression, EndType, EndExpression, CreatedDateTime, UpdatedDateTime")
-                    .orderBy("UpdatedDateTime DESC");
-            }
-            else
-            {
-                kit.select(@"id AS Id, process_id AS ProcessId, process_name AS ProcessName, process_code AS ProcessCode,
-                    version AS Version, status AS Status, app_type AS AppType, package_type AS PackageType, package_id AS PackageId,
-                    page_url AS PageUrl, icon AS Icon, start_type AS StartType, start_expression AS StartExpression,
-                    end_type AS EndType, end_expression AS EndExpression, created_datetime AS CreatedDateTime,
-                    updated_datetime AS UpdatedDateTime")
-                    .orderBy("COALESCE(updated_datetime, '1970-01-01') DESC");
-            }
-            return kit.query<ProcessEntity>().ToList();
-        }
         #endregion
 
         #region Addition, deletion, modification, and search of process records 新增、更新和删除流程数据

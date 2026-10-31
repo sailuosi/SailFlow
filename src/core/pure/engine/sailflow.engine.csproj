@@ -31,4 +31,8 @@
     <ProjectReference Include="..\basis\sailflow.basis.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="saiflow.biz.query" />
+  </ItemGroup>
+
 </Project>
