@@ -4,7 +4,6 @@ using System.Linq;
 using mooSQL.data;
 using saiflow.data;
 using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.SqlProvider;
 using saiflow.engine.Client;
 
 namespace saiflow.engine.Business.Manager
@@ -21,26 +20,19 @@ namespace saiflow.engine.Business.Manager
         }
 
         protected SailClient Sail { get; }
-        private const string VariableColumns =
-            "id, process_id, version, activity_id, name, type, direction, default_value, " +
-            "is_required, is_referenced, source_ref, source_variable_name, sort_order, description, " +
-            "created_datetime, updated_datetime";
 
         public IList<VariableEntity> GetList(string processId, string version, string activityId)
         {
             if (string.IsNullOrEmpty(processId) || string.IsNullOrEmpty(version) || string.IsNullOrEmpty(activityId))
                 return new List<VariableEntity>();
 
-            var kit = Sail.UseRunSQL();
-            return kit
-                .select(VariableColumns)
-                .from(SailSqlDialect.VariableTable)
-                .where("process_id", processId)
-                .where("version", version)
-                .where("activity_id", activityId)
-                .orderBy("sort_order, id")
-                .query<VariableEntity>()
-                .ToList();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<VariableEntity>(out var v);
+            clip.where(() => v.ProcessId, processId);
+            clip.where(() => v.Version, version);
+            clip.where(() => v.ActivityId, activityId);
+            clip.orderBy("sort_order, id");
+            return clip.select(v).queryList().ToList();
         }
 
         public VariableEntity GetById(int id)
@@ -132,11 +124,12 @@ namespace saiflow.engine.Business.Manager
 
         private static void DeleteByProcessActivity(SQLBuilder kit, string processId, string version, string activityId)
         {
-            kit.setTable(SailSqlDialect.VariableTable)
-                .where("process_id", processId)
-                .where("version", version)
-                .where("activity_id", activityId)
-                .doDelete();
+            var clip = kit.useClip();
+            clip.setTable<VariableEntity>(out var v);
+            clip.where(() => v.ProcessId, processId);
+            clip.where(() => v.Version, version);
+            clip.where(() => v.ActivityId, activityId);
+            clip.doDelete();
         }
     }
 }

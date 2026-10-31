@@ -6,7 +6,6 @@ using saiflow.data;
 using saiflow.hub.Localize;
 using saiflow.engine.Common;
 using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.SqlProvider;
 using saiflow.engine.Client;
 
 namespace saiflow.engine.Business.Manager
@@ -113,15 +112,22 @@ namespace saiflow.engine.Business.Manager
         internal IEnumerable<TransitionInstanceEntity> GetWorkItemTransitonInstance(
             SQLBuilder kit, string appInstanceId, string processId)
         {
-            return kit
-                .select("T.*")
-                .from($"{SailSqlDialect.TransitionInstanceTable} T")
-                .innerJoin($"{SailSqlDialect.ActivityInstanceTable} A ON T.to_activity_instance_id = A.Id")
-                .where("T.app_instance_id", appInstanceId)
-                .where("T.process_id", processId)
-                .where("(T.to_activity_type=4 OR T.to_activity_type=5 OR T.to_activity_type=6 OR A.work_item_type=1)")
-                .orderBy("T.created_datetime DESC")
-                .query<TransitionInstanceEntity>();
+            var clip = Sibling(kit).useClip();
+            clip.from<TransitionInstanceEntity>(out var t);
+            clip.InnerJoin<ActivityInstanceEntity>(out var a).on(() => t.ToActivityInstanceId == a.Id);
+            clip.where(() => t.AppInstanceId, appInstanceId);
+            clip.where(() => t.ProcessId, processId);
+            clip.sinkOR();
+            clip.whereIn(() => t.ToActivityType, new[]
+            {
+                (short)ActivityTypeEnum.TaskNode,
+                (short)ActivityTypeEnum.SubProcessNode,
+                (short)ActivityTypeEnum.MultiSignNode
+            });
+            clip.where(() => a.WorkItemType, (short)1);
+            clip.rise();
+            clip.orderByDesc(() => t.CreatedDateTime);
+            return clip.select(t).queryList();
         }
 
         internal IEnumerable<TransitionInstanceEntity> GetTransitonInstance(
@@ -134,14 +140,13 @@ namespace saiflow.engine.Business.Manager
         internal IEnumerable<TransitionInstanceEntity> GetTransitonInstance(
             SQLBuilder kit, string appInstanceId, string processId, ActivityTypeEnum toActivityType)
         {
-            return kit
-                .select("*")
-                .from(SailSqlDialect.TransitionInstanceTable)
-                .where("app_instance_id", appInstanceId)
-                .where("process_id", processId)
-                .where("to_activity_type", (int)toActivityType)
-                .orderBy("id DESC")
-                .query<TransitionInstanceEntity>();
+            var clip = Sibling(kit).useClip();
+            clip.from<TransitionInstanceEntity>(out var t);
+            clip.where(() => t.AppInstanceId, appInstanceId);
+            clip.where(() => t.ProcessId, processId);
+            clip.where(() => t.ToActivityType, (short)toActivityType);
+            clip.orderByDesc(() => t.Id);
+            return clip.select(t).queryList();
         }
 
         internal IEnumerable<TransitionInstanceEntity> GetTransitionInstanceList(
@@ -165,14 +170,13 @@ namespace saiflow.engine.Business.Manager
         internal IEnumerable<TransitionInstanceEntity> GetTransitionInstanceList(
             SQLBuilder kit, string appInstanceId, string processId, int processInstanceId)
         {
-            return kit
-                .select("*")
-                .from(SailSqlDialect.TransitionInstanceTable)
-                .where("app_instance_id", appInstanceId)
-                .where("process_id", processId)
-                .where("process_instance_id", processInstanceId)
-                .orderBy("id DESC")
-                .query<TransitionInstanceEntity>();
+            var clip = Sibling(kit).useClip();
+            clip.from<TransitionInstanceEntity>(out var t);
+            clip.where(() => t.AppInstanceId, appInstanceId);
+            clip.where(() => t.ProcessId, processId);
+            clip.where(() => t.ProcessInstanceId, processInstanceId);
+            clip.orderByDesc(() => t.Id);
+            return clip.select(t).queryList();
         }
 
         internal IList<ActivityInstanceEntity> GetTargetActivityInstanceList(int fromActivityInstanceId)
@@ -200,11 +204,10 @@ namespace saiflow.engine.Business.Manager
 
         private static IList<dynamic> GetTargetActivityInstanceIDs(SQLBuilder kit, int fromActivityInstanceId)
         {
-            var transitionList = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.TransitionInstanceTable)
-                .where("from_activity_instance_id", fromActivityInstanceId)
-                .query<TransitionInstanceEntity>();
+            var clip = Sibling(kit).useClip();
+            clip.from<TransitionInstanceEntity>(out var t);
+            clip.where(() => t.FromActivityInstanceId, fromActivityInstanceId);
+            var transitionList = clip.select(t).queryList().ToList();
 
             var targetIDs = new List<dynamic>();
             foreach (var trans in transitionList)

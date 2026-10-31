@@ -10,7 +10,6 @@ using saiflow.engine.Xpdl;
 using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
-using saiflow.engine.Business.SqlProvider;
 using saiflow.WebUtility;
 
 using saiflow.engine.Client;
@@ -286,14 +285,13 @@ namespace saiflow.engine.Core.Parser
             float completeOrder)
         {
             _ = activityInstanceId; // 历史参数保留；原 SQL 未使用
-            return Kit()
-                .select("*")
-                .from(SailSqlDialect.ActivityInstanceTable)
-                .where(SailSqlDialect.MapField("MIHostActivityInstanceId"), mainActivityInstanceId)
-                .where(SailSqlDialect.MapField("CompleteOrder"), completeOrder - 1)
-                .where(SailSqlDialect.MapField("ActivityState"), (short)ActivityStateEnum.Completed)
-                .orderBy(SailSqlDialect.MapField("Id") + " DESC")
-                .queryUnique<ActivityInstanceEntity>();
+            var clip = Kit().useClip();
+            clip.from<ActivityInstanceEntity>(out var a);
+            clip.where(() => a.MainActivityInstanceId, mainActivityInstanceId);
+            clip.where(() => a.CompleteOrder, completeOrder - 1);
+            clip.where(() => a.ActivityState, (short)ActivityStateEnum.Completed);
+            clip.orderByDesc(() => a.Id);
+            return clip.select(a).queryUnique();
         }
 
         /// <summary>

@@ -4,7 +4,6 @@ using System.Linq;
 using mooSQL.data;
 using saiflow.data;
 using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.SqlProvider;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
 using saiflow.engine.Xpdl.Node;
@@ -53,14 +52,12 @@ namespace saiflow.engine.Business.Manager
 
         private ProcessInstanceEntity GetByVersion(SQLBuilder kit, string processId, string version)
         {
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessInstanceTable)
-                .where("process_id", processId)
-                .where("version", version)
-                .orderBy("id DESC")
-                .query<ProcessInstanceEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessInstanceEntity>(out var pi);
+            clip.where(() => pi.ProcessId, processId);
+            clip.where(() => pi.Version, version);
+            clip.orderByDesc(() => pi.Id);
+            var list = clip.select(pi).queryList().ToList();
             return EnumHelper.GetFirst<ProcessInstanceEntity>(list);
         }
 
@@ -109,42 +106,38 @@ namespace saiflow.engine.Business.Manager
         internal IEnumerable<ProcessInstanceEntity> GetProcessInstance(string appInstanceId)
         {
             var kit = Sail.UseRunSQL();
-            return Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessInstanceTable)
-                .where("app_instance_id", appInstanceId)
-                .where("record_status_invalid", 0)
-                .orderBy("id DESC")
-                .query<ProcessInstanceEntity>();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessInstanceEntity>(out var pi);
+            clip.where(() => pi.AppInstanceId, appInstanceId);
+            clip.where(() => pi.RecordStatusInvalid, (byte)0);
+            clip.orderByDesc(() => pi.Id);
+            return clip.select(pi).queryList();
         }
 
         internal IEnumerable<ProcessInstanceEntity> GetProcessInstance(
             SQLBuilder kit, string appInstanceId, string processId, string version)
         {
-            return Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessInstanceTable)
-                .where("app_instance_id", appInstanceId)
-                .where("process_id", processId)
-                .where("version", version)
-                .where("record_status_invalid", 0)
-                .orderBy("id DESC")
-                .query<ProcessInstanceEntity>();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessInstanceEntity>(out var pi);
+            clip.where(() => pi.AppInstanceId, appInstanceId);
+            clip.where(() => pi.ProcessId, processId);
+            clip.where(() => pi.Version, version);
+            clip.where(() => pi.RecordStatusInvalid, (byte)0);
+            clip.orderByDesc(() => pi.Id);
+            return clip.select(pi).queryList();
         }
 
         internal ProcessInstanceEntity GetSubProcessInstance(
             SQLBuilder kit, string appInstanceId, string processId, string subProcessId)
         {
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessInstanceTable)
-                .where("app_instance_id", appInstanceId)
-                .where("process_id", processId)
-                .where("sub_process_id", subProcessId)
-                .where("record_status_invalid", 0)
-                .orderBy("id DESC")
-                .query<ProcessInstanceEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessInstanceEntity>(out var pi);
+            clip.where(() => pi.AppInstanceId, appInstanceId);
+            clip.where(() => pi.ProcessId, processId);
+            clip.where(() => pi.SubProcessId, subProcessId);
+            clip.where(() => pi.RecordStatusInvalid, (byte)0);
+            clip.orderByDesc(() => pi.Id);
+            var list = clip.select(pi).queryList().ToList();
 
             if (list.Count == 1)
                 return list[0];
@@ -156,31 +149,27 @@ namespace saiflow.engine.Business.Manager
         internal ProcessInstanceEntity GetRunningProcessInstance(string appInstanceId, string processId)
         {
             var kit = Sail.UseRunSQL();
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessInstanceTable)
-                .where("app_instance_id", appInstanceId)
-                .where("process_id", processId)
-                .where("record_status_invalid", 0)
-                .where("(process_state=1 OR process_state=2)")
-                .orderBy("id DESC")
-                .query<ProcessInstanceEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessInstanceEntity>(out var pi);
+            clip.where(() => pi.AppInstanceId, appInstanceId);
+            clip.where(() => pi.ProcessId, processId);
+            clip.where(() => pi.RecordStatusInvalid, (byte)0);
+            clip.where(() => pi.ProcessState == (short)ProcessStateEnum.Ready || pi.ProcessState == (short)ProcessStateEnum.Running);
+            clip.orderByDesc(() => pi.Id);
+            var list = clip.select(pi).queryList().ToList();
             return EnumHelper.GetFirst<ProcessInstanceEntity>(list);
         }
 
         internal bool CheckSubProcessInstanceCompleted(SQLBuilder kit, int activityInstanceId, string activityId)
         {
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessInstanceTable)
-                .where("invoked_activity_instance_id", activityInstanceId)
-                .where("invoked_activity_id", activityId)
-                .where("record_status_invalid", 0)
-                .where("process_state", 4)
-                .orderBy("created_datetime DESC")
-                .query<ProcessInstanceEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessInstanceEntity>(out var pi);
+            clip.where(() => pi.InvokedActivityInstanceId, activityInstanceId);
+            clip.where(() => pi.InvokedActivityId, activityId);
+            clip.where(() => pi.RecordStatusInvalid, (byte)0);
+            clip.where(() => pi.ProcessState, (short)ProcessStateEnum.Completed);
+            clip.orderByDesc(() => pi.CreatedDateTime);
+            var list = clip.select(pi).queryList().ToList();
             return list.Count == 1;
         }
         #endregion
@@ -342,14 +331,12 @@ namespace saiflow.engine.Business.Manager
 
         internal void RecallSubProcess(SQLBuilder kit, int invokedActivityInstanceId, WfAppRunner runner)
         {
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessInstanceTable)
-                .where("invoked_activity_instance_id", invokedActivityInstanceId)
-                .where("process_state", 5)
-                .orderBy("id DESC")
-                .query<ProcessInstanceEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessInstanceEntity>(out var pi);
+            clip.where(() => pi.InvokedActivityInstanceId, invokedActivityInstanceId);
+            clip.where(() => pi.ProcessState, (short)ProcessStateEnum.Suspended);
+            clip.orderByDesc(() => pi.Id);
+            var list = clip.select(pi).queryList().ToList();
 
             if (list != null && list.Count == 1)
             {
@@ -449,17 +436,17 @@ namespace saiflow.engine.Business.Manager
 
         internal void Discard(SQLBuilder kit, WfAppRunner runner)
         {
-            Sibling(kit)
-                .setTable(SailSqlDialect.ProcessInstanceTable)
-                .set("process_state", 7)
-                .set("record_status_invalid", 1)
-                .set("updated_datetime", DateTime.UtcNow)
-                .set("updated_user_id", runner.UserId)
-                .set("updated_user_name", runner.UserName)
-                .where("app_instance_id", runner.AppInstanceId)
-                .where("process_id", runner.ProcessId)
-                .where("version", runner.Version)
-                .doUpdate();
+            var clip = Sibling(kit).useClip();
+            clip.setTable<ProcessInstanceEntity>(out var pi);
+            clip.set(() => pi.ProcessState, (short)ProcessStateEnum.Discarded);
+            clip.set(() => pi.RecordStatusInvalid, (byte)1);
+            clip.set(() => pi.UpdatedDateTime, DateTime.UtcNow);
+            clip.set(() => pi.UpdatedUserId, runner.UserId);
+            clip.set(() => pi.UpdatedUserName, runner.UserName);
+            clip.where(() => pi.AppInstanceId, runner.AppInstanceId);
+            clip.where(() => pi.ProcessId, runner.ProcessId);
+            clip.where(() => pi.Version, runner.Version);
+            clip.doUpdate();
         }
 
         internal bool Terminate(WfAppRunner runner)
@@ -543,14 +530,22 @@ namespace saiflow.engine.Business.Manager
             var entity = GetById(kit, processInstanceId);
             if (entity.ProcessState == (int)ProcessStateEnum.Canceled || isForced)
             {
-                Sibling(kit).setTable(SailSqlDialect.TaskTable)
-                    .where("process_instance_id", processInstanceId).doDelete();
-                Sibling(kit).setTable(SailSqlDialect.TransitionInstanceTable)
-                    .where("process_instance_id", processInstanceId).doDelete();
-                Sibling(kit).setTable(SailSqlDialect.ActivityInstanceTable)
-                    .where("process_instance_id", processInstanceId).doDelete();
-                Sibling(kit).setTable(SailSqlDialect.ProcessVariableTable)
-                    .where("process_instance_id", processInstanceId).doDelete();
+                var clip = Sibling(kit).useClip();
+                clip.setTable<TaskEntity>(out var t);
+                clip.where(() => t.ProcessInstanceId, processInstanceId);
+                clip.doDelete();
+                clip = Sibling(kit).useClip();
+                clip.setTable<TransitionInstanceEntity>(out var ti);
+                clip.where(() => ti.ProcessInstanceId, processInstanceId);
+                clip.doDelete();
+                clip = Sibling(kit).useClip();
+                clip.setTable<ActivityInstanceEntity>(out var ai);
+                clip.where(() => ai.ProcessInstanceId, processInstanceId);
+                clip.doDelete();
+                clip = Sibling(kit).useClip();
+                clip.setTable<ProcessVariableEntity>(out var pv);
+                clip.where(() => pv.ProcessInstanceId, processInstanceId);
+                clip.doDelete();
                 Sibling(kit).useRepo<ProcessInstanceEntity, int>().DeleteById(processInstanceId);
                 return true;
             }

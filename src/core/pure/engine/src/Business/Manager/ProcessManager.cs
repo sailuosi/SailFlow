@@ -1,7 +1,6 @@
 
 using saiflow.data;
 using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.SqlProvider;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
 using saiflow.engine.Utility;
@@ -79,13 +78,11 @@ namespace saiflow.engine.Business.Manager
             bool throwException = true)
         {
             ProcessEntity entity = null;
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessEntityTable)
-                .where("process_id", processId)
-                .where("version", version)
-                .query<ProcessEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessEntity>(out var p);
+            clip.where(() => p.ProcessId, processId);
+            clip.where(() => p.Version, version);
+            var list = clip.select(p).queryList().ToList();
 
             if (list.Count() == 1)
             {
@@ -122,13 +119,11 @@ namespace saiflow.engine.Business.Manager
             bool isNotThrownException)
         {
             ProcessEntity entity = null;
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessEntityTable)
-                .where("process_id", processId)
-                .where("status", 1)
-                .query<ProcessEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessEntity>(out var p);
+            clip.where(() => p.ProcessId, processId);
+            clip.where(() => p.Status, (byte)1);
+            var list = clip.select(p).queryList().ToList();
 
             if (list.Count() == 1)
             {
@@ -155,13 +150,11 @@ namespace saiflow.engine.Business.Manager
             if (string.IsNullOrEmpty(version)) version = "1";
 
             ProcessEntity entity = null;
-            var list = Sail.UseRunSQL()
-                .select("*")
-                .from(SailSqlDialect.ProcessEntityTable)
-                .where("process_name", processName)
-                .where("version", version)
-                .query<ProcessEntity>()
-                .ToList();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<ProcessEntity>(out var p);
+            clip.where(() => p.ProcessName, processName);
+            clip.where(() => p.Version, version);
+            var list = clip.select(p).queryList().ToList();
 
             if (list.Count() == 1)
             {
@@ -187,13 +180,11 @@ namespace saiflow.engine.Business.Manager
             if (string.IsNullOrEmpty(version)) version = "1";
 
             ProcessEntity entity = null;
-            var list = Sail.UseRunSQL()
-                .select("*")
-                .from(SailSqlDialect.ProcessEntityTable)
-                .where("process_code", processCode)
-                .where("version", version)
-                .query<ProcessEntity>()
-                .ToList();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<ProcessEntity>(out var p);
+            clip.where(() => p.ProcessCode, processCode);
+            clip.where(() => p.Version, version);
+            var list = clip.select(p).queryList().ToList();
 
             if (list.Count() == 1)
             {
@@ -219,13 +210,11 @@ namespace saiflow.engine.Business.Manager
             string version)
         {
             ProcessEntity entity = null;
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessEntityTable)
-                .where("process_id", processId)
-                .where("version", version)
-                .query<ProcessEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessEntity>(out var p);
+            clip.where(() => p.ProcessId, processId);
+            clip.where(() => p.Version, version);
+            var list = clip.select(p).queryList().ToList();
 
             if (list.Count() > 1)
             {
@@ -247,13 +236,11 @@ namespace saiflow.engine.Business.Manager
             ProcessEntity entity = null;
             //StartType:2  --- message trigger
             //StartExpression -- message topic
-            var list = Sail.UseRunSQL()
-                .select("*")
-                .from(SailSqlDialect.ProcessEntityTable)
-                .where("start_type", 2)
-                .where("start_expression", topic)
-                .query<ProcessEntity>()
-                .ToList();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<ProcessEntity>(out var p);
+            clip.where(() => p.StartType, (byte)ProcessStartTypeEnum.Message);
+            clip.where(() => p.StartExpression, topic);
+            var list = clip.select(p).queryList().ToList();
 
             if (list.Count() > 1)
             {
@@ -283,12 +270,10 @@ namespace saiflow.engine.Business.Manager
         public ProcessEntity GetSingleByAppType(SQLBuilder kit, string appType)
         {
             ProcessEntity entity = null;
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessEntityTable)
-                .where("app_type", appType)
-                .query<ProcessEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessEntity>(out var p);
+            clip.where(() => p.AppType, appType);
+            var list = clip.select(p).queryList().ToList();
 
             if (list.Count() == 1)
             {
@@ -307,11 +292,9 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public List<ProcessEntity> GetAll()
         {
-            return Sail.UseRunSQL()
-                .select("*")
-                .from(SailSqlDialect.ProcessEntityTable)
-                .query<ProcessEntity>()
-                .ToList();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<ProcessEntity>(out var p);
+            return clip.select(p).queryList().ToList();
         }
 
         #endregion
@@ -371,10 +354,11 @@ namespace saiflow.engine.Business.Manager
                     {
                         //更新主流程泳道流程的使用状态信息
                         //Update the usage status information of the main flow lane process
-                        Sibling(kit).setTable(SailSqlDialect.ProcessEntityTable)
-                            .set("status", entity.Status)
-                            .where("package_id", entity.Id)
-                            .doUpdate();
+                        var clip = Sibling(kit).useClip();
+                        clip.setTable<ProcessEntity>(out var p);
+                        clip.set(() => p.Status, entity.Status);
+                        clip.where(() => p.PackageId, entity.Id);
+                        clip.doUpdate();
                     }
                     Sibling(kit).useRepo<ProcessEntity, int>().Update(entity);
                     kit.commit();
@@ -473,13 +457,11 @@ namespace saiflow.engine.Business.Manager
         {
             //升级泳道流程的使用状态信息
             //Upgrade the usage status information of the lane process
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessEntityTable)
-                .where("package_type", 2)
-                .where("package_id", originProcessId)
-                .query<ProcessEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessEntity>(out var p);
+            clip.where(() => p.PackageType, (byte)PackageTypeEnum.Pool);
+            clip.where(() => p.PackageId, originProcessId);
+            var list = clip.select(p).queryList().ToList();
         }
 
         /// <summary>
@@ -520,9 +502,10 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         public void Delete(SQLBuilder kit, string processId)
         {
-            Sibling(kit).setTable(SailSqlDialect.ProcessEntityTable)
-                .where("process_id", processId)
-                .doDelete();
+            var clip = Sibling(kit).useClip();
+            clip.setTable<ProcessEntity>(out var p);
+            clip.where(() => p.ProcessId, processId);
+            clip.doDelete();
         }
 
         /// <summary>
@@ -541,17 +524,19 @@ namespace saiflow.engine.Business.Manager
                     {
                         //删除泳道流程
                         //Delete pool process
-                        Sibling(kit).setTable(SailSqlDialect.ProcessEntityTable)
-                            .where("package_id", entity.Id)
-                            .doDelete();
+                        var poolClip = Sibling(kit).useClip();
+                        poolClip.setTable<ProcessEntity>(out var pool);
+                        poolClip.where(() => pool.PackageId, entity.Id);
+                        poolClip.doDelete();
                     }
 
                     //删除主流程
                     //Delete package process
-                    Sibling(kit).setTable(SailSqlDialect.ProcessEntityTable)
-                        .where("process_id", processId)
-                        .where("version", version)
-                        .doDelete();
+                    var clip = Sibling(kit).useClip();
+                    clip.setTable<ProcessEntity>(out var p);
+                    clip.where(() => p.ProcessId, processId);
+                    clip.where(() => p.Version, version);
+                    clip.doDelete();
 
                     kit.commit();
                 }
@@ -981,12 +966,10 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         private List<ProcessEntity> GetPoolProcessList(SQLBuilder kit, int packageId)
         {
-            return Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessEntityTable)
-                .where("package_id", packageId)
-                .query<ProcessEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessEntity>(out var p);
+            clip.where(() => p.PackageId, packageId);
+            return clip.select(p).queryList().ToList();
         }
 
         /// <summary>
@@ -1055,10 +1038,11 @@ namespace saiflow.engine.Business.Manager
             int packageId,
             List<int> poolProcessIds)
         {
-            Sibling(kit).setTable(SailSqlDialect.ProcessEntityTable)
-                .where("package_id", packageId)
-                .whereIn("id", poolProcessIds)
-                .doDelete();
+            var clip = Sibling(kit).useClip();
+            clip.setTable<ProcessEntity>(out var p);
+            clip.where(() => p.PackageId, packageId);
+            clip.whereIn(() => p.Id, poolProcessIds);
+            clip.doDelete();
         }
 
         /// <summary>
@@ -1067,10 +1051,11 @@ namespace saiflow.engine.Business.Manager
         /// </summary>
         private void DeletePoolProcess(SQLBuilder kit, int packageId)
         {
-            Sibling(kit).setTable(SailSqlDialect.ProcessEntityTable)
-                .where("package_id", packageId)
-                .where("package_type", 2)
-                .doDelete();
+            var clip = Sibling(kit).useClip();
+            clip.setTable<ProcessEntity>(out var p);
+            clip.where(() => p.PackageId, packageId);
+            clip.where(() => p.PackageType, (byte)PackageTypeEnum.Pool);
+            clip.doDelete();
         }
 
         /// <summary>

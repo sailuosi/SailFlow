@@ -13,7 +13,6 @@ using saiflow.engine.Utility;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Xpdl.Common;
 using saiflow.engine.Business.Result;
-using saiflow.engine.Business.SqlProvider;
 using saiflow.engine.Client;
 using saiflow.WebUtility;
 
@@ -76,13 +75,11 @@ namespace saiflow.engine.Business.Manager
 
         internal List<TaskEntity> GetTaskListByActivity(SQLBuilder kit, int processInstanceId, int activityInstanceId)
         {
-            return Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.TaskTable)
-                .where("activity_instance_id", activityInstanceId)
-                .where("process_instance_id", processInstanceId)
-                .query<TaskEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<TaskEntity>(out var t);
+            clip.where(() => t.ActivityInstanceId, activityInstanceId);
+            clip.where(() => t.ProcessInstanceId, processInstanceId);
+            return clip.select(t).queryList().ToList();
         }
 
         /// <summary>
@@ -113,13 +110,11 @@ namespace saiflow.engine.Business.Manager
 
         internal TaskViewEntity GetTaskViewByActivity(SQLBuilder kit, int processInstanceId, int activityInstanceId)
         {
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.TaskView)
-                .where(SailSqlDialect.MapField("ActivityInstanceId"), activityInstanceId)
-                .where(SailSqlDialect.MapField("ProcessInstanceId"), processInstanceId)
-                .query<TaskViewEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<TaskViewEntity>(out var t);
+            clip.where(() => t.ActivityInstanceId, activityInstanceId);
+            clip.where(() => t.ProcessInstanceId, processInstanceId);
+            var list = clip.select(t).queryList().ToList();
             return list.Count > 0 ? list[0] : null;
         }
 
@@ -140,18 +135,16 @@ namespace saiflow.engine.Business.Manager
             int activityInstanceId,
             string userId)
         {
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.TaskView)
-                .where(SailSqlDialect.MapField("ActivityInstanceId"), activityInstanceId)
-                .where(SailSqlDialect.MapField("AssignedUserId"), userId)
-                .where(SailSqlDialect.MapField("ProcessState"), 2)
-                .where($"({SailSqlDialect.MapField("ActivityType")}=4 OR {SailSqlDialect.MapField("ActivityType")}=5 OR {SailSqlDialect.MapField("ActivityType")}=6)")
-                .where($"({SailSqlDialect.MapField("ActivityState")}=1 OR {SailSqlDialect.MapField("ActivityState")}=2)")
-                .orderBy($"{SailSqlDialect.TaskIdColumn} DESC")
-                .top(1)
-                .query<TaskViewEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<TaskViewEntity>(out var t);
+            clip.where(() => t.ActivityInstanceId, activityInstanceId);
+            clip.where(() => t.AssignedUserId, userId);
+            clip.where(() => t.ProcessState, (short)2);
+            clip.where(() => t.ActivityType == 4 || t.ActivityType == 5 || t.ActivityType == 6);
+            clip.whereIn(() => t.ActivityState, new[] { (short)1, (short)2 });
+            clip.orderByDesc(() => t.Id);
+            clip.top(1);
+            var list = clip.select(t).queryList().ToList();
 
             return ResolveTaskOfMineByActivityInstance(list, activityInstanceId);
         }
@@ -188,19 +181,20 @@ namespace saiflow.engine.Business.Manager
             string processId,
             string userId)
         {
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.TaskView)
-                .where(SailSqlDialect.MapField("AppInstanceId"), appInstanceId)
-                .where(SailSqlDialect.MapField("ProcessId"), processId)
-                .where(SailSqlDialect.MapField("AssignedUserId"), userId)
-                .where(SailSqlDialect.MapField("ProcessState"), 2)
-                .where($"({SailSqlDialect.MapField("ActivityType")}=4 OR {SailSqlDialect.MapField("ActivityType")}=5 OR {SailSqlDialect.MapField("ActivityType")}=6 OR {SailSqlDialect.MapField("WorkItemType")}=1)")
-                .where($"({SailSqlDialect.MapField("ActivityState")}=1 OR {SailSqlDialect.MapField("ActivityState")}=2)")
-                .orderBy($"{SailSqlDialect.TaskIdColumn} DESC")
-                .top(1)
-                .query<TaskViewEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<TaskViewEntity>(out var t);
+            clip.where(() => t.AppInstanceId, appInstanceId);
+            clip.where(() => t.ProcessId, processId);
+            clip.where(() => t.AssignedUserId, userId);
+            clip.where(() => t.ProcessState, (short)2);
+            clip.sinkOR();
+            clip.whereIn(() => t.ActivityType, new[] { (short)4, (short)5, (short)6 });
+            clip.where(() => t.WorkItemType, (short)1);
+            clip.rise();
+            clip.whereIn(() => t.ActivityState, new[] { (short)1, (short)2 });
+            clip.orderByDesc(() => t.Id);
+            clip.top(1);
+            var list = clip.select(t).queryList().ToList();
 
             if (list.Count == 0)
             {
@@ -517,12 +511,10 @@ namespace saiflow.engine.Business.Manager
 
         internal void CancelEntrustedTask(SQLBuilder kit, int taskId)
         {
-            var list = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.TaskTable)
-                .where("entrusted_task_id", taskId)
-                .query<TaskEntity>();
-            var entrustedTaskEntity = list.FirstOrDefault();
+            var clip = Sibling(kit).useClip();
+            clip.from<TaskEntity>(out var t);
+            clip.where(() => t.EntrustedTaskId, taskId);
+            var entrustedTaskEntity = clip.select(t).queryList().FirstOrDefault();
             entrustedTaskEntity.TaskState = (short)TaskStateEnum.Canceled;
             entrustedTaskEntity.UpdatedDateTime = DateTime.UtcNow;
             Update(kit, entrustedTaskEntity);
@@ -605,12 +597,12 @@ namespace saiflow.engine.Business.Manager
 
         private void CancelTask(SQLBuilder kit, int activityInstanceId)
         {
-            Sibling(kit)
-                .setTable(SailSqlDialect.TaskTable)
-                .set("task_state", 48)
-                .set("record_status_invalid", 1)
-                .where("activity_instance_id", activityInstanceId)
-                .doUpdate();
+            var clip = Sibling(kit).useClip();
+            clip.setTable<TaskEntity>(out var t);
+            clip.set(() => t.TaskState, (short)48);
+            clip.set(() => t.RecordStatusInvalid, (byte)1);
+            clip.where(() => t.ActivityInstanceId, activityInstanceId);
+            clip.doUpdate();
         }
 
         internal bool Delete(int taskId)

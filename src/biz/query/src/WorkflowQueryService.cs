@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
-using saiflow.engine.Business.SqlProvider;
 using saiflow.engine.Client;
+using mooSQL.data;
 using saiflow.engine.Common;
 using saiflow.engine.Xpdl.Common;
 using saiflow.hub.Resource;
@@ -29,33 +29,29 @@ namespace saiflow.biz.query
         /// <summary>待办 Top10（仅展示）。</summary>
         public List<TaskViewEntity> GetTaskToDoListTop()
         {
-            return Sail.UseRunSQL()
-                .select("*")
-                .from(SailSqlDialect.TaskView)
-                .where(SailSqlDialect.MapField("ProcessState"), 2)
-                .where($"({SailSqlDialect.MapField("ActivityType")}=4 OR {SailSqlDialect.MapField("WorkItemType")}=1)")
-                .where(SailSqlDialect.MapField("ActivityState"), 1)
-                .where(SailSqlDialect.MapField("TaskState"), 32, "<>")
-                .orderBy($"{SailSqlDialect.TaskIdColumn} DESC")
-                .top(10)
-                .query<TaskViewEntity>()
-                .ToList();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<TaskViewEntity>(out var t);
+            clip.where(() => t.ProcessState, (short)2);
+            clip.where(() => t.ActivityType == 4 || t.WorkItemType == 1);
+            clip.where(() => t.ActivityState, (short)1);
+            clip.where(() => t.TaskState, 32, "<>");
+            clip.orderByDesc(() => t.Id);
+            clip.top(10);
+            return clip.select(t).queryList().ToList();
         }
 
         /// <summary>已办 Top10（仅展示）。</summary>
         public List<TaskViewEntity> GetTaskDoneListTop()
         {
-            return Sail.UseRunSQL()
-                .select("*")
-                .from(SailSqlDialect.TaskView)
-                .where(SailSqlDialect.MapField("ProcessState"), 2)
-                .where($"({SailSqlDialect.MapField("ActivityType")}=4 OR {SailSqlDialect.MapField("WorkItemType")}=1)")
-                .where(SailSqlDialect.MapField("ActivityState"), 4)
-                .where(SailSqlDialect.MapField("TaskState"), 32, "<>")
-                .orderBy($"{SailSqlDialect.TaskIdColumn} DESC")
-                .top(10)
-                .query<TaskViewEntity>()
-                .ToList();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<TaskViewEntity>(out var t);
+            clip.where(() => t.ProcessState, (short)2);
+            clip.where(() => t.ActivityType == 4 || t.WorkItemType == 1);
+            clip.where(() => t.ActivityState, (short)4);
+            clip.where(() => t.TaskState, 32, "<>");
+            clip.orderByDesc(() => t.Id);
+            clip.top(10);
+            return clip.select(t).queryList().ToList();
         }
 
         public IList<TaskViewEntity> GetRunningTasks(TaskQuery query)
@@ -69,33 +65,29 @@ namespace saiflow.biz.query
 
         public TaskViewEntity? GetFirstRunningTask(int activityInstanceId)
         {
-            var list = Sail.UseRunSQL()
-                .select("*")
-                .from(SailSqlDialect.TaskView)
-                .where(SailSqlDialect.MapField("ProcessState"), 2)
-                .where(SailSqlDialect.MapField("ActivityInstanceId"), activityInstanceId)
-                .where($"({SailSqlDialect.MapField("ActivityType")}=4 OR {SailSqlDialect.MapField("WorkItemType")}=1)")
-                .where($"({SailSqlDialect.MapField("ActivityState")}=1 OR {SailSqlDialect.MapField("ActivityState")}=2)")
-                .where($"({SailSqlDialect.MapField("TaskState")}=1 OR {SailSqlDialect.MapField("TaskState")}=2)")
-                .orderBy($"{SailSqlDialect.MapField("TaskState")} DESC")
-                .query<TaskViewEntity>()
-                .ToList();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<TaskViewEntity>(out var t);
+            clip.where(() => t.ProcessState, (short)2);
+            clip.where(() => t.ActivityInstanceId, activityInstanceId);
+            clip.where(() => t.ActivityType == 4 || t.WorkItemType == 1);
+            clip.where(() => t.ActivityState == 1 || t.ActivityState == 2);
+            clip.where(() => t.TaskState == 1 || t.TaskState == 2);
+            clip.orderByDesc(() => t.TaskState);
+            var list = clip.select(t).queryList().ToList();
 
             return list.Count > 0 ? list[0] : null;
         }
 
         public IList<TaskViewEntity> GetTaskListEMailUnSent()
         {
-            return Sail.UseRunSQL()
-                .select("*")
-                .from(SailSqlDialect.TaskView)
-                .where(SailSqlDialect.MapField("ProcessState"), 2)
-                .where($"({SailSqlDialect.MapField("ActivityType")}=4 OR {SailSqlDialect.MapField("WorkItemType")}=1)")
-                .where(SailSqlDialect.MapField("ActivityState"), 1)
-                .where(SailSqlDialect.MapField("IsEMailSent"), 0)
-                .where(SailSqlDialect.MapField("TaskState"), 32, "<>")
-                .query<TaskViewEntity>()
-                .ToList();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<TaskViewEntity>(out var t);
+            clip.where(() => t.ProcessState, (short)2);
+            clip.where(() => t.ActivityType == 4 || t.WorkItemType == 1);
+            clip.where(() => t.ActivityState, (short)1);
+            clip.where(() => t.IsEMailSent, (byte)0);
+            clip.where(() => t.TaskState, 32, "<>");
+            return clip.select(t).queryList().ToList();
         }
 
         public bool SetTaskEMailSent(int taskId)
@@ -133,16 +125,15 @@ namespace saiflow.biz.query
 
         public IEnumerable<TaskViewEntity> GetReadyTaskOfApp(WfAppRunner runner)
         {
-            return Sail.UseRunSQL()
-                .select("*")
-                .from(SailSqlDialect.TaskView)
-                .where(SailSqlDialect.MapField("AppInstanceId"), runner.AppInstanceId)
-                .where(SailSqlDialect.MapField("ProcessId"), runner.ProcessId)
-                .where(SailSqlDialect.MapField("ProcessState"), 2)
-                .where($"({SailSqlDialect.MapField("ActivityType")}=4 OR {SailSqlDialect.MapField("WorkItemType")}=1)")
-                .where(SailSqlDialect.MapField("ActivityState"), 1)
-                .orderBy($"{SailSqlDialect.TaskIdColumn} DESC")
-                .query<TaskViewEntity>();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<TaskViewEntity>(out var t);
+            clip.where(() => t.AppInstanceId, runner.AppInstanceId);
+            clip.where(() => t.ProcessId, runner.ProcessId);
+            clip.where(() => t.ProcessState, (short)2);
+            clip.where(() => t.ActivityType == 4 || t.WorkItemType == 1);
+            clip.where(() => t.ActivityState, (short)1);
+            clip.orderByDesc(() => t.Id);
+            return clip.select(t).queryList();
         }
 
         /// <summary>
@@ -319,51 +310,38 @@ namespace saiflow.biz.query
 
         private IList<TaskViewEntity> GetTasksPaged(TaskQuery query, int activityState)
         {
-            var kit = Sail.UseRunSQL()
-                .select("*")
-                .from(SailSqlDialect.TaskView)
-                .where(SailSqlDialect.MapField("ProcessState"), 2)
-                .where($"({SailSqlDialect.MapField("ActivityType")}=4 OR {SailSqlDialect.MapField("WorkItemType")}=1)");
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<TaskViewEntity>(out var t);
+            clip.where(() => t.ProcessState, (short)2);
+            clip.where(() => t.ActivityType == 4 || t.WorkItemType == 1);
 
             if (activityState == (short)ActivityStateEnum.Ready
                 || activityState == (short)ActivityStateEnum.Running)
             {
-                kit.where(SailSqlDialect.MapField("ActivityState"), activityState)
-                    .where(SailSqlDialect.MapField("TaskState"), 32, "<>");
+                clip.where(() => t.ActivityState, (short)activityState);
+                clip.where(() => t.TaskState, 32, "<>");
             }
             else if (activityState == (short)ActivityStateEnum.Completed)
             {
-                kit.where(SailSqlDialect.MapField("TaskState"), 4);
+                clip.where(() => t.TaskState, (short)4);
             }
 
             if (activityState == 1)
-                kit.where(SailSqlDialect.MapField("MainActivityState"), 4, "<>");
+                clip.where(() => t.MainActivityState, (short)4, "<>");
 
-            if (!string.IsNullOrEmpty(query.AppInstanceId))
-                kit.where(SailSqlDialect.MapField("AppInstanceId"), query.AppInstanceId);
-
-            if (!string.IsNullOrEmpty(query.ProcessId))
-                kit.where(SailSqlDialect.MapField("ProcessId"), query.ProcessId);
-
-            if (!string.IsNullOrEmpty(query.Version))
-                kit.where(SailSqlDialect.MapField("Version"), query.Version);
-
-            if (!string.IsNullOrEmpty(query.UserId))
-                kit.where(SailSqlDialect.MapField("AssignedUserId"), query.UserId);
-
-            if (!string.IsNullOrEmpty(query.EndedUserId))
-                kit.where(SailSqlDialect.MapField("EndedUserId"), query.EndedUserId);
-
+            clip.whereIf(!string.IsNullOrEmpty(query.AppInstanceId), () => t.AppInstanceId, query.AppInstanceId);
+            clip.whereIf(!string.IsNullOrEmpty(query.ProcessId), () => t.ProcessId, query.ProcessId);
+            clip.whereIf(!string.IsNullOrEmpty(query.Version), () => t.Version, query.Version);
+            clip.whereIf(!string.IsNullOrEmpty(query.UserId), () => t.AssignedUserId, query.UserId);
+            clip.whereIf(!string.IsNullOrEmpty(query.EndedUserId), () => t.EndedUserId, query.EndedUserId);
             if (!string.IsNullOrEmpty(query.AppName))
-                kit.whereLike(SailSqlDialect.MapField("AppName"), query.AppName);
+                clip.whereLike(() => t.AppName, query.AppName);
 
             var pageSize = query.PageSize;
             if (pageSize == 0) pageSize = 100;
 
-            return kit.orderBy($"{SailSqlDialect.TaskIdColumn} DESC")
-                .query<TaskViewEntity>()
-                .Take(pageSize)
-                .ToList();
+            clip.orderByDesc(() => t.Id);
+            return clip.select(t).queryList().Take(pageSize).ToList();
         }
 
         #endregion
@@ -372,32 +350,19 @@ namespace saiflow.biz.query
 
         public IList<ProcessEntity> GetProcessListSimple()
         {
-            var kit = Sail.UseRunSQL().from(SailSqlDialect.ProcessEntityTable);
-            if (SailSqlDialect.IsSqlServer)
-            {
-                kit.select(@"Id, ProcessId, ProcessName, ProcessCode, Version, Status, AppType, PackageType, PackageId,
-                    PageUrl, Icon, StartType, StartExpression, EndType, EndExpression, CreatedDateTime, UpdatedDateTime")
-                    .orderBy("UpdatedDateTime DESC");
-            }
-            else
-            {
-                kit.select(@"id AS Id, process_id AS ProcessId, process_name AS ProcessName, process_code AS ProcessCode,
-                    version AS Version, status AS Status, app_type AS AppType, package_type AS PackageType, package_id AS PackageId,
-                    page_url AS PageUrl, icon AS Icon, start_type AS StartType, start_expression AS StartExpression,
-                    end_type AS EndType, end_expression AS EndExpression, created_datetime AS CreatedDateTime,
-                    updated_datetime AS UpdatedDateTime")
-                    .orderBy("COALESCE(updated_datetime, '1970-01-01') DESC");
-            }
-            return kit.query<ProcessEntity>().ToList();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<ProcessEntity>(out var p);
+            clip.orderByDesc(() => p.UpdatedDateTime);
+            return clip.select(p).queryList().ToList();
         }
 
         public int GetProcessInstanceCount(string processId, string version)
         {
-            return Sail.UseRunSQL()
-                .from(SailSqlDialect.ProcessInstanceTable)
-                .where("process_id", processId)
-                .where("version", version)
-                .count();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<ProcessInstanceEntity>(out var pi);
+            clip.where(() => pi.ProcessId, processId);
+            clip.where(() => pi.Version, version);
+            return clip.count();
         }
 
         public IList<NodeImage> GetActivityInstanceCompleted(int taskId)

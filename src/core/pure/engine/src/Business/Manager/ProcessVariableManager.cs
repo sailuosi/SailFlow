@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using mooSQL.data;
 using saiflow.data;
 using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.SqlProvider;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
 using saiflow.engine.Event;
@@ -117,26 +116,22 @@ namespace saiflow.engine.Business.Manager
 
         internal IList<ProcessVariableEntity> GetVariableList(SQLBuilder kit, int processInstanceId)
         {
-            return Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessVariableTable)
-                .where("process_instance_id", processInstanceId)
-                .orderBy("activity_id")
-                .query<ProcessVariableEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessVariableEntity>(out var v);
+            clip.where(() => v.ProcessInstanceId, processInstanceId);
+            clip.orderBy(() => v.ActivityId);
+            return clip.select(v).queryList().ToList();
         }
 
         internal IList<ProcessVariableEntity> GetVariableList(
             SQLBuilder kit, int processInstanceId, int activityInstanceId)
         {
-            return Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessVariableTable)
-                .where("process_instance_id", processInstanceId)
-                .where("activity_instance_id", activityInstanceId)
-                .orderBy("activity_id")
-                .query<ProcessVariableEntity>()
-                .ToList();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessVariableEntity>(out var v);
+            clip.where(() => v.ProcessInstanceId, processInstanceId);
+            clip.where(() => v.ActivityInstanceId, activityInstanceId);
+            clip.orderBy(() => v.ActivityId);
+            return clip.select(v).queryList().ToList();
         }
 
         internal ProcessVariableEntity GetVariableEntity(ProcessVariableQuery query)
@@ -174,15 +169,13 @@ namespace saiflow.engine.Business.Manager
 
         internal ProcessVariableEntity GetVariableByProcess(SQLBuilder kit, int processInstanceId, string name)
         {
-            return Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessVariableTable)
-                .where("variable_scope", ProcessVariableScopeEnum.Process.ToString())
-                .where("process_instance_id", processInstanceId)
-                .where("name", name)
-                .orderBy("activity_id")
-                .query<ProcessVariableEntity>()
-                .FirstOrDefault();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessVariableEntity>(out var v);
+            clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Process.ToString());
+            clip.where(() => v.ProcessInstanceId, processInstanceId);
+            clip.where(() => v.Name, name);
+            clip.orderBy(() => v.ActivityId);
+            return clip.select(v).queryList().FirstOrDefault();
         }
 
         internal ProcessVariableEntity GetVariableByActivity(
@@ -195,16 +188,14 @@ namespace saiflow.engine.Business.Manager
         internal ProcessVariableEntity GetVariableByActivity(
             SQLBuilder kit, int processInstanceId, int activityInstanceId, string name)
         {
-            return Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessVariableTable)
-                .where("variable_scope", ProcessVariableScopeEnum.Activity.ToString())
-                .where("process_instance_id", processInstanceId)
-                .where("activity_instance_id", activityInstanceId)
-                .where("name", name)
-                .orderBy("name")
-                .query<ProcessVariableEntity>()
-                .FirstOrDefault();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessVariableEntity>(out var v);
+            clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString());
+            clip.where(() => v.ProcessInstanceId, processInstanceId);
+            clip.where(() => v.ActivityInstanceId, activityInstanceId);
+            clip.where(() => v.Name, name);
+            clip.orderBy(() => v.Name);
+            return clip.select(v).queryList().FirstOrDefault();
         }
 
         internal IList<ProcessVariableEntity> GetVariableListByActivity(
@@ -222,19 +213,19 @@ namespace saiflow.engine.Business.Manager
             int activityInstanceId,
             IList<string> variableNameList)
         {
-            var q = Sibling(kit)
-                .select("*")
-                .from(SailSqlDialect.ProcessVariableTable)
-                .where("variable_scope", ProcessVariableScopeEnum.Activity.ToString())
-                .where("process_instance_id", processInstanceId)
-                .where("activity_instance_id", activityInstanceId);
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessVariableEntity>(out var v);
+            clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString());
+            clip.where(() => v.ProcessInstanceId, processInstanceId);
+            clip.where(() => v.ActivityInstanceId, activityInstanceId);
 
             if (variableNameList != null && variableNameList.Count == 1)
-                q.where("name", variableNameList[0]);
+                clip.where(() => v.Name, variableNameList[0]);
             else if (variableNameList != null && variableNameList.Count > 1)
-                q.whereIn("name", variableNameList.Cast<object>().ToList());
+                clip.whereIn(() => v.Name, variableNameList);
 
-            return q.orderBy("name").query<ProcessVariableEntity>().ToList();
+            clip.orderBy(() => v.Name);
+            return clip.select(v).queryList().ToList();
         }
 
         internal int SaveVariable(ProcessVariableEntity entity)
