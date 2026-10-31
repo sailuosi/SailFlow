@@ -14,7 +14,15 @@ namespace saiflow.hub.Form
     {
         public string FormId { get; set; }
         public string FormName { get; set; }
-        public string FormCode { get; set; }   
+        public string FormCode { get; set; }
+        public string Version { get; set; }
+        /// <summary>form-create option JSON（存 TemplateContent）。</summary>
+        public string Conf { get; set; }
+        /// <summary>form-create fields JSON 数组字符串（存 HTMLContent）。</summary>
+        public string FieldsJson { get; set; }
+        public string Description { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? LastUpdatedDate { get; set; }
         public IList<FieldActivityEdit> FieldActivityEditList { get; set; }
     }
 }

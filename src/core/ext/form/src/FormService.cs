@@ -31,15 +31,128 @@ namespace saiflow.hub.Form
             IList<Form> formList = new List<Form>();
             foreach (var item in itemList)
             {
-                var form = new Form
-                {
-                    FormId = item.Id.ToString(),
-                    FormCode = item.FormCode,
-                    FormName = item.FormName
-                };
-                formList.Add(form);
+                formList.Add(ToForm(item, includeContent: false));
             }
             return formList;
+        }
+
+        public Form GetForm(string formId)
+        {
+            if (string.IsNullOrWhiteSpace(formId) || !int.TryParse(formId, out var id))
+                return null;
+            var entity = new FormManager(Sail).GetById(id);
+            return entity == null ? null : ToForm(entity, includeContent: true);
+        }
+
+        public string SaveForm(Form form)
+        {
+            if (form == null) throw new ArgumentNullException(nameof(form));
+            var fm = new FormManager(Sail);
+            FormEntity entity;
+            var existingId = 0;
+            var parsed = !string.IsNullOrWhiteSpace(form.FormId) && int.TryParse(form.FormId, out existingId);
+            var isNew = !parsed || existingId <= 0;
+            if (isNew)
+            {
+                entity = new FormEntity();
+            }
+            else
+            {
+                entity = fm.GetById(existingId) ?? new FormEntity { Id = existingId };
+                isNew = entity.Id == null || entity.Id <= 0;
+            }
+
+            entity.FormName = form.FormName;
+            entity.FormCode = form.FormCode;
+            entity.Version = string.IsNullOrEmpty(form.Version) ? "1" : form.Version;
+            entity.Description = form.Description;
+            entity.TemplateContent = form.Conf;
+            entity.HTMLContent = form.FieldsJson;
+            entity.FieldSummary = BuildFieldSummary(form.FieldsJson);
+
+            if (isNew)
+            {
+                var newId = fm.Insert(entity);
+                return newId.ToString();
+            }
+
+            fm.Update(entity);
+            return entity.Id?.ToString() ?? form.FormId;
+        }
+
+        public bool DeleteForm(string formId)
+        {
+            if (string.IsNullOrWhiteSpace(formId) || !int.TryParse(formId, out var id))
+                return false;
+            return new FormManager(Sail).Delete(id);
+        }
+
+        private static Form ToForm(FormEntity item, bool includeContent)
+        {
+            var form = new Form
+            {
+                FormId = item.Id?.ToString(),
+                FormCode = item.FormCode,
+                FormName = item.FormName,
+                Version = item.Version,
+                Description = item.Description,
+                CreatedDate = item.CreatedDate,
+                LastUpdatedDate = item.LastUpdatedDate
+            };
+            if (includeContent)
+            {
+                form.Conf = item.TemplateContent;
+                form.FieldsJson = item.HTMLContent;
+            }
+            return form;
+        }
+
+        /// <summary>从 form-create fields JSON 提取 field 名列表，写入 FieldSummary。</summary>
+        private static string BuildFieldSummary(string fieldsJson)
+        {
+            if (string.IsNullOrWhiteSpace(fieldsJson))
+                return "[]";
+            try
+            {
+                using var doc = JsonDocument.Parse(fieldsJson);
+                var names = new List<string>();
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var el in doc.RootElement.EnumerateArray())
+                    {
+                        // fieldsJson 元素可能是 rule 对象或已是 JSON 字符串
+                        if (el.ValueKind == JsonValueKind.String)
+                        {
+                            try
+                            {
+                                using var ruleDoc = JsonDocument.Parse(el.GetString() ?? "{}");
+                                if (ruleDoc.RootElement.TryGetProperty("field", out var f) ||
+                                    ruleDoc.RootElement.TryGetProperty("name", out f) ||
+                                    ruleDoc.RootElement.TryGetProperty("title", out f))
+                                {
+                                    var name = f.GetString();
+                                    if (!string.IsNullOrEmpty(name)) names.Add(name);
+                                }
+                            }
+                            catch { /* skip bad rule */ }
+                        }
+                        else if (el.ValueKind == JsonValueKind.Object)
+                        {
+                            if (el.TryGetProperty("field", out var f) ||
+                                el.TryGetProperty("name", out f))
+                            {
+                                var name = f.GetString();
+                                if (!string.IsNullOrEmpty(name)) names.Add(name);
+                            }
+                        }
+                    }
+                }
+                return JsonSerializer.Serialize(names);
+            }
+            catch
+            {
+                return "[]";
+            }
         }
 
 

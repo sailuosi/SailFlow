@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
@@ -30,6 +31,30 @@ namespace saiflow.hub.Form
 
         internal FormEntity GetById(int formId)
             => Sail.UseRunSQL().useRepo<FormEntity, int>().GetById(formId);
+
+        internal int Insert(FormEntity entity)
+        {
+            entity.CreatedDate ??= DateTime.Now;
+            entity.LastUpdatedDate = DateTime.Now;
+            if (string.IsNullOrEmpty(entity.Version))
+                entity.Version = "1";
+            Sail.UseRunSQL().useRepo<FormEntity>().Insert(entity);
+            return entity.Id ?? 0;
+        }
+
+        internal void Update(FormEntity entity)
+        {
+            entity.LastUpdatedDate = DateTime.Now;
+            Sail.UseRunSQL().useRepo<FormEntity>().Update(entity);
+        }
+
+        internal bool Delete(int formId)
+        {
+            var entity = GetById(formId);
+            if (entity == null) return false;
+            Sail.UseRunSQL().useRepo<FormEntity, int>().DeleteById(formId);
+            return true;
+        }
 
         internal IList<FieldEntity> GetFieldSummaryList(int formId)
         {

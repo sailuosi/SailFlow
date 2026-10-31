@@ -14,6 +14,11 @@ namespace saiflow.hub.Form
     public interface IFormService
     {
         IList<Form> GetFormAll();
+        /// <summary>含 conf/fields 的完整表单（设计器/运行时）。</summary>
+        Form GetForm(string formId);
+        /// <summary>新建或更新；返回 FormId。</summary>
+        string SaveForm(Form form);
+        bool DeleteForm(string formId);
         IList<FieldActivityEdit> GetFieldActivityEditByForm(string formId, FieldQuery query);
         void SaveFieldActivityEditInfo(FieldActivityEditInfo info);
     }

@@ -55,13 +55,25 @@ namespace saiflow.biz.query
         }
 
         public IList<TaskViewEntity> GetRunningTasks(TaskQuery query)
-            => GetTasksPaged(query, 2);
+            => QueryTasksPaged(query, 2).Items;
 
         public IList<TaskViewEntity> GetReadyTasks(TaskQuery query)
-            => GetTasksPaged(query, 1);
+            => QueryTasksPaged(query, 1).Items;
 
         public IList<TaskViewEntity> GetCompletedTasks(TaskQuery query)
-            => GetTasksPaged(query, 4);
+            => QueryTasksPaged(query, 4).Items;
+
+        /// <summary>分页待办（ActivityState=Ready）。</summary>
+        public (IList<TaskViewEntity> Items, int Total) QueryReadyTasksPaged(TaskQuery query)
+            => QueryTasksPaged(query, 1);
+
+        /// <summary>分页已办（TaskState=Completed）。</summary>
+        public (IList<TaskViewEntity> Items, int Total) QueryCompletedTasksPaged(TaskQuery query)
+            => QueryTasksPaged(query, 4);
+
+        /// <summary>分页运行中任务（ActivityState=Running）。</summary>
+        public (IList<TaskViewEntity> Items, int Total) QueryRunningTasksPaged(TaskQuery query)
+            => QueryTasksPaged(query, 2);
 
         public TaskViewEntity? GetFirstRunningTask(int activityInstanceId)
         {
@@ -308,8 +320,16 @@ namespace saiflow.biz.query
             return isLast;
         }
 
-        private IList<TaskViewEntity> GetTasksPaged(TaskQuery query, int activityState)
+        /// <summary>
+        /// 按活动/任务状态分页查询任务视图。activityState: 1 Ready / 2 Running / 4 Completed(task)。
+        /// </summary>
+        public (IList<TaskViewEntity> Items, int Total) QueryTasksPaged(TaskQuery query, int activityState)
         {
+            query ??= new TaskQuery();
+            var pageSize = query.PageSize > 0 ? query.PageSize : 20;
+            var pageIndex = query.PageIndex > 0 ? query.PageIndex : 1;
+            var skip = (pageIndex - 1) * pageSize;
+
             var clip = Sail.UseRunSQL().useClip();
             clip.from<TaskViewEntity>(out var t);
             clip.where(() => t.ProcessState, (short)2);
@@ -337,11 +357,37 @@ namespace saiflow.biz.query
             if (!string.IsNullOrEmpty(query.AppName))
                 clip.whereLike(() => t.AppName, query.AppName);
 
-            var pageSize = query.PageSize;
-            if (pageSize == 0) pageSize = 100;
-
             clip.orderByDesc(() => t.Id);
-            return clip.select(t).queryList().Take(pageSize).ToList();
+            // 与历史实现一致：先查出再内存切页（Inbox 量级）；后续可换 clip 分页 API
+            var all = clip.select(t).queryList().ToList();
+            var total = all.Count;
+            var items = (IList<TaskViewEntity>)all.Skip(skip).Take(pageSize).ToList();
+            return (items, total);
+        }
+
+        /// <summary>我的/管理端流程实例分页。</summary>
+        public (IList<ProcessInstanceEntity> Items, int Total) QueryProcessInstancesPaged(ProcessInstanceQuery query)
+        {
+            query ??= new ProcessInstanceQuery();
+            var pageSize = query.PageSize > 0 ? query.PageSize : 20;
+            var pageIndex = query.PageIndex > 0 ? query.PageIndex : 1;
+            var skip = (pageIndex - 1) * pageSize;
+
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<ProcessInstanceEntity>(out var pi);
+            clip.whereIf(!string.IsNullOrEmpty(query.ProcessId), () => pi.ProcessId, query.ProcessId);
+            clip.whereIf(!string.IsNullOrEmpty(query.ApplicationInstanceId), () => pi.AppInstanceId, query.ApplicationInstanceId);
+            if (!string.IsNullOrEmpty(query.AppName))
+                clip.whereLike(() => pi.AppName, query.AppName);
+            clip.whereIf(!string.IsNullOrEmpty(query.CreatedUserId), () => pi.CreatedUserId, query.CreatedUserId);
+            if (query.ProcessState.HasValue)
+                clip.where(() => pi.ProcessState, query.ProcessState.Value);
+
+            clip.orderByDesc(() => pi.Id);
+            var all = clip.select(pi).queryList().ToList();
+            var total = all.Count;
+            var items = (IList<ProcessInstanceEntity>)all.Skip(skip).Take(pageSize).ToList();
+            return (items, total);
         }
 
         #endregion

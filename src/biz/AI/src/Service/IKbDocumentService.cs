@@ -13,6 +13,7 @@ namespace saiflow.AI.Service
         List<string> GetTableNames();
         List<KbDocumentEntity> TestReadBizDocuments(int limit = 5);
         KbDocumentEntity SaveDocument(KbDocumentEntity entity);
+        int DeleteDocumentById(long id);
         List<KbDocumentEntity> SearchDocuments(string query, float threshold = 0.7f, int count = 5);
     }
 }

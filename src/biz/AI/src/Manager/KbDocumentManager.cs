@@ -196,6 +196,20 @@ namespace saiflow.AI.Manager
 
         #region Delete Documents
 
+        public int DeleteDocumentById(long id)
+        {
+            using var httpClient = CreateHttpClient();
+            httpClient.DefaultRequestHeaders.Add("Prefer", "return=representation");
+            var response = httpClient.DeleteAsync($"/rest/v1/biz_documents?id=eq.{id}").Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = response.Content.ReadAsStringAsync().Result;
+                throw new InvalidOperationException($"Failed to delete document: HTTP {response.StatusCode} - {err}");
+            }
+            var content = response.Content.ReadAsStringAsync().Result;
+            return string.IsNullOrEmpty(content) ? 1 : JsonConvert.DeserializeObject<List<JObject>>(content)?.Count ?? 1;
+        }
+
         public async Task<int> DeleteDocumentsWhereIdGreaterThanAsync(long minId)
         {
             using var httpClient = CreateHttpClient();

@@ -6,6 +6,8 @@ using mooSQL.data;
 using saiflow.AI.Runtime;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Client;
+using saiflow.biz.query;
+using saiflow.hub.Form;
 using saiflow.hub.Logging;
 using saiflow.hub.Resource;
 
@@ -51,9 +53,100 @@ namespace saiflow.biz.Bootstrap
                 .createTable<RoleUserEntity>()
                 .createTable<DeptEntity>()
                 .createTable<EmpEntity>()
-                .createTable<EmpManagerEntity>();
+                .createTable<EmpManagerEntity>()
+                .createTable<FormEntity>()
+                .createTable<FieldActivityEditEntity>()
+                .createTable<SailProcessCopyEntity>();
 
+            EnsureFormTables(kit);
+            EnsureTaskDetailsView(kit);
             return wk.WorkingProgress?.ToString() ?? string.Empty;
+        }
+
+        /// <summary>
+        /// 早期 createTable 在 IsColumnAttributeRequired=false 且仅 PK 有 SooColumn 时可能只建出 Id 列。
+        /// 缺 FormName 等列时重建空表（有数据则跳过，避免误删）。
+        /// </summary>
+        public static void EnsureFormTables(SQLBuilder kit)
+        {
+            if (kit == null)
+                throw new ArgumentNullException(nameof(kit));
+
+            try
+            {
+                // 探测关键列；失败则视为表结构残缺
+                kit.exeNonQuery("SELECT FormName FROM FbForm WHERE 1=0");
+            }
+            catch
+            {
+                try { kit.exeNonQuery("DROP TABLE IF EXISTS FbForm"); } catch { /* ignore */ }
+                kit.useDBInit().autoMode().createTable<FormEntity>();
+            }
+
+            try
+            {
+                kit.exeNonQuery("SELECT FormName FROM FbFormFieldActivityEdit WHERE 1=0");
+            }
+            catch
+            {
+                try { kit.exeNonQuery("DROP TABLE IF EXISTS FbFormFieldActivityEdit"); } catch { /* ignore */ }
+                kit.useDBInit().autoMode().createTable<FieldActivityEditEntity>();
+            }
+        }
+
+        /// <summary>
+        /// 待办/已办依赖的任务明细视图（任务 ⊕ 活动实例 ⊕ 流程实例）。
+        /// Clip 按 View 名查询；库中无此视图时会报 no such table。
+        /// </summary>
+        public static void EnsureTaskDetailsView(SQLBuilder kit)
+        {
+            if (kit == null)
+                throw new ArgumentNullException(nameof(kit));
+
+            // SQLite / 通用：IF NOT EXISTS；可重复调用
+            const string sql = @"
+CREATE VIEW IF NOT EXISTS vw_wf_task_details AS
+SELECT
+  t.id AS id,
+  t.app_name AS app_name,
+  t.app_instance_id AS app_instance_id,
+  ai.app_instance_code AS app_instance_code,
+  t.process_instance_id AS process_instance_id,
+  t.process_id AS process_id,
+  pi.version AS version,
+  t.activity_id AS activity_id,
+  t.activity_instance_id AS activity_instance_id,
+  t.activity_name AS activity_name,
+  ai.activity_code AS activity_code,
+  ai.activity_type AS activity_type,
+  ai.work_item_type AS work_item_type,
+  t.task_type AS task_type,
+  pi.sub_process_type AS sub_process_type,
+  pi.sub_process_def_id AS sub_process_def_id,
+  pi.""sub_process_Id"" AS sub_process_id,
+  t.entrusted_task_id AS entrusted_task_id,
+  ai.main_activity_instance_id AS main_activity_instance_id,
+  ai.complete_order AS complete_order,
+  t.assigned_user_id AS assigned_user_id,
+  t.assigned_user_name AS assigned_user_name,
+  t.is_email_sent AS is_email_sent,
+  ai.approval_status AS approval_status,
+  t.created_datetime AS created_datetime,
+  t.updated_datetime AS updated_datetime,
+  t.ended_datetime AS ended_datetime,
+  t.ended_user_id AS ended_user_id,
+  t.ended_user_name AS ended_user_name,
+  t.task_state AS task_state,
+  ai.activity_state AS activity_state,
+  mai.activity_state AS main_activity_state,
+  t.record_status_invalid AS record_status_invalid,
+  pi.process_state AS process_state
+FROM wf_task t
+INNER JOIN wf_activity_instance ai ON t.activity_instance_id = ai.id
+INNER JOIN wf_process_instance pi ON t.process_instance_id = pi.id
+LEFT JOIN wf_activity_instance mai ON ai.main_activity_instance_id = mai.id";
+
+            kit.exeNonQuery(sql);
         }
 
         /// <summary>Core + AI tables.</summary>
@@ -149,9 +242,27 @@ namespace saiflow.biz.Bootstrap
 
         private static string MinimalBpmnXml()
         {
+            // bpmn-js 可解析的最小 BPMN 2.0（勿用旧 Package/XPDL 壳）
             return
-                "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<Package><Process id=\"sail-seed-hello\" name=\"Sail Seed Hello\"></Process></Package>";
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<bpmn:definitions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+                "xmlns:bpmn=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" " +
+                "xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" " +
+                "xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\" " +
+                "xmlns:sf=\"http://www.slickflow.com/schema/sf\" " +
+                "id=\"Definitions_SailSeed\" targetNamespace=\"http://bpmn.io/schema/bpmn\">" +
+                "<bpmn:process id=\"Process_1\" name=\"Sail Seed Hello\" isExecutable=\"true\" " +
+                "sf:code=\"SEED_HELLO\" sf:version=\"1\">" +
+                "<bpmn:startEvent id=\"StartEvent_1\" name=\"Start\" />" +
+                "</bpmn:process>" +
+                "<bpmndi:BPMNDiagram id=\"BPMNDiagram_1\">" +
+                "<bpmndi:BPMNPlane id=\"BPMNPlane_1\" bpmnElement=\"Process_1\">" +
+                "<bpmndi:BPMNShape id=\"StartEvent_1_di\" bpmnElement=\"StartEvent_1\">" +
+                "<dc:Bounds x=\"180\" y=\"160\" width=\"36\" height=\"36\" />" +
+                "</bpmndi:BPMNShape>" +
+                "</bpmndi:BPMNPlane>" +
+                "</bpmndi:BPMNDiagram>" +
+                "</bpmn:definitions>";
         }
     }
 

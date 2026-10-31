@@ -26,6 +26,7 @@
 
     <ProjectReference Include="..\..\core\ext\resource\sailflow.resource.csproj" />
     <ProjectReference Include="..\..\core\ext\localize\sailflow.localize.csproj" />
+    <ProjectReference Include="..\..\core\ext\form\sailflow.form.csproj" />
     <ProjectReference Include="..\AI\sailflow.biz.AI.csproj" />
     <ProjectReference Include="..\docs\sailflow.biz.docs.csproj" />
     <ProjectReference Include="..\query\sailflow.biz.query.csproj" />

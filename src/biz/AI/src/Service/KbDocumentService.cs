@@ -42,6 +42,12 @@ namespace saiflow.AI.Service
             return documentManager.SaveDocument(entity);
         }
 
+        public int DeleteDocumentById(long id)
+        {
+            var documentManager = new KbDocumentManager(_configOptions);
+            return documentManager.DeleteDocumentById(id);
+        }
+
         public List<KbDocumentEntity> SearchDocuments(string query, float threshold = 0.7f, int count = 5)
         {
             var documentManager = new KbDocumentManager(_configOptions);

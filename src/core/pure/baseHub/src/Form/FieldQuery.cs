@@ -12,6 +12,7 @@ namespace saiflow.hub.Form
     /// </summary>
     public class FieldQuery
     {
+        public string FormId { get; set; }
         public string ProcessId { get; set; }
         public string ProcessVersion { get; set; }
         public string ProcessName { get; set; }
