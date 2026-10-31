@@ -49,7 +49,7 @@ namespace saiflow.engine.Business.Manager
             entity.CreatedDateTime = DateTime.UtcNow;
             if (entity.IsEnabled == 0) { /* keep */ }
             else if (entity.IsEnabled != 1) entity.IsEnabled = 1;
-            var newId = kit.useRepo<RuleSetEntity, int>().InsertWithPK(entity);
+            var newId = kit.useRepo<RuleSetEntity, int>().InsertReturnId(entity);
             entity.Id = newId;
             return newId;
         }

@@ -77,7 +77,7 @@ namespace saiflow.AI.Manager
         }
 
         public int Insert(SQLBuilder kit, AiModelProviderEntity entity)
-            => kit.useRepo<AiModelProviderEntity, int>().InsertWithPK(entity);
+            => kit.useRepo<AiModelProviderEntity, int>().InsertReturnId(entity);
 
         public int Insert(IDbConnection conn, AiModelProviderEntity entity, IDbTransaction trans)
             => Repository.Insert<AiModelProviderEntity>(conn, entity, trans);

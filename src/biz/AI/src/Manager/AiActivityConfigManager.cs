@@ -112,7 +112,7 @@ namespace saiflow.AI.Manager
             }
 
             entity.CreatedDateTime = DateTime.UtcNow;
-            return kit.useRepo<AiActivityConfigEntity, int>().InsertWithPK(entity);
+            return kit.useRepo<AiActivityConfigEntity, int>().InsertReturnId(entity);
         }
 
         public int Insert(IDbConnection conn, AiActivityConfigEntity entity, IDbTransaction trans)

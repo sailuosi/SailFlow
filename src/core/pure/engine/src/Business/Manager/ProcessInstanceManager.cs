@@ -183,7 +183,7 @@ namespace saiflow.engine.Business.Manager
 
         internal int Insert(SQLBuilder kit, ProcessInstanceEntity entity)
         {
-            var newId = Sibling(kit).useRepo<ProcessInstanceEntity, int>().InsertWithPK(entity);
+            var newId = Sibling(kit).useRepo<ProcessInstanceEntity, int>().InsertReturnId(entity);
             entity.Id = newId;
             return newId;
         }

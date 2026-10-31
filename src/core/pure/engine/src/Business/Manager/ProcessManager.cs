@@ -334,7 +334,7 @@ namespace saiflow.engine.Business.Manager
                 throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.insert.error"));
             }
 
-            return Sibling(kit).useRepo<ProcessEntity, int>().InsertWithPK(entity);
+            return Sibling(kit).useRepo<ProcessEntity, int>().InsertReturnId(entity);
         }
 
         /// <summary>
@@ -428,7 +428,7 @@ namespace saiflow.engine.Business.Manager
                     entity.CreatedDateTime = System.DateTime.UtcNow;
                     //升级主流程版本
                     //Upgrade package process version
-                    newProcessId = Sibling(kit).useRepo<ProcessEntity, int>().InsertWithPK(entity);
+                    newProcessId = Sibling(kit).useRepo<ProcessEntity, int>().InsertReturnId(entity);
 
                     if (entity.PackageType == (short)PackageTypeEnum.Package)
                     {

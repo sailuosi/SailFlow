@@ -1018,7 +1018,7 @@ namespace saiflow.engine.Business.Manager
                 entity.ActivityName = "GATEWAY";
             }
 
-            int newId = Sibling(kit).useRepo<ActivityInstanceEntity, int>().InsertWithPK(entity);
+            int newId = Sibling(kit).useRepo<ActivityInstanceEntity, int>().InsertReturnId(entity);
             entity.Id = newId;
 
             return newId;

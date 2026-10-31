@@ -273,7 +273,7 @@ namespace saiflow.engine.Business.Manager
         #region TaskManager 任务数据基本操作
         private int Insert(SQLBuilder kit, TaskEntity entity)
         {
-            int newTaskId = Sibling(kit).useRepo<TaskEntity, int>().InsertWithPK(entity);
+            int newTaskId = Sibling(kit).useRepo<TaskEntity, int>().InsertReturnId(entity);
             entity.Id = newTaskId;
             return newTaskId;
         }

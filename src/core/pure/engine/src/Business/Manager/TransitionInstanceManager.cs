@@ -68,7 +68,7 @@ namespace saiflow.engine.Business.Manager
 
         internal int Insert(SQLBuilder kit, TransitionInstanceEntity entity)
         {
-            var newId = kit.useRepo<TransitionInstanceEntity, int>().InsertWithPK(entity);
+            var newId = kit.useRepo<TransitionInstanceEntity, int>().InsertReturnId(entity);
             entity.Id = newId;
             return newId;
         }

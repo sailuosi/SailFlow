@@ -47,7 +47,7 @@ namespace saiflow.engine.Business.Manager
         public int Insert(SQLBuilder kit, VariableEntity entity)
         {
             entity.CreatedDateTime = DateTime.UtcNow;
-            var newId = kit.useRepo<VariableEntity, int>().InsertWithPK(entity);
+            var newId = kit.useRepo<VariableEntity, int>().InsertReturnId(entity);
             entity.Id = newId;
             return newId;
         }

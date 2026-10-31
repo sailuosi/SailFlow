@@ -28,15 +28,16 @@
     <None Remove="src\Web\zh.json" />
   </ItemGroup>
 
+  <!-- LogicalName 必须与 LocalizeUtility.GetJSONFileNameByProject 一致（默认 SDK 会生成 sailflow.localize.src.*） -->
   <ItemGroup>
-    <EmbeddedResource Include="src\Designer\en.json" />
-    <EmbeddedResource Include="src\Designer\zh.json" />
-    <EmbeddedResource Include="src\Engine\en.json" />
-    <EmbeddedResource Include="src\Engine\zh.json" />
-    <EmbeddedResource Include="src\Job\en.json" />
-    <EmbeddedResource Include="src\Job\zh.json" />
-    <EmbeddedResource Include="src\Web\en.json" />
-    <EmbeddedResource Include="src\Web\zh.json" />
+    <EmbeddedResource Include="src\Designer\en.json" LogicalName="saiflow.hub.Localize.Designer.en.json" />
+    <EmbeddedResource Include="src\Designer\zh.json" LogicalName="saiflow.hub.Localize.Designer.zh.json" />
+    <EmbeddedResource Include="src\Engine\en.json" LogicalName="saiflow.hub.Localize.Engine.en.json" />
+    <EmbeddedResource Include="src\Engine\zh.json" LogicalName="saiflow.hub.Localize.Engine.zh.json" />
+    <EmbeddedResource Include="src\Job\en.json" LogicalName="saiflow.hub.Localize.Job.en.json" />
+    <EmbeddedResource Include="src\Job\zh.json" LogicalName="saiflow.hub.Localize.Job.zh.json" />
+    <EmbeddedResource Include="src\Web\en.json" LogicalName="saiflow.hub.Localize.Web.en.json" />
+    <EmbeddedResource Include="src\Web\zh.json" LogicalName="saiflow.hub.Localize.Web.zh.json" />
   </ItemGroup>
 
   <ItemGroup>

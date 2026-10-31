@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 
@@ -68,12 +69,33 @@ namespace saiflow.hub.Localize
         private static Dictionary<string, string> ReadProjectJSONResourceFromFile(string resourceName)
         {
             var assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            using (StreamReader reader = new StreamReader(stream))
+            var stream = assembly.GetManifestResourceStream(resourceName);
+            if (stream == null)
             {
-                string jsonFile = reader.ReadToEnd(); //Make string equal to full file
-                var JsonDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonFile);
-                return JsonDictionary;
+                // 兼容未设置 LogicalName 时 SDK 默认名：sailflow.localize.src.Engine.en.json
+                var suffix = resourceName.StartsWith("saiflow.hub.Localize.", StringComparison.Ordinal)
+                    ? resourceName.Substring("saiflow.hub.Localize.".Length)
+                    : resourceName;
+                stream = assembly.GetManifestResourceNames()
+                    .Where(n => n.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)
+                                || n.EndsWith("src." + suffix, StringComparison.OrdinalIgnoreCase))
+                    .Select(n => assembly.GetManifestResourceStream(n))
+                    .FirstOrDefault(s => s != null);
+            }
+
+            if (stream == null)
+            {
+                var available = string.Join(", ", assembly.GetManifestResourceNames());
+                throw new FileNotFoundException(
+                    $"Embedded resource '{resourceName}' not found. Available: [{available}]");
+            }
+
+            using (stream)
+            using (var reader = new StreamReader(stream))
+            {
+                string jsonFile = reader.ReadToEnd();
+                return JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonFile)
+                       ?? new Dictionary<string, string>();
             }
         }
 

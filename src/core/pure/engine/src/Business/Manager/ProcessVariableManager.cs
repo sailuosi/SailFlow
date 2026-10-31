@@ -287,7 +287,7 @@ namespace saiflow.engine.Business.Manager
 
         private static int Insert(SQLBuilder kit, ProcessVariableEntity entity)
         {
-            var newId = Sibling(kit).useRepo<ProcessVariableEntity, int>().InsertWithPK(entity);
+            var newId = Sibling(kit).useRepo<ProcessVariableEntity, int>().InsertReturnId(entity);
             entity.Id = newId;
             return newId;
         }
