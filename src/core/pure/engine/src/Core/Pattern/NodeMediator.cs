@@ -1033,6 +1033,9 @@ namespace saiflow.engine.Core.Pattern
                 entity = ActivityInstanceManager.CreateActivityInstanceObject(toActivityInstance);
                 entity.AssignedUserIds = plist[i].UserId;
                 entity.AssignedUserNames = plist[i].UserName;
+                entity.GroupId = plist[i].GroupId;
+                entity.GroupName = plist[i].GroupName;
+                entity.GroupRole = plist[i].GroupRole;
                 entity.MainActivityInstanceId = toActivityInstance.Id;
 
                 //Setting the Execution Order of Multiple Real Example Nodes in Parallel Serial

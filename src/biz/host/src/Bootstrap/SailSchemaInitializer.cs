@@ -197,6 +197,9 @@ namespace saiflow.biz.Bootstrap
   work_item_type INTEGER NULL,
   assigned_user_ids TEXT NULL,
   assigned_user_names TEXT NULL,
+  group_id TEXT NULL,
+  group_name TEXT NULL,
+  group_role TEXT NULL,
   gateway_direction_type_id INTEGER NULL,
   cannot_renew_instance INTEGER NULL,
   approval_status INTEGER NULL,
@@ -246,6 +249,9 @@ namespace saiflow.biz.Bootstrap
   entrusted_task_id INTEGER NULL,
   assigned_user_id TEXT NULL,
   assigned_user_name TEXT NULL,
+  group_id TEXT NULL,
+  group_name TEXT NULL,
+  group_role TEXT NULL,
   is_email_sent INTEGER NULL,
   created_user_id TEXT NULL,
   created_user_name TEXT NULL,
@@ -319,6 +325,42 @@ namespace saiflow.biz.Bootstrap
   request_data TEXT NULL,
   time_stamp TEXT NULL
 )");
+
+            EnsureAssigneeGroupColumns(kit);
+        }
+
+        /// <summary>S2：办理人组别/组内身份列（已有库用 ALTER 增量）。</summary>
+        public static void EnsureAssigneeGroupColumns(SQLBuilder kit)
+        {
+            if (kit == null)
+                throw new ArgumentNullException(nameof(kit));
+
+            EnsureSqliteColumn(kit, "wf_task", "group_id", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_task", "group_name", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_task", "group_role", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_activity_instance", "group_id", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_activity_instance", "group_name", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_activity_instance", "group_role", "TEXT NULL");
+        }
+
+        static void EnsureSqliteColumn(SQLBuilder kit, string tableName, string columnName, string columnType)
+        {
+            try
+            {
+                var info = kit.exeQuery("PRAGMA table_info(" + tableName + ")");
+                for (var i = 0; i < info.Rows.Count; i++)
+                {
+                    var name = Convert.ToString(info.Rows[i]["name"]);
+                    if (string.Equals(name, columnName, StringComparison.OrdinalIgnoreCase))
+                        return;
+                }
+
+                kit.exeNonQuery("ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + columnType);
+            }
+            catch
+            {
+                // 非 SQLite 或缺表时忽略；createTable / EnsureSqliteIdentityTable 会建齐
+            }
         }
 
         static void EnsureSqliteIdentityTable(SQLBuilder kit, string tableName, string createSql)
@@ -381,7 +423,8 @@ namespace saiflow.biz.Bootstrap
             if (kit == null)
                 throw new ArgumentNullException(nameof(kit));
 
-            // SQLite / 通用：IF NOT EXISTS；可重复调用
+            try { kit.exeNonQuery("DROP VIEW IF EXISTS vw_wf_task_details"); } catch { /* ignore */ }
+
             const string sql = @"
 CREATE VIEW IF NOT EXISTS vw_wf_task_details AS
 SELECT
@@ -407,6 +450,9 @@ SELECT
   ai.complete_order AS complete_order,
   t.assigned_user_id AS assigned_user_id,
   t.assigned_user_name AS assigned_user_name,
+  t.group_id AS group_id,
+  t.group_name AS group_name,
+  t.group_role AS group_role,
   t.is_email_sent AS is_email_sent,
   ai.approval_status AS approval_status,
   t.created_datetime AS created_datetime,

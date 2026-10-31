@@ -82,6 +82,15 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "assigned_user_name")]
         public string AssignedUserName { get; set; }
 
+        [SooColumn(Name = "group_id")]
+        public string GroupId { get; set; }
+
+        [SooColumn(Name = "group_name")]
+        public string GroupName { get; set; }
+
+        [SooColumn(Name = "group_role")]
+        public string GroupRole { get; set; }
+
         [SooColumn(Name = "is_email_sent")]
         public byte? IsEMailSent { get; set; }
 

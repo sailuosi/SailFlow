@@ -41,6 +41,14 @@ namespace saiflow.engine.Business.Entity
         public string AssignedUserIds { get; set; }
         [SooColumn(Name = "assigned_user_names")]
         public string AssignedUserNames { get; set; }
+        /// <summary>组别（会签子实例 / 单办理人场景）。</summary>
+        [SooColumn(Name = "group_id")]
+        public string GroupId { get; set; }
+        [SooColumn(Name = "group_name")]
+        public string GroupName { get; set; }
+        /// <summary>组内身份（string）。</summary>
+        [SooColumn(Name = "group_role")]
+        public string GroupRole { get; set; }
         [SooColumn(Name = "gateway_direction_type_id")]
         public short? GatewayDirectionTypeId { get; set; }
         [SooColumn(Name = "cannot_renew_instance")]

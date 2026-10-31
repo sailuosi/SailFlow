@@ -40,6 +40,14 @@ namespace saiflow.engine.Business.Entity
         public string AssignedUserId { get; set; }
         [SooColumn(Name = "assigned_user_name")]
         public string AssignedUserName { get; set; }
+        /// <summary>组别标识（办理人 GroupId）。</summary>
+        [SooColumn(Name = "group_id")]
+        public string GroupId { get; set; }
+        [SooColumn(Name = "group_name")]
+        public string GroupName { get; set; }
+        /// <summary>组内身份（string：Leader/Member…）。</summary>
+        [SooColumn(Name = "group_role")]
+        public string GroupRole { get; set; }
         [SooColumn(Name = "is_email_sent")]
         public byte? IsEMailSent { get; set; }
         [SooColumn(Name = "created_user_id")]

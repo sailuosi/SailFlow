@@ -165,6 +165,9 @@ namespace saiflow.engine.Core.Pattern
                 signforwardActivityInstance.ComplexType = (short)ComplexTypeEnum.SignForward;
                 signforwardActivityInstance.AssignedUserIds = plist[i].UserId;
                 signforwardActivityInstance.AssignedUserNames = plist[i].UserName;
+                signforwardActivityInstance.GroupId = plist[i].GroupId;
+                signforwardActivityInstance.GroupName = plist[i].GroupName;
+                signforwardActivityInstance.GroupRole = plist[i].GroupRole;
                 signforwardActivityInstance.MainActivityInstanceId = base.ActivityForwardContext.FromActivityInstance.Id;
                 
                 if (signForwardType == SignForwardTypeEnum.SignForwardBefore)

@@ -89,6 +89,9 @@ public static class SailAssigneeExtensions
         registry.Register(new ApproverPickAssigneeResolver());
         registry.Register(new RaceLeaveJudge());
         registry.Register(new CollaborateLeaveJudge());
+        registry.Register(new GroupRaceLeaveJudge());
+        registry.Register(new GroupCollaborateLeaveJudge());
+        registry.Register(new CaptainLeaveJudge());
     }
 
     private static AssigneePipeline EnsurePipeline(SailClient client)

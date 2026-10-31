@@ -126,6 +126,9 @@ namespace saiflow.engine.Core.Pattern
                     entity = base.CreateActivityInstanceObject(toActivity, processInstance, activityResource.AppRunner);
                     entity.AssignedUserIds = plist[i].UserId;
                     entity.AssignedUserNames = plist[i].UserName;
+                    entity.GroupId = plist[i].GroupId;
+                    entity.GroupName = plist[i].GroupName;
+                    entity.GroupRole = plist[i].GroupRole;
                     entity.ActivityState = (short)ActivityStateEnum.Ready;
 
                     entity.Id = base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), entity);

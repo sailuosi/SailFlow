@@ -290,13 +290,29 @@ namespace saiflow.engine.Business.Manager
             Performer performer,
             WfAppRunner runner)
         {
-            return Insert(kit, activityInstance, performer.UserId, performer.UserName,
-                runner.UserId, runner.UserName, null, runner);
+            return Insert(kit, activityInstance, performer, runner.UserId, runner.UserName, null, runner);
         }
 
         private int Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
             string performerId,
             string performerName,
+            string runnerId,
+            string runnerName,
+            int? entrustedTaskId = null,
+            WfAppRunner runner = null)
+        {
+            return Insert(kit, activityInstance,
+                new Performer(performerId, performerName)
+                {
+                    GroupId = activityInstance?.GroupId,
+                    GroupName = activityInstance?.GroupName,
+                    GroupRole = activityInstance?.GroupRole
+                },
+                runnerId, runnerName, entrustedTaskId, runner);
+        }
+
+        private int Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
+            Performer performer,
             string runnerId,
             string runnerName,
             int? entrustedTaskId = null,
@@ -312,8 +328,11 @@ namespace saiflow.engine.Business.Manager
                 ActivityName = activityInstance.ActivityName,
                 ProcessId = activityInstance.ProcessId,
                 TaskType = (short)TaskTypeEnum.Manual,
-                AssignedUserId = performerId,
-                AssignedUserName = performerName,
+                AssignedUserId = performer?.UserId,
+                AssignedUserName = performer?.UserName,
+                GroupId = !string.IsNullOrEmpty(performer?.GroupId) ? performer.GroupId : activityInstance.GroupId,
+                GroupName = !string.IsNullOrEmpty(performer?.GroupName) ? performer.GroupName : activityInstance.GroupName,
+                GroupRole = !string.IsNullOrEmpty(performer?.GroupRole) ? performer.GroupRole : activityInstance.GroupRole,
                 TaskState = 1,
                 IsEMailSent = 0,
                 CreatedUserId = runnerId,
@@ -339,7 +358,12 @@ namespace saiflow.engine.Business.Manager
             WfAppRunner runner)
         {
             var performer = new Performer(sourceActivityInstance.AssignedUserIds,
-                sourceActivityInstance.AssignedUserNames);
+                sourceActivityInstance.AssignedUserNames)
+            {
+                GroupId = sourceActivityInstance.GroupId,
+                GroupName = sourceActivityInstance.GroupName,
+                GroupRole = sourceActivityInstance.GroupRole
+            };
             Insert(kit, newInstance, performer, runner);
         }
 
@@ -503,6 +527,9 @@ namespace saiflow.engine.Business.Manager
                 ActivityInstanceId = originalTask.ActivityInstanceId,
                 AssignedUserId = originalTask.AssignedUserId,
                 AssignedUserName = originalTask.AssignedUserName,
+                GroupId = originalTask.GroupId,
+                GroupName = originalTask.GroupName,
+                GroupRole = originalTask.GroupRole,
                 TaskState = (short)TaskStateEnum.Waiting,
                 TaskType = originalTask.TaskType,
                 CreatedDateTime = DateTime.UtcNow,
