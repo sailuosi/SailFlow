@@ -18,7 +18,7 @@ namespace saiflow.engine.Business.Manager
     /// Activity Instance Manager
     /// 活动实例管理类
     /// </summary>
-    internal class ActivityInstanceManager
+    public class ActivityInstanceManager
     {
         public ActivityInstanceManager(SailClient client)
         {
@@ -39,7 +39,7 @@ namespace saiflow.engine.Business.Manager
         /// Retrieve activity instances based on Id
         /// 根据ID获取活动实例
         /// </summary>
-        internal ActivityInstanceEntity GetById(int activityInstanceId)
+        public ActivityInstanceEntity GetById(int activityInstanceId)
         {
             try
             {
@@ -313,7 +313,7 @@ namespace saiflow.engine.Business.Manager
         /// Retrieve nodes that have already completed running
         /// 获取已经运行完成的节点
         /// </summary>
-        internal List<ActivityInstanceEntity> GetActivityInstanceListCompleted(string appInstanceId,
+        public List<ActivityInstanceEntity> GetActivityInstanceListCompleted(string appInstanceId,
             string processId)
         {
             var kit = Sail.UseRunSQL();
@@ -436,7 +436,7 @@ namespace saiflow.engine.Business.Manager
         /// Get the activity nodes running in the process instance
         /// 获取流程实例中运行的活动节点
         /// </summary>
-        internal IEnumerable<ActivityInstanceEntity> GetRunningActivityInstanceList(string appInstanceId,
+        public IEnumerable<ActivityInstanceEntity> GetRunningActivityInstanceList(string appInstanceId,
             string processId,
             string version = null)
         {
@@ -553,7 +553,7 @@ namespace saiflow.engine.Business.Manager
         /// Determine whether it is a signing together instance node
         /// 判断是否为会签实例节点 
         /// </summary>
-        internal Boolean IsMultipleInstanceChildren(ActivityInstanceEntity child)
+        public Boolean IsMultipleInstanceChildren(ActivityInstanceEntity child)
         {
             return child.MainActivityInstanceId != null;
         }
@@ -580,7 +580,7 @@ namespace saiflow.engine.Business.Manager
         /// Obtain multi instance nodes of signing together nodes based on activity status
         /// 根据活动状态获取会签节点的多实例节点
         /// </summary>
-        internal List<ActivityInstanceEntity> GetActivityMulitipleInstanceWithState(int mainActivityInstanceId,
+        public List<ActivityInstanceEntity> GetActivityMulitipleInstanceWithState(int mainActivityInstanceId,
             int processInstanceId,
             short? activityState = null)
         {

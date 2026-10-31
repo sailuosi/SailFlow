@@ -60,7 +60,7 @@ namespace saiflow.engine.Business.Manager
         public TaskEntity GetTask(int taskId)
             => Sail.UseRunSQL().useRepo<TaskEntity, int>().GetById(taskId);
 
-        internal TaskEntity GetTask(SQLBuilder kit, int taskId)
+        public TaskEntity GetTask(SQLBuilder kit, int taskId)
             => Sibling(kit).useRepo<TaskEntity, int>().GetById(taskId);
 
         /// <summary>
@@ -376,13 +376,13 @@ namespace saiflow.engine.Business.Manager
             Insert(kit, newInstance, performer, runner);
         }
 
-        internal void Update(TaskEntity entity)
+        public void Update(TaskEntity entity)
         {
             var kit = Sail.UseRunSQL();
             Update(kit, entity);
         }
 
-        internal void Update(SQLBuilder kit, TaskEntity entity)
+        public void Update(SQLBuilder kit, TaskEntity entity)
             => Sibling(kit).useRepo<TaskEntity>().Update(entity);
 
         internal void SetTaskType(SQLBuilder kit, int taskId, TaskTypeEnum taskType)

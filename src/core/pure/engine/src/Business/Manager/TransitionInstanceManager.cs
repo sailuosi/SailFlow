@@ -14,7 +14,7 @@ namespace saiflow.engine.Business.Manager
     /// 节点转移实例（wf_transition_instance）。
     /// 终态：无事务从 Client 取 kit；有事务只用传入的同一个 kit。
     /// </summary>
-    internal class TransitionInstanceManager
+    public class TransitionInstanceManager
     {
         public TransitionInstanceManager(SailClient client)
         {
@@ -149,7 +149,7 @@ namespace saiflow.engine.Business.Manager
             return clip.select(t).queryList();
         }
 
-        internal IEnumerable<TransitionInstanceEntity> GetTransitionInstanceList(
+        public IEnumerable<TransitionInstanceEntity> GetTransitionInstanceList(
             string appInstanceId, string processId, string version)
         {
             IEnumerable<TransitionInstanceEntity> list = new List<TransitionInstanceEntity>();
