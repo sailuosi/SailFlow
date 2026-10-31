@@ -1110,7 +1110,9 @@ namespace saiflow.engine.Core.Pattern
                 && pipeline.TryResolveForTaskCreate(
                     new AssigneeInvokeRequest
                     {
-                        ProcessId = toActivityInstance.ProcessId,
+                        ProcessId = toActivityInstance.ProcessId
+                            ?? activityResource.AppRunner?.ProcessId,
+                        Version = activityResource.AppRunner?.Version,
                         ProcessInstanceId = toActivityInstance.ProcessInstanceId,
                         ActivityId = toActivityInstance.ActivityId,
                         ActivityCode = toActivityInstance.ActivityCode,

@@ -1,14 +1,24 @@
 using saiflow.engine.Assignee;
+using saiflow.engine.Common;
 
 namespace saiflow.assignee.Builtin;
 
-/// <summary>抢办占位（S0）。禁止 sealed。</summary>
+/// <summary>抢办：子任务任一人同意即可。禁止 sealed。</summary>
 public class RaceLeaveJudge : IActivityLeaveJudge
 {
     public virtual string Type => LeaveJudgeTypeCodes.Race;
 
     public virtual LeaveJudgeResult CanLeave(LeaveJudgeContext ctx)
     {
-        return LeaveJudgeResult.Waiting("S0_Placeholder", "Race leave judge placeholder; use legacy path until S1.");
+        var children = ctx.Request?.ChildActivityInstances;
+        if (children == null || children.Count == 0)
+        {
+            var current = ctx.Request?.CurrentActivityInstance;
+            if (current?.ApprovalStatus == (short)ApprovalStatusEnum.Agreed)
+                return LeaveJudgeResult.Passed("RaceSingle", "Current activity agreed.");
+            return LeaveJudgeResult.Waiting("RaceNoChildren", "No children; waiting.");
+        }
+
+        return MiPassRateHelper.EvaluateRace(children);
     }
 }

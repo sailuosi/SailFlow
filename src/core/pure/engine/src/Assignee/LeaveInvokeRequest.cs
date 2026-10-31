@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Common;
 
@@ -10,6 +11,8 @@ namespace saiflow.engine.Assignee
         public int ActivityInstanceId { get; set; }
         public ActivityInstanceEntity CurrentActivityInstance { get; set; }
         public ActivityInstanceEntity MainActivityInstance { get; set; }
+        /// <summary>会签子活动快照（由 AIM 预加载）；LeaveJudge 只读。</summary>
+        public IList<ActivityInstanceEntity> ChildActivityInstances { get; set; }
         public WfAppRunner Runner { get; set; }
     }
 }

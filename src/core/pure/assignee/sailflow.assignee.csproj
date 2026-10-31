@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\engine\sailflow.engine.csproj" />
+    <ProjectReference Include="..\baseHub\sailflow.baseHub.csproj" />
   </ItemGroup>
 
 </Project>

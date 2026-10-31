@@ -1225,7 +1225,9 @@ namespace saiflow.engine.Business.Manager
         internal NodePassedTypeEnum CheckMIPassRateInfo(SQLBuilder kit, ActivityInstanceEntity currentActivityInstance,
             ActivityInstanceEntity mainActivityInstance)
         {
-            // S0：优先 IAssigneePipeline.TryCanLeave；未处理则双轨回落既有会签通过率
+            var childActivityInstanceList = GetValidActivityInstanceListOfMI(kit, mainActivityInstance.Id.Value, mainActivityInstance.ProcessInstanceId.Value);
+
+            // S1：优先 IAssigneePipeline.TryCanLeave（含 Legacy 会签推断）；未处理则双轨回落
             var pipeline = Sail.AssigneePipeline;
             if (pipeline != null
                 && pipeline.TryCanLeave(
@@ -1234,7 +1236,8 @@ namespace saiflow.engine.Business.Manager
                         ProcessInstanceId = mainActivityInstance.ProcessInstanceId.Value,
                         ActivityInstanceId = currentActivityInstance.Id.Value,
                         CurrentActivityInstance = currentActivityInstance,
-                        MainActivityInstance = mainActivityInstance
+                        MainActivityInstance = mainActivityInstance,
+                        ChildActivityInstances = childActivityInstanceList
                     },
                     out var leave)
                 && leave != null)
@@ -1249,7 +1252,6 @@ namespace saiflow.engine.Business.Manager
             }
 
             var passedType = NodePassedTypeEnum.Default;
-            var childActivityInstanceList = GetValidActivityInstanceListOfMI(kit, mainActivityInstance.Id.Value, mainActivityInstance.ProcessInstanceId.Value);
 
             var agreedCount = childActivityInstanceList.Where(a => a.ApprovalStatus == (short)ApprovalStatusEnum.Agreed).Count();
             var refusedCount = childActivityInstanceList.Where(a => a.ApprovalStatus == (short)ApprovalStatusEnum.Refused).Count();

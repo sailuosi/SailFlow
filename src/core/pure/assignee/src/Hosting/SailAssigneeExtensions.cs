@@ -17,7 +17,7 @@ public static class SailAssigneeExtensions
         ArgumentNullException.ThrowIfNull(client);
         var registry = new AssigneeCapabilityRegistry();
         RegisterBuiltins(registry);
-        var pipeline = new AssigneePipeline(registry);
+        var pipeline = new AssigneePipeline(registry) { Sail = client };
         client.useAssigneePipeline(pipeline);
         return client;
     }
@@ -58,7 +58,6 @@ public static class SailAssigneeExtensions
         return client.useLeaveJudge(new DelegateLeaveJudge(type, canLeave));
     }
 
-    /// <summary>Builder：Build 时挂上默认 Pipeline + 内置。</summary>
     public static ISailCollection UseAssignees(this ISailCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -83,6 +82,11 @@ public static class SailAssigneeExtensions
     {
         ArgumentNullException.ThrowIfNull(registry);
         registry.Register(new SpecificAssigneeResolver());
+        registry.Register(new FixedUsersAssigneeResolver());
+        registry.Register(new RoleGroupAssigneeResolver());
+        registry.Register(new ProcessRelativeAssigneeResolver());
+        registry.Register(new StarterPickAssigneeResolver());
+        registry.Register(new ApproverPickAssigneeResolver());
         registry.Register(new RaceLeaveJudge());
         registry.Register(new CollaborateLeaveJudge());
     }
@@ -90,11 +94,14 @@ public static class SailAssigneeExtensions
     private static AssigneePipeline EnsurePipeline(SailClient client)
     {
         if (client.AssigneePipeline is AssigneePipeline pipeline)
+        {
+            pipeline.Sail ??= client;
             return pipeline;
+        }
 
         var registry = new AssigneeCapabilityRegistry();
         RegisterBuiltins(registry);
-        pipeline = new AssigneePipeline(registry);
+        pipeline = new AssigneePipeline(registry) { Sail = client };
         client.useAssigneePipeline(pipeline);
         return pipeline;
     }

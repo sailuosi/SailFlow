@@ -1,10 +1,10 @@
 using saiflow.engine.Assignee;
+using saiflow.engine.Business.Entity;
 
 namespace saiflow.assignee.Builtin;
 
 /// <summary>
-/// 协办完成判定占位（S0）。尚无 ConfigPair / 任务快照时返回未处理语义由 Pipeline 决定；
-/// 有 Params 时可按 completeCount / completeRate 粗判（完整组语义在 S1/S2）。
+/// 协办：按主活动 MergeType/CompareType/CompleteOrder，或 Params completeCount|completeRate。
 /// 禁止 sealed。
 /// </summary>
 public class CollaborateLeaveJudge : IActivityLeaveJudge
@@ -13,7 +13,30 @@ public class CollaborateLeaveJudge : IActivityLeaveJudge
 
     public virtual LeaveJudgeResult CanLeave(LeaveJudgeContext ctx)
     {
-        // S0：无足够快照时交回双轨（Pipeline 侧不调用本实现除非已显式配 Type）
-        return LeaveJudgeResult.Waiting("S0_Placeholder", "Collaborate leave judge placeholder; use legacy MI until S1.");
+        var main = ctx.Request?.MainActivityInstance;
+        var children = ctx.Request?.ChildActivityInstances;
+        if (main == null)
+            return LeaveJudgeResult.Waiting("NoMain", "MainActivityInstance required.");
+
+        float? overrideThreshold = null;
+        string? compareOverride = null;
+        var count = ConfigPairParams.GetFloat(ctx.Config, "completeCount");
+        var rate = ConfigPairParams.GetFloat(ctx.Config, "completeRate");
+        if (count != null)
+        {
+            overrideThreshold = count;
+            compareOverride = "Count";
+        }
+        else if (rate != null)
+        {
+            overrideThreshold = rate;
+            compareOverride = "Percentage";
+        }
+
+        return MiPassRateHelper.Evaluate(
+            main,
+            children ?? Array.Empty<ActivityInstanceEntity>(),
+            overrideThreshold,
+            compareOverride);
     }
 }
