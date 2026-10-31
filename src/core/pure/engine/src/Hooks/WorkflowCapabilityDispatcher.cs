@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -193,11 +194,34 @@ namespace saiflow.engine.Hooks
             }
         }
 
-        /// <summary>消费 Pending Outbox（Worker / 测试同步 drain）。</summary>
-        public int DispatchPendingOutbox(SQLBuilder kit, int limit = 50, CancellationToken cancellationToken = default)
+        /// <summary>认领并消费 Pending Outbox（Worker / 测试 drain）。</summary>
+        public int DispatchPendingOutbox(
+            SQLBuilder kit,
+            int limit = 50,
+            int maxAttempts = HookOutboxOptions.DefaultMaxAttempts,
+            CancellationToken cancellationToken = default)
         {
             var om = new HookOutboxManager(Sail);
-            var rows = om.GetPending(kit, limit);
+            var claimed = om.TryClaimPending(kit, limit, maxAttempts);
+            return DispatchClaimedOutbox(claimed, maxAttempts, cancellationToken);
+        }
+
+        /// <summary>处理已认领行（每条独立短事务）。</summary>
+        public int DispatchClaimedOutbox(
+            IList<HookOutboxEntity> rows,
+            int maxAttempts = HookOutboxOptions.DefaultMaxAttempts,
+            CancellationToken cancellationToken = default) =>
+            DispatchClaimedOutboxAsync(rows, maxAttempts, cancellationToken).GetAwaiter().GetResult();
+
+        public async Task<int> DispatchClaimedOutboxAsync(
+            IList<HookOutboxEntity> rows,
+            int maxAttempts = HookOutboxOptions.DefaultMaxAttempts,
+            CancellationToken cancellationToken = default)
+        {
+            if (rows == null || rows.Count == 0)
+                return 0;
+
+            var om = new HookOutboxManager(Sail);
             var processed = 0;
 
             foreach (var row in rows)
@@ -207,21 +231,45 @@ namespace saiflow.engine.Hooks
 
                 try
                 {
-                    if (row.Kind == HookOutboxKinds.Hook)
-                        DispatchHookOutboxRow(row);
-                    else if (row.Kind == HookOutboxKinds.Notify)
-                        DispatchNotifyOutboxRow(row, cancellationToken).GetAwaiter().GetResult();
+                    await DispatchOutboxRowAsync(row, cancellationToken).ConfigureAwait(false);
 
-                    om.MarkSucceeded(kit, row);
+                    using (var kit = Sail.UseRunSQL())
+                    {
+                        kit.beginTransaction();
+                        om.MarkSucceeded(kit, row);
+                        kit.commit();
+                    }
+
                     processed++;
                 }
                 catch (Exception ex)
                 {
-                    om.MarkFailed(kit, row, ex.Message);
+                    using (var kit = Sail.UseRunSQL())
+                    {
+                        kit.beginTransaction();
+                        om.MarkFailed(kit, row, ex.Message, maxAttempts);
+                        kit.commit();
+                    }
+
+                    if (row.Status == HookOutboxStatus.Dead)
+                    {
+                        Trace.TraceWarning(
+                            $"[saiflow] Hook outbox dead-letter id={row.Id} kind={row.Kind} handler={row.HandlerName}: {ex.Message}");
+                    }
                 }
             }
 
             return processed;
+        }
+
+        private async Task DispatchOutboxRowAsync(HookOutboxEntity row, CancellationToken cancellationToken)
+        {
+            if (row.Kind == HookOutboxKinds.Hook)
+                DispatchHookOutboxRow(row);
+            else if (row.Kind == HookOutboxKinds.Notify)
+                await DispatchNotifyOutboxRow(row, cancellationToken).ConfigureAwait(false);
+            else
+                throw new InvalidOperationException($"Unknown outbox kind '{row.Kind}'.");
         }
 
         /// <summary>已注册 Notifier 同步调用（失败隔离）。</summary>

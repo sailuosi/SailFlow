@@ -86,6 +86,30 @@ namespace saiflow.engine.Service
                         return startedResult;
                     }
 
+                    var dispatcher = Sail.CapabilityDispatcher;
+                    var startActivity = runtimeInstance.ProcessModel?.GetStartActivity();
+                    var gateCtx = dispatcher.BuildHookContextFromRuntime(
+                        runner,
+                        0,
+                        runtimeInstance.RunningActivityInstance,
+                        null,
+                        EventFireTypeEnum.OnValidating,
+                        WorkflowOperation.Start);
+                    if (startActivity != null)
+                    {
+                        gateCtx.ActivityId = startActivity.ActivityId;
+                        gateCtx.ActivityCode = startActivity.ActivityCode;
+                    }
+
+                    gateCtx.Version = runner.Version;
+                    gateCtx.ProcessCode = runner.ProcessCode ?? gateCtx.ProcessCode;
+                    var gateResult = dispatcher.RunGates(kit, gateCtx);
+                    if (gateResult != null && !gateResult.IsOk)
+                    {
+                        startedResult.ApplyGateReject(gateResult);
+                        return startedResult;
+                    }
+
                     //���¼�
                     //Register event
                     WfRuntimeManagerFactory.RegisterEvent(runtimeInstance,
@@ -137,6 +161,18 @@ namespace saiflow.engine.Service
                         EventFireTypeEnum.OnProcessStarted,
                         runner.EventSubscriptionList,
                         startedResult.ProcessInstanceIdStarted);
+
+                    var hookDispatcher = Sail.CapabilityDispatcher;
+                    var hookCtx = hookDispatcher.BuildHookContextFromRuntime(
+                        runner,
+                        startedResult.ProcessInstanceIdStarted,
+                        runtimeInstance.RunningActivityInstance,
+                        runtimeInstance.TaskView?.Id,
+                        EventFireTypeEnum.OnProcessStarted,
+                        WorkflowOperation.Start);
+                    hookCtx.Version = runner.Version;
+                    hookDispatcher.RunSyncHooks(kit, hookCtx, EventFireTypeEnum.OnProcessStarted);
+                    hookDispatcher.EnqueueAsyncHooks(kit, hookCtx, EventFireTypeEnum.OnProcessStarted);
                 }
                 waitHandler.Set();
             }

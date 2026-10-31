@@ -31,4 +31,11 @@ public static class BizMsgSailExtensions
 
     public static SailClientBuilder UseBizTaskMail(this SailClientBuilder builder) =>
         builder.UseDefaultTaskMail();
+
+    /// <summary>设计别名：与 <see cref="UseBizTaskMail"/> 相同，启用默认待办 SMTP。</summary>
+    public static ISailCollection UseBizTaskNotify(this ISailCollection services) =>
+        services.UseDefaultTaskMail();
+
+    public static SailClientBuilder UseBizTaskNotify(this SailClientBuilder builder) =>
+        builder.UseDefaultTaskMail();
 }

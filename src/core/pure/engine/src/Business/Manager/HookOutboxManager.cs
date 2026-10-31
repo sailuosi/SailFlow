@@ -5,6 +5,7 @@ using mooSQL.data;
 using saiflow.data;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Client;
+using saiflow.engine.Hooks;
 
 namespace saiflow.engine.Business.Manager
 {
@@ -38,6 +39,29 @@ namespace saiflow.engine.Business.Manager
                 .ToList();
         }
 
+        /// <summary>CAS Pending→Processing，返回成功认领的行（due 且未死信）。</summary>
+        public IList<HookOutboxEntity> TryClaimPending(SQLBuilder kit, int limit, int maxAttempts = HookOutboxOptions.DefaultMaxAttempts)
+        {
+            _ = maxAttempts;
+            var now = DateTime.UtcNow;
+            var candidates = GetPending(kit, Math.Max(limit * 3, limit));
+            var claimed = new List<HookOutboxEntity>(limit);
+
+            foreach (var candidate in candidates)
+            {
+                if (claimed.Count >= limit)
+                    break;
+
+                if (candidate.NextRetryAt != null && candidate.NextRetryAt > now)
+                    continue;
+
+                if (TryClaimOne(kit, candidate.Id, out var row))
+                    claimed.Add(row);
+            }
+
+            return claimed;
+        }
+
         public void MarkSucceeded(SQLBuilder kit, HookOutboxEntity row)
         {
             row.Status = HookOutboxStatus.Succeeded;
@@ -45,7 +69,7 @@ namespace saiflow.engine.Business.Manager
             Sibling(kit).useRepo<HookOutboxEntity>().Update(row);
         }
 
-        public void MarkFailed(SQLBuilder kit, HookOutboxEntity row, string error, int maxAttempts = 5)
+        public void MarkFailed(SQLBuilder kit, HookOutboxEntity row, string error, int maxAttempts = HookOutboxOptions.DefaultMaxAttempts)
         {
             row.Attempt++;
             row.LastError = Truncate(error, 2000);
@@ -61,6 +85,49 @@ namespace saiflow.engine.Business.Manager
             }
 
             Sibling(kit).useRepo<HookOutboxEntity>().Update(row);
+        }
+
+        public void ResetDead(SQLBuilder kit, int id)
+        {
+            var repo = Sibling(kit).useRepo<HookOutboxEntity>();
+            var row = repo.GetById(id);
+            if (row == null || row.Status != HookOutboxStatus.Dead)
+                return;
+
+            row.Status = HookOutboxStatus.Pending;
+            row.Attempt = 0;
+            row.NextRetryAt = null;
+            row.LastError = null;
+            row.UpdatedAt = DateTime.UtcNow;
+            repo.Update(row);
+        }
+
+        public IList<HookOutboxEntity> QueryByStatus(SQLBuilder kit, string status, int limit = 100)
+        {
+            var clip = Sibling(kit).useClip();
+            clip.from<HookOutboxEntity>(out var o);
+            clip.where(() => o.Status, status);
+            clip.orderBy(() => o.Id);
+            return clip.select(o).queryList().Take(limit).ToList();
+        }
+
+        public IList<HookOutboxEntity> QueryDead(SQLBuilder kit, int limit = 100) =>
+            QueryByStatus(kit, HookOutboxStatus.Dead, limit);
+
+        private bool TryClaimOne(SQLBuilder kit, int id, out HookOutboxEntity row)
+        {
+            row = null;
+            var clip = Sibling(kit).useClip();
+            clip.setTable<HookOutboxEntity>(out var o);
+            clip.set(() => o.Status, HookOutboxStatus.Processing);
+            clip.set(() => o.UpdatedAt, DateTime.UtcNow);
+            clip.where(() => o.Id, id);
+            clip.where(() => o.Status, HookOutboxStatus.Pending);
+            if (clip.doUpdate() <= 0)
+                return false;
+
+            row = Sibling(kit).useRepo<HookOutboxEntity>().GetById(id);
+            return row != null && row.Status == HookOutboxStatus.Processing;
         }
 
         private static SQLBuilder Sibling(SQLBuilder kit) => SailSqlAccess.Sibling(kit);

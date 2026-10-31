@@ -65,6 +65,7 @@ namespace saiflow.engine.Business.Entity
     public static class HookOutboxStatus
     {
         public const string Pending = "Pending";
+        public const string Processing = "Processing";
         public const string Succeeded = "Succeeded";
         public const string Failed = "Failed";
         public const string Dead = "Dead";
