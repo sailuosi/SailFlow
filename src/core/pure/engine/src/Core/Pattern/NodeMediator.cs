@@ -197,7 +197,7 @@ namespace saiflow.engine.Core.Pattern
                 {
                     AppInstanceId = ActivityForwardContext.ProcessInstance.AppInstanceId,
                     ProcessId = ActivityForwardContext.ProcessInstance.ProcessId,
-                    ProcessInstanceId = ActivityForwardContext.ProcessInstance.Id,
+                    ProcessInstanceId = ActivityForwardContext.ProcessInstance.Id.Value,
                     ActivityId = fromActivityId,
                     ActivityName = fromActivityName
                 };
@@ -623,7 +623,7 @@ namespace saiflow.engine.Core.Pattern
 
                         var kit = SailSqlAccess.Sibling(Kit);
                         var pvm = new ProcessVariableManager(Sail);
-                        var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id, currentActivityInstance.Id,
+                        var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id.Value, currentActivityInstance.Id.Value,
                             outputVariableNameList);
 
                         var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
@@ -693,7 +693,7 @@ namespace saiflow.engine.Core.Pattern
 
                         var kit = SailSqlAccess.Sibling(Kit);
                         var pvm = new ProcessVariableManager(Sail);
-                        var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id, currentActivityInstance.Id,
+                        var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id.Value, currentActivityInstance.Id.Value,
                             outputVariableNameList);
                         var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
 
@@ -965,7 +965,7 @@ namespace saiflow.engine.Core.Pattern
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,
                 processInstance.ProcessId,
-                processInstance.Id,
+                processInstance.Id.Value,
                 activity,
                 runner);
 
@@ -1066,7 +1066,7 @@ namespace saiflow.engine.Core.Pattern
                 processInstance.AppName,
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,
-                processInstance.Id,
+                processInstance.Id.Value,
                 processInstance.ProcessId,
                 this.BackwardContext.BackwardToTaskActivity,
                 backwardType,

@@ -68,7 +68,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
                 UserName = activityResource.AppRunner.UserName
             };
 
-            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
 
             LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             ActivityForwardContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;

@@ -15,7 +15,7 @@ namespace saiflow.engine.Business.Entity
     public class JobInfoEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         [SooColumn(Name = "job_name")]
         public string JobName { get; set; }
         [SooColumn(Name = "topic")]
@@ -39,13 +39,13 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "job_status")]
         public string JobStatus { get; set; }
         [SooColumn(Name = "created_datetime")]
-        public DateTime CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         [SooColumn(Name = "created_user_id")]
         public string CreatedUserId { get; set; }
         [SooColumn(Name = "created_user_name")]
         public string CreatedUserName { get; set; }
         [SooColumn(Name = "updated_datetime")]
-        public Nullable<DateTime> UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTime { get; set; }
         [SooColumn(Name = "updated_user_id")]
         public string UpdatedUserId { get; set; }
         [SooColumn(Name = "updated_user_name")]

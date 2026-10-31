@@ -7,7 +7,7 @@ namespace saiflow.AI.Entity
     public class AiActivityConfigEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         [SooColumn(Name = "process_id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "version")]
@@ -23,9 +23,9 @@ namespace saiflow.AI.Entity
         [SooColumn(Name = "description")]
         public string Description { get; set; }
         [SooColumn(Name = "temperature")]
-        public decimal Temperature { get; set; }
+        public decimal? Temperature { get; set; }
         [SooColumn(Name = "max_tokens")]
-        public int MaxTokens { get; set; }
+        public int? MaxTokens { get; set; }
         [SooColumn(Name = "system_prompt")]
         public string SystemPrompt { get; set; }
         [SooColumn(Name = "user_message")]
@@ -33,9 +33,9 @@ namespace saiflow.AI.Entity
         [SooColumn(Name = "response_format")]
         public string ResponseFormat { get; set; }
         [SooColumn(Name = "time_out")]
-        public int Timeout { get; set; }
+        public int? Timeout { get; set; }
         [SooColumn(Name = "max_retries")]
-        public int MaxRetries { get; set; }
+        public int? MaxRetries { get; set; }
         [SooColumn(Name = "error_handling")]
         public string ErrorHandling { get; set; }
         [SooColumn(Name = "fallback_agent")]
@@ -61,10 +61,10 @@ namespace saiflow.AI.Entity
         [SooColumn(Name = "rag_embedding_dimensions")]
         public int? RagEmbeddingDimensions { get; set; } = 1536;
         [SooColumn(Name = "memory_turns")]
-        public int MemoryTurns { get; set; } = 10;
+        public int? MemoryTurns { get; set; } = 10;
         [SooColumn(Name = "created_datetime")]
-        public DateTime CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         [SooColumn(Name = "updated_datetime")]
-        public DateTime UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTime { get; set; }
     }
 }

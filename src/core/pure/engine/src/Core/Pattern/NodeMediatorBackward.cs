@@ -46,8 +46,8 @@ namespace saiflow.engine.Core.Pattern
         {
             var toActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
-                fromActivityInstance.Id,
-                base.BackwardContext.BackwardToTaskActivityInstance.Id,
+                fromActivityInstance.Id.Value,
+                base.BackwardContext.BackwardToTaskActivityInstance.Id.Value,
                 activityResource.AppRunner);
 
             toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
@@ -55,8 +55,8 @@ namespace saiflow.engine.Core.Pattern
 
             base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
 
-            base.ReturnDataContext.ActivityInstanceId = toActivityInstance.Id;
-            base.ReturnDataContext.ProcessInstanceId = toActivityInstance.ProcessInstanceId;
+            base.ReturnDataContext.ActivityInstanceId = toActivityInstance.Id.Value;
+            base.ReturnDataContext.ProcessInstanceId = toActivityInstance.ProcessInstanceId.Value;
 
             base.CreateNewTask(toActivityInstance, activityResource, kit);
 
@@ -125,7 +125,7 @@ namespace saiflow.engine.Core.Pattern
             var rollbackPreviousActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
                 backSrcActivityInstanceId,
-                originalBackwardToActivityInstance.Id,
+                originalBackwardToActivityInstance.Id.Value,
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
@@ -138,8 +138,8 @@ namespace saiflow.engine.Core.Pattern
 
             base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), rollbackPreviousActivityInstance);
 
-            base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.Id;
-            base.ReturnDataContext.ProcessInstanceId = rollbackPreviousActivityInstance.ProcessInstanceId;
+            base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.Id.Value;
+            base.ReturnDataContext.ProcessInstanceId = rollbackPreviousActivityInstance.ProcessInstanceId.Value;
 
             base.CreateNewTask(rollbackPreviousActivityInstance, activityResource, kit);
         }
@@ -162,8 +162,8 @@ namespace saiflow.engine.Core.Pattern
             //Create rollback to node information
             var rollbackPreviousActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
-                fromActivityInstance.Id,
-                originalBackwardToActivityInstance.Id,
+                fromActivityInstance.Id.Value,
+                originalBackwardToActivityInstance.Id.Value,
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
@@ -175,8 +175,8 @@ namespace saiflow.engine.Core.Pattern
             rollbackPreviousActivityInstance.AssignedUserNames = originalBackwardToActivityInstance.AssignedUserNames;
 
             base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), rollbackPreviousActivityInstance);
-            base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.Id;
-            base.ReturnDataContext.ProcessInstanceId = rollbackPreviousActivityInstance.ProcessInstanceId;
+            base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.Id.Value;
+            base.ReturnDataContext.ProcessInstanceId = rollbackPreviousActivityInstance.ProcessInstanceId.Value;
             base.CreateNewTask(rollbackPreviousActivityInstance, activityResource, kit);
 
             base.InsertTransitionInstance(processInstance,

@@ -23,7 +23,7 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "version")]
         public String Version { get; set; }
         [SooColumn(Name = "status")]
-        public byte Status { get; set; }
+        public byte? Status { get; set; }
         [SooColumn(Name = "start_type")]
         public Byte StartType { get; set; }
         [SooColumn(Name = "start_expression")]

@@ -202,8 +202,8 @@ namespace saiflow.engine.Core.Runtime
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
             var kitForPi = SailSqlAccess.Sibling(kit);
-            var processInstance = (new ProcessInstanceManager(client)).GetById(kitForPi, runningNode.ProcessInstanceId);
-            rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
+            var processInstance = (new ProcessInstanceManager(client)).GetById(kitForPi, runningNode.ProcessInstanceId.Value);
+            rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
             var processModel = ProcessModelFactory.CreateByTask(client, SailSqlAccess.Sibling(kit), taskView);
 
 
@@ -267,8 +267,8 @@ namespace saiflow.engine.Core.Runtime
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
             var kitForPi = SailSqlAccess.Sibling(kit);
-            var processInstance = (new ProcessInstanceManager(client)).GetById(kitForPi, runningNode.ProcessInstanceId);
-            rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
+            var processInstance = (new ProcessInstanceManager(client)).GetById(kitForPi, runningNode.ProcessInstanceId.Value);
+            rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
             var processModel = ProcessModelFactory.CreateByProcess(client, processInstance.ProcessId, processInstance.Version);
             var activityResource = ActivityResourceFactory.Create(runner,
                 runner.NextActivityPerformers,
@@ -332,7 +332,7 @@ namespace saiflow.engine.Core.Runtime
 
             //用于流程注册时间调用时候的流程实例ID提供
             //Provide process instance Id for process registration events
-            rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
+            rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
             rmins.RunningActivityInstance = runningNode;
             rmins.ActivityResource = ActivityResourceFactory.Create(runner, rmins.AppRunner.NextActivityPerformers);
 
@@ -389,7 +389,7 @@ namespace saiflow.engine.Core.Runtime
             rmins.AppRunner.UserId = runner.UserId;
             rmins.AppRunner.UserName = runner.UserName;
 
-            rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
+            rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
 
             var processModel = ProcessModelFactory.CreateByTask(client, taskView);
             rmins.ProcessModel = processModel;
@@ -397,13 +397,13 @@ namespace saiflow.engine.Core.Runtime
             //获取跳转节点信息
             //Obtain jump node information
             var jumpBackActivityId = runner.NextActivityPerformers.First().Key;
-            var jumpBackActivityInstance = aim.GetActivityInstanceLatest(runningNode.ProcessInstanceId, jumpBackActivityId);
+            var jumpBackActivityInstance = aim.GetActivityInstanceLatest(runningNode.ProcessInstanceId.Value, jumpBackActivityId);
 
 
             //跳转到曾经执行过的节点上,可以作为跳回方式处理
             //Jumping to a node that has been executed before can be handled as a bounce back method
             rmins.IsBackward = true;
-            rmins.BackwardContext.ProcessInstance = (new ProcessInstanceManager(client)).GetById(runningNode.ProcessInstanceId);
+            rmins.BackwardContext.ProcessInstance = (new ProcessInstanceManager(client)).GetById(runningNode.ProcessInstanceId.Value);
             rmins.BackwardContext.BackwardToTaskActivity = processModel.GetActivity(jumpBackActivityId);
 
             //获取当前运行节点的上一步节点
@@ -530,7 +530,7 @@ namespace saiflow.engine.Core.Runtime
 
             //用于流程注册时间调用时候的流程实例ID提供
             //Provide process instance Id for process registration time call
-            rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
+            rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
 
             var processModel = ProcessModelFactory.CreateByTask(client, taskView);
             rmins.ProcessModel = processModel;
@@ -605,7 +605,7 @@ namespace saiflow.engine.Core.Runtime
             //获取上一步节点信息
             //Obtain the previous node information
             var hasGatewayPassed = false;
-            var processInstance = (new ProcessInstanceManager(client)).GetById(runningNode.ProcessInstanceId);
+            var processInstance = (new ProcessInstanceManager(client)).GetById(runningNode.ProcessInstanceId.Value);
             var processModel = ProcessModelFactory.CreateByProcessInstance(client, processInstance);
             var previousStepChecker = new PreviousStepChecker(client);
             var previousActivityList = previousStepChecker.GetPreviousActivityList(runningNode, processModel, out hasGatewayPassed);
@@ -671,7 +671,7 @@ namespace saiflow.engine.Core.Runtime
 
             rmins.TaskView = taskView;
             rmins.RunningActivityInstance = runningNode;
-            rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
+            rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
             rmins.ProcessInstance = processInstance;
             rmins.ProcessModel = processModel;
 
@@ -798,7 +798,7 @@ namespace saiflow.engine.Core.Runtime
             //获取待办任务
             //Get todo tasks
             var tim = new TransitionInstanceManager(client);
-            var nextStepList = tim.GetTargetActivityInstanceList(taskDone.ActivityInstanceId).ToList();
+            var nextStepList = tim.GetTargetActivityInstanceList(taskDone.ActivityInstanceId.Value).ToList();
             
             ActivityInstanceEntity runningNode = nextStepList.Count > 0 ?  nextStepList[0] : null;
             if (runningNode.ActivityType == (short)ActivityTypeEnum.MultiSignNode)
@@ -806,7 +806,7 @@ namespace saiflow.engine.Core.Runtime
                 using (var kit = client.UseRunSQL())
                 {
                     var aim = new ActivityInstanceManager(client);
-                    var childList = aim.GetActivityMulitipleInstanceWithStateBatch(SailSqlAccess.Sibling(kit), runningNode.ProcessInstanceId, runningNode.Id, (short)ActivityStateEnum.Ready);
+                    var childList = aim.GetActivityMulitipleInstanceWithStateBatch(SailSqlAccess.Sibling(kit), runningNode.ProcessInstanceId.Value, runningNode.Id.Value, (short)ActivityStateEnum.Ready);
                     runningNode = childList.FirstOrDefault();
                 }
             }
@@ -831,14 +831,14 @@ namespace saiflow.engine.Core.Runtime
                 return rmins;
             }
 
-            var taskToDo = tm.GetTaskViewByActivity(runningNode.ProcessInstanceId, runningNode.Id);
+            var taskToDo = tm.GetTaskViewByActivity(runningNode.ProcessInstanceId.Value, runningNode.Id.Value);
             runner.UserId = taskToDo.AssignedUserId;
             runner.UserName = taskToDo.AssignedUserName;
 
             //获取上一步节点信息
             //Obtain the previous node information
             var hasGatewayPassed = false;
-            var processInstance = (new ProcessInstanceManager(client)).GetById(runningNode.ProcessInstanceId);
+            var processInstance = (new ProcessInstanceManager(client)).GetById(runningNode.ProcessInstanceId.Value);
             
             var previousStepChecker = new PreviousStepChecker(client);
             var processModel = ProcessModelFactory.CreateByTask(client, taskToDo);
@@ -883,7 +883,7 @@ namespace saiflow.engine.Core.Runtime
 
             rmins.TaskView = taskToDo;
             rmins.RunningActivityInstance = runningNode;
-            rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
+            rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
             rmins.ProcessInstance = processInstance;
             rmins.ProcessModel = processModel;
 
@@ -939,7 +939,7 @@ namespace saiflow.engine.Core.Runtime
             var taskView = tm.GetTaskView(runner.TaskId.Value);
 
             var aim = new ActivityInstanceManager(client);
-            var runningActivityInstance = aim.GetById(taskView.ActivityInstanceId);
+            var runningActivityInstance = aim.GetById(taskView.ActivityInstanceId.Value);
             if (runningActivityInstance.BackSrcActivityInstanceId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -951,7 +951,7 @@ namespace saiflow.engine.Core.Runtime
             var backSrcActivityInstance = aim.GetById(runningActivityInstance.BackSrcActivityInstanceId.Value);
 
             rmins.TaskView = taskView;
-            rmins.RunningActivityInstance = aim.GetById(taskView.ActivityInstanceId);
+            rmins.RunningActivityInstance = aim.GetById(taskView.ActivityInstanceId.Value);
             rmins.ProcessModel = ProcessModelFactory.CreateByTask(client, taskView);
 
             rmins.AppRunner.AppName = runner.AppName;
@@ -976,7 +976,7 @@ namespace saiflow.engine.Core.Runtime
 
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
-            rmins.ProcessInstanceId = runningActivityInstance.ProcessInstanceId;
+            rmins.ProcessInstanceId = runningActivityInstance.ProcessInstanceId.Value;
 
             return rmins;
         }
@@ -1010,7 +1010,7 @@ namespace saiflow.engine.Core.Runtime
             var aim = new ActivityInstanceManager(client);
 
             rmins.TaskView = taskView;
-            rmins.RunningActivityInstance = aim.GetById(taskView.ActivityInstanceId);
+            rmins.RunningActivityInstance = aim.GetById(taskView.ActivityInstanceId.Value);
             rmins.ProcessModel = ProcessModelFactory.CreateByTask(client, taskView);
 
             rmins.AppRunner.AppName = runner.AppName;
@@ -1022,7 +1022,7 @@ namespace saiflow.engine.Core.Runtime
 
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
-            rmins.ProcessInstanceId = taskView.ProcessInstanceId;
+            rmins.ProcessInstanceId = taskView.ProcessInstanceId.Value;
 
             return rmins;
         }
@@ -1051,7 +1051,7 @@ namespace saiflow.engine.Core.Runtime
 
             //用于注册事件时候的流程Id
             //Process Id used for registering events
-            rmins.ProcessInstanceId = processInstance.Id;
+            rmins.ProcessInstanceId = processInstance.Id.Value;
 
             var tim = new TransitionInstanceManager(client);
             var endTransitionInstance = tim.GetEndTransition(runner.AppName, runner.AppInstanceId, runner.ProcessId);
@@ -1060,7 +1060,7 @@ namespace saiflow.engine.Core.Runtime
             var endActivity = processModel.GetActivity(endTransitionInstance.ToActivityId);
 
             var aim = new ActivityInstanceManager(client);
-            var endActivityInstance = aim.GetById(endTransitionInstance.ToActivityInstanceId);
+            var endActivityInstance = aim.GetById(endTransitionInstance.ToActivityInstanceId.Value);
 
             bool hasGatewayNode = false;
             var npc = new PreviousStepChecker(client);
@@ -1146,7 +1146,7 @@ namespace saiflow.engine.Core.Runtime
 
             //用于注册事件时候的流程Id
             //Process Id used for registering events
-            rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
+            rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
 
             var processModel = ProcessModelFactory.CreateByTask(client, taskView);
             var activityResource = ActivityResourceFactory.Create(runner, 

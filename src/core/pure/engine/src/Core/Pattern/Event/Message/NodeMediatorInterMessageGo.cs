@@ -82,7 +82,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
 
             //设置活动节点的状态为完成状态
             //Set the status of the activity node to complete status
-            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
 
             LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             bool canContinueForwardCurrentNode = LinkContext.FromActivityInstance.CanNotRenewInstance == 0;

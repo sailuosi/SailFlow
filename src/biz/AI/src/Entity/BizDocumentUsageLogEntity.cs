@@ -13,7 +13,7 @@ namespace saiflow.AI.Entity
         public long? Id { get; set; }
 
         [JsonProperty("document_id")]
-        public long DocumentId { get; set; }
+        public long? DocumentId { get; set; }
 
         [JsonProperty("industry_id")]
         public long? IndustryId { get; set; }

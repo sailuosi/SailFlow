@@ -10,7 +10,7 @@ namespace saiflow.engine.Business.Entity
 
     public class RuleExecutionResultEntity
     {
-        public bool IsSuccess { get; set; }
+        public bool? IsSuccess { get; set; }
         public string Message { get; set; }
         public IDictionary<string, object> OutputVariables { get; set; }
     }

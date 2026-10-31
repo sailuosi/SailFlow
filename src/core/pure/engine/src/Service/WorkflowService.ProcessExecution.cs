@@ -1897,7 +1897,7 @@ namespace saiflow.engine.Service
                 var pim = new ProcessInstanceManager(Sail);
                 var taskMng = new TaskManager(Sail);
                 TaskEntity taskentity = taskMng.GetTask(taskId);
-                pim.Suspend(taskentity.ProcessInstanceId, runner);
+                pim.Suspend(taskentity.ProcessInstanceId.Value, runner);
             }
             catch (Exception ex)
             {

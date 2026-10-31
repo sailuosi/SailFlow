@@ -1,4 +1,4 @@
-﻿using mooSQL.data;
+using mooSQL.data;
 
 namespace saiflow.hub.Resource
 {
@@ -10,14 +10,14 @@ namespace saiflow.hub.Resource
     public class EmpManagerEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         [SooColumn(Name = "employee_id")]
-        public int EmployeeId { get; set; }
+        public int? EmployeeId { get; set; }
         [SooColumn(Name = "employee_user_id")]
-        public int EmployeeUserId { get; set; }
+        public int? EmployeeUserId { get; set; }
         [SooColumn(Name = "manager_id")]
-        public int ManagerId { get; set; }
+        public int? ManagerId { get; set; }
         [SooColumn(Name = "manager_user_id")]
-        public int ManagerUserId { get; set; }
+        public int? ManagerUserId { get; set; }
     }
 }

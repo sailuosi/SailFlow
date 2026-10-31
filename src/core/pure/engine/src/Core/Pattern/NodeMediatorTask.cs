@@ -81,7 +81,7 @@ namespace saiflow.engine.Core.Pattern
 
             //���û�ڵ��״̬Ϊ���״̬
             //Set the status of the activity node to complete status
-            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
 
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             Boolean canContinueForwardCurrentNode = base.LinkContext.FromActivityInstance.CanNotRenewInstance == 0;
@@ -174,7 +174,7 @@ namespace saiflow.engine.Core.Pattern
                 {
                     AppInstanceId = processInstance.AppInstanceId,
                     ProcessId = processInstance.ProcessId,
-                    ProcessInstanceId = processInstance.Id,
+                    ProcessInstanceId = processInstance.Id.Value,
                     ActivityId = toActivity.ActivityId,
                     ActivityCode = toActivity.ActivityCode,
                     ActivityResource = activityResource

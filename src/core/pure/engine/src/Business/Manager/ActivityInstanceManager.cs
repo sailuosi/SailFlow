@@ -92,7 +92,7 @@ namespace saiflow.engine.Business.Manager
             if (taskId != null && taskId.Value > 0)
             {
                 taskView = tm.GetTaskView(kit, taskId.Value);
-                runningNode = GetById(kit, taskView.ActivityInstanceId);
+                runningNode = GetById(kit, taskView.ActivityInstanceId.Value);
                 return runningNode;
             }
 
@@ -108,7 +108,7 @@ namespace saiflow.engine.Business.Manager
             if (activityInstanceList.Count == 1)
             {
                 runningNode = activityInstanceList[0];
-                taskView = tm.GetTaskOfMineByActivityInstance(kit, runningNode.Id, runner.UserId);
+                taskView = tm.GetTaskOfMineByActivityInstance(kit, runningNode.Id.Value, runner.UserId);
             }
             else if (activityInstanceList.Count > 1)
             {
@@ -123,7 +123,7 @@ namespace saiflow.engine.Business.Manager
 
                 if (runningNode != null)
                 {
-                    taskView = tm.GetTaskOfMineByActivityInstance(kit, runningNode.Id, runner.UserId);
+                    taskView = tm.GetTaskOfMineByActivityInstance(kit, runningNode.Id.Value, runner.UserId);
                 }
                 else
                 {
@@ -249,7 +249,7 @@ namespace saiflow.engine.Business.Manager
             if (list.Count > 0)
             {
                 var matchedActivityInstance = list[0];
-                return GetById(kit, matchedActivityInstance.Id);
+                return GetById(kit, matchedActivityInstance.Id.Value);
             }
 
             return null;
@@ -357,7 +357,7 @@ namespace saiflow.engine.Business.Manager
                 originalRunningNode = runningNode;
             }
 
-            var instanceList = GetActivityInstanceListCompletedSimple(kit, processInstanceId, previousActivityId);
+            var instanceList = GetActivityInstanceListCompletedSimple(kit, processInstanceId.Value, previousActivityId);
 
             var withoutBackSrcInfoList = instanceList.Where(a => a.BackSrcActivityInstanceId == null);
 
@@ -709,7 +709,7 @@ namespace saiflow.engine.Business.Manager
             if (backList.Count > 0)
             {
                 int[] backArray = backList.ToArray();
-                var validList = list.Where(a => !backArray.Contains(a.Id)).ToList();
+                var validList = list.Where(a => !backArray.Contains(a.Id.Value)).ToList();
                 return validList;
             }
 
@@ -747,7 +747,7 @@ namespace saiflow.engine.Business.Manager
             instance.CreatedUserId = runner.UserId;
             instance.CreatedUserName = runner.UserName;
             instance.CreatedDateTime = System.DateTime.UtcNow;
-            instance.OverdueDateTime = CalculateActivityOverdueDateTime(activity.BoundaryList, instance.CreatedDateTime);
+            instance.OverdueDateTime = CalculateActivityOverdueDateTime(activity.BoundaryList, instance.CreatedDateTime.Value);
             instance.ActivityState = (short)ActivityStateEnum.Ready;
             instance.CanNotRenewInstance = 0;
 
@@ -973,7 +973,7 @@ namespace saiflow.engine.Business.Manager
             var splitActivity = processModel.GetBackwardGatewayActivity(gatewayActivity, ref joinCount, ref splitCount);
             var taskActivityList = processModel.GetAllTaskActivityList(splitActivity, gatewayActivity);
 
-            UpdateActivityInstanceBlockedBetweenSplitJoin(kit, gatewayInstance.ProcessInstanceId, taskActivityList);
+            UpdateActivityInstanceBlockedBetweenSplitJoin(kit, gatewayInstance.ProcessInstanceId.Value, taskActivityList);
         }
 
         /// <summary>
@@ -988,7 +988,7 @@ namespace saiflow.engine.Business.Manager
             clip.setTable<ActivityInstanceEntity>(out var ai);
             clip.set(() => ai.CanNotRenewInstance, (byte)1);
             clip.where(() => ai.ProcessInstanceId, processInstanceId);
-            clip.whereIn(() => ai.ActivityState, new[]
+            clip.whereIn(() => ai.ActivityState, new short?[]
             {
                 (short)ActivityStateEnum.Ready,
                 (short)ActivityStateEnum.Running,
@@ -1211,7 +1211,7 @@ namespace saiflow.engine.Business.Manager
                 }
                 else
                 {
-                    result = NodePassedResult.CreateByApprovalStatus(activityInstance.ApprovalStatus);
+                    result = NodePassedResult.CreateByApprovalStatus(activityInstance.ApprovalStatus.Value);
                 }
             }
             return result;
@@ -1225,7 +1225,7 @@ namespace saiflow.engine.Business.Manager
             ActivityInstanceEntity mainActivityInstance)
         {
             var passedType = NodePassedTypeEnum.Default;
-            var childActivityInstanceList = GetValidActivityInstanceListOfMI(kit, mainActivityInstance.Id, mainActivityInstance.ProcessInstanceId);
+            var childActivityInstanceList = GetValidActivityInstanceListOfMI(kit, mainActivityInstance.Id.Value, mainActivityInstance.ProcessInstanceId.Value);
 
             var agreedCount = childActivityInstanceList.Where(a => a.ApprovalStatus == (short)ApprovalStatusEnum.Agreed).Count();
             var refusedCount = childActivityInstanceList.Where(a => a.ApprovalStatus == (short)ApprovalStatusEnum.Refused).Count();

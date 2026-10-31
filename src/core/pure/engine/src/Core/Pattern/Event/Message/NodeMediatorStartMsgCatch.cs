@@ -74,7 +74,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
 
             ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), fromActivityInstance);
 
-            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), fromActivityInstance.Id, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), fromActivityInstance.Id.Value, activityResource.AppRunner);
 
             fromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             LinkContext.FromActivityInstance = fromActivityInstance;

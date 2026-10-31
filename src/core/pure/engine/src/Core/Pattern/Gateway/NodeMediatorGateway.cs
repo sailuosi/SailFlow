@@ -80,7 +80,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,
                 processInstance.ProcessId,
-                processInstance.Id,
+                processInstance.Id.Value,
                 activity,
                 runner);
 

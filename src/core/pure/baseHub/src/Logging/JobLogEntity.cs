@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using mooSQL.data;
 
 namespace saiflow.hub.Logging
@@ -11,7 +11,7 @@ namespace saiflow.hub.Logging
     public class JobLogEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         [SooColumn(Name = "job_type")]
         public string JobType { get; set; }
         [SooColumn(Name = "job_name")]
@@ -23,7 +23,7 @@ namespace saiflow.hub.Logging
         [SooColumn(Name = "ref_ids")]
         public string RefIDs { get; set; }
         [SooColumn(Name = "status")]
-        public short Status { get; set; }
+        public short? Status { get; set; }
         [SooColumn(Name = "message")]
         public string Message { get; set; }
         [SooColumn(Name = "stack_trace")]
@@ -33,7 +33,7 @@ namespace saiflow.hub.Logging
         [SooColumn(Name = "request_data")]
         public string RequestData { get; set; }
         [SooColumn(Name = "created_datetime")]
-        public DateTime CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         [SooColumn(Name = "created_user_id")]
         public string CreatedUserId { get; set; }
         [SooColumn(Name = "created_user_name")]

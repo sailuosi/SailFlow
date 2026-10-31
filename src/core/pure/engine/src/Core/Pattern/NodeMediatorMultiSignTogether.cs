@@ -79,7 +79,7 @@ namespace saiflow.engine.Core.Pattern
 
             //设置活动节点的状态为完成状态
             //Set the status of the activity node to complete status
-            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
 
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 
@@ -106,7 +106,7 @@ namespace saiflow.engine.Core.Pattern
                     {
                         //取出处于挂起状态多实例节点列表
                         //Retrieve the list of multi instance nodes in a suspended state
-                        var childList = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(SailSqlAccess.Sibling(kit), mainActivityInstance.Id, mainActivityInstance.ProcessInstanceId);
+                        var childList = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(SailSqlAccess.Sibling(kit), mainActivityInstance.Id.Value, mainActivityInstance.ProcessInstanceId.Value);
                         var sqList = childList.Where(a => a.ActivityState == (short)ActivityStateEnum.Suspended).ToList();
                         short maxOrder = 0;
                         if (sqList != null && sqList.Count > 0)
@@ -158,7 +158,7 @@ namespace saiflow.engine.Core.Pattern
 
                                     //更新未办理完成节点状态为取消状态
                                     //Update the status of unfinished nodes to cancelled status
-                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(SailSqlAccess.Sibling(kit), mainActivityInstance.Id, runner);
+                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(SailSqlAccess.Sibling(kit), mainActivityInstance.Id.Value, runner);
                                 }
                                 else
                                 {
@@ -188,7 +188,7 @@ namespace saiflow.engine.Core.Pattern
 
                                     //更新未办理完成节点状态为取消状态
                                     //Update the status of unfinished nodes to cancelled status
-                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(SailSqlAccess.Sibling(kit), mainActivityInstance.Id, runner);
+                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(SailSqlAccess.Sibling(kit), mainActivityInstance.Id.Value, runner);
                                 }
                                 else
                                 {
@@ -220,8 +220,8 @@ namespace saiflow.engine.Core.Pattern
                     {
                         //取出处于多实例节点列表
                         //Retrieve the list of nodes in multiple instances
-                        var sqList = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithStateBatch(SailSqlAccess.Sibling(kit), mainActivityInstance.ProcessInstanceId, 
-                            mainActivityInstance.Id, null);
+                        var sqList = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithStateBatch(SailSqlAccess.Sibling(kit), mainActivityInstance.ProcessInstanceId.Value, 
+                            mainActivityInstance.Id.Value, null);
                         var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed
                              && x.ActivityState != (short)ActivityStateEnum.Sendbacked).ToList().Count();
                         var completedCount = sqList.Where<ActivityInstanceEntity>(w => w.ActivityState == (short)ActivityStateEnum.Completed)
@@ -247,7 +247,7 @@ namespace saiflow.engine.Core.Pattern
                                     base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
                                     //更新未办理完成节点状态为取消状态
                                     //Update the status of unfinished nodes to cancelled status
-                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(SailSqlAccess.Sibling(kit), mainActivityInstance.Id, runner);
+                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(SailSqlAccess.Sibling(kit), mainActivityInstance.Id.Value, runner);
                                 }
                                 else
                                 {
@@ -301,7 +301,7 @@ namespace saiflow.engine.Core.Pattern
                                     base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
                                     //更新未办理完成节点状态为取消状态
                                     //Update the status of unfinished nodes to cancelled status
-                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(SailSqlAccess.Sibling(kit), mainActivityInstance.Id, runner);
+                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(SailSqlAccess.Sibling(kit), mainActivityInstance.Id.Value, runner);
                                 }
                                 else
                                 {

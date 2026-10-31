@@ -28,7 +28,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
 
             ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
             var kit = SailSqlAccess.Sibling(Kit);
-            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id,
+            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id.Value,
                 ActivityForwardContext.ActivityResource.AppRunner);
 
             OnAfterExecuteWorkItem();

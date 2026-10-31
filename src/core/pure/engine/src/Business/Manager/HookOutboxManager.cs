@@ -59,7 +59,7 @@ namespace saiflow.engine.Business.Manager
                 if (candidate.NextRetryAt != null && candidate.NextRetryAt > now)
                     continue;
 
-                if (TryClaimOne(kit, candidate.Id, leaseSeconds, out var row))
+                if (TryClaimOne(kit, candidate.Id.Value, leaseSeconds, out var row))
                     claimed.Add(row);
             }
 
@@ -133,7 +133,7 @@ namespace saiflow.engine.Business.Manager
             else
             {
                 row.Status = HookOutboxStatus.Pending;
-                row.NextRetryAt = DateTime.UtcNow.AddMinutes(Math.Pow(2, Math.Min(row.Attempt, 6)));
+                row.NextRetryAt = DateTime.UtcNow.AddMinutes(Math.Pow(2, Math.Min(row.Attempt.Value, 6)));
             }
 
             Sibling(kit).useRepo<HookOutboxEntity>().Update(row);
@@ -218,7 +218,7 @@ namespace saiflow.engine.Business.Manager
             var count = 0;
             foreach (var row in dead)
             {
-                if (ResetDeadIfDead(kit, row.Id))
+                if (ResetDeadIfDead(kit, row.Id.Value))
                     count++;
             }
 

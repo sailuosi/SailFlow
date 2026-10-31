@@ -11,7 +11,7 @@ namespace saiflow.engine.Business.Entity
     public class VariableEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         [SooColumn(Name = "process_id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "version")]
@@ -27,9 +27,9 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "default_value")]
         public string DefaultValue { get; set; }
         [SooColumn(Name = "is_required")]
-        public short IsRequired { get; set; }
+        public short? IsRequired { get; set; }
         [SooColumn(Name = "is_referenced")]
-        public short IsReferenced { get; set; }
+        public short? IsReferenced { get; set; }
         [SooColumn(Name = "source_ref")]
         public string SourceRef { get; set; }
         [SooColumn(Name = "source_variable_name")]
@@ -39,7 +39,7 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "description")]
         public string Description { get; set; }
         [SooColumn(Name = "created_datetime")]
-        public DateTime CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         [SooColumn(Name = "updated_datetime")]
         public DateTime? UpdatedDateTime { get; set; }
     }

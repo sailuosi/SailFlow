@@ -11,7 +11,7 @@ namespace saiflow.engine.Business.Entity
     public class RuleSetEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         [SooColumn(Name = "rule_set_code")]
         public string RuleSetCode { get; set; }
@@ -32,10 +32,10 @@ namespace saiflow.engine.Business.Entity
         public string Mode { get; set; }
 
         [SooColumn(Name = "is_enabled")]
-        public short IsEnabled { get; set; }
+        public short? IsEnabled { get; set; }
 
         [SooColumn(Name = "created_datetime")]
-        public DateTime CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
 
         [SooColumn(Name = "updated_datetime")]
         public DateTime? UpdatedDateTime { get; set; }

@@ -94,7 +94,7 @@ namespace saiflow.AI.Service
                 tools:              tools,
                 inputVariableKey:   "user_message",
                 outputVariableKey:  "agent_result",
-                maxIterations:      axConfig.MemoryTurns > 0 ? axConfig.MemoryTurns : 10);
+                maxIterations:      axConfig.MemoryTurns.GetValueOrDefault() > 0 ? axConfig.MemoryTurns.Value : 10);
 
             Console.WriteLine($"[AgentMultiTurnService] Running ReAct for activity='{axConfig.ActivityId}' tools={tools.Count}");
 

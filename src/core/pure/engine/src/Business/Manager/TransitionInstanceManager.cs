@@ -118,7 +118,7 @@ namespace saiflow.engine.Business.Manager
             clip.where(() => t.AppInstanceId, appInstanceId);
             clip.where(() => t.ProcessId, processId);
             clip.sinkOR();
-            clip.whereIn(() => t.ToActivityType, new[]
+            clip.whereIn(() => t.ToActivityType, new short?[]
             {
                 (short)ActivityTypeEnum.TaskNode,
                 (short)ActivityTypeEnum.SubProcessNode,
@@ -156,7 +156,7 @@ namespace saiflow.engine.Business.Manager
             var pim = new ProcessInstanceManager(Sail);
             var pi = pim.GetProcessInstanceCurrent(appInstanceId, processId, version);
             if (pi != null)
-                list = GetTransitionInstanceList(appInstanceId, processId, pi.Id);
+                list = GetTransitionInstanceList(appInstanceId, processId, pi.Id.Value);
             return list;
         }
 
@@ -213,7 +213,7 @@ namespace saiflow.engine.Business.Manager
             foreach (var trans in transitionList)
             {
                 if (trans.ToActivityType == (int)ActivityTypeEnum.GatewayNode)
-                    targetIDs.AddRange(GetTargetActivityInstanceIDs(kit, trans.ToActivityInstanceId));
+                    targetIDs.AddRange(GetTargetActivityInstanceIDs(kit, trans.ToActivityInstanceId.Value));
                 else
                     targetIDs.Add(trans.ToActivityInstanceId);
             }

@@ -37,7 +37,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
             Activity splitActivity = this.ProcessModel.GetBackwardGatewayActivity(gatewayActivity, ref joinCount, ref splitCount);
             ActivityInstanceEntity splitActivityInstance = base.ActivityInstanceManager.GetActivityInstanceLatest(SailSqlAccess.Sibling(kit), processInstanceId, splitActivity.ActivityId);
 
-            return base.ActivityInstanceManager.GetGatewayInstanceCountByTransition(SailSqlAccess.Sibling(kit), splitActivity.ActivityId, splitActivityInstance.Id, processInstanceId);
+            return base.ActivityInstanceManager.GetGatewayInstanceCountByTransition(SailSqlAccess.Sibling(kit), splitActivity.ActivityId, splitActivityInstance.Id.Value, processInstanceId);
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
 
             //检查是否有运行中的合并节点实例
             //Check if there are any running merge node instances
-            ActivityInstanceEntity joinNode = base.ActivityInstanceManager.GetActivityRunning(SailSqlAccess.Sibling(kit), processInstance.Id, base.GatewayActivity.ActivityId);
+            ActivityInstanceEntity joinNode = base.ActivityInstanceManager.GetActivityRunning(SailSqlAccess.Sibling(kit), processInstance.Id.Value, base.GatewayActivity.ActivityId);
 
             if (joinNode == null)
             {
@@ -66,7 +66,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
 
                 //计算总需要的Token数目
                 //Calculate the total number of tokens required
-                joinNode.TokensRequired = GetTokensRequired(processInstance.Id, base.GatewayActivity, kit);
+                joinNode.TokensRequired = GetTokensRequired(processInstance.Id.Value, base.GatewayActivity, kit);
                 joinNode.TokensHad = 1;
 
                 joinNode.ActivityState = (short)ActivityStateEnum.Running;
@@ -94,7 +94,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
 
                 //更新Token数目
                 //Increase tokens count
-                base.ActivityInstanceManager.IncreaseTokensHad(SailSqlAccess.Sibling(kit), base.GatewayActivityInstance.Id, runner);
+                base.ActivityInstanceManager.IncreaseTokensHad(SailSqlAccess.Sibling(kit), base.GatewayActivityInstance.Id.Value, runner);
                 base.InsertTransitionInstance(processInstance,
                     transitionId,
                     fromActivityInstance,
@@ -111,7 +111,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
             {
                 //如果达到完成节点的Token数，则设置该节点状态为完成
                 //If the number of tokens for the completion node is reached, set the node status to complete
-                base.CompleteActivityInstance(base.GatewayActivityInstance.Id,
+                base.CompleteActivityInstance(base.GatewayActivityInstance.Id.Value,
                     runner,
                     kit);
                 base.GatewayActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;

@@ -14,7 +14,7 @@ namespace saiflow.engine.Business.Entity
     public class TransitionInstanceEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         [SooColumn(Name = "transition_id")]
         public string TransitionId { get; set; }
         [SooColumn(Name = "app_name")]
@@ -22,38 +22,38 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "app_instance_id")]
         public string AppInstanceId { get; set; }
         [SooColumn(Name = "process_instance_id")]
-        public int ProcessInstanceId { get; set; }
+        public int? ProcessInstanceId { get; set; }
         [SooColumn(Name = "process_id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "transition_type")]
-        public byte TransitionType { get; set; }
+        public byte? TransitionType { get; set; }
         [SooColumn(Name = "flying_type")]
-        public byte FlyingType { get; set; }
+        public byte? FlyingType { get; set; }
         [SooColumn(Name = "from_activity_instance_id")]
-        public int FromActivityInstanceId { get; set; }
+        public int? FromActivityInstanceId { get; set; }
         [SooColumn(Name = "from_activity_id")]
         public string FromActivityId { get; set; }
         [SooColumn(Name = "from_activity_type")]
-        public short FromActivityType { get; set; }
+        public short? FromActivityType { get; set; }
         [SooColumn(Name = "from_activity_name")]
         public string FromActivityName { get; set; }
         [SooColumn(Name = "to_activity_instance_id")]
-        public int ToActivityInstanceId { get; set; }
+        public int? ToActivityInstanceId { get; set; }
         [SooColumn(Name = "to_activity_id")]
         public string ToActivityId { get; set; }
         [SooColumn(Name = "to_activity_type")]
-        public short ToActivityType { get; set; }
+        public short? ToActivityType { get; set; }
         [SooColumn(Name = "to_activity_name")]
         public string ToActivityName { get; set; }
         [SooColumn(Name = "condition_parsed_result")]
-        public byte ConditionParsedResult { get; set; }
+        public byte? ConditionParsedResult { get; set; }
         [SooColumn(Name = "created_user_id")]
         public string CreatedUserId { get; set; }
         [SooColumn(Name = "created_user_name")]
         public string CreatedUserName { get; set; }
         [SooColumn(Name = "created_datetime")]
-        public System.DateTime CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         [SooColumn(Name = "record_status_invalid")]
-        public byte RecordStatusInvalid { get; set; }
+        public byte? RecordStatusInvalid { get; set; }
     }
 }

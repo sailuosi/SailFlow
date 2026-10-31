@@ -30,7 +30,7 @@ namespace saiflow.engine.Core.Pattern.Auto
             var inputs = BuildRuleInputs(client, eventService, currentActivityInstance, currentActivity);
             var result = new RuleSetExecutionManager(client).Execute(ruleSet, inputs);
 
-            if (!result.IsSuccess)
+            if (result.IsSuccess != true)
                 throw new WorkflowException($"RuleTask execution failed: {result.Message}");
 
             if (result.OutputVariables == null || result.OutputVariables.Count == 0)
@@ -133,14 +133,14 @@ namespace saiflow.engine.Core.Pattern.Auto
                             var sourceInst = ResolveSourceActivityInstance(activityInstance, def.SourceRef.Trim(), kit, aim);
                             if (sourceInst != null)
                             {
-                                var srcEntity = pvm.GetVariableByActivity(kit, processInstanceId, sourceInst.Id,
+                                var srcEntity = pvm.GetVariableByActivity(kit, processInstanceId, sourceInst.Id.Value,
                                     def.SourceVariableName.Trim());
                                 raw = srcEntity?.Value;
                             }
                         }
                         else
                         {
-                            var local = pvm.GetVariableByActivity(kit, processInstanceId, activityInstanceId, key);
+                            var local = pvm.GetVariableByActivity(kit, processInstanceId, activityInstanceId.Value, key);
                             raw = local?.Value;
                             if (raw == null && !string.IsNullOrEmpty(def.DefaultValue))
                                 raw = def.DefaultValue;
@@ -155,7 +155,7 @@ namespace saiflow.engine.Core.Pattern.Auto
                 }
             }
 
-            var activityRows = pvm.GetVariableList(kit, processInstanceId, activityInstanceId);
+            var activityRows = pvm.GetVariableList(kit, processInstanceId, activityInstanceId.Value);
             if (activityRows != null)
             {
                 foreach (var v in activityRows)
@@ -189,7 +189,7 @@ namespace saiflow.engine.Core.Pattern.Auto
             var prev = aim.GetPreviousActivityInstanceSimple(SailSqlAccess.Sibling(kit), currentInstance, sourceActivityId);
             if (prev != null) return prev;
 
-            var completed = aim.GetActivityInstanceListCompletedSimple(SailSqlAccess.Sibling(kit), currentInstance.ProcessInstanceId, sourceActivityId);
+            var completed = aim.GetActivityInstanceListCompletedSimple(SailSqlAccess.Sibling(kit), currentInstance.ProcessInstanceId.Value, sourceActivityId);
             return completed != null && completed.Count > 0 ? completed[0] : null;
         }
 

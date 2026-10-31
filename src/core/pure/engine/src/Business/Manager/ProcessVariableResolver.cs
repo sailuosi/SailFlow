@@ -39,7 +39,7 @@ namespace saiflow.engine.Business.Manager
                     continue;
 
                 var ovDbEntity = pvm.GetVariableByActivity(
-                    kit, taskView.ProcessInstanceId, taskView.ActivityInstanceId, ov.Name);
+                    kit, taskView.ProcessInstanceId.Value, taskView.ActivityInstanceId.Value, ov.Name);
                 if (ovDbEntity == null)
                 {
                     isCheckPassed = false;

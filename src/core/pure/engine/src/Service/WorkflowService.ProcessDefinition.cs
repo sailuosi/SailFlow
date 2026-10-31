@@ -144,7 +144,7 @@ namespace saiflow.engine.Service
         {
             int newProcessId = 0;
             var pm = new ProcessManager(Sail);
-            var entityDB = pm.GetById(entity.Id);
+            var entityDB = pm.GetById(entity.Id.Value);
             if (entity != null)
             {
                 newProcessId = pm.Upgrade(entityDB.ProcessId, entityDB.Version, entity.Version);

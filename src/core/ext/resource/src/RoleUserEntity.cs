@@ -1,4 +1,4 @@
-﻿using mooSQL.data;
+using mooSQL.data;
 
 namespace saiflow.hub.Resource
 {
@@ -10,10 +10,10 @@ namespace saiflow.hub.Resource
     public class RoleUserEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         [SooColumn(Name = "role_id")]
-        public int RoleId { get; set; }
+        public int? RoleId { get; set; }
         [SooColumn(Name = "user_id")]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
     }
 }

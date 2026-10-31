@@ -74,7 +74,7 @@ namespace saiflow.engine.Event
             {
                 AppInstanceId = context.ProcessInstance.AppInstanceId,
                 ProcessId = context.ProcessInstance.ProcessId,
-                ProcessInstanceId = context.ProcessInstance.Id,
+                ProcessInstanceId = context.ProcessInstance.Id.Value,
                 ActivityId = currentActivity.ActivityId,
                 ActivityName = currentActivity.ActivityName,
                 ActivityCode = currentActivity.ActivityCode,

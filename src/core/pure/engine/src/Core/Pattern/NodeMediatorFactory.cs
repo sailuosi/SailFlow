@@ -271,7 +271,7 @@ namespace saiflow.engine.Core.Pattern
                     if (forwardContext.CurrentActivity.MultiSignDetail.ComplexType == ComplexTypeEnum.SignForward)
                     {
                         var aim = new ActivityInstanceManager(client);
-                        var miChildList = aim.GetActivityMulitipleInstanceWithState(forwardContext.FromActivityInstance.Id, forwardContext.FromActivityInstance.ProcessInstanceId);
+                        var miChildList = aim.GetActivityMulitipleInstanceWithState(forwardContext.FromActivityInstance.Id.Value, forwardContext.FromActivityInstance.ProcessInstanceId.Value);
 
                         //加签的动态变量传入
                         //Pass in the signed dynamic variable

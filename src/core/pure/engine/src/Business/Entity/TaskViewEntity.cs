@@ -17,7 +17,7 @@ namespace saiflow.engine.Business.Entity
     public class TaskViewEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         [SooColumn(Name = "app_name")]
         public string AppName { get; set; }
@@ -29,7 +29,7 @@ namespace saiflow.engine.Business.Entity
         public string AppInstanceCode { get; set; }
 
         [SooColumn(Name = "process_instance_id")]
-        public int ProcessInstanceId { get; set; }
+        public int? ProcessInstanceId { get; set; }
 
         [SooColumn(Name = "process_id")]
         public string ProcessId { get; set; }
@@ -41,7 +41,7 @@ namespace saiflow.engine.Business.Entity
         public string ActivityId { get; set; }
 
         [SooColumn(Name = "activity_instance_id")]
-        public int ActivityInstanceId { get; set; }
+        public int? ActivityInstanceId { get; set; }
 
         [SooColumn(Name = "activity_name")]
         public string ActivityName { get; set; }
@@ -50,31 +50,31 @@ namespace saiflow.engine.Business.Entity
         public string ActivityCode { get; set; }
 
         [SooColumn(Name = "activity_type")]
-        public short ActivityType { get; set; }
+        public short? ActivityType { get; set; }
 
         [SooColumn(Name = "work_item_type")]
-        public short WorkItemType { get; set; }
+        public short? WorkItemType { get; set; }
 
         [SooColumn(Name = "task_type")]
-        public short TaskType { get; set; }
+        public short? TaskType { get; set; }
 
         [SooColumn(Name = "sub_process_type")]
-        public Nullable<short> SubProcessType { get; set; }
+        public short? SubProcessType { get; set; }
 
         [SooColumn(Name = "sub_process_def_id")]
-        public int SubProcessDefId { get; set; }
+        public int? SubProcessDefId { get; set; }
 
         [SooColumn(Name = "sub_process_id")]
         public string SubProcessId { get; set; }
 
         [SooColumn(Name = "entrusted_task_id")]
-        public Nullable<int> EntrustedTaskId { get; set; }        //被委托任务Id
+        public int? EntrustedTaskId { get; set; }        //被委托任务Id
 
         [SooColumn(Name = "main_activity_instance_id")]
-        public Nullable<int> MainActivityInstanceId { get; set; }
+        public int? MainActivityInstanceId { get; set; }
 
         [SooColumn(Name = "complete_order")]
-        public Nullable<float> CompleteOrder { get; set; }
+        public float? CompleteOrder { get; set; }
 
         [SooColumn(Name = "assigned_user_id")]
         public string AssignedUserId { get; set; }
@@ -83,19 +83,19 @@ namespace saiflow.engine.Business.Entity
         public string AssignedUserName { get; set; }
 
         [SooColumn(Name = "is_email_sent")]
-        public byte IsEMailSent { get; set; }
+        public byte? IsEMailSent { get; set; }
 
         [SooColumn(Name = "approval_status")]
-        public short ApprovalStatus { get; set; }
+        public short? ApprovalStatus { get; set; }
 
         [SooColumn(Name = "created_datetime")]
-        public System.DateTime CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
 
         [SooColumn(Name = "updated_datetime")]
-        public Nullable<DateTime> UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTime { get; set; }
 
         [SooColumn(Name = "ended_datetime")]
-        public Nullable<System.DateTime> EndedDateTime { get; set; }
+        public DateTime? EndedDateTime { get; set; }
 
         [SooColumn(Name = "ended_user_id")]
         public string EndedUserId { get; set; }
@@ -104,18 +104,18 @@ namespace saiflow.engine.Business.Entity
         public string EndedUserName { get; set; }
 
         [SooColumn(Name = "task_state")]
-        public short TaskState { get; set; }
+        public short? TaskState { get; set; }
 
         [SooColumn(Name = "activity_state")]
-        public short ActivityState { get; set; }
+        public short? ActivityState { get; set; }
 
         [SooColumn(Name = "main_activity_state")]
-        public short MainActivityState { get; set; }
+        public short? MainActivityState { get; set; }
 
         [SooColumn(Name = "record_status_invalid")]
-        public byte RecordStatusInvalid { get; set; }
+        public byte? RecordStatusInvalid { get; set; }
 
         [SooColumn(Name = "process_state")]
-        public short ProcessState { get; set; }
+        public short? ProcessState { get; set; }
     }
 }

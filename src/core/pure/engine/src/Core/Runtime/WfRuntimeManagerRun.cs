@@ -23,7 +23,7 @@ namespace saiflow.engine.Core.Runtime
         internal override void ExecuteInstanceImp(SQLBuilder kit)
         {
             var result = base.WfExecutedResult;
-            result.ProcessInstanceIdStarted = RunningActivityInstance.ProcessInstanceId;
+            result.ProcessInstanceIdStarted = RunningActivityInstance.ProcessInstanceId.Value;
 
             try
             {
@@ -86,7 +86,7 @@ namespace saiflow.engine.Core.Runtime
             EventExecutor.InvokeExternalEvent(Sail, kit,
                 EventFireTypeEnum.OnProcessRunning,
                 base.ActivityResource.AppRunner.EventSubscriptionList,
-                RunningActivityInstance.ProcessInstanceId);
+                RunningActivityInstance.ProcessInstanceId.Value);
         }
 
         /// <summary>
@@ -97,13 +97,13 @@ namespace saiflow.engine.Core.Runtime
         private void OnProcessCompleted(SQLBuilder kit)
         {
             var pim = new ProcessInstanceManager(Sail);
-            var entity = pim.GetById(kit, RunningActivityInstance.ProcessInstanceId);
+            var entity = pim.GetById(kit, RunningActivityInstance.ProcessInstanceId.Value);
             if (entity.ProcessState == (short)ProcessStateEnum.Completed)
             {
                 EventExecutor.InvokeExternalEvent(Sail, kit,
                     EventFireTypeEnum.OnProcessCompleted,
                     base.ActivityResource.AppRunner.EventSubscriptionList,
-                    RunningActivityInstance.ProcessInstanceId);
+                    RunningActivityInstance.ProcessInstanceId.Value);
             }
         }
     }

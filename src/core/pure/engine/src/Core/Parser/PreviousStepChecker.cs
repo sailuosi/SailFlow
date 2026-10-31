@@ -66,7 +66,7 @@ namespace saiflow.engine.Core.Parser
 
             //获取前置节点列表
             //Get the list of previous nodes
-            var processInstance = (new ProcessInstanceManager(Sail)).GetById(runningNode.ProcessInstanceId);
+            var processInstance = (new ProcessInstanceManager(Sail)).GetById(runningNode.ProcessInstanceId.Value);
             var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, processInstance);
             var previousActivityList = GetPreviousActivityList(runningNode, processModel, out hasGatewayPassed);
 
@@ -113,7 +113,7 @@ namespace saiflow.engine.Core.Parser
                             //Serial countersignature nodes read the previous step in descending order of Completed Order
                             var previousAdjacentBrotherNode = GetPreviousOfMultipleInstanceNode(
                                 runningNode.MainActivityInstanceId.Value,
-                                runningNode.Id,
+                                runningNode.Id.Value,
                                 runningNode.CompleteOrder.Value);
                             if (previousAdjacentBrotherNode != null)
                             {
@@ -128,7 +128,7 @@ namespace saiflow.engine.Core.Parser
                     {
                         //跨越网关类型
                         //Cross gateway type
-                        var activityInstanceList = aim.GetActivityInstanceListCompletedSimple(runningNode.ProcessInstanceId, activity.ActivityId);
+                        var activityInstanceList = aim.GetActivityInstanceListCompletedSimple(runningNode.ProcessInstanceId.Value, activity.ActivityId);
                         foreach (var a in activityInstanceList)
                         {
                             AppendNodeViewList(nodeList, activity, a.EndedUserId, a.EndedUserName);
@@ -263,7 +263,7 @@ namespace saiflow.engine.Core.Parser
                 //已经是中间节点，只能退回到上一步多实例子节点
                 //It is already an intermediate node and can only be reverted back to the previous step of the multi instance node
                 var entity = GetPreviousOfMultipleInstanceNode(runningNode.MainActivityInstanceId.Value,
-                    runningNode.Id,
+                    runningNode.Id.Value,
                     runningNode.CompleteOrder.Value);
                 var activity = processModel.GetActivity(entity.ActivityId);
 
@@ -306,7 +306,7 @@ namespace saiflow.engine.Core.Parser
             var tim = new TransitionInstanceManager(Sail);
             var transitionList = tim.GetTransitionInstanceList(runningNode.AppInstanceId,
                 runningNode.ProcessId,
-                runningNode.ProcessInstanceId).ToList();
+                runningNode.ProcessInstanceId.Value).ToList();
 
             var backSrcActivityInstanceId = 0;
             if (isLookUpBackSource == true)
@@ -328,12 +328,12 @@ namespace saiflow.engine.Core.Parser
                 }
                 else
                 {
-                    backSrcActivityInstanceId = runningNode.Id;
+                    backSrcActivityInstanceId = runningNode.Id.Value;
                 }
             }
             else
             {
-                backSrcActivityInstanceId = runningNode.Id;
+                backSrcActivityInstanceId = runningNode.Id.Value;
             }
 
             var aim = new ActivityInstanceManager(Sail);
@@ -348,12 +348,12 @@ namespace saiflow.engine.Core.Parser
                 //If it is a gateway node, continue searching
                 if (entity.FromActivityType == (short)ActivityTypeEnum.GatewayNode)
                 {
-                    GetPreviousOfGatewayActivityInstance(transitionList, entity.FromActivityInstanceId, previousActivityInstanceList);
+                    GetPreviousOfGatewayActivityInstance(transitionList, entity.FromActivityInstanceId.Value, previousActivityInstanceList);
                     hasPassedGatewayNode = true;
                 }
                 else
                 {
-                    previousActivityInstanceList.Add(aim.GetById(entity.FromActivityInstanceId));
+                    previousActivityInstanceList.Add(aim.GetById(entity.FromActivityInstanceId.Value));
                 }
             }
             return previousActivityInstanceList;
@@ -377,11 +377,11 @@ namespace saiflow.engine.Core.Parser
                 var activityType = EnumHelper.ParseEnum<ActivityTypeEnum>(entity.FromActivityType.ToString());
                 if (XPDLHelper.IsSimpleComponentNode(activityType) == true)
                 {
-                    previousActivityInstanceList.Add(aim.GetById(entity.FromActivityInstanceId));
+                    previousActivityInstanceList.Add(aim.GetById(entity.FromActivityInstanceId.Value));
                 }
                 else if (entity.FromActivityType == (short)ActivityTypeEnum.GatewayNode)
                 {
-                    GetPreviousOfGatewayActivityInstance(transitionList, entity.FromActivityInstanceId, previousActivityInstanceList);
+                    GetPreviousOfGatewayActivityInstance(transitionList, entity.FromActivityInstanceId.Value, previousActivityInstanceList);
                 }
             }
         }

@@ -79,7 +79,7 @@ namespace saiflow.engine.Core.Pattern.Auto
                 if (outputVariableNameList != null && fromActivityInstance != null)
                 {
                     var inputVariableValueList = pvm.GetVariableListByActivity(
-                        kit, processInstanceId, fromActivityInstance.Id, outputVariableNameList);
+                        kit, processInstanceId, fromActivityInstance.Id.Value, outputVariableNameList);
 
                     foreach (var item in inputVariableValueList)
                         variables[item.Name] = item.Value ?? string.Empty;

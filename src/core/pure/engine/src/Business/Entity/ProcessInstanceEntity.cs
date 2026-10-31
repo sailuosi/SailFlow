@@ -14,7 +14,7 @@ namespace saiflow.engine.Business.Entity
     public class ProcessInstanceEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         [SooColumn(Name = "process_id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "process_name")]
@@ -28,46 +28,46 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "app_instance_code")]
         public string AppInstanceCode { get; set; }
         [SooColumn(Name = "process_state")]
-        public short ProcessState { get; set; }
+        public short? ProcessState { get; set; }
         [SooColumn(Name = "sub_process_type")]
-        public Nullable<short> SubProcessType { get; set; }
+        public short? SubProcessType { get; set; }
         [SooColumn(Name = "sub_process_def_id")]
-        public int SubProcessDefId { get; set; }
+        public int? SubProcessDefId { get; set; }
         [SooColumn(Name = "sub_process_Id")]
         public string SubProcessId { get; set; }
         [SooColumn(Name = "invoked_activity_instance_id")]
-        public int InvokedActivityInstanceId { get; set; }
+        public int? InvokedActivityInstanceId { get; set; }
         [SooColumn(Name = "invoked_activity_id")]
         public string InvokedActivityId { get; set; }
         [SooColumn(Name = "job_timer_type")]
-        public Nullable<short> JobTimerType { get; set; }
+        public short? JobTimerType { get; set; }
         [SooColumn(Name = "job_timer_status")]
-        public Nullable<short> JobTimerStatus { get; set; }
+        public short? JobTimerStatus { get; set; }
         [SooColumn(Name = "trigger_expression")]
         public string TriggerExpression { get; set; }
         [SooColumn(Name = "overdue_datetime")]
-        public Nullable<DateTime> OverdueDateTime { get; set; }
+        public DateTime? OverdueDateTime { get; set; }
         [SooColumn(Name = "job_timer_treated_datetime")]
-        public Nullable<DateTime> JobTimerTreatedDateTime { get; set; }
+        public DateTime? JobTimerTreatedDateTime { get; set; }
         [SooColumn(Name = "created_datetime")]
-        public DateTime CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         [SooColumn(Name = "created_user_id")]
         public string CreatedUserId { get; set; }
         [SooColumn(Name = "created_user_name")]
         public string CreatedUserName { get; set; }
         [SooColumn(Name = "updated_datetime")]
-        public Nullable<DateTime> UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTime { get; set; }
         [SooColumn(Name = "updated_user_id")]
         public string UpdatedUserId { get; set; }
         [SooColumn(Name = "updated_user_name")]
         public string UpdatedUserName { get; set; }
         [SooColumn(Name = "ended_datetime")]
-        public Nullable<DateTime> EndedDateTime { get; set; }
+        public DateTime? EndedDateTime { get; set; }
         [SooColumn(Name = "ended_user_id")]
         public string EndedUserId { get; set; }
         [SooColumn(Name = "ended_user_name")]
         public string EndedUserName { get; set; }
         [SooColumn(Name = "record_status_invalid")]
-        public byte RecordStatusInvalid { get; set; }
+        public byte? RecordStatusInvalid { get; set; }
     }
 }

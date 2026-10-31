@@ -96,7 +96,7 @@ namespace saiflow.engine.Business.Manager
             TaskViewEntity taskView,
             IDictionary<string, string> condition)
         {
-            var variableList = GetVariableList(kit, taskView.ProcessInstanceId, taskView.ActivityInstanceId);
+            var variableList = GetVariableList(kit, taskView.ProcessInstanceId.Value, taskView.ActivityInstanceId.Value);
             if (variableList == null || variableList.Count == 0)
                 return condition;
 
@@ -241,17 +241,17 @@ namespace saiflow.engine.Business.Manager
 
             ProcessVariableEntity existProcessVariable;
             if (entity.Id != 0)
-                existProcessVariable = GetVariableById(kit, entity.Id);
+                existProcessVariable = GetVariableById(kit, entity.Id.Value);
             else
                 existProcessVariable = GetVariableByActivity(
-                    kit, entity.ProcessInstanceId, entity.ActivityInstanceId, entity.Name);
+                    kit, entity.ProcessInstanceId.Value, entity.ActivityInstanceId.Value, entity.Name);
 
             if (existProcessVariable != null)
             {
                 existProcessVariable.Value = entity.Value;
                 existProcessVariable.UpdatedDateTime = DateTime.UtcNow;
                 Update(kit, existProcessVariable);
-                return existProcessVariable.Id;
+                return existProcessVariable.Id.Value;
             }
 
             entity.UpdatedDateTime = DateTime.UtcNow;

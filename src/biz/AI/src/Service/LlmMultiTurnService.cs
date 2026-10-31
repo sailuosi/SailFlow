@@ -60,7 +60,7 @@ namespace saiflow.AI.Service
             var decryptedApiKey = ApiKeyCryptoHelper.Decrypt(modelProvider.ApiKey, modelProvider.ApiUUID);
             var systemPrompt = axConfig.SystemPrompt;
             var userMessage = axConfig.UserMessage ?? string.Empty;
-            var memoryTurns = axConfig.MemoryTurns > 0 ? axConfig.MemoryTurns : 10;
+            var memoryTurns = axConfig.MemoryTurns.GetValueOrDefault() > 0 ? axConfig.MemoryTurns.Value : 10;
 
             // Build multi-turn message list:
             // 1. Optional system prompt

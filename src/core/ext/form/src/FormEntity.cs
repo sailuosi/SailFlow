@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using mooSQL.data;
 
 namespace saiflow.hub.Form
@@ -7,7 +7,7 @@ namespace saiflow.hub.Form
     public class FormEntity
     {
         [SooColumn(Name = "Id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         public string FormName { get; set; }
         public string FormCode { get; set; }
         public string Version { get; set; }
@@ -15,7 +15,7 @@ namespace saiflow.hub.Form
         public string TemplateContent { get; set; }
         public string HTMLContent { get; set; }
         public string Description { get; set; }
-        public DateTime CreatedDate { get; set; }
+        public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdatedDate { get; set; }
     }
 }

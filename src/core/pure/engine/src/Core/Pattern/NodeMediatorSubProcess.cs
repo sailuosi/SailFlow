@@ -52,7 +52,7 @@ namespace saiflow.engine.Core.Pattern
                     var pim = new ProcessInstanceManager(Sail);
                     var kit = SailSqlAccess.Sibling(Kit);
                     bool isCompleted = pim.CheckSubProcessInstanceCompleted(kit,
-                        base.LinkContext.FromActivityInstance.Id,
+                        base.LinkContext.FromActivityInstance.Id.Value,
                         base.LinkContext.FromActivityInstance.ActivityId);
                     if (isCompleted == false)
                     {
@@ -99,7 +99,7 @@ namespace saiflow.engine.Core.Pattern
 
             //设置活动节点的状态为完成状态
             //Set the status of the activity node to complete status
-            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 
             //先判断是否是多实例类型的任务
@@ -115,7 +115,7 @@ namespace saiflow.engine.Core.Pattern
                 //取出多实例节点列表
                 //Retrieve a list of multiple instance nodes
                 var sqList = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithState(
-                    SailSqlAccess.Sibling(kit),mainNodeIndex,base.LinkContext.FromActivityInstance.ProcessInstanceId,(short)ActivityStateEnum.Suspended).ToList<ActivityInstanceEntity>();
+                    SailSqlAccess.Sibling(kit),mainNodeIndex,base.LinkContext.FromActivityInstance.ProcessInstanceId.Value,(short)ActivityStateEnum.Suspended).ToList<ActivityInstanceEntity>();
 
                 if (base.LinkContext.FromActivity.MultiSignDetail.MergeType == MergeTypeEnum.Sequence)
                 {
@@ -135,7 +135,7 @@ namespace saiflow.engine.Core.Pattern
                         //设置下一个任务对应的子流程进入运行状态
                         //Set the sub process corresponding to the next task to enter the running state
                         base.ProcessInstanceManager.RecallSubProcess(SailSqlAccess.Sibling(Kit),
-                            nextActivityInstance.Id,
+                            nextActivityInstance.Id.Value,
                             activityResource.AppRunner);
 
                         canContinueForwardCurrentNode = false;

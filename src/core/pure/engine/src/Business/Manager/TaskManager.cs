@@ -139,7 +139,7 @@ namespace saiflow.engine.Business.Manager
             clip.where(() => t.AssignedUserId, userId);
             clip.where(() => t.ProcessState, (short)2);
             clip.where(() => t.ActivityType == 4 || t.ActivityType == 5 || t.ActivityType == 6);
-            clip.whereIn(() => t.ActivityState, new[] { (short)1, (short)2 });
+            clip.whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 });
             clip.orderByDesc(() => t.Id);
             clip.top(1);
             var list = clip.select(t).queryList().ToList();
@@ -186,10 +186,10 @@ namespace saiflow.engine.Business.Manager
             clip.where(() => t.AssignedUserId, userId);
             clip.where(() => t.ProcessState, (short)2);
             clip.sinkOR();
-            clip.whereIn(() => t.ActivityType, new[] { (short)4, (short)5, (short)6 });
+            clip.whereIn(() => t.ActivityType, new short?[] { (short)4, (short)5, (short)6 });
             clip.where(() => t.WorkItemType, (short)1);
             clip.rise();
-            clip.whereIn(() => t.ActivityState, new[] { (short)1, (short)2 });
+            clip.whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 });
             clip.orderByDesc(() => t.Id);
             clip.top(1);
             var list = clip.select(t).queryList().ToList();
@@ -368,7 +368,7 @@ namespace saiflow.engine.Business.Manager
                 {
                     var task = GetTask(kit, taskRunner.TaskId.Value);
                     SetTaskState(kit, task, taskRunner.UserId, taskRunner.UserName, TaskStateEnum.Reading);
-                    new ActivityInstanceManager(Sail).Read(kit, task.ActivityInstanceId, taskRunner);
+                    new ActivityInstanceManager(Sail).Read(kit, task.ActivityInstanceId.Value, taskRunner);
                     kit.commit();
                 }
                 catch (System.Exception e)
@@ -406,7 +406,7 @@ namespace saiflow.engine.Business.Manager
         {
             EndTaskState(kit, taskId, TaskStateEnum.Completed, runner);
             var task = GetTask(kit, taskId);
-            var activityInstance = new ActivityInstanceManager(Sail).GetById(kit, task.ActivityInstanceId);
+            var activityInstance = new ActivityInstanceManager(Sail).GetById(kit, task.ActivityInstanceId.Value);
             Sail.CapabilityDispatcher.FireTaskLifecycle(kit, task, activityInstance, runner, TaskNotifyKind.Completed);
         }
 
@@ -438,7 +438,7 @@ namespace saiflow.engine.Business.Manager
         internal WfDataManagedResult Entrust(SQLBuilder kit, TaskEntrustedEntity entity, bool cancelOriginalTask = true)
         {
             var am = new ActivityInstanceManager(Sail);
-            var activityInstance = am.GetByTask(kit, entity.TaskId);
+            var activityInstance = am.GetByTask(kit, entity.TaskId.Value);
 
             if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
                 && activityInstance.ActivityState != (short)ActivityStateEnum.Running)
@@ -448,12 +448,12 @@ namespace saiflow.engine.Business.Manager
 
             if (cancelOriginalTask)
             {
-                var task = GetTask(kit, entity.TaskId);
+                var task = GetTask(kit, entity.TaskId.Value);
                 task.TaskState = (short)TaskStateEnum.Closed;
                 Update(kit, task);
             }
 
-            var taskList = GetTaskListByActivity(kit, activityInstance.ProcessInstanceId, activityInstance.Id);
+            var taskList = GetTaskListByActivity(kit, activityInstance.ProcessInstanceId.Value, activityInstance.Id.Value);
             if (taskList.Where(t => t.AssignedUserId == entity.EntrustToUserId).Any())
             {
                 return WfDataManagedResult.Exception(Sail.Messages.GetEngineMessage("taskmanager.entrust.notagain.warn"));

@@ -7,7 +7,7 @@ namespace saiflow.AI.Entity
     public class AiModelProviderEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         [SooColumn(Name = "model_provider")]
         public string ModelProvider { get; set; }
         [SooColumn(Name = "model_name")]
@@ -25,8 +25,8 @@ namespace saiflow.AI.Entity
         [SooColumn(Name = "is_active")]
         public Boolean IsActive { get; set; }
         [SooColumn(Name = "created_datetime")]
-        public DateTime CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         [SooColumn(Name = "updated_datetime")]
-        public DateTime UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTime { get; set; }
     }
 }

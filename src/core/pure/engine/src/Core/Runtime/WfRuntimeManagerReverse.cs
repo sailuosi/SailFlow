@@ -23,7 +23,7 @@ namespace saiflow.engine.Core.Runtime
             //修改流程实例为返签状态
             //Modify the process instance to a reverse status
             var pim = new ProcessInstanceManager(Sail);
-            pim.Reverse(kit, base.BackwardContext.ProcessInstance.Id, base.AppRunner);
+            pim.Reverse(kit, base.BackwardContext.ProcessInstance.Id.Value, base.AppRunner);
 
             var nodeMediatorBackward = new NodeMediatorBackward(base.BackwardContext, kit, Sail);
             nodeMediatorBackward.CreateBackwardActivityTaskTransitionInstance(base.BackwardContext.ProcessInstance,

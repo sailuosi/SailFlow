@@ -34,7 +34,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
 
             ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
             var kit = SailSqlAccess.Sibling(Kit);
-            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id,
+            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id.Value,
                 ActivityForwardContext.ActivityResource.AppRunner);
 
             //执行节点上的信号发布
@@ -64,7 +64,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
 
             ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
 
-            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), toActivityInstance.Id, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), toActivityInstance.Id.Value, activityResource.AppRunner);
 
             base.InsertTransitionInstance(processInstance,
                 transitionId,

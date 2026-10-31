@@ -237,7 +237,7 @@ namespace saiflow.engine.Business.Manager
             }
 
             if (processEntity.EndType == (short)ProcessEndTypeEnum.Timer)
-                entity.OverdueDateTime = CalculateOverdueDateTime(entity.CreatedDateTime, processEntity.EndExpression);
+                entity.OverdueDateTime = CalculateOverdueDateTime(entity.CreatedDateTime.Value, processEntity.EndExpression);
 
             return entity;
         }
@@ -562,7 +562,7 @@ namespace saiflow.engine.Business.Manager
                     var entity = GetByVersion(kit, processId, version);
                     if (entity == null)
                         return false;
-                    var ok = Delete(kit, entity.Id, true);
+                    var ok = Delete(kit, entity.Id.Value, true);
                     kit.commit();
                     return ok;
                 }

@@ -71,8 +71,8 @@ namespace saiflow.hub.Form
                 var fieldActivityEdit = new FieldActivityEdit
                 {
                     FieldName = item.FieldName,
-                    IsNotVisible = item.IsNotVisible,
-                    IsReadOnly = item.IsReadOnly
+                    IsNotVisible = item.IsNotVisible == true,
+                    IsReadOnly = item.IsReadOnly == true
                 };
                 fieldList.Add(fieldActivityEdit);
             }

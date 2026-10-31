@@ -35,13 +35,13 @@ namespace saiflow.engine.Core.SendBack
             var psc = new PreviousStepChecker(Sail);
             var previousAdjacentBrotherNode = psc.GetPreviousOfMultipleInstanceNode(
                 runningNode.MainActivityInstanceId.Value,
-                runningNode.Id,
+                runningNode.Id.Value,
                 runningNode.CompleteOrder.Value);
 
             CreateBackwardActivityTaskOfInnerMultipleInstance(this.SendBackOperation.ProcessInstance,
                 previousAdjacentBrotherNode,
                 base.SendBackOperation.BackwardType,
-                base.SendBackOperation.BackwardFromActivityInstance.Id,
+                base.SendBackOperation.BackwardFromActivityInstance.Id.Value,
                 base.SendBackOperation.ActivityResource,
                 base.Kit);
 
@@ -77,7 +77,7 @@ namespace saiflow.engine.Core.SendBack
             var rollbackPreviousActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
                 backSrcActivityInstanceId,
-                originalBackwardToActivityInstance.Id,
+                originalBackwardToActivityInstance.Id.Value,
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;

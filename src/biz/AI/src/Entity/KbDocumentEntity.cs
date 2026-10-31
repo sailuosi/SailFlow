@@ -10,7 +10,7 @@ namespace saiflow.AI.Entity
     public class KbDocumentEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public long Id { get; set; }
+        public long? Id { get; set; }
 
         [SooColumn(Name = "content")]
         public string Content { get; set; }

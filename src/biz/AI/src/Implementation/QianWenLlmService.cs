@@ -24,14 +24,12 @@ namespace saiflow.AI.Implementation
             var modelName = axConfig.ModelName;
             var systemPrompt = axConfig.SystemPrompt;
             var userMessage = axConfig.UserMessage;
-            var temperature = axConfig.Temperature;
-            var maxTokens = axConfig.MaxTokens;
-            var timeout = axConfig.Timeout;
             var responseResult = ResponseResult<AIResponse>.Default();
 
             // Prepare model parameters
-            temperature = temperature > 0 ? temperature : (decimal)0.3;
-            maxTokens = maxTokens > 0 ? maxTokens : 2000;
+            decimal temperature = axConfig.Temperature.GetValueOrDefault() > 0 ? axConfig.Temperature.Value : 0.3m;
+            int maxTokens = axConfig.MaxTokens.GetValueOrDefault() > 0 ? axConfig.MaxTokens.Value : 2000;
+            int timeout = axConfig.Timeout.GetValueOrDefault() > 0 ? axConfig.Timeout.Value : 60;
 
             if (string.IsNullOrWhiteSpace(userMessage))
             {
@@ -44,7 +42,7 @@ namespace saiflow.AI.Implementation
 
             // Create HttpClient (consistent with BpmnApiClient)
             using var httpClient = new HttpClient();
-            httpClient.Timeout = TimeSpan.FromSeconds(timeout > 0 ? timeout : 60);
+            httpClient.Timeout = TimeSpan.FromSeconds(timeout);
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
             httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
 
@@ -75,8 +73,7 @@ namespace saiflow.AI.Implementation
 
             // Serialize request and send
             // Use CancellationToken to enforce timeout
-            var timeoutSeconds = timeout > 0 ? timeout : 60;
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
+            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
             
             try
             {
@@ -159,12 +156,12 @@ namespace saiflow.AI.Implementation
                     : "***";
                 var authInfo = $"Authorization=Bearer {maskedKey}";
 
-                var enhancedError = $"API request timed out (over {timeoutSeconds} seconds)." +
+                var enhancedError = $"API request timed out (over {timeout} seconds)." +
                     $"\nRequest url: {apiEndpoint}" +
                     $"\nModel name: {modelName}" +
                     $"\nBaseUrl: {baseUrl}" +
                     $"\nAuth mode: {authInfo}" +
-                    $"\nTimeout: {timeoutSeconds} seconds" +
+                    $"\nTimeout: {timeout} seconds" +
                     $"\nPlease check: 1) network connectivity 2) URL correctness 3) firewall settings 4) API availability";
 
                 throw new HttpRequestException(enhancedError, ex);
@@ -184,9 +181,9 @@ namespace saiflow.AI.Implementation
             if (messages == null || messages.Count == 0)
                 throw new ArgumentException("Messages cannot be null or empty", nameof(messages));
             var modelName = axConfig?.ModelName ?? throw new ArgumentNullException(nameof(axConfig));
-            var temperature = (axConfig.Temperature > 0 ? axConfig.Temperature : 0.3m);
-            var maxTokens = (axConfig.MaxTokens > 0 ? axConfig.MaxTokens : 2048);
-            var timeout = (axConfig.Timeout > 0 ? axConfig.Timeout : 60);
+            decimal temperature = axConfig.Temperature.GetValueOrDefault() > 0 ? axConfig.Temperature.Value : 0.3m;
+            int maxTokens = axConfig.MaxTokens.GetValueOrDefault() > 0 ? axConfig.MaxTokens.Value : 2048;
+            int timeout = axConfig.Timeout.GetValueOrDefault() > 0 ? axConfig.Timeout.Value : 60;
 
             var apiEndpoint = baseUrl.TrimEnd('/');
             if (!apiEndpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase))

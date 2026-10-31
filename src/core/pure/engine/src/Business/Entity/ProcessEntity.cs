@@ -13,7 +13,7 @@ namespace saiflow.engine.Business.Entity
     public class ProcessEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         [SooColumn(Name = "process_id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "process_name")]
@@ -23,13 +23,13 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "version")]
         public string Version { get; set; }
         [SooColumn(Name = "status")]
-        public byte Status { get; set; } 
+        public byte? Status { get; set; } 
         [SooColumn(Name = "app_type")]
         public string AppType { get; set; }
         [SooColumn(Name = "package_type")]
-        public Nullable<byte> PackageType { get; set; }
+        public byte? PackageType { get; set; }
         [SooColumn(Name = "package_id")]
-        public Nullable<int> PackageId { get; set; }
+        public int? PackageId { get; set; }
         [SooColumn(Name = "participant_guid")]
         public string ParticipantGUID { get; set; }
         [SooColumn(Name = "page_url")]
@@ -41,11 +41,11 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "xml_content")]
         public string XmlContent { get; set; }
         [SooColumn(Name = "start_type")]
-        public byte StartType { get; set; }
+        public byte? StartType { get; set; }
         [SooColumn(Name = "start_expression")]
         public string StartExpression { get; set; }
         [SooColumn(Name = "end_type")]
-        public byte EndType { get; set; }
+        public byte? EndType { get; set; }
         [SooColumn(Name = "end_expression")]
         public string EndExpression { get; set; }
         [SooColumn(Name = "icon")]
@@ -53,8 +53,8 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "description")]
         public string Description { get; set; }
         [SooColumn(Name = "created_datetime")]
-        public DateTime CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         [SooColumn(Name = "updated_datetime")]
-        public Nullable<DateTime> UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTime { get; set; }
     }
 }

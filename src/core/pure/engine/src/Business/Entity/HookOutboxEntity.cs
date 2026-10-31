@@ -8,7 +8,7 @@ namespace saiflow.engine.Business.Entity
     public class HookOutboxEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         [SooColumn(Name = "kind")]
         public string Kind { get; set; }
@@ -41,7 +41,7 @@ namespace saiflow.engine.Business.Entity
         public string Status { get; set; }
 
         [SooColumn(Name = "attempt")]
-        public int Attempt { get; set; }
+        public int? Attempt { get; set; }
 
         [SooColumn(Name = "next_retry_at")]
         public DateTime? NextRetryAt { get; set; }
@@ -50,7 +50,7 @@ namespace saiflow.engine.Business.Entity
         public string LastError { get; set; }
 
         [SooColumn(Name = "created_at")]
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
         [SooColumn(Name = "updated_at")]
         public DateTime? UpdatedAt { get; set; }

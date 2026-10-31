@@ -15,7 +15,7 @@ namespace saiflow.engine.Business.Entity
     public class ProcessVariableEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         [SooColumn(Name = "variable_scope")]
         public string VariableScope { get; set; }
         [SooColumn(Name = "app_instance_id")]
@@ -23,9 +23,9 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "process_id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "process_instance_id")]
-        public int ProcessInstanceId { get; set; }
+        public int? ProcessInstanceId { get; set; }
         [SooColumn(Name = "activity_instance_id")]
-        public int ActivityInstanceId { get; set; }
+        public int? ActivityInstanceId { get; set; }
         [SooColumn(Name = "activity_id")]
         public string ActivityId { get; set; }
         [SooColumn(Name = "activity_name")]
@@ -37,6 +37,6 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "media_type")]
         public string MediaType { get; set;  }
         [SooColumn(Name = "updated_datetime")]
-        public DateTime UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTime { get; set; }
     }
 }

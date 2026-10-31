@@ -205,7 +205,7 @@ namespace saiflow.engine.Xpdl
             var subProcessType = SubProcessTypeEnum.None;
             if (processInstance.SubProcessType != null) subProcessType = EnumHelper.TryParseEnum<SubProcessTypeEnum>(
                 processInstance.SubProcessType.ToString());
-            var processModel = CreateSubInternal(client, kit, processInstance.ProcessId, processInstance.Version, subProcessType, processInstance.SubProcessDefId,
+            var processModel = CreateSubInternal(client, kit, processInstance.ProcessId, processInstance.Version, subProcessType, processInstance.SubProcessDefId.Value,
                 processInstance.SubProcessId);
             return processModel;
         }
@@ -219,7 +219,7 @@ namespace saiflow.engine.Xpdl
             var subProcessType = SubProcessTypeEnum.None;
             if (taskView.SubProcessType != null) subProcessType = EnumHelper.TryParseEnum<SubProcessTypeEnum>(
                 taskView.SubProcessType.ToString());
-            var processModel = CreateSubInternal(client, kit, taskView.ProcessId, taskView.Version, subProcessType, taskView.SubProcessDefId,
+            var processModel = CreateSubInternal(client, kit, taskView.ProcessId, taskView.Version, subProcessType, taskView.SubProcessDefId.Value,
                 taskView.SubProcessId);
             return processModel;
         }

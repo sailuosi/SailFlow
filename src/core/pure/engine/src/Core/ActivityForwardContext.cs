@@ -52,8 +52,8 @@ namespace saiflow.engine.Core
             Sail = client ?? throw new ArgumentNullException(nameof(client));
             TaskId = taskView.Id;
 
-            FromActivityInstance = (new ActivityInstanceManager(Sail)).GetById(SailSqlAccess.Sibling(kit), taskView.ActivityInstanceId);
-            ProcessInstance = (new ProcessInstanceManager(Sail)).GetById(kit, taskView.ProcessInstanceId);
+            FromActivityInstance = (new ActivityInstanceManager(Sail)).GetById(SailSqlAccess.Sibling(kit), taskView.ActivityInstanceId.Value);
+            ProcessInstance = (new ProcessInstanceManager(Sail)).GetById(kit, taskView.ProcessInstanceId.Value);
             CurrentActivity = processModel.GetActivity(taskView.ActivityId);
             ProcessModel = processModel;
             ActivityResource = activityResource;
@@ -69,8 +69,8 @@ namespace saiflow.engine.Core
         {
             Sail = client ?? throw new ArgumentNullException(nameof(client));
 
-            FromActivityInstance = (new ActivityInstanceManager(Sail)).GetById(SailSqlAccess.Sibling(kit), activityInstance.Id);
-            ProcessInstance = (new ProcessInstanceManager(Sail)).GetById(kit, activityInstance.ProcessInstanceId);
+            FromActivityInstance = (new ActivityInstanceManager(Sail)).GetById(SailSqlAccess.Sibling(kit), activityInstance.Id.Value);
+            ProcessInstance = (new ProcessInstanceManager(Sail)).GetById(kit, activityInstance.ProcessInstanceId.Value);
             CurrentActivity = processModel.GetActivity(activityInstance.ActivityId);
             ProcessModel = processModel;
             ActivityResource = activityResource;

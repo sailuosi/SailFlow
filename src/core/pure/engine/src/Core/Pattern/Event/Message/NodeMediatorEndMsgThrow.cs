@@ -44,7 +44,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
             //Set process instance completed
             ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
             var kit = SailSqlAccess.Sibling(Kit);
-            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id,
+            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id.Value,
                 ActivityForwardContext.ActivityResource.AppRunner);
 
             //ִ�нڵ��ϵ���Ϣ����
@@ -76,7 +76,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
         {
             //��ȡ������һ��������Ա�б���Ϣ
             //Read the personnel list information for the next step in the process
-            var runner = FillNextActivityPerformersByRoleList(processInstance.InvokedActivityInstanceId,
+            var runner = FillNextActivityPerformersByRoleList(processInstance.InvokedActivityInstanceId.Value,
                 processInstance.InvokedActivityId,
                 kit);
 
@@ -132,7 +132,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
 
             //��ȡ�����̵�����
             //The task of obtaining the mainstream process
-            var task = new TaskManager(Sail).GetTaskByActivity(SailSqlAccess.Sibling(kit), mainProcessInstance.Id, mainActivityInstanceId);
+            var task = new TaskManager(Sail).GetTaskByActivity(SailSqlAccess.Sibling(kit), mainProcessInstance.Id.Value, mainActivityInstanceId);
             var runner = new WfAppRunner
             {
                 AppName = mainProcessInstance.AppName,
@@ -180,7 +180,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
 
             ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
 
-            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), toActivityInstance.Id, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), toActivityInstance.Id.Value, activityResource.AppRunner);
 
             base.InsertTransitionInstance(processInstance,
                 transitionId,

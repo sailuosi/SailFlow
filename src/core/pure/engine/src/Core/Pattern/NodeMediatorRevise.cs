@@ -87,7 +87,7 @@ namespace saiflow.engine.Core.Pattern
                                     //复制并行分支多实例
                                     //Copy parallel branches with multiple instances
                                     var gatewayActivityInstance = base.ActivityInstanceManager.GetActivityInstanceLatest(SailSqlAccess.Sibling(Kit), 
-                                        backSrcActivityInstance.ProcessInstanceId, gatewayNode.ActivityId);
+                                        backSrcActivityInstance.ProcessInstanceId.Value, gatewayNode.ActivityId);
                                     CloneChildNodeOfAndSplitMI(performerList, transition.TransitionId, gatewayActivityInstance, backSrcActivityInstance, base.Kit);
                                 }
                                 else
@@ -143,7 +143,7 @@ namespace saiflow.engine.Core.Pattern
                 //设置活动节点的状态为完成状态
                 //Set the status of the activity node to complete status
                 var activityInstanceId = base.ActivityInstanceManager.GetByTask(taskId.Value).Id;
-                base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), activityInstanceId, activityResource.AppRunner);
+                base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), activityInstanceId.Value, activityResource.AppRunner);
             }
             return canContinueForwardCurrentNode;
         }
@@ -159,7 +159,7 @@ namespace saiflow.engine.Core.Pattern
             ActivityInstanceEntity mainActivityInstance, 
             SQLBuilder kit)
         {
-            var childNodeListOfMI = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(SailSqlAccess.Sibling(kit), mainActivityInstance.Id, mainActivityInstance.ProcessInstanceId);
+            var childNodeListOfMI = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(SailSqlAccess.Sibling(kit), mainActivityInstance.Id.Value, mainActivityInstance.ProcessInstanceId.Value);
 
             ActivityInstanceEntity entity = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)
@@ -236,7 +236,7 @@ namespace saiflow.engine.Core.Pattern
             ActivityInstanceEntity toActivityInstance, 
             SQLBuilder kit)
         {
-            var childNodeListOfAndSplitMI = base.ActivityInstanceManager.GetValidSplitedActivityInstanceList(SailSqlAccess.Sibling(kit), gatewayActivityInstance.ProcessInstanceId, gatewayActivityInstance.Id);
+            var childNodeListOfAndSplitMI = base.ActivityInstanceManager.GetValidSplitedActivityInstanceList(SailSqlAccess.Sibling(kit), gatewayActivityInstance.ProcessInstanceId.Value, gatewayActivityInstance.Id.Value);
 
             ActivityInstanceEntity newChildInstance = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)

@@ -751,7 +751,7 @@ namespace saiflow.engine.Service
             if (entity.Id != 0)
             {
                 vm.Update(entity);
-                return entity.Id;
+                return entity.Id.Value;
             }
             return vm.Insert(entity);
         }
@@ -803,7 +803,7 @@ namespace saiflow.engine.Service
             {
                 entity.Id = exist.Id;
                 rm.Update(entity);
-                return entity.Id;
+                return entity.Id.Value;
             }
             return rm.Insert(entity);
         }

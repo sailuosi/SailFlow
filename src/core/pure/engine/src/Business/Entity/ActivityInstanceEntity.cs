@@ -14,9 +14,9 @@ namespace saiflow.engine.Business.Entity
     public class ActivityInstanceEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         [SooColumn(Name = "process_instance_id")]
-        public int ProcessInstanceId { get; set; }
+        public int? ProcessInstanceId { get; set; }
         [SooColumn(Name = "app_name")]
         public string AppName { get; set; }
         [SooColumn(Name = "app_instance_id")]
@@ -32,55 +32,55 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "activity_code")]
         public string ActivityCode { get; set; }
         [SooColumn(Name = "activity_type")]
-        public short ActivityType { get; set; }
+        public short? ActivityType { get; set; }
         [SooColumn(Name = "activity_state")]
-        public short ActivityState { get; set; }
+        public short? ActivityState { get; set; }
         [SooColumn(Name = "work_item_type")]
-        public short WorkItemType { get; set; }
+        public short? WorkItemType { get; set; }
         [SooColumn(Name = "assigned_user_ids")]
         public string AssignedUserIds { get; set; }
         [SooColumn(Name = "assigned_user_names")]
         public string AssignedUserNames { get; set; }
         [SooColumn(Name = "gateway_direction_type_id")]
-        public Nullable<short> GatewayDirectionTypeId { get; set; }
+        public short? GatewayDirectionTypeId { get; set; }
         [SooColumn(Name = "cannot_renew_instance")]
-        public byte CanNotRenewInstance { get; set; }
+        public byte? CanNotRenewInstance { get; set; }
         [SooColumn(Name = "approval_status")]
-        public short ApprovalStatus { get; set; }
+        public short? ApprovalStatus { get; set; }
         [SooColumn(Name = "tokens_required")]
-        public int TokensRequired { get; set; }
+        public int? TokensRequired { get; set; }
         [SooColumn(Name = "tokens_had")]
-        public int TokensHad { get; set; }
+        public int? TokensHad { get; set; }
         [SooColumn(Name = "job_timer_type")]
-        public Nullable<short> JobTimerType { get; set; }
+        public short? JobTimerType { get; set; }
         [SooColumn(Name = "job_timer_status")]
-        public Nullable<short> JobTimerStatus { get; set; }
+        public short? JobTimerStatus { get; set; }
         [SooColumn(Name = "trigger_expression")]
         public string TriggerExpression { get; set; }
         [SooColumn(Name = "overdue_datetime")]
-        public Nullable<DateTime> OverdueDateTime { get; set; }
+        public DateTime? OverdueDateTime { get; set; }
         [SooColumn(Name = "job_timer_treated_datetime")]
-        public Nullable<DateTime> JobTimerTreatedDateTime { get; set; }
+        public DateTime? JobTimerTreatedDateTime { get; set; }
         /// <summary>
         /// Sign Together /Sign Forward Type
         /// 会签或加签类型       
         /// </summary>
         [SooColumn(Name = "complex_type")]
-        public Nullable<short> ComplexType { get; set; }
+        public short? ComplexType { get; set; }
         /// <summary>
         /// Sign Together Execution Type: Sequecne / Parallel
         /// 会签执行类型：串行或并行
         /// </summary>
         [SooColumn(Name = "merge_type")]
-        public Nullable<short> MergeType { get; set; }
+        public short? MergeType { get; set; }
         [SooColumn(Name = "main_activity_instance_id")]
-        public Nullable<int> MainActivityInstanceId { get; set; }
+        public int? MainActivityInstanceId { get; set; }
         /// <summary>
         /// Sign Together Passover Type: Count / Percentage
         /// 会签通过率类型：个数或百分比
         /// </summary>
         [SooColumn(Name = "compare_type")]
-        public Nullable<short> CompareType { get; set; }
+        public short? CompareType { get; set; }
         /// <summary>
         /// Sign Together Order
         /// Sequence:[1, 2, 3...]
@@ -88,15 +88,15 @@ namespace saiflow.engine.Business.Entity
         /// 会签执行顺序：串行为1，2，3 并行为-1
         /// </summary>
         [SooColumn(Name = "complete_order")]
-        public Nullable<float> CompleteOrder { get; set; }
+        public float? CompleteOrder { get; set; }
         [SooColumn(Name = "sign_forward_type")]
-        public Nullable<short> SignForwardType { get; set; }
+        public short? SignForwardType { get; set; }
         [SooColumn(Name = "backward_type")]
-        public short BackwardType { get; set; }
+        public short? BackwardType { get; set; }
         [SooColumn(Name = "back_src_activity_instance_id")]
-        public Nullable<int> BackSrcActivityInstanceId { get; set; }
+        public int? BackSrcActivityInstanceId { get; set; }
         [SooColumn(Name = "back_org_activity_instance_id")]
-        public Nullable<int> BackOrgActivityInstanceId { get; set; }
+        public int? BackOrgActivityInstanceId { get; set; }
         [SooColumn(Name = "next_step_performers")]
         public string NextStepPerformers { get; set; }
         [SooColumn(Name = "created_user_id")]
@@ -104,20 +104,20 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "created_user_name")]
         public string CreatedUserName { get; set; }
         [SooColumn(Name = "created_datetime")]
-        public System.DateTime CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         [SooColumn(Name = "updated_user_id")]
         public string UpdatedUserId { get; set; }
         [SooColumn(Name = "updated_user_name")]
         public string UpdatedUserName { get; set; }
         [SooColumn(Name = "updated_datetime")]
-        public Nullable<System.DateTime> UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTime { get; set; }
         [SooColumn(Name = "ended_datetime")]
-        public Nullable<System.DateTime> EndedDateTime { get; set; }
+        public DateTime? EndedDateTime { get; set; }
         [SooColumn(Name = "ended_user_id")]
         public string EndedUserId { get; set; }
         [SooColumn(Name = "ended_user_name")]
         public string EndedUserName { get; set; }
         [SooColumn(Name = "record_status_invalid")]
-        public byte RecordStatusInvalid { get; set; }
+        public byte? RecordStatusInvalid { get; set; }
     }
 }

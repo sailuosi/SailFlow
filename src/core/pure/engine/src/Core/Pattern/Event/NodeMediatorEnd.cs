@@ -39,7 +39,7 @@ namespace saiflow.engine.Core.Pattern.Event
 
             ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
             var kit = SailSqlAccess.Sibling(Kit);
-            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id,
+            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id.Value,
                 ActivityForwardContext.ActivityResource.AppRunner);
 
             //如果当前流程是子流程，则子流程完成，主流程流转到下一节点
@@ -64,7 +64,7 @@ namespace saiflow.engine.Core.Pattern.Event
         {
             //读取流程下一步办理人员列表信息
             //Read the personnel list information for the next step in the process
-            var runner = FillNextActivityPerformersByRoleList(processInstance.InvokedActivityInstanceId, 
+            var runner = FillNextActivityPerformersByRoleList(processInstance.InvokedActivityInstanceId.Value, 
                 processInstance.InvokedActivityId, 
                 kit);
 
@@ -120,7 +120,7 @@ namespace saiflow.engine.Core.Pattern.Event
 
             //获取主流程的任务
             //The task of obtaining the mainstream process
-            var task = (new TaskManager(Sail)).GetTaskByActivity(SailSqlAccess.Sibling(kit), mainProcessInstance.Id, mainActivityInstanceId);
+            var task = (new TaskManager(Sail)).GetTaskByActivity(SailSqlAccess.Sibling(kit), mainProcessInstance.Id.Value, mainActivityInstanceId);
             var runner = new WfAppRunner
             {
                 AppName = mainProcessInstance.AppName,
@@ -168,7 +168,7 @@ namespace saiflow.engine.Core.Pattern.Event
 
             base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
 
-            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), toActivityInstance.Id, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), toActivityInstance.Id.Value, activityResource.AppRunner);
 
             base.InsertTransitionInstance(processInstance,
                 transitionId,

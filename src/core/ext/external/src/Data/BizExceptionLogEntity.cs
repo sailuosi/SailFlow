@@ -13,10 +13,10 @@ namespace saiflow.hub.External.Data
         public long? Id { get; set; }
 
         [JsonProperty("event_type_id")]
-        public int EventTypeId { get; set; }
+        public int? EventTypeId { get; set; }
 
         [JsonProperty("priority")]
-        public int Priority { get; set; }
+        public int? Priority { get; set; }
 
         [JsonProperty("severity")]
         public string Severity { get; set; }
@@ -37,7 +37,7 @@ namespace saiflow.hub.External.Data
         public string RequestData { get; set; }
 
         [JsonProperty("time_stamp")]
-        public DateTime Timestamp { get; set; }
+        public DateTime? Timestamp { get; set; }
 
         [JsonProperty("source")]
         public string Source { get; set; }

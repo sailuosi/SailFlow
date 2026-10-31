@@ -14,11 +14,11 @@ namespace saiflow.engine.Business.Entity
     public class LogEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         [SooColumn(Name = "event_type_id")]
-        public int EventTypeId { get; set; }
+        public int? EventTypeId { get; set; }
         [SooColumn(Name = "priority")]
-        public int Priority { get; set; }
+        public int? Priority { get; set; }
         [SooColumn(Name = "severity")]
         public string Severity { get; set; }
         [SooColumn(Name = "title")]
@@ -32,6 +32,6 @@ namespace saiflow.engine.Business.Entity
         [SooColumn(Name = "request_data")]
         public string RequestData { get; set; }
         [SooColumn(Name = "time_stamp")]
-        public DateTime Timestamp { get; set; }
+        public DateTime? Timestamp { get; set; }
     }
 }

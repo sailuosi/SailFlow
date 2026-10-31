@@ -37,9 +37,10 @@ namespace saiflow.AI.Implementation
             var modelName = axConfig.ModelName;
             var systemPrompt = axConfig.SystemPrompt;
             var userMessage = axConfig.UserMessage;
-            var temperature = axConfig.Temperature;
-            var maxTokens = axConfig.MaxTokens;
-            var timeout = axConfig.Timeout;
+            decimal temperature = axConfig.Temperature.GetValueOrDefault(0.3m);
+            if (temperature < 0 || temperature > 2) temperature = 0.3m;
+            int maxTokens = axConfig.MaxTokens.GetValueOrDefault() > 0 ? axConfig.MaxTokens.Value : 2048;
+            int timeout = axConfig.Timeout.GetValueOrDefault() > 0 ? axConfig.Timeout.Value : 60;
             var serviceType = EnumHelper.TryParseEnum<AiServiceTypeEnum>(axConfig.ServiceType);
 
             var responseResult = ResponseResult<AIResponse>.Default();
@@ -222,12 +223,10 @@ namespace saiflow.AI.Implementation
             if (messages == null || messages.Count == 0)
                 throw new ArgumentException("Messages cannot be null or empty", nameof(messages));
             var modelName = axConfig?.ModelName ?? throw new ArgumentNullException(nameof(axConfig));
-            var temperature = axConfig.Temperature;
-            var maxTokens = axConfig.MaxTokens;
-            var timeout = axConfig.Timeout;
+            decimal temperature = axConfig.Temperature.GetValueOrDefault(0.3m);
             if (temperature < 0 || temperature > 2) temperature = 0.3m;
-            if (maxTokens <= 0) maxTokens = 2048;
-            if (timeout <= 0) timeout = 60;
+            int maxTokens = axConfig.MaxTokens.GetValueOrDefault() > 0 ? axConfig.MaxTokens.Value : 2048;
+            int timeout = axConfig.Timeout.GetValueOrDefault() > 0 ? axConfig.Timeout.Value : 60;
 
             var apiUrl = baseUrl.TrimEnd('/');
             if (!apiUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
