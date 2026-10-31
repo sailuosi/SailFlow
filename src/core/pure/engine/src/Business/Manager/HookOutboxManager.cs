@@ -90,7 +90,7 @@ namespace saiflow.engine.Business.Manager
                 var update = Sibling(kit).useClip();
                 update.setTable<HookOutboxEntity>(out var u);
                 update.set(() => u.Status, HookOutboxStatus.Pending);
-                update.set(() => u.LeasedUntil, (DateTime?)null);
+                update.setToNull(() => u.LeasedUntil);
                 update.set(() => u.UpdatedAt, now);
                 update.where(() => u.Id, row.Id);
                 update.where(() => u.Status, HookOutboxStatus.Processing);
