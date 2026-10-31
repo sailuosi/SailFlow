@@ -40,6 +40,19 @@ namespace saiflow.engine.Common
             get;
             set;
         }
+
+        /// <summary>
+        /// 组别标识（单位/部门/业务组等；一维办理可空）。
+        /// </summary>
+        public string GroupId { get; set; }
+
+        /// <summary>组别展示名（可选）。</summary>
+        public string GroupName { get; set; }
+
+        /// <summary>
+        /// 组内身份（string 码，如 Leader/Member；勿用 bool）。未填时建议按 Member 解释。
+        /// </summary>
+        public string GroupRole { get; set; }
     }
 
     /// <summary>

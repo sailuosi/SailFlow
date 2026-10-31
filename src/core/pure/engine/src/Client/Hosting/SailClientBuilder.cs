@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
 using saiflow.engine.Actions;
+using saiflow.engine.Assignee;
 using saiflow.engine.Rules;
 using saiflow.hub.Essential.Common;
 
@@ -220,6 +221,12 @@ public sealed class SailClientBuilder
             && jsonBox is IJsonSerializer jsonSerializer)
         {
             client.useJsonSerializer(jsonSerializer);
+        }
+
+        if (Services.Properties.TryGetValue(SailBuilderKeys.AssigneePipeline, out var assigneeBox)
+            && assigneeBox is IAssigneePipeline assigneePipeline)
+        {
+            client.useAssigneePipeline(assigneePipeline);
         }
 
         SailWorkflowCapabilityExtensions.ApplyPendingRegistrations(client, Services);

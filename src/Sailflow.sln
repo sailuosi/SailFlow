@@ -51,6 +51,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F1A2B3C4
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sailflow.engine.tests", "tests\sailflow.engine.tests\sailflow.engine.tests.csproj", "{A1B2C3D4-E5F6-7890-ABCD-123456789ABC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sailflow.assignee", "core\pure\assignee\sailflow.assignee.csproj", "{44445A81-B1F5-4340-AB93-62131AA442CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -289,6 +291,18 @@ Global
 		{A1B2C3D4-E5F6-7890-ABCD-123456789ABC}.Release|x64.Build.0 = Release|Any CPU
 		{A1B2C3D4-E5F6-7890-ABCD-123456789ABC}.Release|x86.ActiveCfg = Release|Any CPU
 		{A1B2C3D4-E5F6-7890-ABCD-123456789ABC}.Release|x86.Build.0 = Release|Any CPU
+		{44445A81-B1F5-4340-AB93-62131AA442CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44445A81-B1F5-4340-AB93-62131AA442CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44445A81-B1F5-4340-AB93-62131AA442CE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{44445A81-B1F5-4340-AB93-62131AA442CE}.Debug|x64.Build.0 = Debug|Any CPU
+		{44445A81-B1F5-4340-AB93-62131AA442CE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{44445A81-B1F5-4340-AB93-62131AA442CE}.Debug|x86.Build.0 = Debug|Any CPU
+		{44445A81-B1F5-4340-AB93-62131AA442CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44445A81-B1F5-4340-AB93-62131AA442CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44445A81-B1F5-4340-AB93-62131AA442CE}.Release|x64.ActiveCfg = Release|Any CPU
+		{44445A81-B1F5-4340-AB93-62131AA442CE}.Release|x64.Build.0 = Release|Any CPU
+		{44445A81-B1F5-4340-AB93-62131AA442CE}.Release|x86.ActiveCfg = Release|Any CPU
+		{44445A81-B1F5-4340-AB93-62131AA442CE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -313,6 +327,7 @@ Global
 		{A7FF5AC8-8AAC-4D95-BDE3-790B2A70DB0E} = {146E78C7-7F02-432F-BE74-245DC883BEC1}
 		{6239AC2A-E961-4AA7-982B-6B18592C7F5E} = {146E78C7-7F02-432F-BE74-245DC883BEC1}
 		{A1B2C3D4-E5F6-7890-ABCD-123456789ABC} = {F1A2B3C4-D5E6-7890-ABCD-EF1234567890}
+		{44445A81-B1F5-4340-AB93-62131AA442CE} = {0A5C0B41-4F9D-47E3-8557-AD563F672F4A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EE3D1824-95FD-495A-8651-88E42B1AFDC3}

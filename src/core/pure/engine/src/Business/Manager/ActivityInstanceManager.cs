@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
 using saiflow.data;
+using saiflow.engine.Assignee;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
@@ -1224,6 +1225,29 @@ namespace saiflow.engine.Business.Manager
         internal NodePassedTypeEnum CheckMIPassRateInfo(SQLBuilder kit, ActivityInstanceEntity currentActivityInstance,
             ActivityInstanceEntity mainActivityInstance)
         {
+            // S0：优先 IAssigneePipeline.TryCanLeave；未处理则双轨回落既有会签通过率
+            var pipeline = Sail.AssigneePipeline;
+            if (pipeline != null
+                && pipeline.TryCanLeave(
+                    new LeaveInvokeRequest
+                    {
+                        ProcessInstanceId = mainActivityInstance.ProcessInstanceId.Value,
+                        ActivityInstanceId = currentActivityInstance.Id.Value,
+                        CurrentActivityInstance = currentActivityInstance,
+                        MainActivityInstance = mainActivityInstance
+                    },
+                    out var leave)
+                && leave != null)
+            {
+                if (string.Equals(leave.Decision, LeaveDecisions.Passed, StringComparison.OrdinalIgnoreCase))
+                    return NodePassedTypeEnum.Passed;
+                if (string.Equals(leave.Decision, LeaveDecisions.NotPassed, StringComparison.OrdinalIgnoreCase))
+                    return NodePassedTypeEnum.NotPassed;
+                if (string.Equals(leave.Decision, LeaveDecisions.Waiting, StringComparison.OrdinalIgnoreCase))
+                    return NodePassedTypeEnum.NeedToBeMoreApproved;
+                return NodePassedTypeEnum.Default;
+            }
+
             var passedType = NodePassedTypeEnum.Default;
             var childActivityInstanceList = GetValidActivityInstanceListOfMI(kit, mainActivityInstance.Id.Value, mainActivityInstance.ProcessInstanceId.Value);
 

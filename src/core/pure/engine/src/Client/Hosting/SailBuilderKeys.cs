@@ -11,6 +11,9 @@ public static class SailBuilderKeys
     public static readonly object ScriptMethods = new();
     public static readonly object ServiceMethods = new();
     public static readonly object MessageQueue = new();
+
+    /// <summary>办理人管道 <c>IAssigneePipeline</c>（由 sailflow.assignee UseAssignees 挂载）。</summary>
+    public static readonly object AssigneePipeline = new();
     public static readonly object JsonSerializer = new();
     public static readonly object FormService = new();
     public static readonly object ResourceService = new();

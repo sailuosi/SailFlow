@@ -12,6 +12,7 @@ using saiflow.engine.Xpdl.Entity;
 using saiflow.engine.Xpdl.Schedule;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
+using saiflow.engine.Assignee;
 using saiflow.engine.Client;
 using saiflow.engine.Core.Result;
 using saiflow.engine.Core.Runtime;
@@ -1103,6 +1104,30 @@ namespace saiflow.engine.Core.Pattern
         protected ActivityInstanceEntity GenerateActivityAssignedUserInfo(ActivityInstanceEntity toActivityInstance,
             ActivityResource activityResource)
         {
+            // S0：优先走 IAssigneePipeline（薄调用）；未处理则双轨回落既有逻辑
+            var pipeline = Sail.AssigneePipeline;
+            if (pipeline != null
+                && pipeline.TryResolveForTaskCreate(
+                    new AssigneeInvokeRequest
+                    {
+                        ProcessId = toActivityInstance.ProcessId,
+                        ProcessInstanceId = toActivityInstance.ProcessInstanceId,
+                        ActivityId = toActivityInstance.ActivityId,
+                        ActivityCode = toActivityInstance.ActivityCode,
+                        Runner = activityResource.AppRunner,
+                        NextActivityPerformers = activityResource.NextActivityPerformers
+                    },
+                    out var resolved)
+                && resolved != null
+                && resolved.Count > 0)
+            {
+                activityResource.NextActivityPerformers ??= new Dictionary<string, PerformerList>();
+                activityResource.NextActivityPerformers[toActivityInstance.ActivityId] = resolved;
+                toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(resolved);
+                toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(resolved);
+                return toActivityInstance;
+            }
+
             if (activityResource.AppRunner.NextPerformerType == NextPerformerIntTypeEnum.Specific
                 && activityResource.NextActivityPerformers != null)
             {

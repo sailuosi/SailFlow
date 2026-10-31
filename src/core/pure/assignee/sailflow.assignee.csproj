@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
+    <LangVersion>14.0</LangVersion>
+    <PackageId>saiflow.assignee</PackageId>
+    <RootNamespace>saiflow.assignee</RootNamespace>
+    <AssemblyName>saiflow.assignee</AssemblyName>
+    <Description>Sailflow assignee runtime: resolve performers / leave judgment. Engine only holds IAssigneePipeline slot.</Description>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\engine\sailflow.engine.csproj" />
+  </ItemGroup>
+
+</Project>

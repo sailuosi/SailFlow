@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using mooSQL.data;
 using saiflow.engine.Actions;
+using saiflow.engine.Assignee;
 using saiflow.engine.Hooks;
 using saiflow.engine.Rules;
 using saiflow.hub.Essential.Common;
@@ -143,6 +144,12 @@ public partial class SailClient
     /// </summary>
     public IJsonSerializer JsonSerializer { get; private set; }
 
+    /// <summary>
+    /// 办理人管道插槽（查找待办人 / 流出判定）。实现由 <c>UseAssignees</c> / <c>UseBizAssignees</c> 挂载。
+    /// 未挂载时为 null；创建待办与流出路径可回落既有逻辑（双轨）。
+    /// </summary>
+    public IAssigneePipeline AssigneePipeline { get; private set; }
+
     /// <summary>注册消息队列实现（覆盖已有）。</summary>
     public SailClient useMessageQueue(IMessageQueueService messageQueue)
     {
@@ -157,6 +164,13 @@ public partial class SailClient
         return this;
     }
 
+    /// <summary>注册办理人管道（覆盖已有）。</summary>
+    public SailClient useAssigneePipeline(IAssigneePipeline pipeline)
+    {
+        AssigneePipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
+        return this;
+    }
+
     /// <summary>取得已挂载的消息队列；未注册时抛明确异常。</summary>
     public IMessageQueueService GetMessageQueueRequired()
     {
@@ -164,6 +178,15 @@ public partial class SailClient
             return MessageQueue;
         throw new InvalidOperationException(
             "No IMessageQueueService registered on SailClient. Call UseBizMsg() / UseRabbitMq() / useMessageQueue(...).");
+    }
+
+    /// <summary>取得已挂载的办理人管道；未注册时抛明确异常。</summary>
+    public IAssigneePipeline GetAssigneePipelineRequired()
+    {
+        if (AssigneePipeline != null)
+            return AssigneePipeline;
+        throw new InvalidOperationException(
+            "No IAssigneePipeline registered on SailClient. Call UseBizAssignees() / UseAssignees() / useAssigneePipeline(...).");
     }
 
     /// <summary>注册 Gate（同名后注册覆盖）。</summary>
