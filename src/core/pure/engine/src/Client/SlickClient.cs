@@ -23,6 +23,22 @@ public partial class SailClient
     /// </summary>
     public ILocalizeMessages Messages { get; set; } = PassthroughLocalizeMessages.Instance;
 
+    private ISooCache _cache;
+
+    /// <summary>
+    /// 进程缓存（对齐 mooSQL <c>MooClient.Cache</c> / <see cref="ISooCache"/>）。
+    /// 未显式 <see cref="useCache"/> 时默认 <see cref="MemorySooCache"/>（System.Runtime.Caching）。
+    /// </summary>
+    public ISooCache Cache
+    {
+        get
+        {
+            if (_cache == null)
+                _cache = CreateDefaultCache();
+            return _cache;
+        }
+    }
+
     /// <summary>事件插槽便捷访问（与 <see cref="SailDialect.Event"/> 同源）。</summary>
     public ISailEventHub Event => Dialect?.Event
         ?? throw new InvalidOperationException("SailClient.Dialect.Event is not mounted.");
@@ -34,6 +50,15 @@ public partial class SailClient
 
     /// <summary>运行库 SQLBuilder（每请求独立实例；无事务即取即用，有事务则 begin 后向下传递）。</summary>
     public SQLBuilder UseRunSQL() => DBFactory.useRunSQL();
+
+    /// <summary>
+    /// 注册缓存实例（对齐 mooSQL <c>MooClient.useCache</c>）。可换 Redis 等自定义 <see cref="ISooCache"/>。
+    /// </summary>
+    public SailClient useCache(ISooCache cache)
+    {
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        return this;
+    }
 
     /// <summary>确保起步插槽已挂载。</summary>
     public void EnsurePorts()
@@ -48,5 +73,13 @@ public partial class SailClient
         Dialect.MountDbFactory(DBFactory);
         if (Dialect.Event == null)
             Dialect.MountEvent(new SailEventHubStub(this));
+        if (_cache == null)
+            _cache = CreateDefaultCache();
+    }
+
+    private ISooCache CreateDefaultCache()
+    {
+        var days = Config?.ExpiredDays > 0 ? Config.ExpiredDays : 1;
+        return new MemorySooCache(TimeSpan.FromDays(days));
     }
 }

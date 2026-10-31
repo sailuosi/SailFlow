@@ -3,7 +3,6 @@ using mooSQL.data;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
 using saiflow.engine.Common;
-using saiflow.engine.Config;
 using saiflow.engine.Utility;
 using saiflow.engine.Xpdl.Common;
 using saiflow.engine.Xpdl.Entity;
@@ -39,22 +38,20 @@ namespace saiflow.engine.Xpdl
                 var processId = ProcessEntity.ProcessId;
                 var version = ProcessEntity.Version;
 
-                if (WfConfig.EXPIRED_DAYS_ENABLED == true)
+                if (Sail.Config.ExpiredDaysEnabled)
                 {
-                    //Get Process content from cache
-                    if (XPDLMemoryCachedHelper.GetXpdlCache(processId, version) == null)
+                    var cache = Sail.Cache;
+                    var cached = XPDLMemoryCachedHelper.GetXpdlCache(cache, processId, version);
+                    if (cached == null)
                     {
-                        var process = ConvertProcessModelFromXML(ProcessEntity);
-                        XPDLMemoryCachedHelper.SetXpdlCache(processId, version, process);
+                        cached = ConvertProcessModelFromXML(ProcessEntity);
+                        var seconds = Math.Max(1, Sail.Config.ExpiredDays) * 24 * 60 * 60;
+                        XPDLMemoryCachedHelper.SetXpdlCache(cache, processId, version, cached, seconds);
                     }
-                    return XPDLMemoryCachedHelper.GetXpdlCache(processId, version);
+                    return cached;
                 }
-                else
-                {
-                    //Get Process content from database
-                    var processDB = ConvertProcessModelFromXML(ProcessEntity);
-                    return processDB;
-                }
+
+                return ConvertProcessModelFromXML(ProcessEntity);
             }
         }
         /// <summary>

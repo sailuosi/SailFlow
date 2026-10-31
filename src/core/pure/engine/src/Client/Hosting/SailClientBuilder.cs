@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
+using mooSQL.data;
 
 namespace saiflow.engine.Client.Hosting;
 
@@ -15,6 +16,9 @@ public sealed class SailClientBuilder
 
     /// <summary>尚未 Build 的数据库工厂；也可由 UseDatabase 写入 Properties。</summary>
     public SailDBFactory? DbFactory { get; set; }
+
+    /// <summary>可选：Build 前指定的缓存；未设则默认 <see cref="MemorySooCache"/>。</summary>
+    public ISooCache? Cache { get; set; }
 
     public SailClientBuilder UseConfiguration(IConfiguration configuration)
     {
@@ -34,6 +38,18 @@ public sealed class SailClientBuilder
     {
         ArgumentNullException.ThrowIfNull(db);
         return UseDatabase(new DelegateSailDBFactory(db, mainPosition));
+    }
+
+    /// <summary>
+    /// 注册缓存（对齐 mooSQL <c>builder.useCache(...)</c> / <c>client.useCache(...)</c>）。
+    /// 默认不调用时，Build/EnsurePorts 会挂 <see cref="MemorySooCache"/>。
+    /// </summary>
+    public SailClientBuilder UseCache(ISooCache cache)
+    {
+        ArgumentNullException.ThrowIfNull(cache);
+        Cache = cache;
+        Services.UseCache(cache);
+        return this;
     }
 
     public SailClientBuilder ConfigureServices(Action<ISailCollection> configure)
@@ -66,6 +82,17 @@ public sealed class SailClientBuilder
         }
 
         var client = SailClientAssembler.Assemble(dbFactory, Configuration);
+
+        var cache = Cache;
+        if (cache == null
+            && Services.Properties.TryGetValue(SailBuilderKeys.Cache, out var cacheBox))
+        {
+            cache = cacheBox as ISooCache;
+        }
+
+        if (cache != null)
+            client.useCache(cache);
+        // else：EnsurePorts / Cache getter 会创建默认 MemorySooCache
 
         foreach (var d in Services.OrderBy(x => x.Order)
                      .Where(x => x.Phase == SailFeaturePhase.ConfigureClient))
