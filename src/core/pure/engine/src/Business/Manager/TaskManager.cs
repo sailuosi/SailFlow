@@ -439,15 +439,32 @@ namespace saiflow.engine.Business.Manager
         {
             EndTaskState(kit, taskId, TaskStateEnum.Completed, runner);
             var task = GetTask(kit, taskId);
-            var activityInstance = new ActivityInstanceManager(Sail).GetById(kit, task.ActivityInstanceId.Value);
-            Sail.CapabilityDispatcher.FireTaskLifecycle(kit, task, activityInstance, runner, TaskNotifyKind.Completed);
+            FireTaskLifecycle(kit, task, runner, TaskNotifyKind.Completed);
         }
 
         internal void Withdraw(SQLBuilder kit, long taskId, WfAppRunner runner)
-            => EndTaskState(kit, taskId, TaskStateEnum.Withdrawed, runner);
+        {
+            EndTaskState(kit, taskId, TaskStateEnum.Withdrawed, runner);
+            FireTaskLifecycle(kit, GetTask(kit, (int)taskId), runner, TaskNotifyKind.Cancelled);
+        }
 
         internal void SendBack(SQLBuilder kit, long taskId, WfAppRunner runner)
-            => EndTaskState(kit, taskId, TaskStateEnum.SendBacked, runner);
+        {
+            EndTaskState(kit, taskId, TaskStateEnum.SendBacked, runner);
+            FireTaskLifecycle(kit, GetTask(kit, (int)taskId), runner, TaskNotifyKind.Cancelled);
+        }
+
+        private void FireTaskLifecycle(
+            SQLBuilder kit,
+            TaskEntity task,
+            WfAppRunner runner,
+            TaskNotifyKind kind)
+        {
+            if (task?.ActivityInstanceId == null)
+                return;
+            var activityInstance = new ActivityInstanceManager(Sail).GetById(kit, task.ActivityInstanceId.Value);
+            Sail.CapabilityDispatcher.FireTaskLifecycle(kit, task, activityInstance, runner, kind);
+        }
 
         internal WfDataManagedResult Entrust(TaskEntrustedEntity entity, bool cancelOriginalTask = true)
         {
@@ -484,6 +501,8 @@ namespace saiflow.engine.Business.Manager
                 var task = GetTask(kit, entity.TaskId.Value);
                 task.TaskState = (short)TaskStateEnum.Closed;
                 Update(kit, task);
+                Sail.CapabilityDispatcher.FireTaskLifecycle(
+                    kit, task, activityInstance, null, TaskNotifyKind.Cancelled);
             }
 
             var taskList = GetTaskListByActivity(kit, activityInstance.ProcessInstanceId.Value, activityInstance.Id.Value);
@@ -523,6 +542,7 @@ namespace saiflow.engine.Business.Manager
             entrustedTaskEntity.TaskState = (short)TaskStateEnum.Canceled;
             entrustedTaskEntity.UpdatedDateTime = DateTime.UtcNow;
             Update(kit, entrustedTaskEntity);
+            FireTaskLifecycle(kit, entrustedTaskEntity, null, TaskNotifyKind.Cancelled);
 
             var originalTask = GetTask(kit, taskId);
             var newTask = new TaskEntity
@@ -549,6 +569,7 @@ namespace saiflow.engine.Business.Manager
                 CreatedUserName = originalTask.CreatedUserName
             };
             Insert(kit, newTask);
+            FireTaskLifecycle(kit, newTask, null, TaskNotifyKind.Created);
         }
 
         internal Boolean Replace(int activityInstanceId, List<TaskReplacedEntity> replaced, WfAppRunner runner)
