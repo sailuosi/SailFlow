@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using saiflow.assignee.Adapt;
 using saiflow.engine.Assignee;
 using saiflow.engine.Client;
@@ -42,6 +43,14 @@ public class AssigneePipeline : IAssigneePipeline
         if (!Registry.TryGetResolver(config.Type, out var resolver) || resolver == null)
             return false;
 
+        if (Registry.IsResolverOverridden(config.Type))
+        {
+            Trace.TraceInformation(
+                "[Assignee] Resolve using overridden Type '{0}' impl={1}",
+                config.Type,
+                Registry.GetResolverImplementationName(config.Type));
+        }
+
         WireSail(resolver);
 
         var ctx = new AssigneeResolveContext
@@ -54,6 +63,7 @@ public class AssigneePipeline : IAssigneePipeline
         if (resolved.Count == 0)
         {
             // Specific / StarterPick 无数据：交回既有路径；RoleGroup 空也交回以免静默
+            // R4 目标：有显式 ConfigPair 且空结果时应拒绝；Mediator 侧见硬失败路径
             return false;
         }
 
@@ -75,6 +85,14 @@ public class AssigneePipeline : IAssigneePipeline
 
         if (!Registry.TryGetLeaveJudge(config.Type, out var judge) || judge == null)
             return false;
+
+        if (Registry.IsLeaveJudgeOverridden(config.Type))
+        {
+            Trace.TraceInformation(
+                "[Assignee] Leave using overridden Type '{0}' impl={1}",
+                config.Type,
+                Registry.GetLeaveJudgeImplementationName(config.Type));
+        }
 
         result = judge.CanLeave(new LeaveJudgeContext
         {

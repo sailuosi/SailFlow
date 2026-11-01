@@ -4,7 +4,7 @@ using saiflow.engine.Common;
 
 namespace saiflow.assignee.Builtin;
 
-/// <summary>按 GroupId 分组完成判定；空 GroupId 归入同一默认组。</summary>
+/// <summary>按 GroupId 分组完成判定；空 GroupId 归入同一默认组。组间见 R7（And/Or/Count/Rate）。</summary>
 public static class GroupLeaveHelper
 {
     public const string DefaultGroupKey = "_";
@@ -84,7 +84,7 @@ public static class GroupLeaveHelper
         return refused > group.Count - need;
     }
 
-    /// <summary>队长：关卡身份（默认 Leader）任一人同意 → 组完成。</summary>
+    /// <summary>队长：关卡身份（默认 Leader）任一人同意 → 组完成（R8：组员可办但不单独使组完成）。</summary>
     public static bool IsCaptainGroupDone(IList<ActivityInstanceEntity> group, string[] gateRoles)
     {
         if (group == null || group.Count == 0)
@@ -116,11 +116,12 @@ public static class GroupLeaveHelper
         return arr.Length > 0 ? arr : new[] { GroupRoles.Leader };
     }
 
+    /// <summary>组间合并（R7）：优先 groupCompleteCount/Rate；否则 groupJoin And/Or（默认 And）。</summary>
     public static LeaveJudgeResult CombineGroups(
         IReadOnlyDictionary<string, List<ActivityInstanceEntity>> groups,
         Func<List<ActivityInstanceEntity>, bool> isDone,
         Func<List<ActivityInstanceEntity>, bool> isFailed,
-        bool joinAnd)
+        ConfigPair? config)
     {
         if (groups.Count == 0)
             return LeaveJudgeResult.Waiting("NoGroups", "No grouped children.");
@@ -135,20 +136,62 @@ public static class GroupLeaveHelper
                 failedCount++;
         }
 
-        if (joinAnd)
+        var total = groups.Count;
+        var needCount = ConfigPairParams.GetFloat(config, "groupCompleteCount");
+        var needRate = ConfigPairParams.GetFloat(config, "groupCompleteRate");
+
+        float threshold;
+        string mode;
+        if (needCount != null)
         {
-            if (doneCount == groups.Count)
-                return LeaveJudgeResult.Passed("GroupAnd", "All groups completed.");
-            if (failedCount > 0)
-                return LeaveJudgeResult.NotPassed("GroupAndFailed", "At least one group failed.");
-            return LeaveJudgeResult.Waiting("GroupAndPending", $"Done {doneCount}/{groups.Count} groups.");
+            threshold = needCount.Value;
+            mode = "GroupCount";
+        }
+        else if (needRate != null)
+        {
+            threshold = (float)Math.Ceiling(needRate.Value * total);
+            mode = "GroupRate";
+        }
+        else if (!IsGroupJoinAnd(config))
+        {
+            threshold = 1;
+            mode = "GroupOr";
+        }
+        else
+        {
+            threshold = total;
+            mode = "GroupAnd";
         }
 
-        if (doneCount > 0)
-            return LeaveJudgeResult.Passed("GroupOr", "At least one group completed.");
-        if (failedCount == groups.Count)
-            return LeaveJudgeResult.NotPassed("GroupOrFailed", "All groups failed.");
-        return LeaveJudgeResult.Waiting("GroupOrPending", "No group completed yet.");
+        if (doneCount >= threshold)
+            return LeaveJudgeResult.Passed(mode, $"Done groups {doneCount}/{total} (need {threshold}).");
+
+        // 剩余未决组即使全失败也达不到阈值 → NotPassed
+        var pending = total - doneCount - failedCount;
+        if (doneCount + pending < threshold)
+            return LeaveJudgeResult.NotPassed(mode + "Failed",
+                $"Cannot reach {threshold} groups (done {doneCount}, failed {failedCount}, total {total}).");
+
+        return LeaveJudgeResult.Waiting(mode + "Pending",
+            $"Done {doneCount}/{total} groups (need {threshold}).");
+    }
+
+    /// <summary>兼容旧调用：bool joinAnd。</summary>
+    public static LeaveJudgeResult CombineGroups(
+        IReadOnlyDictionary<string, List<ActivityInstanceEntity>> groups,
+        Func<List<ActivityInstanceEntity>, bool> isDone,
+        Func<List<ActivityInstanceEntity>, bool> isFailed,
+        bool joinAnd)
+    {
+        var cfg = new ConfigPair
+        {
+            Type = "_",
+            Params = new Dictionary<string, object?>
+            {
+                ["groupJoin"] = joinAnd ? "And" : "Or"
+            }
+        };
+        return CombineGroups(groups, isDone, isFailed, cfg);
     }
 
     private static bool RoleMatches(string? role, string[] gateRoles)

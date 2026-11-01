@@ -1036,6 +1036,9 @@ namespace saiflow.engine.Core.Pattern
                 entity.GroupId = plist[i].GroupId;
                 entity.GroupName = plist[i].GroupName;
                 entity.GroupRole = plist[i].GroupRole;
+                entity.UnitId = plist[i].UnitId;
+                entity.UnitCode = plist[i].UnitCode;
+                entity.UnitName = plist[i].UnitName;
                 entity.MainActivityInstanceId = toActivityInstance.Id;
 
                 //Setting the Execution Order of Multiple Real Example Nodes in Parallel Serial
@@ -1107,10 +1110,14 @@ namespace saiflow.engine.Core.Pattern
         protected ActivityInstanceEntity GenerateActivityAssignedUserInfo(ActivityInstanceEntity toActivityInstance,
             ActivityResource activityResource)
         {
-            // S0：优先走 IAssigneePipeline（薄调用）；未处理则双轨回落既有逻辑
+            // R2/R4：已挂管道时优先 Assignee；节点有显式 Resolve Type 则禁止回落 Definition
             var pipeline = Sail.AssigneePipeline;
-            if (pipeline != null
-                && pipeline.TryResolveForTaskCreate(
+            var activityDef = ActivityForwardContext?.CurrentActivity;
+            var hasExplicitResolve = !string.IsNullOrWhiteSpace(activityDef?.AssigneeResolveType);
+
+            if (pipeline != null)
+            {
+                var handled = pipeline.TryResolveForTaskCreate(
                     new AssigneeInvokeRequest
                     {
                         ProcessId = toActivityInstance.ProcessId
@@ -1122,15 +1129,24 @@ namespace saiflow.engine.Core.Pattern
                         Runner = activityResource.AppRunner,
                         NextActivityPerformers = activityResource.NextActivityPerformers
                     },
-                    out var resolved)
-                && resolved != null
-                && resolved.Count > 0)
-            {
-                activityResource.NextActivityPerformers ??= new Dictionary<string, PerformerList>();
-                activityResource.NextActivityPerformers[toActivityInstance.ActivityId] = resolved;
-                toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(resolved);
-                toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(resolved);
-                return toActivityInstance;
+                    out var resolved);
+
+                if (handled && resolved != null && resolved.Count > 0)
+                {
+                    activityResource.NextActivityPerformers ??= new Dictionary<string, PerformerList>();
+                    activityResource.NextActivityPerformers[toActivityInstance.ActivityId] = resolved;
+                    toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(resolved);
+                    toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(resolved);
+                    return toActivityInstance;
+                }
+
+                if (hasExplicitResolve)
+                {
+                    throw new ApplicationException(
+                        "AssigneeConfigMissingOrEmpty: Resolve Type '"
+                        + activityDef.AssigneeResolveType
+                        + "' produced no performers. Fix design ConfigPair or supply Specific performers. ReasonCode=AssigneeEmpty");
+                }
             }
 
             if (activityResource.AppRunner.NextPerformerType == NextPerformerIntTypeEnum.Specific

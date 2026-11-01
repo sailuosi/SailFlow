@@ -146,6 +146,9 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
                     entity.GroupId = plist[i].GroupId;
                     entity.GroupName = plist[i].GroupName;
                     entity.GroupRole = plist[i].GroupRole;
+                    entity.UnitId = plist[i].UnitId;
+                    entity.UnitCode = plist[i].UnitCode;
+                    entity.UnitName = plist[i].UnitName;
                     entity.ActivityState = (short)ActivityStateEnum.Ready;
 
                     entity.Id = ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), entity);

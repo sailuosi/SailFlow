@@ -78,6 +78,13 @@ namespace saiflow.engine.Common
         /// </summary>
         public string CompanyId { get; set; }
 
+        /// <summary>发起单位（写入流程实例 StartUnit*；可空）。未填时可用 CompanyId 回落为 StartUnitId。</summary>
+        public string StartUnitId { get; set; }
+
+        public string StartUnitCode { get; set; }
+
+        public string StartUnitName { get; set; }
+
         /// <summary>
         /// Process Data: Task Id
         /// Task Id, distinguishing the unique task in the current user's ActiveInstance list

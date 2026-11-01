@@ -14,11 +14,10 @@ public class GroupRaceLeaveJudge : IActivityLeaveJudge
             return LeaveJudgeResult.Waiting("NoChildren", "GroupRace needs MI children.");
 
         var groups = GroupLeaveHelper.GroupBy(children);
-        var joinAnd = GroupLeaveHelper.IsGroupJoinAnd(ctx.Config);
         return GroupLeaveHelper.CombineGroups(
             groups,
             GroupLeaveHelper.IsGroupRaceDone,
             GroupLeaveHelper.IsGroupRaceFailed,
-            joinAnd);
+            ctx.Config);
     }
 }

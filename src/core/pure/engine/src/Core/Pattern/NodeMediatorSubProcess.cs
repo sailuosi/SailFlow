@@ -361,6 +361,9 @@ namespace saiflow.engine.Core.Pattern
                 entity.GroupId = plist[i].GroupId;
                 entity.GroupName = plist[i].GroupName;
                 entity.GroupRole = plist[i].GroupRole;
+                entity.UnitId = plist[i].UnitId;
+                entity.UnitCode = plist[i].UnitCode;
+                entity.UnitName = plist[i].UnitName;
                 entity.MainActivityInstanceId = toActivityInstance.Id;
                 entity.CompleteOrder = (short)(i + 1);
 

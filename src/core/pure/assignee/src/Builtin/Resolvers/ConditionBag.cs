@@ -31,7 +31,10 @@ public static class ConditionBag
     public static PerformerList ToPerformers(
         IEnumerable<string> userIds,
         string? groupId = null,
-        string? groupRole = null)
+        string? groupRole = null,
+        string? unitId = null,
+        string? unitCode = null,
+        string? unitName = null)
     {
         var list = new PerformerList();
         var role = string.IsNullOrWhiteSpace(groupRole) ? GroupRoles.Member : groupRole.Trim();
@@ -43,7 +46,10 @@ public static class ConditionBag
             list.Add(new Performer(uid, uid)
             {
                 GroupId = groupId,
-                GroupRole = role
+                GroupRole = role,
+                UnitId = unitId,
+                UnitCode = unitCode,
+                UnitName = unitName
             });
         }
         return list;

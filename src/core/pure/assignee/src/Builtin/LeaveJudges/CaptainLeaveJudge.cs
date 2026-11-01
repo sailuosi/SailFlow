@@ -18,11 +18,10 @@ public class CaptainLeaveJudge : IActivityLeaveJudge
 
         var gateRoles = GroupLeaveHelper.ParseGateRoles(ctx.Config);
         var groups = GroupLeaveHelper.GroupBy(children);
-        var joinAnd = GroupLeaveHelper.IsGroupJoinAnd(ctx.Config);
         return GroupLeaveHelper.CombineGroups(
             groups,
             g => GroupLeaveHelper.IsCaptainGroupDone(g, gateRoles),
             g => GroupLeaveHelper.IsCaptainGroupFailed(g, gateRoles),
-            joinAnd);
+            ctx.Config);
     }
 }

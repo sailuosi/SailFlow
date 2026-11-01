@@ -167,6 +167,9 @@ namespace saiflow.biz.Bootstrap
   trigger_expression TEXT NULL,
   overdue_datetime TEXT NULL,
   job_timer_treated_datetime TEXT NULL,
+  start_unit_id TEXT NULL,
+  start_unit_code TEXT NULL,
+  start_unit_name TEXT NULL,
   created_datetime TEXT NULL,
   created_user_id TEXT NULL,
   created_user_name TEXT NULL,
@@ -200,6 +203,9 @@ namespace saiflow.biz.Bootstrap
   group_id TEXT NULL,
   group_name TEXT NULL,
   group_role TEXT NULL,
+  unit_id TEXT NULL,
+  unit_code TEXT NULL,
+  unit_name TEXT NULL,
   gateway_direction_type_id INTEGER NULL,
   cannot_renew_instance INTEGER NULL,
   approval_status INTEGER NULL,
@@ -252,6 +258,9 @@ namespace saiflow.biz.Bootstrap
   group_id TEXT NULL,
   group_name TEXT NULL,
   group_role TEXT NULL,
+  unit_id TEXT NULL,
+  unit_code TEXT NULL,
+  unit_name TEXT NULL,
   is_email_sent INTEGER NULL,
   created_user_id TEXT NULL,
   created_user_name TEXT NULL,
@@ -327,6 +336,7 @@ namespace saiflow.biz.Bootstrap
 )");
 
             EnsureAssigneeGroupColumns(kit);
+            EnsureAssigneeUnitColumns(kit);
         }
 
         /// <summary>S2：办理人组别/组内身份列（已有库用 ALTER 增量）。</summary>
@@ -341,6 +351,23 @@ namespace saiflow.biz.Bootstrap
             EnsureSqliteColumn(kit, "wf_activity_instance", "group_id", "TEXT NULL");
             EnsureSqliteColumn(kit, "wf_activity_instance", "group_name", "TEXT NULL");
             EnsureSqliteColumn(kit, "wf_activity_instance", "group_role", "TEXT NULL");
+        }
+
+        /// <summary>R1：企业单位 Unit* / 发起单位 StartUnit*（已有库 ALTER 增量）。</summary>
+        public static void EnsureAssigneeUnitColumns(SQLBuilder kit)
+        {
+            if (kit == null)
+                throw new ArgumentNullException(nameof(kit));
+
+            EnsureSqliteColumn(kit, "wf_task", "unit_id", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_task", "unit_code", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_task", "unit_name", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_activity_instance", "unit_id", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_activity_instance", "unit_code", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_activity_instance", "unit_name", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_process_instance", "start_unit_id", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_process_instance", "start_unit_code", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_process_instance", "start_unit_name", "TEXT NULL");
         }
 
         static void EnsureSqliteColumn(SQLBuilder kit, string tableName, string columnName, string columnType)
@@ -453,6 +480,9 @@ SELECT
   t.group_id AS group_id,
   t.group_name AS group_name,
   t.group_role AS group_role,
+  t.unit_id AS unit_id,
+  t.unit_code AS unit_code,
+  t.unit_name AS unit_name,
   t.is_email_sent AS is_email_sent,
   ai.approval_status AS approval_status,
   t.created_datetime AS created_datetime,

@@ -14,12 +14,11 @@ public class GroupCollaborateLeaveJudge : IActivityLeaveJudge
             return LeaveJudgeResult.Waiting("NoChildren", "GroupCollaborate needs MI children.");
 
         var groups = GroupLeaveHelper.GroupBy(children);
-        var joinAnd = GroupLeaveHelper.IsGroupJoinAnd(ctx.Config);
         var config = ctx.Config;
         return GroupLeaveHelper.CombineGroups(
             groups,
             g => GroupLeaveHelper.IsGroupCollaborateDone(g, config),
             g => GroupLeaveHelper.IsGroupCollaborateFailed(g, config),
-            joinAnd);
+            config);
     }
 }

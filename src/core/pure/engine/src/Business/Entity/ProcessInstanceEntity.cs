@@ -49,6 +49,13 @@ namespace saiflow.engine.Business.Entity
         public DateTime? OverdueDateTime { get; set; }
         [SooColumn(Name = "job_timer_treated_datetime")]
         public DateTime? JobTimerTreatedDateTime { get; set; }
+        /// <summary>发起单位键（可选；不覆盖节点任务 Unit*）。</summary>
+        [SooColumn(Name = "start_unit_id")]
+        public string StartUnitId { get; set; }
+        [SooColumn(Name = "start_unit_code")]
+        public string StartUnitCode { get; set; }
+        [SooColumn(Name = "start_unit_name")]
+        public string StartUnitName { get; set; }
         [SooColumn(Name = "created_datetime")]
         public DateTime? CreatedDateTime { get; set; }
         [SooColumn(Name = "created_user_id")]

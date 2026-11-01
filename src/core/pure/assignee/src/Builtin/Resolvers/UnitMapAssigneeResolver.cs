@@ -17,16 +17,25 @@ public class UnitMapAssigneeResolver : IAssigneeResolver
                    ?? ConfigPairParams.GetString(ctx.Config, "unitId");
         var groupRole = ConfigPairParams.GetString(ctx.Config, "groupRole", GroupRoles.Member);
 
+        var unitCode = ConfigPairParams.GetString(ctx.Config, "unitCode");
+        var unitName = ConfigPairParams.GetString(ctx.Config, "unitName");
+        // 按单位组内抢办时可双写 GroupId=UnitId；Unit* 始终写入展示字段
+        var dualWriteGroup = ConfigPairParams.GetString(ctx.Config, "dualWriteGroupId", "true");
+        var writeGroup = !string.Equals(dualWriteGroup, "false", StringComparison.OrdinalIgnoreCase);
+        var groupId = writeGroup ? unit : null;
+
         if (!string.IsNullOrEmpty(unit))
         {
             var fromMap = LookupUsers(ctx, unit).ToList();
             if (fromMap.Count > 0)
-                return ConditionBag.ToPerformers(fromMap, groupId: unit, groupRole: groupRole);
+                return ConditionBag.ToPerformers(fromMap, groupId: groupId, groupRole: groupRole,
+                    unitId: unit, unitCode: unitCode, unitName: unitName);
         }
 
         var fallback = ConfigPairParams.GetStringArray(ctx.Config, "fallbackUserIds");
         if (fallback.Length > 0)
-            return ConditionBag.ToPerformers(fallback, groupId: unit, groupRole: groupRole);
+            return ConditionBag.ToPerformers(fallback, groupId: groupId, groupRole: groupRole,
+                unitId: unit, unitCode: unitCode, unitName: unitName);
 
         return new PerformerList();
     }

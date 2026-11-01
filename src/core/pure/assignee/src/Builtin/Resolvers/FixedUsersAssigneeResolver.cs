@@ -53,7 +53,10 @@ public class FixedUsersAssigneeResolver : IAssigneeResolver
             {
                 GroupId = DictStr(dict, "groupId") ?? DictStr(dict, "GroupId"),
                 GroupName = DictStr(dict, "groupName") ?? DictStr(dict, "GroupName"),
-                GroupRole = DictStr(dict, "groupRole") ?? DictStr(dict, "GroupRole") ?? GroupRoles.Member
+                GroupRole = DictStr(dict, "groupRole") ?? DictStr(dict, "GroupRole") ?? GroupRoles.Member,
+                UnitId = DictStr(dict, "unitId") ?? DictStr(dict, "UnitId"),
+                UnitCode = DictStr(dict, "unitCode") ?? DictStr(dict, "UnitCode"),
+                UnitName = DictStr(dict, "unitName") ?? DictStr(dict, "UnitName")
             });
             return;
         }
@@ -78,7 +81,10 @@ public class FixedUsersAssigneeResolver : IAssigneeResolver
             {
                 GroupId = Get("groupId") ?? Get("GroupId"),
                 GroupName = Get("groupName") ?? Get("GroupName"),
-                GroupRole = Get("groupRole") ?? Get("GroupRole") ?? GroupRoles.Member
+                GroupRole = Get("groupRole") ?? Get("GroupRole") ?? GroupRoles.Member,
+                UnitId = Get("unitId") ?? Get("UnitId"),
+                UnitCode = Get("unitCode") ?? Get("UnitCode"),
+                UnitName = Get("unitName") ?? Get("UnitName")
             });
         }
     }

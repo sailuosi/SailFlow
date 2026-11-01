@@ -211,6 +211,11 @@ namespace saiflow.engine.Business.Manager
                 AppInstanceId = runner.AppInstanceId,
                 AppInstanceCode = runner.AppInstanceCode,
                 ProcessState = (int)ProcessStateEnum.Running,
+                StartUnitId = !string.IsNullOrWhiteSpace(runner.StartUnitId)
+                    ? runner.StartUnitId
+                    : runner.CompanyId,
+                StartUnitCode = runner.StartUnitCode,
+                StartUnitName = runner.StartUnitName,
                 CreatedUserId = runner.UserId,
                 CreatedUserName = runner.UserName,
                 CreatedDateTime = DateTime.UtcNow,

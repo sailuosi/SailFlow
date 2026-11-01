@@ -49,6 +49,12 @@ namespace saiflow.engine.Business.Entity
         /// <summary>组内身份（string）。</summary>
         [SooColumn(Name = "group_role")]
         public string GroupRole { get; set; }
+        [SooColumn(Name = "unit_id")]
+        public string UnitId { get; set; }
+        [SooColumn(Name = "unit_code")]
+        public string UnitCode { get; set; }
+        [SooColumn(Name = "unit_name")]
+        public string UnitName { get; set; }
         [SooColumn(Name = "gateway_direction_type_id")]
         public short? GatewayDirectionTypeId { get; set; }
         [SooColumn(Name = "cannot_renew_instance")]

@@ -306,7 +306,10 @@ namespace saiflow.engine.Business.Manager
                 {
                     GroupId = activityInstance?.GroupId,
                     GroupName = activityInstance?.GroupName,
-                    GroupRole = activityInstance?.GroupRole
+                    GroupRole = activityInstance?.GroupRole,
+                    UnitId = activityInstance?.UnitId,
+                    UnitCode = activityInstance?.UnitCode,
+                    UnitName = activityInstance?.UnitName
                 },
                 runnerId, runnerName, entrustedTaskId, runner);
         }
@@ -333,6 +336,9 @@ namespace saiflow.engine.Business.Manager
                 GroupId = !string.IsNullOrEmpty(performer?.GroupId) ? performer.GroupId : activityInstance.GroupId,
                 GroupName = !string.IsNullOrEmpty(performer?.GroupName) ? performer.GroupName : activityInstance.GroupName,
                 GroupRole = !string.IsNullOrEmpty(performer?.GroupRole) ? performer.GroupRole : activityInstance.GroupRole,
+                UnitId = !string.IsNullOrEmpty(performer?.UnitId) ? performer.UnitId : activityInstance.UnitId,
+                UnitCode = !string.IsNullOrEmpty(performer?.UnitCode) ? performer.UnitCode : activityInstance.UnitCode,
+                UnitName = !string.IsNullOrEmpty(performer?.UnitName) ? performer.UnitName : activityInstance.UnitName,
                 TaskState = 1,
                 IsEMailSent = 0,
                 CreatedUserId = runnerId,
@@ -362,7 +368,10 @@ namespace saiflow.engine.Business.Manager
             {
                 GroupId = sourceActivityInstance.GroupId,
                 GroupName = sourceActivityInstance.GroupName,
-                GroupRole = sourceActivityInstance.GroupRole
+                GroupRole = sourceActivityInstance.GroupRole,
+                UnitId = sourceActivityInstance.UnitId,
+                UnitCode = sourceActivityInstance.UnitCode,
+                UnitName = sourceActivityInstance.UnitName
             };
             Insert(kit, newInstance, performer, runner);
         }
@@ -530,6 +539,9 @@ namespace saiflow.engine.Business.Manager
                 GroupId = originalTask.GroupId,
                 GroupName = originalTask.GroupName,
                 GroupRole = originalTask.GroupRole,
+                UnitId = originalTask.UnitId,
+                UnitCode = originalTask.UnitCode,
+                UnitName = originalTask.UnitName,
                 TaskState = (short)TaskStateEnum.Waiting,
                 TaskType = originalTask.TaskType,
                 CreatedDateTime = DateTime.UtcNow,
