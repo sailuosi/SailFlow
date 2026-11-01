@@ -6,8 +6,14 @@ namespace saiflow.engine.Assignee
         /// <summary>节点无显式 Resolve ConfigPair（且无可用 Legacy 推断结果）。</summary>
         public const string AssigneeConfigMissing = "AssigneeConfigMissing";
 
-        /// <summary>Resolve Type 已配置但算人为空（且无显式 Fallback）。</summary>
+        /// <summary>Resolve Type 已配置但算人为空（且无显式 Fallback / NodePolicy 换人失败）。</summary>
         public const string AssigneeEmpty = "AssigneeEmpty";
+
+        /// <summary>NodePolicy 空人=转管理员，但宿主未配置 ProcessAdminUserIds。</summary>
+        public const string ProcessAdminNotConfigured = "ProcessAdminNotConfigured";
+
+        /// <summary>NodePolicy 空人=指定人员，但 assignEmptyUserIds 为空。</summary>
+        public const string AssignEmptyUsersMissing = "AssignEmptyUsersMissing";
 
         /// <summary>会签/多实例子节点流出时无 LeaveJudge 配置且管道未处理。</summary>
         public const string LeaveConfigMissing = "LeaveConfigMissing";

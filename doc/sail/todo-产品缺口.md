@@ -1,10 +1,10 @@
 # 待办：产品缺口（NodePolicy + 按钮 + 表单 + 转办/退回 + 表单生命周期 + 按钮分发 + DisagreeType）
 
-> 状态：**Open**  
+> 状态：**接线完成 · 待联调**  
 > 录入：2026-11-01（空人/同人 → 超时 → 按钮 → 表单编辑性；本文为合并稿）  
 > 续录：2026-11-01（**F 转办**、**G 退回两分**、**H 表单生命周期**、**I 按钮分发**、**J 退回策略 DisagreeType 枚举化**）  
 > 拍板：2026-11-01 — **空人默认=拒绝**（禁止默认自动通过；`=2` 细义=**R4 拒绝推进**）；退回 = **目标维 × 再发送维** 正交（见 §G / §J）  
-> 实施：2026-11-01 — **§F/I/G/J/A(空人)/C/B**：转办 + 分发 + 退回两维 + 空人 + 字段四码 + **Terminate/Discard**（码表默认关 + Handler + Runtime）；超时/同人跳过/H 仍待  
+> 实施：2026-11-01 — **接线完成**（含 Boundaries 文案、会签按任务计时）；烟雾探针 `sleveen-admin/doc/scripts/sail-probe-smoke.ps1`；**联调**见 [联调清单-产品缺口.md](./联调清单-产品缺口.md)  
 
 > 关联：[特性说明-待办人管道.md](./特性说明-待办人管道.md) **R4**；[特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md)；[特性设计-回调与事件.md](./特性设计-回调与事件.md)；宿主 `sailflow-buttons-capability.md`、节点 `sf:NodePolicy` / `sf:ButtonsSetting` / 表单接入
 
@@ -32,21 +32,17 @@
 
 | 配置面 | 字段 | UI 选项 | 运行时 |
 |--------|------|---------|--------|
-| 审批人为空 | `assignEmptyHandlerType` + `assignEmptyUserIds` | 1 自动通过 · **2 自动拒绝（产品默认）** · 3 指定人员 · 4 转交流程管理员 | **Host 已消费**（`NodePolicyAssigneePipeline`；`=1` 跳过未实现） |
-| 与发起人相同 | `assignStartUserHandlerType` | 1 自己审 · 2 自动跳过 · 3 转部门负责人 | **部分**（仅 Type=1 生效；2/3 不暗改） |
-| 审批超时 | `timeoutHandlerEnable` + `timeoutHandlerType` + `timeDuration` / `timeUnit` + `maxRemindCount` | 启用后：1 自动提醒 · 2 **自动同意** · 3 自动拒绝 | **未消费**（无调度作业） |
+| 审批人为空 | `assignEmptyHandlerType` + `assignEmptyUserIds` | 1 自动通过 · **2 自动拒绝（产品默认）** · 3 指定人员 · 4 转交流程管理员 | **Host 已消费**（`=1`→策略跳过人+作业代办） |
+| 与发起人相同 | `assignStartUserHandlerType` | 1 自己审 · 2 自动跳过 · 3 转部门负责人 | **已消费**（2→跳过代办；3→同组织弱查人） |
+| 审批超时 | `timeoutHandlerEnable` + … | 1 提醒 · 2 自动同意 · 3 自动拒绝 | **Host 已消费**（打戳 Overdue + JobWorker） |
 
-类型注释（宿主）已写明：`引擎不解释，Host/办理台消费`；sleveen-admin 后端亦无 `assignEmpty*` / `timeoutHandler*` 消费点。
+类型注释：`引擎不解释，Host/办理台消费`——Host 已消费空人/同人/超时（见上表）。
 
-**空人现状：** 挂 Assignee 管道后，算人为空且无显式 Resolve `Fallback` → **拒绝推进**（R4），不会自动跳过、转管理员或指定人。
+**空人默认（已拍板）：** `assignEmptyHandlerType=2` → R4 拒绝（`AssigneeEmpty`）。`=4` 未配管理员 → `ProcessAdminNotConfigured`；`=3` 未填指定人 → `AssignEmptyUsersMissing`。
 
-**空人默认（已拍板 2026-11-01）：** 新建节点 / merge 缺省 → `assignEmptyHandlerType=2`（**拒绝**）。**禁止**默认 `=1` 自动通过（与 R4「禁止暗默认跳过」一致）。`=1/3/4` 必须建模者显式改配才生效。
+**`=2` ≠** 默认 `RejectProcess` 整单结束。
 
-**`=2` 细义（已拍板）：** 对齐 **R4 拒绝推进**——不落待办、流程不静默继续，`WfExecutedResult` 带可识别 `ReasonCode`（如 `AssigneeEmpty`）。**不等于**默认调用 `RejectProcess` 结束整单；若产品要「空人则整单驳回结束」，须另开显式选项或复用 `rejectHandlerType`，不得与默认 `=2` 混名。
-
-**同属 NodePolicy、本文未单独立项：** `approveType` / `rejectHandlerType`（设计器已有、同样未消费）——与空人拒绝路径相关时在 A3 捎带拍板，完整产品化可另开或并入本块尾声。
-
-**超时现状：** 无「到点自动同意/拒绝/提醒」闭环；与 `sf:Boundaries` / BPMN Timer 不是同一条产品语义。
+**记债：** 联调勾选（见联调清单）；空人整单 Reject 选项未开。
 
 ### A2. 与现有能力的边界
 
@@ -69,65 +65,65 @@
 - [x] **默认空人 = 拒绝**（`assignEmptyHandlerType` 缺省/新建 = `2`；禁止默认自动通过）— 2026-11-01 拍板
 - [x] **`=2` = R4 拒绝推进**（不落待办 + ReasonCode；**不是**默认 `RejectProcess` 整单结束）— 2026-11-01 拍板
 - [x] 空人策略执行归属：**Host 装饰 Assignee 管道**（`NodePolicyAssigneePipeline`）— 2026-11-01
-- [ ] 「自动通过」(`=1`)：跳过本节点 vs 系统代办自动同意（本轮未实现，仍走 R4 拒绝以免暗过）
-- [x] 「转交流程管理员」：配置项 `Sail:ProcessAdminUserIds`（Account 逗号分隔）；未配 → 拒绝
+- [x] 「自动通过」(`=1`)：系统代办自动同意（`__sail_policy_skip__` + JobWorker Run）
+- [x] 「转交流程管理员」：配置项 `Sail:ProcessAdminUserIds`；未配 → 拒绝
 - [ ] 是否另增「空人则 Reject 结束整单」选项（与默认 `=2` 分离）
-- [ ] 同人「自动跳过 / 转部门负责人」：同管线已挂载，Type=2/3 本轮不暗改（防乱派）
-- [x] 与 R4：默认 `=2` 拒绝；仅显式 `=3/4`（及未来 `=1`）换人/跳过
-- [ ] `approveType` / `rejectHandlerType`：另开或记债
+- [x] 同人 Type=2 跳过代办；Type=3 同组织弱查人（无负责人字段）
+- [x] 与 R4：默认 `=2` 拒绝；显式 `=1/3/4` 才换人/跳过
+- [x] `approveType` 2/3：策略账号 + JobWorker 自动通过/拒绝
+- [x] `rejectHandlerType` 2：Reject → SendBack(`returnNodeId`)
 
 **超时**
 
-- [ ] NodePolicy 超时与 `sf:Boundaries`：并存（双写时长）、互斥，还是发布时把 NodePolicy 转写为 Boundaries
-- [ ] 谁调度：Host 后台作业扫 `OverdueDateTime` / 专用队列表，还是引擎内置 drain（对齐 HookOutbox 心智）
-- [ ] `timeoutHandlerType=2` 自动同意：系统身份 Runner 调 `Run`，意见文案与审计字段约定
-- [ ] `=3` 自动拒绝：走 Reject 还是终结（`Terminated`）；与 `rejectHandlerType` 关系
-- [ ] `=1` 自动提醒：复用 Task Notifier，还是独立通道；`maxRemindCount` 与提醒间隔
-- [ ] 会签/串行子待办超时：按子任务分别计时，还是按主节点统一计时
+- [x] 与 Boundaries **并存**：NodePolicy 启用时写/收紧 `OverdueDateTime`（取更早截止）
+- [x] 调度：Host `SailNodePolicyJobWorker` 扫逾期 Ready 活动
+- [x] `=2` 自动同意：原办理人身份 Run + `sail.timeout=agree`
+- [x] `=3` 自动拒绝：`RejectProcess`（非整单 Terminate）
+- [x] `=1` 自动提醒：进程内计数 + 日志（Notifier 可后接）；`maxRemindCount`
+- [x] 会签子待办分别计时：按 Waiting 任务 `CreatedDateTime` + 策略时长分别到期
 
 ### A4. 实现
 
 **公共**
 
 - [x] 解析 `sf:NodePolicy`（Host `SailNodePolicyCatalog` + 管道内读 BPMN）
-- [ ] ReasonCode 细分：管理员未配置 vs 算人空（仍多为 `AssigneeEmpty`）
+- [x] ReasonCode 细分：`ProcessAdminNotConfigured` / `AssignEmptyUsersMissing` / `AssigneeEmpty`
 
 **空人 / 同人**
 
 - [x] Resolve 之后挂空人处理（`NodePolicyAssigneePipeline`）
 - [x] 设计器 / merge：默认 `assignEmptyHandlerType=2`
 - [x] `=2` 拒绝推进（R4）
-- [ ] `=1` 自动通过 / 跳过（显式才开；**未实现**，暂仍拒绝）
+- [x] `=1` 策略跳过人 + JobWorker 代办
 - [x] `=3` 指定 `assignEmptyUserIds`
 - [x] `=4` 转流程管理员（`Sail:ProcessAdminUserIds`）
-- [ ] `assignStartUserHandlerType` 同人 2/3（跳过/负责人）
-- [ ] 收敛设计器 Fallback UI `onEmpty`
-- [ ] 联调：默认空人拒绝；指定人/管理员可落待办
+- [x] `assignStartUserHandlerType` 同人 2/3
+- [x] 收敛设计器 Fallback UI `onEmpty`（标明 ≠ NodePolicy；默认文案对齐 R4 Error）
+- [ ] 联调：见 [联调清单-产品缺口.md](./联调清单-产品缺口.md) §A
 
 **超时**
 
-- [ ] 启用超时后写入可扫描截止时间（复用/对齐 `OverdueDateTime`，或 NodePolicy → Boundaries 转写）
-- [ ] 到期扫描作业（幂等、可恢复、租约/防重）
-- [ ] `timeoutHandlerType=1` 自动提醒（含次数上限）
-- [ ] `timeoutHandlerType=2` 自动同意
-- [ ] `timeoutHandlerType=3` 自动拒绝
-- [ ] 与 Boundaries / Timer 事件文档与设计器文案对齐，避免两套超时互相踩
-- [ ] 单测 + 宿主联调（短时长 → 到期 → 同意/拒绝/提醒符合选项）
+- [x] `UseNodePolicyTimeoutStamp` → `OverdueDateTime`
+- [x] `SailNodePolicyJobWorker`（跳过/自动拒绝 + 超时）
+- [x] `timeoutHandlerType=1/2/3`
+- [x] 与设计器 Boundaries 文案对齐（属性面板 ≠ NodePolicy 产品超时）
+- [ ] 联调短时长验收（清单 A7–A9）
+- [x] 提醒接 TaskNotifier（`FireTaskLifecycle` Created 通道 + maxRemindCount）
 
-### A5. 落地路径（空人已按此接线）
+### A5. 落地路径
 
-**空人 / 同人：** Host `NodePolicyAssigneePipeline` 装饰内置管道；引擎只认 `Performer[]` 显式结果。管理员主数据来自宿主配置，不进 pure。
+**空人 / 同人：** `NodePolicyAssigneePipeline`；`=1`/同人`=2` → `__sail_policy_skip__`，作业代办 Run。
 
-**超时：** 仍建议 Host 作业扫 `OverdueDateTime`（本轮未做）。
+**超时：** 活动创建打戳 + Host 作业扫 `OverdueDateTime`。
 
 ### A6. 验收口径
 
-1. **新建节点未改空人策略** + 算人为空 → **拒绝推进**（默认 `=2` = R4 + ReasonCode）。  
-2. 空人=指定人员 → 待办落指定 Account（联调）。  
-3. 空人=转管理员 + 已配 `Sail:ProcessAdminUserIds` → 落管理员；未配置 → **拒绝**。  
-4. 空人=`=1` 自动通过 → **本轮仍拒绝**（待 Skip 语义）。  
-5. 同人=自动跳过 → 本轮未实现。  
-6.–9. 超时项：未实现。  
+1. 默认空人 → R4 拒绝。  
+2. 指定人 / 管理员 → 落待办（联调）。  
+3. `=1` → 出现策略跳过待办并被作业办结（联调）。  
+4. 同人=2 → 同上；同人=3 → 换同组织账号或保持原人。  
+5. 超时同意/拒绝/提醒 → 作业行为符合选项（联调）。  
+6. 未启用超时 → 不因 NodePolicy 打戳自动办结。  
 
 ---
 
@@ -259,8 +255,8 @@
 - [x] [存疑参考功能点.md](./存疑参考功能点.md)：承办对照表不再写「转办刻意不进码表」（2026-11-01）
 - [x] [特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md) §4.1：退回两维（2026-11-01）
 - [x] [特性说明-待办人管道.md](./特性说明-待办人管道.md)：R4 / §7.3 对齐空人默认拒绝与 NodePolicy（2026-11-01）
-- [ ] [特性说明-引擎能力基线.md](./特性说明-引擎能力基线.md)（空人/超时验收 + 办理命令若列表 + Transfer）
-- [ ] 宿主 `sailflow-assignee-candidate-design.md`（若仍写空人/转办旧口径）
+- [x] [特性说明-引擎能力基线.md](./特性说明-引擎能力基线.md)（Transfer/Terminate/Discard + ReasonCode + Host 超时边界）
+- [x] 宿主 `sailflow-assignee-candidate-design.md`（空人 NodePolicy / 转办口径）
 - [x] 宿主表单/办理文档：节点字段 mode string 契约（`sailflow-field-modes.md`）
 
 ---
@@ -332,8 +328,8 @@
 - [x] 引擎/Host/码表/办理条接线（编译通过）  
 - [ ] A 转办给 B → A 待办结束，B 待办在**同一** `ActivityId`，实例未进入下一节点（联调）  
 - [ ] 会签节点转办后，完成条件按「转出人不再占用名额」可测  
-- [ ] 设计器可启停/改名「转办」  
-- [ ] 审批轨迹能看出本次为转办（及对象）；**无**独立 entrust 表依赖  
+- [x] 设计器可启停/改名「转办」（按钮码表 + 节点配置其他/待办组）  
+- [ ] 审批轨迹能看出本次为转办（及对象）；**无**独立 entrust 表依赖（联调）  
 
 
 ---
@@ -433,29 +429,23 @@ SendBack 时 ──► 维度① 选定目标节点（上一 / 发起 / 历史�
 | DIY 业务页 | 约定弱；新业务易复制 Controller/Service/Hook 三件套 |
 | pure | **正确**：不应出现业务表 Schema；本缺口不改引擎分层 |
 
-### H4. 建议契约（供拍板）
+### H4. 契约（已落地）
 
 ```csharp
-// 名待定：ISailFormBizHandler / ISailBizFormLifecycle
 interface ISailFormBizHandler
 {
-    string FormCode { get; }   // 或 AppName / ProcessCode 路由键
-
-    void OnInit(SailFormBizContext ctx);
-    void OnQuery(SailFormBizContext ctx);
-    void OnSubmit(SailFormBizContext ctx);      // 落库 + 填 BusinessId；Start 可由 Host 模板调用
-    void OnConsent(SailFormBizContext ctx);     // 同意/再提交
-    void OnBackToModify(SailFormBizContext ctx);
-    void OnCancel(SailFormBizContext ctx);
-    void OnFinish(SailFormBizContext ctx);      // 完成/驳回结束等，ctx 带终态
+    string FormCode { get; }
+    void OnInit / OnQuery / OnSubmit / OnStarted /
+         OnConsent / OnBackToModify / OnCancel / OnFinish(SailFormBizContext ctx);
 }
 ```
 
-- [ ] 注册：`builder.UseBizFormHandler<LeaveFormHandler>()` 或按 FormCode 字典  
-- [ ] Host 模板：`SubmitBizForm(formCode, json)` → 反序列化 → `OnSubmit` → `StartProcess`  
-- [ ] 同意/退回/结束：办理 API 或薄 Hook 适配器按实例 FormCode **回调同一 Handler**（避免业务再注册多个零散 Hook）  
-- [ ] 低代码：可提供一个 `DynamicFormBizHandler` 默认实现（只存 conf/字段 JSON）  
-- [ ] 文档：最佳实践「新 DIY 业务 = 复制一个 Handler 类」；请假样例迁到该范式  
+- [x] 注册：`services.AddSailFormBiz()` + `UseFormBizLifecycleHook()`  
+- [x] Host：`SailFormBizHost.SubmitAndStartAsync` + `POST api/WfBizForm/Submit`  
+- [x] 同意/退回/取消：`SailOperationDispatcher` 成功后按 AppName 回调  
+- [x] 终态：Lifecycle Hook → `OnFinish`  
+- [x] `DynamicFormBizHandler`（FormCode=`Dynamic`）  
+- [x] 文档：`sleveen-admin/doc/sailflow-form-biz-handler.md`；请假迁到 Handler  
 
 ### H5. 红线
 
@@ -466,10 +456,11 @@ interface ISailFormBizHandler
 
 ### H6. 验收
 
-- [ ] 新增样例业务：仅新增一个 Handler + 注册，无第二套散落 Hook 也能完成「发起→同意→结束回写」  
-- [ ] 请假样例改为 Handler 后，删除/收缩专用 Status Hook 或令其变为对 Handler 的委托  
-- [ ] formCode 未注册 → 明确错误，不静默空转  
-- [ ] 动态表单走默认 Handler 仍可发起/办结  
+- [x] 新业务：加 Handler + DI 注册即可（Leave/Dynamic 已示范）  
+- [x] 请假：`LeaveFormBizHandler`；旧 Status Hook 委托 OnFinish；宿主改挂 FormBiz Hook  
+- [x] formCode 未注册 → `FormBizHandlerMissing`  
+- [x] Dynamic 默认可 Submit/Start  
+- [ ] 联调：发起→同意→结束 Status=通过  
 
 ---
 
@@ -519,7 +510,7 @@ interface ISailFormBizHandler
 - [x] Dispatcher：未知 Id → `OperationHandlerMissing`  
 - [x] Handlers：Approve/Reject/SendBack/SignForward/**Transfer**/Withdraw/Resend/Close/**Terminate**/**Discard**/Jump/Revise/Reverse  
 - [x] 办理条引擎按钮全部改走统一入口（Copy 除外）  
-- [ ] 与 §H：Approve Handler 内调 FormBizHandler  
+- [x] 与 §H：Dispatcher 成功后按 AppName 回调 FormBiz（Consent/Back/Cancel）  
 - [x] 与 §G：有 BackSrc 时办理台两分文案；策略落盘仍待 §J  
 - [x] 探针列出码表 Id × 是否已挂 Handler（Copy 无 Handler 属预期）  
 
@@ -583,7 +574,7 @@ AntFlow `ProcessDisagreeTypeEnum` = 两维笛卡尔积中的常见组合，**导
 - [x] 并入 `sf:NodePolicy.json`：`sendBackTarget` + `resubmitMode`  
 - [x] 设计器两维控件；缺字段 merge 默认 `Starter` + `ReturnToSender`  
 - [x] Workbench 按目标维收窄 PreviousNodes；按再发送维互斥出口  
-- [ ] SendBack Handler 内再强校验目标（当前依赖 Workbench 已收窄列表）  
+- [x] SendBack Handler：`NextActivityPerformers` 目标非空（`SendBackTargetMissing`）  
 - [ ] 单测：两维 × 边界；非法组合 Reason  
 - [x] 对外不用 AntFlow 1–5 数字  
 
