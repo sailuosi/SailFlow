@@ -66,7 +66,7 @@
 | 场景 / 常用名 | 建议 Sail 编码 | 建议引擎落点 | 执行含义 | 现状 |
 |---------------|----------------|--------------|----------|------|
 | 转办 | `Transfer` | 待定 `TransferProcess` | **个人办结 + 本节点加签式交人，不发生节点流转**（原人待办结束，新人同 Activity 待办；≠ 委派回转） | **须有**；见 [todo-产品缺口.md](./todo-产品缺口.md) **§F** |
-| 委派 / 委托 | `Delegate` | 待定；常需委托流水 | 请他人代办，办完或规则满足后**可回到**原责任人（与转办区分） | 暂缓 |
+| 委派 / 委托 | `Delegate` | 待定 | 请他人代办，办完或规则满足后**可回到**原责任人（与转办区分）；审计优先走**审批轨迹**，不默认单独流水表 | 暂缓 |
 | 变更处理人 | `ChangeAssignee` | 待定（管理改派） | 管理员/有权人改当前节点办理人集合 | 无产品命令 |
 | 承办 / 认领 | `Claim`（勿用 Undertake 当万能名） | 待定认领命令；**仅** `Leave=Race` | 或签多人时先独占待办，**不推进**；再 `Approve`/`Reject` | 存疑，默认不跟 AntFlow 按钮 |
 | 加批 | `SignAddNode`（候选） | 与 `SignForward` 拆语义后定 | **生成新审批节点/段**再审（AntFlow JP） | 现揉在加签，未拆 |
@@ -104,7 +104,7 @@ AntFlow 五型 Disagree 可后扩；建议配置码（候选）：
 | 退回历史节点，再提交进下一节点 | `BackHistoryThenNext` | |
 | 退回历史节点，再提交回退回节点 | `BackHistoryThenReturn` | |
 
-落地：`sf:DisagreePolicy`（名待定）+ 现有 `SendBack` / `Resend` / `Run`；待办见 [todo-产品缺口.md](./todo-产品缺口.md) **§G**。
+落地：`sf:DisagreePolicy`（名待定）+ 现有 `SendBack` / `Resend` / `Run`；办理台两分见 [todo-产品缺口.md](./todo-产品缺口.md) **§G**；**枚举全集与设计器**见同文档 **§J**。
 
 ---
 
