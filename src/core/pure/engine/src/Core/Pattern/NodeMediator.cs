@@ -28,12 +28,11 @@ using saiflow.engine.Core.Pattern.Auto;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
-    /// Node Mediator Abstract Class
-    /// 节点执行器的抽象类
+    /// 节点执行器抽象基类
     /// </summary>
     internal abstract class NodeMediator
     {
-        #region Property
+        #region 属性
 
         private ActivityForwardContext _activityForwardContext;
         protected ActivityForwardContext ActivityForwardContext
@@ -144,11 +143,14 @@ namespace saiflow.engine.Core.Pattern
         private EventServiceBase _eventService;
         #endregion
 
-        #region Abstract Method
+        #region 抽象方法
+        /// <summary>
+        /// 执行当前节点工作项
+        /// </summary>
         internal abstract void ExecuteWorkItem(ActivityInstanceEntity activityInstance);
         #endregion
 
-        #region Constructor Function
+        #region 构造函数
         protected SailClient Sail { get; }
 
         internal NodeMediator(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
@@ -174,12 +176,10 @@ namespace saiflow.engine.Core.Pattern
         }
         #endregion
 
-        #region Execute Method
+        #region 执行方法
         /// <summary>
-        /// Get Event Service
         /// 获取事件服务
         /// </summary>
-        /// <returns></returns>
         private EventServiceBase GetEventService()
         {
             if (_eventService == null)
@@ -208,7 +208,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Get inner event service for derived mediators.
+        /// 供派生类获取内部事件服务
         /// </summary>
         protected IEventService GetInnerEventService()
         {
@@ -216,11 +216,8 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Determine whether it is a starting type node
-        /// 判断是否为开始类型的节点
+        /// 判断是否为非开始类型节点
         /// </summary>
-        /// <param name="nodeMediator"></param>
-        /// <returns></returns>
         private bool IsNotNodeMediatorStart(NodeMediator nodeMediator)
         {
             if (!(nodeMediator is NodeMediatorStart)
@@ -240,8 +237,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// On before execute work item
-        /// 执行工作项前
+        /// 执行工作项之前
         /// </summary>
         protected void OnBeforeExecuteWorkItem()
         {
@@ -249,8 +245,7 @@ namespace saiflow.engine.Core.Pattern
             var actionList = LinkContext.FromActivity.ActionList;
             ActionExecutor.ExecuteActionListBefore(actionList, eventService as IEventService);
 
-            //Before node flow, invoke the delegation event of activity execution
-            //节点流转前，调用活动执行的委托事件
+            // 节点流转前，触发活动执行委托事件
             var currentActivity = LinkContext.CurrentActivity != null ? LinkContext.CurrentActivity : LinkContext.FromActivity;
             EventExecutor.InvokeExternalEvent(Sail, this.Kit,
                 EventFireTypeEnum.OnActivityExecuting,
@@ -258,14 +253,16 @@ namespace saiflow.engine.Core.Pattern
                 ActivityForwardContext);
         }
 
+        /// <summary>
+        /// 执行工作项之后
+        /// </summary>
         protected void OnAfterExecuteWorkItem()
         {
             var eventService = GetEventService();
             var actionList = ((this is NodeMediatorEnd) || (this is NodeMediatorIntermediate)) ? LinkContext.CurrentActivity.ActionList : LinkContext.FromActivity.ActionList;
             ActionExecutor.ExecuteActionListAfter(actionList, eventService as IEventService);
 
-            //After the node flow is completed, invoke the delegation event that the activity completes execution
-            //节点流转完成后，调用活动完成执行的委托事件
+            // 节点流转完成后，触发活动执行完成委托事件
             var currentActivity = LinkContext.CurrentActivity != null ? LinkContext.CurrentActivity : LinkContext.FromActivity;
             EventExecutor.InvokeExternalEvent(Sail, this.Kit,
                 EventFireTypeEnum.OnActivityExecuted,
@@ -274,8 +271,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Execute code to automatically serve content
-        /// 执行代码以自动服务内容
+        /// 执行服务节点内容
         /// </summary>
         protected void OnExecutingServiceItem()
         {
@@ -284,6 +280,9 @@ namespace saiflow.engine.Core.Pattern
             ServiceExecutor.ExecuteServiceList(serviceList, this.ActivityForwardContext, eventService as IEventService);
         }
 
+        /// <summary>
+        /// 执行 AI 服务节点内容
+        /// </summary>
         protected void OnExecutingAIServiceItem(ActivityInstanceEntity fromActivityInstance,
             ActivityInstanceEntity currentActivityInstance)
         {
@@ -294,8 +293,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Executing script item
-        /// 执行脚本项
+        /// 执行脚本节点内容
         /// </summary>
         protected void OnExecutingScriptItem()
         {
@@ -305,15 +303,10 @@ namespace saiflow.engine.Core.Pattern
         }
         #endregion
 
-        #region Process Running Logical
+        #region 流程运转逻辑
         /// <summary>
-        /// Traverse and execute the nodes following the current node
-        /// Normal operation: Transition parsing flow is required
-        /// Other methods are directly specified, such as jump, return, etc., 
-        /// which do not require parsing and cannot be equated with normal flow parsing
-        /// 遍历并执行当前节点后续的节点
-        /// 正常运行：需要转换解析流程
-        /// 其他方法直接指定，如跳转、返回等，不需要解析，不能等同于正常流程解析
+        /// 遍历并执行当前节点的后续节点。
+        /// 正常流转需解析 Transition；跳转、退回等直接指定目标，不可等同于正常流转解析。
         /// </summary>
         internal void ContinueForwardCurrentNode(bool isNotParsedByTransition, SQLBuilder kit)
         {
@@ -377,7 +370,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Merge upstream/runtime condition pairs with variables written for the current activity instance.
+        /// 合并上游/运行时条件键值与当前活动实例已写入的变量
         /// </summary>
         private static IDictionary<string, string> MergeActivityConditions(ActivityResource activityResource, IList<ProcessVariableEntity> currentActivityRows)
         {
@@ -402,12 +395,9 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Recursive execution node
-        /// 1) Task of creating regular nodes
-        /// 2) Task of creating a countersignature node
-        /// 递归执行节点
-        /// 1) 创建常规节点的任务
-        /// 2) 创建会签节点的任务
+        /// 递归执行后续节点：
+        /// 1) 创建常规任务节点；
+        /// 2) 创建会签（多实例）节点。
         /// </summary>
         protected void ContinueForwardCurrentNodeRecurisivly(Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
@@ -424,10 +414,10 @@ namespace saiflow.engine.Core.Pattern
                     NodeAutoExecutedResult nodeExecutedResult = null;
                     if (XPDLHelper.IsGatewayComponentNode(comp.Activity.ActivityType) == true)
                     {
-                        //This node type is a task node: Determine whether a task can be created based on the type of from Activity Instance
+                        // 网关节点：依据来源活动实例状态判断是否可继续
                         if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
                         {
-                            //This node type is a branch or merge node type: First, the current node needs to be instantiated (auto complete)
+                            // 分支/合并网关：先实例化当前节点（自动完成）
                             NodeMediatorGateway gatewayNodeMediator = NodeMediatorFactory.CreateNodeMediatorGateway(comp.Activity, this.ActivityForwardContext.ProcessModel, Kit, Sail);
 
                             ICompleteGatewayAutomaticlly autoGateway = (ICompleteGatewayAutomaticlly)gatewayNodeMediator;
@@ -440,7 +430,7 @@ namespace saiflow.engine.Core.Pattern
 
                             if (nodeExecutedResult.Status == NodeAutoExecutedStatus.Successed)
                             {
-                                //Traverse subsequent child nodes
+                                // 继续遍历后续子节点
                                 ContinueForwardCurrentNodeRecurisivly(gatewayNodeMediator.GatewayActivity,
                                     gatewayNodeMediator.GatewayActivityInstance,
                                     comp,
@@ -464,7 +454,7 @@ namespace saiflow.engine.Core.Pattern
                         }
                         else
                         {
-                            //The next task node has not been created, and a prompt message is required
+                            // 下一节点尚未创建，需给出提示
                             if (IsWaitingOneOfJoin(fromActivity.GatewayDetail) == true)
                             {
                                 mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
@@ -491,8 +481,7 @@ namespace saiflow.engine.Core.Pattern
                     }
                     else if (XPDLHelper.IsCrossOverComponentNode(comp.Activity.ActivityType) == true)
                     {
-                        //Intermediate event type node, calling external business logic,
-                        //and then the process continues to flow downwards
+                        // 中间事件节点：调用外部业务逻辑后继续向下流转
                         NodeMediator eventNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
                         eventNodeMediator.LinkContext.FromActivity = fromActivity;
                         eventNodeMediator.LinkContext.CurrentActivity = comp.Activity;
@@ -517,7 +506,7 @@ namespace saiflow.engine.Core.Pattern
 
                         if (nodeExecutedResult.Status == NodeAutoExecutedStatus.Successed)
                         {
-                            //Traverse subsequent child nodes
+                            // 继续遍历后续子节点
                             ContinueForwardCurrentNodeRecurisivly(eventNodeMediator.LinkContext.CurrentActivity,
                                 toActivityInstance,
                                 comp,
@@ -552,10 +541,10 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else if (comp.Activity.ActivityType == ActivityTypeEnum.TaskNode)                  
                 {
-                    //This node type is a task node: Determine whether a task can be created based on the type of from Activity Instance
+                    // 任务节点：依据来源活动实例状态判断是否可创建任务
                     if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
                     {
-                        //Create new task node
+                        // 创建新任务节点
                         NodeMediator taskNodeMediator = new NodeMediatorTask(Kit, Sail);
                         taskNodeMediator.CreateActivityTaskTransitionInstance(comp.Activity,
                             ActivityForwardContext.ProcessInstance,
@@ -570,7 +559,7 @@ namespace saiflow.engine.Core.Pattern
                     }
                     else
                     {
-                        //The next task node has not been created, and a prompt message is required
+                        // 下一任务节点尚未创建，需给出提示
                         if (IsWaitingOneOfJoin(fromActivity.GatewayDetail) == true)
                         {
                             mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
@@ -666,7 +655,7 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else if (comp.Activity.ActivityType == ActivityTypeEnum.ServiceNode)
                 {
-                    //Service type node, calling external business logic, and then the process continues to flow downwards
+                    // 服务节点：调用外部业务逻辑后继续向下流转
                     NodeAutoExecutedResult serviceExecutedResult = null;
                     NodeMediator serviceNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
 
@@ -714,7 +703,7 @@ namespace saiflow.engine.Core.Pattern
                             activityResource.AppRunner,
                             newConditionKeyValuePair);
 
-                        //Traverse subsequent child nodes
+                        // 继续遍历后续子节点
                         ContinueForwardCurrentNodeRecurisivly(serviceNodeMediator.LinkContext.CurrentActivity,
                             currentActivityInstance,
                             serviceNextMatchedResult.Root,
@@ -736,7 +725,7 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else if (comp.Activity.ActivityType == ActivityTypeEnum.ScriptNode)
                 {
-                    //Script type node, calling script program, and then the process continues to flow downwards
+                    // 脚本节点：执行脚本后继续向下流转
                     NodeAutoExecutedResult scriptExecutedResult = null;
                     NodeMediator scriptNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
 
@@ -781,7 +770,7 @@ namespace saiflow.engine.Core.Pattern
                 {
                     if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
                     {
-                        //This node type is a task node: Determine whether a task can be created based on the type of from Activity Instance
+                        // 会签节点：依据来源活动实例状态创建多实例
                         NodeMediator mediatorMICreator = new NodeMediatorMultiSignCreator(Kit, Sail);
                         mediatorMICreator.CreateActivityTaskTransitionInstance(comp.Activity,
                             ActivityForwardContext.ProcessInstance,
@@ -796,7 +785,7 @@ namespace saiflow.engine.Core.Pattern
                     }
                     else
                     {
-                        ////The next task node has not been created, and a prompt message is required
+                        // 下一会签节点尚未创建，需给出提示
                         if (IsWaitingOneOfJoin(fromActivity.GatewayDetail) == true)
                         {
                             mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
@@ -841,23 +830,23 @@ namespace saiflow.engine.Core.Pattern
                 {
                     if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
                     {
-                        //This node is the completion end node, ending the process
+                        // 结束节点：完结流程
                         var endMediator = NodeMediatorFactory.CreateNodeMediatorEnd(ActivityForwardContext, comp.Activity, Kit, Sail);
                         endMediator.LinkContext.CurrentActivity = comp.Activity;
 
-                        //Create end node instance and transitioni data
+                        // 创建结束节点实例与转移数据
                         endMediator.CreateActivityTaskTransitionInstance(comp.Activity, ActivityForwardContext.ProcessInstance,
                             fromActivityInstance, comp.Transition.TransitionId, TransitionTypeEnum.Forward,
                             TransitionFlyingTypeEnum.NotFlying,
                             activityResource,
                             Kit);
 
-                        //Create end node instance and transfer data
+                        // 执行结束节点
                         endMediator.ExecuteWorkItem(null);
                     }
                     else
                     {
-                        //End node not created, prompt message is required
+                        // 结束节点尚未创建，需给出提示
                         if (IsWaitingOneOfJoin(fromActivity.GatewayDetail) == true)
                         {
                             mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
@@ -898,10 +887,8 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Determine whether it is a merger situation
+        /// 判断是否处于合并网关等待场景（OrJoin / XOrJoin / AndJoin / AndJoinMI）
         /// </summary>
-        /// <param name="gatewayDetail"></param>
-        /// <returns></returns>
         private Boolean IsWaitingOneOfJoin(GatewayDetail gatewayDetail)
         {
             Boolean isWaiting = false;
@@ -920,7 +907,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create activity task transtion instance
+        /// 创建活动、任务与转移实例（派生类按节点类型重写）
         /// </summary>
         internal virtual void CreateActivityTaskTransitionInstance(Activity toActivity,
             ProcessInstanceEntity processInstance,
@@ -933,13 +920,10 @@ namespace saiflow.engine.Core.Pattern
         { }
 
         /// <summary>
-        /// Virtual method for creating tasks
-        /// 1.  For automatically executed work items, there is no need to rewrite this method
-        /// 2.  For manually executed work items, the method needs to be rewritten to insert pending task data
+        /// 创建任务（虚方法）：
+        /// 1. 自动执行的工作项通常无需重写；
+        /// 2. 人工待办需重写以写入待办任务数据。
         /// </summary>
-        /// <param name="activityResource"></param>
-        /// <param name="toActivityInstance"></param>
-        /// <param name="kit"></param>
         internal virtual void CreateNewTask(ActivityInstanceEntity toActivityInstance,
             ActivityResource activityResource,
             SQLBuilder kit)
@@ -953,11 +937,8 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create activity instance object
+        /// 创建活动实例对象
         /// </summary>
-        /// <param name="processInstance"></param>
-        /// <param name="activity"></param>
-        /// <param name="runner"></param>
         protected ActivityInstanceEntity CreateActivityInstanceObject(Activity activity,
             ProcessInstanceEntity processInstance,
             WfAppRunner runner)
@@ -973,13 +954,18 @@ namespace saiflow.engine.Core.Pattern
             return entity;
         }
 
+        /// <summary>
+        /// 插入活动实例
+        /// </summary>
         protected virtual int InsertActivityInstance(ActivityInstanceEntity activityInstance,
             SQLBuilder kit)
         {
             return ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), activityInstance);
         }
 
-
+        /// <summary>
+        /// 完成活动实例
+        /// </summary>
         protected virtual void CompleteActivityInstance(int ActivityInstanceId,
             WfAppRunner runner,
             SQLBuilder kit)
@@ -988,8 +974,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Master node of countersignature type, handling multiple instance nodes
-        /// Create the master node for the countersignature node and record the instance child nodes under the countersignature master node
+        /// 创建会签主节点及下属多实例子节点
         /// </summary>
         internal void CreateMultipleInstance(Activity toActivity,
             ProcessInstanceEntity processInstance,
@@ -1025,7 +1010,7 @@ namespace saiflow.engine.Core.Pattern
                 activityResource.AppRunner,
                 kit);
 
-            //Insert signature sub node instance data
+            // 插入会签子节点实例
             var plist = activityResource.NextActivityPerformers[toActivity.ActivityId];
             ActivityInstanceEntity entity = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)
@@ -1041,18 +1026,18 @@ namespace saiflow.engine.Core.Pattern
                 entity.UnitName = plist[i].UnitName;
                 entity.MainActivityInstanceId = toActivityInstance.Id;
 
-                //Setting the Execution Order of Multiple Real Example Nodes in Parallel Serial
+                // 设置多实例子节点执行顺序（串行 / 并行）
                 if (toActivityInstance.MergeType == (short)MergeTypeEnum.Sequence)
                 {
                     entity.CompleteOrder = (short)(i + 1);
                 }
                 else if (toActivityInstance.MergeType == (short)MergeTypeEnum.Parallel)
                 {
-                    //In parallel mode, the priority of Completed Order is the same, so it is set to -1
+                    // 并行模式下完成顺序相同，统一为 -1
                     entity.CompleteOrder = -1;       
                 }
 
-                //If it is a serial countersignature, only the first node is running, and the other nodes are suspended
+                // 串行会签：仅首个子节点运行，其余挂起
                 if ((i > 0) && (toActivity.MultiSignDetail.MergeType == MergeTypeEnum.Sequence))
                 {
                     entity.ActivityState = (short)ActivityStateEnum.Suspended;
@@ -1063,6 +1048,9 @@ namespace saiflow.engine.Core.Pattern
             }
         }
 
+        /// <summary>
+        /// 创建退回目标活动实例对象
+        /// </summary>
         protected ActivityInstanceEntity CreateBackwardToActivityInstanceObject(ProcessInstanceEntity processInstance,
             BackwardTypeEnum backwardType,
             int backSrcActivityInstanceId,
@@ -1084,6 +1072,9 @@ namespace saiflow.engine.Core.Pattern
             return entity;
         }
 
+        /// <summary>
+        /// 插入转移实例
+        /// </summary>
         internal virtual int InsertTransitionInstance(ProcessInstanceEntity processInstance,
             String transitionId,
             ActivityInstanceEntity fromActivityInstance,
@@ -1107,10 +1098,13 @@ namespace saiflow.engine.Core.Pattern
             return newId;
         }
 
+        /// <summary>
+        /// 解析并写入目标活动的办理人信息（经 Assignee 管道）
+        /// </summary>
         protected ActivityInstanceEntity GenerateActivityAssignedUserInfo(ActivityInstanceEntity toActivityInstance,
             ActivityResource activityResource)
         {
-            // R2/R4：已挂管道时只走 Assignee；禁止回落 Definition/Specific/Single 双轨
+            // R2/R4：已挂管道时只走 Assignee，禁止回落 Definition/Specific/Single
             var pipeline = Sail.AssigneePipeline;
             var activityDef = ActivityForwardContext?.CurrentActivity;
             var hasExplicitResolve = !string.IsNullOrWhiteSpace(activityDef?.AssigneeResolveType);
@@ -1196,10 +1190,8 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Generate PerformerList data structure based on personnel information assigned by nodes
+        /// 根据活动实例已分配人员信息反构 PerformerList
         /// </summary>
-        /// <param name="activityInstance"></param>
-        /// <returns></returns>
         protected PerformerList AntiGenerateActivityPerformerList(ActivityInstanceEntity activityInstance)
         {
             var performerList = new PerformerList();
@@ -1220,9 +1212,8 @@ namespace saiflow.engine.Core.Pattern
         #endregion
 
         /// <summary>
-        /// Generate messages based on the type of node execution result
+        /// 按节点执行反馈类型生成提示消息
         /// </summary>
-        /// <returns></returns>
         internal string GetNodeMediatedMessage()
         {
             var message = string.Empty;
