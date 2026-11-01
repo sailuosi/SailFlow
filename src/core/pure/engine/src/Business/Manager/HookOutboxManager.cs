@@ -225,6 +225,72 @@ namespace saiflow.engine.Business.Manager
             return count;
         }
 
+        /// <summary>
+        /// 按 TTL 删除终态行（Succeeded / Dead）。以 <c>UpdatedAt</c>（空则 <c>CreatedAt</c>）与保留天数比较。
+        /// </summary>
+        public int PurgeExpiredTerminal(
+            SQLBuilder kit,
+            int succeededRetentionDays,
+            int deadRetentionDays,
+            int batchSize = HookOutboxOptions.DefaultPurgeBatchSize,
+            DateTime? nowUtc = null)
+        {
+            var now = nowUtc ?? DateTime.UtcNow;
+            var limit = Math.Max(1, batchSize);
+            var deleted = 0;
+
+            if (succeededRetentionDays > 0)
+            {
+                deleted += PurgeStatusOlderThan(
+                    kit,
+                    HookOutboxStatus.Succeeded,
+                    now.AddDays(-succeededRetentionDays),
+                    limit);
+            }
+
+            if (deadRetentionDays > 0 && deleted < limit)
+            {
+                deleted += PurgeStatusOlderThan(
+                    kit,
+                    HookOutboxStatus.Dead,
+                    now.AddDays(-deadRetentionDays),
+                    limit - deleted);
+            }
+
+            return deleted;
+        }
+
+        private int PurgeStatusOlderThan(SQLBuilder kit, string status, DateTime olderThanUtc, int limit)
+        {
+            if (limit <= 0)
+                return 0;
+
+            var clip = Sibling(kit).useClip();
+            clip.from<HookOutboxEntity>(out var o);
+            clip.where(() => o.Status, status);
+            clip.orderBy(() => o.Id);
+            var candidates = clip.select(o).queryList()
+                .Where(r =>
+                {
+                    var ts = r.UpdatedAt ?? r.CreatedAt;
+                    return ts.HasValue && ts.Value < olderThanUtc;
+                })
+                .Take(limit)
+                .ToList();
+
+            var n = 0;
+            var repo = Sibling(kit).useRepo<HookOutboxEntity, int>();
+            foreach (var row in candidates)
+            {
+                if (!row.Id.HasValue)
+                    continue;
+                repo.DeleteById(row.Id.Value);
+                n++;
+            }
+
+            return n;
+        }
+
         private bool ResetDeadIfDead(SQLBuilder kit, int id)
         {
             var repo = Sibling(kit).useRepo<HookOutboxEntity>();

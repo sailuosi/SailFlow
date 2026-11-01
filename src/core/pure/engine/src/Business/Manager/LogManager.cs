@@ -1,15 +1,14 @@
 using System;
 using System.Threading;
-using mooSQL.data;
-using saiflow.data;
-using saiflow.engine.Common;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Client;
+using saiflow.engine.Common;
+using saiflow.engine.Logging;
 
 namespace saiflow.engine.Business.Manager
 {
     /// <summary>
-    /// 日志记录。终态：Client/kit，无 Session/conn。
+    /// 引擎日志门面：组装 <see cref="LogEntity"/> 后交给 <see cref="IEngineLogSink"/>（默认写表）。
     /// </summary>
     public class LogManager
     {
@@ -36,16 +35,16 @@ namespace saiflow.engine.Business.Manager
                     Severity = priority.ToString().ToUpper(),
                     Title = title,
                     Timestamp = DateTime.UtcNow,
-                    Message = e.Message
+                    Message = e?.Message
                 };
-                if (e.StackTrace != null)
+                if (e?.StackTrace != null)
                 {
                     log.StackTrace = e.StackTrace.Length > 4000
                         ? e.StackTrace.Substring(0, 4000)
                         : e.StackTrace;
                 }
 
-                if (e.InnerException?.StackTrace != null)
+                if (e?.InnerException?.StackTrace != null)
                 {
                     log.InnerStackTrace = e.InnerException.StackTrace.Length > 4000
                         ? e.InnerException.StackTrace.Substring(0, 4000)
@@ -59,33 +58,23 @@ namespace saiflow.engine.Business.Manager
                 }
 
                 var client = Sail;
-                ThreadPool.QueueUserWorkItem(_ => InsertAsync(client, log));
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    try
+                    {
+                        client.GetLogSink().Write(log);
+                    }
+                    catch
+                    {
+                        // 记日志失败不抛
+                    }
+                });
             }
             catch
             {
                 // 记日志失败不抛
             }
         }
-
-        private static void InsertAsync(SailClient client, LogEntity log)
-        {
-            using (var kit = client.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    Insert(kit, log);
-                    kit.commit();
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
-
-        public static void Insert(SQLBuilder kit, LogEntity log)
-            => kit.useRepo<LogEntity>().Insert(log);
 
         public static void RecordLog(
             SailClient client,

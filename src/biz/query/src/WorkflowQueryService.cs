@@ -328,7 +328,6 @@ namespace saiflow.biz.query
             query ??= new TaskQuery();
             var pageSize = query.PageSize > 0 ? query.PageSize : 20;
             var pageIndex = query.PageIndex > 0 ? query.PageIndex : 1;
-            var skip = (pageIndex - 1) * pageSize;
 
             var clip = Sail.UseRunSQL().useClip();
             clip.from<TaskViewEntity>(out var t);
@@ -364,11 +363,10 @@ namespace saiflow.biz.query
                 clip.whereLike(() => t.AppName, query.AppName);
 
             clip.orderByDesc(() => t.Id);
-            // 与历史实现一致：先查出再内存切页（Inbox 量级）；后续可换 clip 分页 API
-            var all = clip.select(t).queryList().ToList();
-            var total = all.Count;
-            var items = (IList<TaskViewEntity>)all.Skip(skip).Take(pageSize).ToList();
-            return (items, total);
+            // 库端分页（禁止全量 queryList 再内存切页）
+            var page = clip.select(t).setPage(pageSize, pageIndex).queryPage();
+            var items = (IList<TaskViewEntity>)(page.Items?.ToList() ?? new List<TaskViewEntity>());
+            return (items, page.Total);
         }
 
         /// <summary>我的/管理端流程实例分页。</summary>
@@ -377,7 +375,6 @@ namespace saiflow.biz.query
             query ??= new ProcessInstanceQuery();
             var pageSize = query.PageSize > 0 ? query.PageSize : 20;
             var pageIndex = query.PageIndex > 0 ? query.PageIndex : 1;
-            var skip = (pageIndex - 1) * pageSize;
 
             var clip = Sail.UseRunSQL().useClip();
             clip.from<ProcessInstanceEntity>(out var pi);
@@ -390,10 +387,9 @@ namespace saiflow.biz.query
                 clip.where(() => pi.ProcessState, query.ProcessState.Value);
 
             clip.orderByDesc(() => pi.Id);
-            var all = clip.select(pi).queryList().ToList();
-            var total = all.Count;
-            var items = (IList<ProcessInstanceEntity>)all.Skip(skip).Take(pageSize).ToList();
-            return (items, total);
+            var page = clip.select(pi).setPage(pageSize, pageIndex).queryPage();
+            var items = (IList<ProcessInstanceEntity>)(page.Items?.ToList() ?? new List<ProcessInstanceEntity>());
+            return (items, page.Total);
         }
 
         #endregion

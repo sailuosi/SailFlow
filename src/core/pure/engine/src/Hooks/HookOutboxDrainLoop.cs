@@ -17,6 +17,8 @@ namespace saiflow.engine.Hooks
             options ??= client.HookOutboxOptions ?? new HookOutboxOptions();
             var worker = new HookOutboxWorker(client, options);
             var poll = options.PollInterval;
+            var purgeEvery = Math.Max(1, options.PurgeEveryDrainCycles);
+            var cycle = 0;
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -31,6 +33,25 @@ namespace saiflow.engine.Hooks
                 catch (Exception ex)
                 {
                     Trace.TraceWarning($"[saiflow] Hook outbox drain iteration failed: {ex.Message}");
+                }
+
+                cycle++;
+                if (cycle % purgeEvery == 0)
+                {
+                    try
+                    {
+                        var purged = worker.PurgeExpiredTerminal(cancellationToken);
+                        if (purged > 0)
+                            Trace.TraceInformation($"[saiflow] Hook outbox TTL purged {purged} row(s).");
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.TraceWarning($"[saiflow] Hook outbox TTL purge failed: {ex.Message}");
+                    }
                 }
 
                 try

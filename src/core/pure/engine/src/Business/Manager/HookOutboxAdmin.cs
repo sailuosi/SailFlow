@@ -29,5 +29,16 @@ namespace saiflow.engine.Business.Manager
 
         public int CountByStatus(SQLBuilder kit, string status) =>
             _inner.CountByStatus(kit, status);
+
+        /// <summary>按 <see cref="HookOutboxOptions"/> 保留窗清理 Succeeded/Dead（供 Host 定时或 Drain 调用）。</summary>
+        public int PurgeExpired(SQLBuilder kit, HookOutboxOptions options = null)
+        {
+            options ??= new HookOutboxOptions();
+            return _inner.PurgeExpiredTerminal(
+                kit,
+                options.SucceededRetentionDays,
+                options.DeadRetentionDays,
+                options.PurgeBatchSize);
+        }
     }
 }

@@ -56,10 +56,36 @@ namespace saiflow.engine.Hooks
                 }
             }
 
-            return await Dispatcher.DispatchClaimedOutboxAsync(
+            var processed = await Dispatcher.DispatchClaimedOutboxAsync(
                 claimed,
                 Options.MaxAttempts,
                 cancellationToken).ConfigureAwait(false);
+
+            return processed;
+        }
+
+        /// <summary>按 Options TTL 清理终态 Outbox（可单独由 Host 定时唤起）。</summary>
+        public int PurgeExpiredTerminal(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            using (var kit = Sail.UseRunSQL())
+            {
+                kit.beginTransaction();
+                try
+                {
+                    var n = new HookOutboxManager(Sail).PurgeExpiredTerminal(
+                        kit,
+                        Options.SucceededRetentionDays,
+                        Options.DeadRetentionDays,
+                        Options.PurgeBatchSize);
+                    kit.commit();
+                    return n;
+                }
+                catch
+                {
+                    throw;
+                }
+            }
         }
 
         /// <summary>

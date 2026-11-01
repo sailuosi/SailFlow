@@ -77,6 +77,10 @@ public static class SailHookOutboxDrainExtensions
         target.ProcessingStaleSeconds = source.ProcessingStaleSeconds;
         target.LeaseSeconds = source.LeaseSeconds;
         target.PollInterval = source.PollInterval;
+        target.SucceededRetentionDays = source.SucceededRetentionDays;
+        target.DeadRetentionDays = source.DeadRetentionDays;
+        target.PurgeBatchSize = source.PurgeBatchSize;
+        target.PurgeEveryDrainCycles = source.PurgeEveryDrainCycles;
     }
 
     private sealed class HookOutboxDrainRegistration
