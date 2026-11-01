@@ -17,11 +17,11 @@
 
 | 反模式 | 问题 |
 |--------|------|
-| `Build()` 后大段 `if` + `useWorkflowHook` / `useTaskNotifier` | 组合根膨胀；开关、事件列表、建表散落，难复用、难测 |
+| `Build()` 后大段 `if` + `useFlowHook` / `useTaskNotifier` | 组合根膨胀；开关、事件列表、建表散落，难复用、难测 |
 | 把业务 Hook 写进引擎 pure | 违反分层；宿主主数据/HTTP 无法干净依赖 |
 | 只挂 `client.useXxx`、从不走 Builder | 与引擎 pending Apply / PostBuild 生命周期脱节；同类能力风格分裂 |
 
-正模式：与 `UseDatabase` / `UseBizAI` / `UseWorkflowHook` 同一管道语言——**Builder 声明 → Build 时按 Phase 落地**。
+正模式：与 `UseDatabase` / `UseBizAI` / `UseFlowHook` 同一管道语言——**Builder 声明 → Build 时按 Phase 落地**。
 
 ---
 
@@ -34,8 +34,8 @@
 
 Gate / Hook / Notifier 引擎侧：
 
-- Builder：`UseWorkflowGate` / `UseWorkflowHook` / `UseTaskNotifier`
-- Client：`useWorkflowGate` / `useWorkflowHook` / `useTaskNotifier`
+- Builder：`UseFlowGate` / `UseFlowHook` / `UseTaskNotifier`
+- Client：`useFlowGate` / `useFlowHook` / `useTaskNotifier`
 - pending 在 `Build()` 中 `ApplyPendingRegistrations`（早于或穿插 ConfigureClient；以代码为准）
 
 宿主能力包应 **优先实现 Builder 扩展**；可选保留同文件 `client.useXxx` 薄封装，便于测试或热补挂。
@@ -47,15 +47,15 @@ Gate / Hook / Notifier 引擎侧：
 ```text
 ConfigureServices   → UseDatabase / UseSchema 配置 / UseHookOutboxDrain 选项等
 Assemble SailClient
-ApplyPending        → UseWorkflowHook / UseTaskNotifier 等 pending 注册
+ApplyPending        → UseFlowHook / UseTaskNotifier 等 pending 注册
 ConfigureClient     → Locator、Drain 绑到 client 等
 PostBuild           → EnsureTables、Seed、依赖 client 的 Notifier 实例化 + useTaskNotifier
 ```
 
 | 能力形态 | 推荐 Phase |
 |----------|------------|
-| 无运行时依赖的 Hook（如调试 Console） | `UseWorkflowHook` pending（ConfigureServices 之前挂到 Builder 即可） |
-| 需要 `SailClient` 才能 `new Service(client)` / EnsureTable | **PostBuild** 里 `EnsureTable` + `client.useWorkflowHook` / `useTaskNotifier` |
+| 无运行时依赖的 Hook（如调试 Console） | `UseFlowHook` pending（ConfigureServices 之前挂到 Builder 即可） |
+| 需要 `SailClient` 才能 `new Service(client)` / EnsureTable | **PostBuild** 里 `EnsureTable` + `client.useFlowHook` / `useTaskNotifier` |
 | Outbox Drain | `UseHookOutboxDrain(autoStart: …)`（内部 ConfigureClient + 可选 PostBuild 启动） |
 | 依赖宿主 MS DI（`IOptions` / `HttpClient` / `ILogger`） | Builder 扩展参数接收 `IServiceProvider`（或具体依赖），闭包捕获到 PostBuild |
 
@@ -79,7 +79,7 @@ public static class MyCapabilityExtensions
         // if (!enabled) return builder;
 
         // 2a) 无 client 依赖：直接 pending
-        // builder.UseWorkflowHook(new MyHook(), o => { … });
+        // builder.UseFlowHook(new MyHook(), o => { … });
 
         // 2b) 需要 client / EnsureTable / DI：
         builder.Services.AddFeature(new SailFeatureDescriptor

@@ -37,7 +37,7 @@ var client = SailClient.CreateBuilder(configuration)
     .UseBizMsg()
     .UseBizLocalize()
     .UseSailData()          // 归档 / 分表 / 日志 Sink
-    .UseWorkflowHook(...)
+    .UseFlowHook(...)
     .Build();
 ```
 

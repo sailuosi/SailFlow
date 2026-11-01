@@ -8,8 +8,8 @@
 ### Engine (`saiflow.engine`)
 
 - **Contracts** (`src/core/pure/engine/src/Hooks/`): `IWorkflowGate`, `IWorkflowHook`, `ITaskNotifier`, `HookResult`, `HookValidationItem`, `WorkflowHookContext`, `TaskNotifyContext`, enums (`TaskNotifyKind`, `HookMatch`, `HookMode`, `WorkflowOperation`), `HookRegistrationOptions`, registration DTOs, `WorkflowCapabilityRegistry`, `WorkflowCapabilityDispatcher`, `HookOutboxWorker`.
-- **Client:** `SailClient.Capabilities` / `Hooks`, `CapabilityDispatcher`, `useWorkflowGate` / `useWorkflowHook` / `useTaskNotifier`.
-- **Hosting:** `SailWorkflowCapabilityExtensions` — `UseWorkflowGate` / `UseWorkflowHook` / `UseTaskNotifier` (class + delegate) on `ISailCollection` and `SailClientBuilder`; `SailBuilderKeys.WorkflowCapabilities`; Build applies pending registrations.
+- **Client:** `SailClient.Capabilities` / `Hooks`, `CapabilityDispatcher`, `useFlowGate` / `useFlowHook` / `useTaskNotifier`.
+- **Hosting:** `SailWorkflowCapabilityExtensions` — `UseFlowGate` / `UseFlowHook` / `UseTaskNotifier` (class + delegate) on `ISailCollection` and `SailClientBuilder`; `SailBuilderKeys.WorkflowCapabilities`; Build applies pending registrations.
 - **Run path:** `WorkflowService.ProcessExecution.Run` — Gate after `CreateRuntimeInstanceAppRunning`, before `Execute`; Reject → `ApplyGateReject` (no `runprocess.error` wrap). On `OnProcessContinued` success: Sync hooks + Async Outbox enqueue.
 - **Task path:** `TaskManager` — removed `SendTaskEMails` / `SendEmailFlag`; `FireTaskLifecycle` on create/complete (Sync hooks, Notifier Outbox, `Subscribe` via `EventExecutor`).
 - **Outbox:** `HookOutboxEntity` (`wf_hook_outbox`), `HookOutboxManager`, schema in `SailSchemaInitializer.EnsureCoreTables`.
@@ -30,9 +30,9 @@
 ```csharp
 var builder = SailClient.CreateBuilder()
     .UseDatabase(db)
-    .UseWorkflowGate("finance.pre-send", ctx =>
+    .UseFlowGate("finance.pre-send", ctx =>
         HookResult.Ok(), o => { o.ProcessCodes = new[] { "EXPENSE" }; })
-    .UseWorkflowHook("biz.after-run", ctx => { }, o =>
+    .UseFlowHook("biz.after-run", ctx => { }, o =>
     {
         o.ProcessCodes = new[] { "EXPENSE" };
         o.Events = new[] { EventFireTypeEnum.OnProcessContinued };

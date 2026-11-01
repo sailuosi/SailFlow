@@ -254,14 +254,14 @@ public partial class SailClient
     }
 
     /// <summary>注册 Gate（同名后注册覆盖）。</summary>
-    public SailClient useWorkflowGate(IWorkflowGate gate, HookRegistrationOptions options = null)
+    public SailClient useFlowGate(IWorkflowGate gate, HookRegistrationOptions options = null)
     {
         Capabilities.RegisterGate(gate, options ?? new HookRegistrationOptions());
         return this;
     }
 
     /// <summary>注册 Hook（同名后注册覆盖）。</summary>
-    public SailClient useWorkflowHook(IWorkflowHook hook, HookRegistrationOptions options = null)
+    public SailClient useFlowHook(IWorkflowHook hook, HookRegistrationOptions options = null)
     {
         Capabilities.RegisterHook(hook, options ?? new HookRegistrationOptions());
         return this;

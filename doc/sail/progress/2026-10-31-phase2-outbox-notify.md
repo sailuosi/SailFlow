@@ -57,8 +57,8 @@ kit.commit();
 ```csharp
 SailClient.CreateBuilder()
     .UseDatabase(db)
-    .UseWorkflowGate(new FinancePreSendGate(), o => o.ProcessCodes = new[] { "EXPENSE" })
-    .UseWorkflowHook(new FinanceAggregateHook(), o =>
+    .UseFlowGate(new FinancePreSendGate(), o => o.ProcessCodes = new[] { "EXPENSE" })
+    .UseFlowHook(new FinanceAggregateHook(), o =>
     {
         o.ProcessCodes = new[] { "EXPENSE" };
         o.Events = new[] { EventFireTypeEnum.OnProcessContinued };
