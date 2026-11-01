@@ -346,8 +346,14 @@ namespace saiflow.biz.query
                 clip.where(() => t.TaskState, (short)4);
             }
 
+            // 非会签任务 main_activity_state 为 NULL；SQL 中 NULL<>4 为未知，会把整行滤掉
             if (activityState == 1)
+            {
+                clip.sinkOR();
+                clip.whereIsNull(() => t.MainActivityState);
                 clip.where(() => t.MainActivityState, (short)4, "<>");
+                clip.rise();
+            }
 
             clip.whereIf(!string.IsNullOrEmpty(query.AppInstanceId), () => t.AppInstanceId, query.AppInstanceId);
             clip.whereIf(!string.IsNullOrEmpty(query.ProcessId), () => t.ProcessId, query.ProcessId);

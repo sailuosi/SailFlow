@@ -340,16 +340,18 @@ namespace saiflow.engine.Service
             using (var kit = Sail.UseRunSQL())
             {
                 var processModel = ProcessModelFactory.CreateByProcess(Sail, runner.ProcessId, runner.Version);
-                var firstActivity = processModel.GetFirstActivity();
-                var nextResult = processModel.GetNextActivityListView(firstActivity.ActivityId,
+                // 与启动运行时一致：从开始事件取下一步（首个办理节点）
+                var startActivity = processModel.GetStartActivity();
+                var nextResult = processModel.GetNextActivityListView(startActivity.ActivityId,
                     null,
                     condition,
                     kit);
 
                 foreach (var ns in nextResult.StepList)
                 {
-                    var roleIDs = ns.Roles.Select(x => x.Id).ToArray();
-                    ns.Users = ResourceService.GetUserListByRoleReceiverType(roleIDs, runner.UserId, (int)ns.ReceiverType);     //增加转移前置过滤条件
+                    var roleIDs = ns.Roles != null ? ns.Roles.Select(x => x.Id).ToArray() : Array.Empty<string>();
+                    if (roleIDs.Length > 0)
+                        ns.Users = ResourceService.GetUserListByRoleReceiverType(roleIDs, runner.UserId, (int)ns.ReceiverType);
                 }
                 return nextResult.StepList;
             }

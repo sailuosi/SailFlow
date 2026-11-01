@@ -124,10 +124,8 @@ namespace saiflow.engine.Core.Parser
             WfAppRunner runner,
             IDictionary<string, string> condition)
         {
-            //判断应用数据是否缺失
-            //Determine whether the application data is missing
-            if (string.IsNullOrEmpty(runner.AppInstanceId)
-                || string.IsNullOrEmpty(runner.ProcessId))
+            // 发起前预览只需 ProcessId；运行中查询才需要 AppInstanceId / TaskId
+            if (string.IsNullOrEmpty(runner.ProcessId))
             {
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("nextstepparser.getnextactivityroleusertree.error"));
             }
@@ -155,7 +153,7 @@ namespace saiflow.engine.Core.Parser
                     taskView = tm.GetTaskView(runner.TaskId.Value);
                     processInstance = pim.GetById(taskView.ProcessInstanceId.Value);
                 }
-                else
+                else if (!string.IsNullOrEmpty(runner.AppInstanceId))
                 {
                     var kitForPi = SailSqlAccess.Sibling(kit);
                     var processInstanceList = pim.GetProcessInstance(kitForPi,
@@ -164,6 +162,7 @@ namespace saiflow.engine.Core.Parser
                         runner.Version).ToList();
                     processInstance = EnumHelper.GetFirst<ProcessInstanceEntity>(processInstanceList);
                 }
+                // AppInstanceId 空：发起前预览，不查实例
 
                 //判断流程是否创建还是已经运行
                 //Determine whether the process has been created or already run
@@ -214,21 +213,18 @@ namespace saiflow.engine.Core.Parser
                 }
                 else
                 {
-                    //读取流程变量表，合并条件参数
-                    //Read the process variable table and merge condition parameters
-
-                    //流程准备启动，获取第一个办理节点的用户列表
-                    //Process preparation to start, obtain the user list of the first processing node
+                    // 流程准备启动：从「开始事件」取下一步（首个办理节点），勿从 GetFirstActivity 再往后跳一跳
                     processModel = ProcessModelFactory.CreateByProcess(Sail, runner.ProcessId, runner.Version);
-                    var firstActivity = processModel.GetFirstActivity();
-                    nextTreeResult = processModel.GetNextActivityListView(firstActivity.ActivityId,
+                    var startActivity = processModel.GetStartActivity();
+                    nextTreeResult = processModel.GetNextActivityListView(startActivity.ActivityId,
                         null,
                         condition,
                         kit);
                     foreach (var ns in nextTreeResult.StepList)
                     {
-                        var roleIDs = ns.Roles.Select(x => x.Id).ToArray();
-                        ns.Users = resourceService.GetUserListByRoleReceiverType(roleIDs, runner.UserId, (int)ns.ReceiverType);     //增加转移前置过滤条件
+                        var roleIDs = ns.Roles != null ? ns.Roles.Select(x => x.Id).ToArray() : Array.Empty<string>();
+                        if (roleIDs.Length > 0)
+                            ns.Users = resourceService.GetUserListByRoleReceiverType(roleIDs, runner.UserId, (int)ns.ReceiverType);
                     }
                 }
             }

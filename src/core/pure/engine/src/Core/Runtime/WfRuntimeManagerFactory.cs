@@ -66,32 +66,27 @@ namespace saiflow.engine.Core.Runtime
             var startActivity = rmins.ProcessModel.GetStartActivity();
             var nextActivityTree = rmins.ProcessModel.GetFirstActivityTreeView(startActivity, runner.Conditions);
 
-            //开始节点之后可以有网关节点
-            //After starting the node, there can be a gateway node
-            if (startActivity.TriggerDetail != null)
+            // 下一跳办理人：
+            // - 客户端已传 NextActivityPerformers（发起/自选）→ 直接用
+            // - 定时/消息/信号/条件启动且无操作人 → 按定义角色展开
+            // - 否则留空，交 Assignee 管道解析（RoleGroup/FixedUsers…）；ApproverPick/StarterPick 空则 R4 拒绝
+            // 禁止默认把发起人塞进下一跳（会掩盖未选人却“发起成功、待办归属错误”）
+            if (runner.NextActivityPerformers != null && runner.NextActivityPerformers.Count > 0)
             {
-                if (startActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Timer
+                rmins.AppRunner.NextActivityPerformers = runner.NextActivityPerformers;
+            }
+            else if (startActivity.TriggerDetail != null
+                && (startActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Timer
                     || startActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Message
-                    || startActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Signal 
+                    || startActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Signal
                     || startActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Conditional)
-                {
-                    if (!string.IsNullOrEmpty(runner.UserId))
-                    {
-                        rmins.AppRunner.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(nextActivityTree,
-                            runner.UserId,
-                            runner.UserName);
-                    }
-                    else
-                    {
-                        rmins.AppRunner.NextActivityPerformers = rmins.ProcessModel.GetActivityPerformers(nextActivityTree);
-                    }
-                }
+                && string.IsNullOrEmpty(runner.UserId))
+            {
+                rmins.AppRunner.NextActivityPerformers = rmins.ProcessModel.GetActivityPerformers(nextActivityTree);
             }
             else
             {
-                rmins.AppRunner.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(nextActivityTree,
-                    runner.UserId,
-                    runner.UserName);
+                rmins.AppRunner.NextActivityPerformers = new Dictionary<string, PerformerList>();
             }
             rmins.ActivityResource = ActivityResourceFactory.Create(runner, rmins.AppRunner.NextActivityPerformers, runner.Conditions);
 
