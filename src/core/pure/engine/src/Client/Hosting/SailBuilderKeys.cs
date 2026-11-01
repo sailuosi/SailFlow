@@ -6,6 +6,8 @@ public static class SailBuilderKeys
     public static readonly object Cache = new();
     public static readonly object Config = new();
     public static readonly object ConfigAction = new();
+    public static readonly object DataLifecycle = new();
+    public static readonly object DataLifecycleAction = new();
     public static readonly object RuleEngines = new();
     public static readonly object ActionMethods = new();
     public static readonly object ScriptMethods = new();

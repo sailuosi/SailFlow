@@ -88,6 +88,24 @@ public partial class SailClient
         return this;
     }
 
+    /// <summary>登记 / 合并冷热归档与日志分表 Options（不解析配置文件）。</summary>
+    public SailClient useDataLifecycle(SailDataLifecycleOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        DataLifecycleOptions ??= new SailDataLifecycleOptions();
+        DataLifecycleOptions.Apply(options);
+        return this;
+    }
+
+    /// <summary>就地修改 <see cref="DataLifecycleOptions"/>。</summary>
+    public SailClient useDataLifecycle(Action<SailDataLifecycleOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        DataLifecycleOptions ??= new SailDataLifecycleOptions();
+        configure(DataLifecycleOptions);
+        return this;
+    }
+
     private WorkflowCapabilityRegistry _capabilities;
     private WorkflowCapabilityDispatcher _capabilityDispatcher;
 
@@ -114,6 +132,12 @@ public partial class SailClient
 
     /// <summary>Outbox Worker / drain 运行参数（<see cref="Hosting.SailHookOutboxDrainExtensions.UseHookOutboxDrain"/> 可覆盖）。</summary>
     public HookOutboxOptions HookOutboxOptions { get; set; } = new();
+
+    /// <summary>
+    /// 冷热归档 / 冷库 / 引擎日志分表等生命周期参数（默认见 <see cref="SailDataLifecycleOptions"/>）。
+    /// Builder：<c>UseDataLifecycle</c>；运行期：<see cref="useDataLifecycle"/>。
+    /// </summary>
+    public SailDataLifecycleOptions DataLifecycleOptions { get; set; } = new();
 
     /// <summary><see cref="Hooks.HookOutboxDrainLoop.StartBackground"/> 返回的 CTS（<c>autoStart</c> 或宿主手动启动时赋值）。</summary>
     public CancellationTokenSource HookOutboxDrainCts { get; set; }

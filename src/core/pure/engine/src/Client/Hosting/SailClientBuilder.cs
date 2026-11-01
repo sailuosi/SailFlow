@@ -173,6 +173,8 @@ public sealed class SailClientBuilder
         if (configAction != null)
             client.useConfig(configAction);
 
+        SailDataLifecycleExtensions.ApplyToClient(client, Services);
+
         var cache = Cache;
         if (cache == null
             && Services.Properties.TryGetValue(SailBuilderKeys.Cache, out var cacheBox))
