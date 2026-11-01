@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>sailflow.data</PackageId>
+    <RootNamespace>saiflow.data</RootNamespace>
+    <AssemblyName>sailflow.data</AssemblyName>
+    <Description>Sailflow data lifecycle: hot/cold archive, cold store, table log sink, data-management hooks. (PackageId sailflow.data — basis already owns NuGet id saiflow.data for repository helpers.)</Description>
+    <LangVersion>14.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\pure\engine\sailflow.engine.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -3,9 +3,10 @@ using System.Collections.Concurrent;
 using mooSQL.data;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Client;
+using saiflow.engine.Logging;
 using saiflow.hub.Logging;
 
-namespace saiflow.engine.Logging
+namespace saiflow.data.Logging
 {
     /// <summary>
     /// 默认日志 Sink：写库表。库连接 / 分表粒度读 <see cref="SailDataLifecycleOptions"/>。

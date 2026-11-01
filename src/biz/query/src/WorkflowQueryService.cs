@@ -6,6 +6,7 @@ using saiflow.engine.Business.Manager;
 using saiflow.engine.Client;
 using mooSQL.data;
 using saiflow.engine.Common;
+using saiflow.data.Hosting;
 using saiflow.engine.Xpdl.Common;
 using saiflow.hub.Resource;
 using saiflow.WebUtility;
@@ -391,6 +392,37 @@ namespace saiflow.biz.query
             var items = (IList<ProcessInstanceEntity>)(page.Items?.ToList() ?? new List<ProcessInstanceEntity>());
             return (items, page.Total);
         }
+
+        /// <summary>热表优先；未命中则按 endedYear 或候选年查冷表。</summary>
+        public ProcessInstanceEntity GetProcessInstanceHotOrArchive(
+            int processInstanceId,
+            int? endedYear = null,
+            IEnumerable<int> candidateYears = null)
+        {
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<ProcessInstanceEntity>(out var pi);
+            clip.where(() => pi.Id, processInstanceId);
+            var hot = clip.select(pi).queryList().FirstOrDefault();
+            if (hot != null)
+                return hot;
+
+            var archive = Sail.CreateArchiveQuery();
+            if (endedYear.HasValue)
+                return archive.GetProcessInstance(processInstanceId, endedYear.Value);
+
+            var years = candidateYears?.ToList();
+            if (years == null || years.Count == 0)
+            {
+                var y = DateTime.UtcNow.Year;
+                years = new List<int> { y, y - 1, y - 2 };
+            }
+
+            return archive.FindProcessInstance(processInstanceId, years);
+        }
+
+        /// <summary>Host 定时唤起：按 DataLifecycleOptions 保留窗迁出一批终态实例。</summary>
+        public int RunProcessArchiveBatch(int? batchSize = null) =>
+            Sail.RunProcessArchiveBatch(batchSize);
 
         #endregion
 

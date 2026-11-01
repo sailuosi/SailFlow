@@ -142,7 +142,7 @@ public partial class SailClient
     private Logging.IEngineLogSink _logSink;
 
     /// <summary>
-    /// 引擎诊断日志 Sink（默认 <see cref="Logging.TableEngineLogSink"/>，读 <see cref="DataLifecycleOptions"/>）。
+    /// 引擎诊断日志 Sink。默认写表实现在 saiflow.data（<c>UseSailData</c> / <c>useDefaultTableLogSink</c>）。
     /// </summary>
     public Logging.IEngineLogSink LogSink
     {
@@ -150,21 +150,11 @@ public partial class SailClient
         set => _logSink = value;
     }
 
-    /// <summary>解析日志 Sink：显式注入优先；否则按 Options.LogSinkKind（当前仅 Table / Null）。</summary>
-    public Logging.IEngineLogSink GetLogSink()
-    {
-        if (_logSink != null)
-            return _logSink;
+    /// <summary>解析日志 Sink：显式注入优先；未挂载时为空操作（由 saiflow.data 注册 Table Sink）。</summary>
+    public Logging.IEngineLogSink GetLogSink() =>
+        _logSink ??= Logging.NullEngineLogSink.Instance;
 
-        var kind = DataLifecycleOptions?.LogSinkKind ?? EngineLogSinkKind.Table;
-        if (kind == EngineLogSinkKind.Table)
-            return _logSink = new Logging.TableEngineLogSink(this);
-
-        // File / HostLogger / Custom：宿主应显式赋值 LogSink；未挂载则空操作
-        return _logSink = Logging.NullEngineLogSink.Instance;
-    }
-
-    /// <summary>替换日志 Sink（如 Host ILogger 适配器）。</summary>
+    /// <summary>替换日志 Sink（如 Host ILogger 适配器 / TableEngineLogSink）。</summary>
     public SailClient useLogSink(Logging.IEngineLogSink sink)
     {
         _logSink = sink ?? throw new ArgumentNullException(nameof(sink));
