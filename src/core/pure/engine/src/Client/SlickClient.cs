@@ -210,7 +210,7 @@ public partial class SailClient
 
     /// <summary>
     /// 办理人管道插槽（查找待办人 / 流出判定）。实现由 <c>UseAssignees</c> / <c>UseBizAssignees</c> 挂载。
-    /// 未挂载时为 null；创建待办与流出路径可回落既有逻辑（双轨）。
+    /// 未挂载时为 null；创建待办须挂管道（R2），不再回落 Specific/Definition/Single。
     /// </summary>
     public IAssigneePipeline AssigneePipeline { get; private set; }
 

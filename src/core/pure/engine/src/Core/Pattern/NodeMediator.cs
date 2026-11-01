@@ -1156,39 +1156,43 @@ namespace saiflow.engine.Core.Pattern
                     + reason);
             }
 
-            // 未挂管道时保留旧路径（无 assignee 包的宿主）
-            if (activityResource.AppRunner.NextPerformerType == NextPerformerIntTypeEnum.Specific
-                && activityResource.NextActivityPerformers != null)
-            {
-                toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(
-                    activityResource.NextActivityPerformers[toActivityInstance.ActivityId]);
-                toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(
-                    activityResource.NextActivityPerformers[toActivityInstance.ActivityId]);
-            }
-            else if (activityResource.AppRunner.NextPerformerType ==  NextPerformerIntTypeEnum.Definition)
-            {
-                var performers = ActivityForwardContext.ProcessModel.GetActivityPerformers(toActivityInstance.ActivityId);
-                activityResource.NextActivityPerformers = performers;
-
-                toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(
-                    performers[toActivityInstance.ActivityId]);
-                toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(
-                    performers[toActivityInstance.ActivityId]);
-            }
-            else if (activityResource.AppRunner.NextPerformerType == NextPerformerIntTypeEnum.Single)
-            {
-                activityResource.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(toActivityInstance.ActivityId,
-                    activityResource.AppRunner.UserId,
-                    activityResource.AppRunner.UserName);
-
-                toActivityInstance.AssignedUserIds = activityResource.AppRunner.UserId;
-                toActivityInstance.AssignedUserNames = activityResource.AppRunner.UserName;
-            }
-            else
-            {
-                throw new ApplicationException(Sail.Messages.GetEngineMessage("nodemediator.generateactivityassigneduserinfo.warn"));
-            }
+            // R2：未挂管道不再回落 Specific/Definition/Single；须 UseAssignees / UseBizAssignees
+            _ = Sail.GetAssigneePipelineRequired();
             return toActivityInstance;
+
+            // 旧双轨（已废弃，保留注释备查）：
+            // if (activityResource.AppRunner.NextPerformerType == NextPerformerIntTypeEnum.Specific
+            //     && activityResource.NextActivityPerformers != null)
+            // {
+            //     toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(
+            //         activityResource.NextActivityPerformers[toActivityInstance.ActivityId]);
+            //     toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(
+            //         activityResource.NextActivityPerformers[toActivityInstance.ActivityId]);
+            // }
+            // else if (activityResource.AppRunner.NextPerformerType == NextPerformerIntTypeEnum.Definition)
+            // {
+            //     var performers = ActivityForwardContext.ProcessModel.GetActivityPerformers(toActivityInstance.ActivityId);
+            //     activityResource.NextActivityPerformers = performers;
+            //     toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(
+            //         performers[toActivityInstance.ActivityId]);
+            //     toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(
+            //         performers[toActivityInstance.ActivityId]);
+            // }
+            // else if (activityResource.AppRunner.NextPerformerType == NextPerformerIntTypeEnum.Single)
+            // {
+            //     activityResource.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(
+            //         toActivityInstance.ActivityId,
+            //         activityResource.AppRunner.UserId,
+            //         activityResource.AppRunner.UserName);
+            //     toActivityInstance.AssignedUserIds = activityResource.AppRunner.UserId;
+            //     toActivityInstance.AssignedUserNames = activityResource.AppRunner.UserName;
+            // }
+            // else
+            // {
+            //     throw new ApplicationException(
+            //         Sail.Messages.GetEngineMessage("nodemediator.generateactivityassigneduserinfo.warn"));
+            // }
+            // return toActivityInstance;
         }
 
         /// <summary>
