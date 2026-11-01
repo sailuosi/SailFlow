@@ -40,19 +40,42 @@ namespace saiflow.data.Hosting
             new ProcessArchiveQuery(client, client.GetColdStore());
 
         /// <summary>
-        /// 按 Options.LogSinkKind 挂默认 Table Sink（已显式 useLogSink 则跳过）。
-        /// File / HostLogger / Custom 由宿主自行注入。
+        /// 按 Options.LogSinkKind 挂默认 Sink（已显式 useLogSink 则跳过）。
+        /// Table / File 可自动挂；HostLogger 需 <see cref="useHostLoggerLogSink"/>。
         /// </summary>
-        public static SailClient useDefaultTableLogSink(this SailClient client)
+        public static SailClient useDefaultTableLogSink(this SailClient client) =>
+            client.useDefaultLogSink();
+
+        /// <summary>按 Options.LogSinkKind 挂 Table / File Sink。</summary>
+        public static SailClient useDefaultLogSink(this SailClient client)
         {
             ArgumentNullException.ThrowIfNull(client);
             if (client.LogSink != null)
                 return client;
 
             var kind = client.DataLifecycleOptions?.LogSinkKind ?? EngineLogSinkKind.Table;
-            if (kind == EngineLogSinkKind.Table)
-                client.useLogSink(new TableEngineLogSink(client));
+            switch (kind)
+            {
+                case EngineLogSinkKind.Table:
+                    client.useLogSink(new TableEngineLogSink(client));
+                    break;
+                case EngineLogSinkKind.File:
+                    client.useLogSink(new FileEngineLogSink(client));
+                    break;
+                // HostLogger / Custom：宿主注入
+            }
+
             return client;
+        }
+
+        /// <summary>挂 Host ILogger Sink（通常在宿主解析到 <c>ILoggerFactory</c> 后调用）。</summary>
+        public static SailClient useHostLoggerLogSink(
+            this SailClient client,
+            Microsoft.Extensions.Logging.ILoggerFactory loggerFactory)
+        {
+            ArgumentNullException.ThrowIfNull(client);
+            ArgumentNullException.ThrowIfNull(loggerFactory);
+            return client.useLogSink(new HostLoggerEngineLogSink(loggerFactory));
         }
     }
 }

@@ -5,11 +5,11 @@ using saiflow.engine.Client.Hosting;
 namespace saiflow.data.Hosting
 {
     /// <summary>
-    /// 注册 saiflow.data：默认 Table 日志 Sink。归档 API / 立刻归档 Hook 为独立扩展，按需调用。
+    /// 注册 saiflow.data：按 Options 挂 Table/File 日志 Sink。归档 API / 立刻归档 Hook 为独立扩展，按需调用。
     /// </summary>
     public static class SailDataExtensions
     {
-        /// <summary>挂载数据管理能力（PostBuild：默认 TableEngineLogSink）。</summary>
+        /// <summary>挂载数据管理能力（PostBuild：useDefaultLogSink）。</summary>
         public static SailClientBuilder UseSailData(this SailClientBuilder builder)
         {
             ArgumentNullException.ThrowIfNull(builder);
@@ -19,17 +19,17 @@ namespace saiflow.data.Hosting
                 Name = "sail.data",
                 Phase = SailFeaturePhase.PostBuild,
                 Order = 100,
-                PostBuild = (client, _) => client.useDefaultTableLogSink()
+                PostBuild = (client, _) => client.useDefaultLogSink()
             });
 
             return builder;
         }
 
-        /// <summary>已构建 Client 上挂默认 Table Sink。</summary>
+        /// <summary>已构建 Client 上挂默认日志 Sink。</summary>
         public static SailClient UseSailData(this SailClient client)
         {
             ArgumentNullException.ThrowIfNull(client);
-            return client.useDefaultTableLogSink();
+            return client.useDefaultLogSink();
         }
     }
 }

@@ -57,6 +57,12 @@ public sealed class SailDataLifecycleOptions
     /// <summary>日志保留天数（Table Sink TTL）；默认 90。</summary>
     public int LogRetentionDays { get; set; } = DefaultLogRetentionDays;
 
+    /// <summary>
+    /// File Sink 目录（相对或绝对）；默认 <c>logs/sail</c>。
+    /// 文件名：engine-yyyyMMdd.log / job-yyyyMMdd.log。
+    /// </summary>
+    public string LogFileDirectory { get; set; } = "logs/sail";
+
     /// <summary>从另一实例拷贝字段（Builder / 配置合并用）。</summary>
     public void Apply(SailDataLifecycleOptions source)
     {
@@ -81,6 +87,8 @@ public sealed class SailDataLifecycleOptions
         if (source.JobLogTableBaseName != null)
             JobLogTableBaseName = source.JobLogTableBaseName;
         LogRetentionDays = source.LogRetentionDays;
+        if (source.LogFileDirectory != null)
+            LogFileDirectory = source.LogFileDirectory;
     }
 
     /// <summary>按办结年解析冷表物理名。</summary>
