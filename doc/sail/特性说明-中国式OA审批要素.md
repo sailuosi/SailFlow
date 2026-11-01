@@ -77,8 +77,8 @@
 | 未来节点换人 | `ChangeFutureAssignee` | 待定 | 同上，替换 | 无 |
 | 打回修改 | （多用 `SendBack`） | `SendBackProcess` + 策略 | 退回修改态；常要求发起人/原节点改完再来 | 有退回；缺「再提交落点」策略 |
 | 重新提交 | `Resubmit`（候选） | 常组合 `Resend` / `Run` | 被打回后再次提交；落点由 Disagree 策略决定 | 有 `Resend`；缺策略枚举 |
-| 终止 | `Terminate` | `TerminateProcess` | 强行结束运行实例（引擎已有 API） | 码表未进，见 todo |
-| 作废 | `Discard` | `DiscardProcess` | 作废实例（引擎已有 API） | 码表未进 |
+| 终止 | `Terminate` | `TerminateProcess` | 强行结束运行实例 | 码表默认关；Host Handler 已挂 |
+| 作废 | `Discard` | `DiscardProcess` | 作废实例 | 码表默认关；Host Handler 已挂 |
 | 取消 | `Cancel` | `CancelProcess` | 取消 | 未产品化 |
 | 挂起 / 恢复 | `Suspend` / `Resume` | `SuspendProcess` 等 | 暂停与恢复 | 未产品化 |
 | 转发（知会外的转发） | 慎用；多归 `Copy` | Host 抄送或独立 | AntFlow Forward：偏知会/转发；易与抄送混淆 | 以 `Copy` 为主通道 |

@@ -4,7 +4,7 @@
 > 录入：2026-11-01（空人/同人 → 超时 → 按钮 → 表单编辑性；本文为合并稿）  
 > 续录：2026-11-01（**F 转办**、**G 退回两分**、**H 表单生命周期**、**I 按钮分发**、**J 退回策略 DisagreeType 枚举化**）  
 > 拍板：2026-11-01 — **空人默认=拒绝**（禁止默认自动通过；`=2` 细义=**R4 拒绝推进**）；退回 = **目标维 × 再发送维** 正交（见 §G / §J）  
-> 实施：2026-11-01 — **§F/I/G/J**：转办 + ButtonsOperation + 办理台两分 + **NodePolicy 两维落盘**（`sendBackTarget`/`resubmitMode`）；联调验收待做  
+> 实施：2026-11-01 — **§F/I/G/J/A(空人)/C/B**：转办 + 分发 + 退回两维 + 空人 + 字段四码 + **Terminate/Discard**（码表默认关 + Handler + Runtime）；超时/同人跳过/H 仍待  
 
 > 关联：[特性说明-待办人管道.md](./特性说明-待办人管道.md) **R4**；[特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md)；[特性设计-回调与事件.md](./特性设计-回调与事件.md)；宿主 `sailflow-buttons-capability.md`、节点 `sf:NodePolicy` / `sf:ButtonsSetting` / 表单接入
 
@@ -32,8 +32,8 @@
 
 | 配置面 | 字段 | UI 选项 | 运行时 |
 |--------|------|---------|--------|
-| 审批人为空 | `assignEmptyHandlerType` + `assignEmptyUserIds` | 1 自动通过 · **2 自动拒绝（产品默认）** · 3 指定人员 · 4 转交流程管理员 | **未消费** |
-| 与发起人相同 | `assignStartUserHandlerType` | 1 自己审 · 2 自动跳过 · 3 转部门负责人 | **未消费** |
+| 审批人为空 | `assignEmptyHandlerType` + `assignEmptyUserIds` | 1 自动通过 · **2 自动拒绝（产品默认）** · 3 指定人员 · 4 转交流程管理员 | **Host 已消费**（`NodePolicyAssigneePipeline`；`=1` 跳过未实现） |
+| 与发起人相同 | `assignStartUserHandlerType` | 1 自己审 · 2 自动跳过 · 3 转部门负责人 | **部分**（仅 Type=1 生效；2/3 不暗改） |
 | 审批超时 | `timeoutHandlerEnable` + `timeoutHandlerType` + `timeDuration` / `timeUnit` + `maxRemindCount` | 启用后：1 自动提醒 · 2 **自动同意** · 3 自动拒绝 | **未消费**（无调度作业） |
 
 类型注释（宿主）已写明：`引擎不解释，Host/办理台消费`；sleveen-admin 后端亦无 `assignEmpty*` / `timeoutHandler*` 消费点。
@@ -68,13 +68,13 @@
 
 - [x] **默认空人 = 拒绝**（`assignEmptyHandlerType` 缺省/新建 = `2`；禁止默认自动通过）— 2026-11-01 拍板
 - [x] **`=2` = R4 拒绝推进**（不落待办 + ReasonCode；**不是**默认 `RejectProcess` 整单结束）— 2026-11-01 拍板
-- [ ] 空人策略执行归属：**引擎解释 NodePolicy** vs **Host Gate/Hook 消费** vs **导入期转写为 Resolve `Fallback` / Skip**
-- [ ] 「自动通过」语义：跳过本节点继续流转，还是生成系统代办并自动同意（仅显式选 1 时）
-- [ ] 「转交流程管理员」：管理员身份键来源（配置项 / 租户角色 / 流程定义字段）
-- [ ] 是否另增「空人则 Reject 结束整单」选项（与默认 `=2` 分离）；若有，与 `rejectHandlerType` 关系
-- [ ] 同人「自动跳过 / 转部门负责人」与空人策略是否同一执行管线
-- [ ] 与 R4 / 发布校验：默认拒绝；仅显式 `=1/3/4` 才允许跳过/换人；旧图若曾落盘 `=1` 按显式配置尊重
-- [ ] `approveType` / `rejectHandlerType`：本轮是否一并接线，或只文档记债
+- [x] 空人策略执行归属：**Host 装饰 Assignee 管道**（`NodePolicyAssigneePipeline`）— 2026-11-01
+- [ ] 「自动通过」(`=1`)：跳过本节点 vs 系统代办自动同意（本轮未实现，仍走 R4 拒绝以免暗过）
+- [x] 「转交流程管理员」：配置项 `Sail:ProcessAdminUserIds`（Account 逗号分隔）；未配 → 拒绝
+- [ ] 是否另增「空人则 Reject 结束整单」选项（与默认 `=2` 分离）
+- [ ] 同人「自动跳过 / 转部门负责人」：同管线已挂载，Type=2/3 本轮不暗改（防乱派）
+- [x] 与 R4：默认 `=2` 拒绝；仅显式 `=3/4`（及未来 `=1`）换人/跳过
+- [ ] `approveType` / `rejectHandlerType`：另开或记债
 
 **超时**
 
@@ -89,20 +89,20 @@
 
 **公共**
 
-- [ ] 解析 `sf:NodePolicy`（引擎 XPDL 或 Host 侧读 BPMN 扩展）
-- [ ] ReasonCode / 前端提示：策略执行成功与仍失败（如管理员未配置、超时作业失败）可区分
+- [x] 解析 `sf:NodePolicy`（Host `SailNodePolicyCatalog` + 管道内读 BPMN）
+- [ ] ReasonCode 细分：管理员未配置 vs 算人空（仍多为 `AssigneeEmpty`）
 
 **空人 / 同人**
 
-- [ ] 在 **Resolve 之后、建待办之前** 挂空人处理（与管道单轨一致，禁止回落 Definition）
-- [ ] 设计器 / merge：`assignEmptyHandlerType` **默认 2**；文案突出「默认拒绝」
-- [ ] `assignEmptyHandlerType=2` 拒绝（默认路径；细义见 A3）
-- [ ] `assignEmptyHandlerType=1` 自动通过 / 跳过（显式才开）
-- [ ] `assignEmptyHandlerType=3` 指定 `assignEmptyUserIds`（Account 编码，对齐 R3）
-- [ ] `assignEmptyHandlerType=4` 转流程管理员
-- [ ] `assignStartUserHandlerType` 同人三策略
-- [ ] 收敛设计器 Fallback UI：`onEmpty` 与真实 `FallbackAssigneeResolver` Params 对齐，或标注废弃
-- [ ] 单测 + 宿主联调（默认空人拒绝；显式勾选通过/指定人/管理员 → 行为符合）
+- [x] Resolve 之后挂空人处理（`NodePolicyAssigneePipeline`）
+- [x] 设计器 / merge：默认 `assignEmptyHandlerType=2`
+- [x] `=2` 拒绝推进（R4）
+- [ ] `=1` 自动通过 / 跳过（显式才开；**未实现**，暂仍拒绝）
+- [x] `=3` 指定 `assignEmptyUserIds`
+- [x] `=4` 转流程管理员（`Sail:ProcessAdminUserIds`）
+- [ ] `assignStartUserHandlerType` 同人 2/3（跳过/负责人）
+- [ ] 收敛设计器 Fallback UI `onEmpty`
+- [ ] 联调：默认空人拒绝；指定人/管理员可落待办
 
 **超时**
 
@@ -114,23 +114,20 @@
 - [ ] 与 Boundaries / Timer 事件文档与设计器文案对齐，避免两套超时互相踩
 - [ ] 单测 + 宿主联调（短时长 → 到期 → 同意/拒绝/提醒符合选项）
 
-### A5. 建议落地路径（供拍板，非定论）
+### A5. 落地路径（空人已按此接线）
 
-**空人 / 同人：** 优先 Host 消费 NodePolicy + 引擎只认显式结果（避免 pure 依赖管理员主数据）。Resolve 空 → 读策略 → 指定人/管理员改写 `Performer[]`，或 Skip / Reject。备选：发布期转写 `Fallback`（仅覆盖换人）。
+**空人 / 同人：** Host `NodePolicyAssigneePipeline` 装饰内置管道；引擎只认 `Performer[]` 显式结果。管理员主数据来自宿主配置，不进 pure。
 
-**超时：** 优先建待办落 `OverdueDateTime` + Host 作业扫描（与 Boundaries 时长对齐）。按 `timeoutHandlerType` 调 Run/Reject/Notifier；成功标记已处理。勿用 BPMN 中间 Timer 冒充用户任务逾期。
+**超时：** 仍建议 Host 作业扫 `OverdueDateTime`（本轮未做）。
 
 ### A6. 验收口径
 
-1. **新建节点未改空人策略** + 算人为空 → **拒绝推进**（默认 `=2` = R4 + ReasonCode），**不得**自动通过，也**不得**默认整单 `RejectProcess`。  
-2. 空人=指定人员 → 待办落指定 Account。  
-3. 空人=转管理员可解析 → 落管理员；管理员未配置 → **拒绝** + 明确 ReasonCode。  
-4. 空人=自动通过（显式 `=1`）→ 越过该人工节点（或等价语义），可追溯。  
-5. 同人=自动跳过 有对应用例。  
-6. 超时=自动同意 + 短时长 → 系统身份办结，审计可辨。  
-7. 超时=自动拒绝 → 符合拍板语义。  
-8. 超时=自动提醒 → 次数上限内提醒。  
-9. 未启用超时 → 仅有 `OverdueDateTime` 也不自动办结。
+1. **新建节点未改空人策略** + 算人为空 → **拒绝推进**（默认 `=2` = R4 + ReasonCode）。  
+2. 空人=指定人员 → 待办落指定 Account（联调）。  
+3. 空人=转管理员 + 已配 `Sail:ProcessAdminUserIds` → 落管理员；未配置 → **拒绝**。  
+4. 空人=`=1` 自动通过 → **本轮仍拒绝**（待 Skip 语义）。  
+5. 同人=自动跳过 → 本轮未实现。  
+6.–9. 超时项：未实现。  
 
 ---
 
@@ -160,46 +157,46 @@
 
 原则：进码表必须有引擎命令 + Host 可调 API + 办理条接线（**禁止空壳按钮**）。
 
-### B3. 建议上下文分组（供拍板）
+### B3. 上下文分组（已落地）
 
-| 分组（产品） | 建议 context | 典型按钮 | 出现场景 |
-|--------------|--------------|----------|----------|
-| **待办办理** | `handle` | 通过 / 驳回 / 退回 / 加签 / 抄送 / 修订… | 当前用户待办 |
-| **其他 / 实例操作** | `done` + `view`/`instance` + `admin`（命名待定） | 撤回、重发、**终止**、**作废**、关闭、跳转、反转… | 已办、只读查看、管理 |
+| 分组（产品） | context | 典型按钮 | 出现场景 |
+|--------------|---------|----------|----------|
+| **待办办理** | `handle` | 通过 / 驳回 / 退回 / 加签 / 转办 / 抄送 / 重发… | 当前用户待办 |
+| **其他** | `done` + `admin` | 撤回、关闭、**终止**、**作废**、跳转、反转、修订… | 已办 / 管理 |
 
-- [ ] 「其他」是否再拆：`done` vs `view` vs `admin`
-- [ ] 终止 / 作废挂组与默认 enable（建议默认关）
-- [ ] Close vs Terminate vs Discard 文案与互斥
-- [ ] 落盘仍单条 `sf:ButtonsSetting.json` 仅 UI 分组，或拆扩展
+- [x] 设计器两分组（落盘仍单条 `sf:ButtonsSetting.json`）
+- [x] 终止 / 作废：`admin` + `defaultEnable=false`
+- [x] Close ≠ Terminate ≠ Discard（文案区分；本轮不做硬互斥）
+- [ ] 「其他」再拆 `view`：暂缓
+- [ ] Cancel / Suspend：暂缓
 
 ### B4. 拍板 / 实现
 
 **拍板**
 
-- [ ] 设计器 UI：待办一组 / 其他一组（或多组）
-- [ ] 是否新增 context：`view`
-- [ ] 首批：`Terminate` + `Discard`；Cancel/Suspend 同轮或暂缓
-- [ ] 权限：谁可见终止/作废
-- [ ] 勿把生命周期动作塞进 `sf:Actions`
+- [x] 设计器：待办一组 / 其他一组
+- [x] 首批：`Terminate` + `Discard`；Cancel/Suspend 暂缓
+- [x] 可见：与 Close 同闸（运行中实例 + 任务）；须节点 enable
+- [x] 勿塞 `sf:Actions`
 
 **码表与设计器**
 
-- [ ] 码表增加 `Terminate`、`Discard`（及拍板项）
-- [ ] 设计器按 **待办 / 其他** 分组渲染
-- [ ] 终止/作废 `defaultEnable=false`；旧图 merge 不崩
+- [x] 码表 `Terminate` / `Discard`
+- [x] 设计器按待办 / 其他分组
+- [x] `defaultEnable=false`；旧图 merge 不启用
 
 **Host / 办理条**
 
-- [ ] 暴露 `TerminateProcess` / `DiscardProcess` API
-- [ ] Workbench / 办理条：查看·已办·管理态展示「其他」组并调通
-- [ ] 显隐：`enable` ∧ context ∧ 权限
+- [x] `TerminateProcess` / `DiscardProcess` API + ButtonsOperation Handler
+- [x] 办理条管理闸：`showClose` ∧ enable
+- [x] 显隐：`enable` ∧ admin 闸
 
 **验收**
 
-- [ ] 关掉撤回 → 已办无撤回  
-- [ ] 开启终止/作废 → 约定上下文可见且调用成功  
-- [ ] 待办态默认不出现终止/作废  
-- [ ] 旧流程不出现新码（defaultEnable=false）
+- [ ] 关掉撤回 → 已办无撤回（联调）  
+- [ ] 开启终止/作废 → 管理态可见且调用成功（联调）  
+- [x] 待办态默认不出现（defaultEnable=false + admin 闸）  
+- [x] 旧流程不默认启用新码  
 
 ---
 
@@ -209,52 +206,49 @@
 
 节点上为表单字段配置**编辑性参数**，取值用 **string 枚举**（勿再拆成多套布尔语义打架）。Workbench / 动态表单 / **业务表单**接入时：引擎·Host **只下发参数**，**由表单侧自行解释并渲染**（脱敏规则、业务组件适配均在表单内完成）。
 
-### C2. 四种模式（必含）
+### C2. 四种模式（已定）
 
-| 参数值（建议 string） | 含义 | 现状 |
-|----------------------|------|------|
-| `editable` / `WRITE` | 可编辑 | 运行时等价于非只读且非隐藏 |
-| `readonly` / `READ` | 只读 | Form 权限有 `IsReadOnly`；NodePolicy UI 有 `READ` |
-| `hidden` / `NONE` | 隐藏 | Form 权限有 `IsNotVisible`；NodePolicy UI 有 `NONE` |
-| `masked`（或 `DESENSITIZE`） | **脱敏** | **无**；需新增码 |
+| 参数值 | 含义 | 现状 |
+|--------|------|------|
+| `editable` | 可编辑 | 设计器 + Workbench + 内置表单 |
+| `readonly` | 只读 | 同上；旧 `READ` 加载归一 |
+| `hidden` | 隐藏 | 同上；旧 `NONE` 加载归一 |
+| `masked` | 脱敏展示 | 内置：只读 + 展示掩码；**不**回写掩码到原文 |
 
-拍板后固定**一套** string 常量（推荐小写：`editable` | `readonly` | `hidden` | `masked`），设计器、落盘、Workbench、表单契约共用；旧 `READ`/`WRITE`/`NONE` / `IsReadOnly`/`IsNotVisible` 做映射兼容。
+权威字面量：`editable` | `readonly` | `hidden` | `masked`。旧 `WRITE`/`READ`/`NONE`/`DESENSITIZE` 与 `IsReadOnly`/`IsNotVisible` 映射兼容。
 
-### C3. 现状双轨（须收口）
+### C3. 双轨收口（接线后）
 
-| 轨 | 落点 | 问题 |
-|----|------|------|
-| A | `sf:NodePolicy.fieldsPermission`（`field`/`title`/`permission`） | 设计器可配；**办理不读** |
-| B | `FormService` 字段活动权限表（`IsReadOnly`/`IsNotVisible`） | Workbench 在用；**无脱敏**；与轨 A 未打通 |
+| 轨 | 落点 | 运行时 |
+|----|------|--------|
+| A | `sf:NodePolicy.fieldsPermission` | **权威**：非空则 Workbench 只读本轨 |
+| B | Form 字段活动权限表 | NodePolicy 为空时回退；映射为四码 |
 
-目标态：**节点配置为权威来源（或发布时转写到 Form 权限表）**；运行时统一成「字段 → string 模式」再传给表单。
+### C4. 接入约定（已落地）
 
-### C4. 接入约定（定型）
-
-1. Host / Workbench 组装表单上下文时附带：  
-   `fieldModes: Record<fieldName, string>` 或 `Array<{ field: string; mode: string }>`（命名拍板）。  
-2. **内置动态表单**（form-create 等）：按 mode 自行 `disabled` / 移除节点 / 脱敏展示。  
-3. **业务表单**：同一参数结构注入（props / slot / 事件）；业务自行适配，引擎不解析业务字段语义。  
-4. 引擎 **不**实现脱敏算法；最多校验 mode ∈ 允许集合。
+1. Workbench：`FieldModes: Record<field, mode>` + `FieldPermissions: [{ FieldName, Mode, IsReadOnly, IsNotVisible, Title }]`。  
+2. 内置 `SailFormRender` / `applyFieldPermissions`：按 mode 隐藏/只读/脱敏展示；脱敏不污染 `getValue()` 原文。  
+3. 业务表单：读同一 `FieldModes`（或 `FieldPermissions[].Mode`）自行渲染。  
+4. 引擎不实现脱敏算法。
 
 ### C5. 拍板 / 实现
 
-- [ ] 四码最终 string 字面量与大小写
-- [ ] 权威落盘：只留 NodePolicy / 只留 Form 权限表 / 双写（发布同步）
-- [ ] 设计器：字段选择器 + 四模式（含脱敏）；废弃或映射旧 READ/WRITE/NONE
-- [ ] Workbench：`FieldPermissions` 改为（或并行）下发 string `mode`
-- [ ] 内置表单：`applyFieldPermissions` 支持四模式（含 `masked` 展示策略）
-- [ ] 业务表单接入文档：参数形状 + 示例（自行适配）
-- [ ] 兼容：旧 `IsReadOnly`/`IsNotVisible` → string 映射
-- [ ] 验收：节点配脱敏 → 办理页该字段脱敏；业务表单能读到同一参数
+- [x] 四码：`editable` | `readonly` | `hidden` | `masked`
+- [x] 权威：NodePolicy 非空优先；否则 Form 权限表
+- [x] 设计器四模式 + 旧码加载归一
+- [x] Workbench 下发 `FieldModes` + 带 Mode 的 `FieldPermissions`
+- [x] 内置表单四模式（含 masked 展示）
+- [x] 宿主文档：`doc/sailflow-field-modes.md`
+- [x] 旧布尔 → string 映射
+- [ ] 联调：节点配脱敏 → 办理页可见掩码；业务表单可读 `FieldModes`
 
 ### C6. 验收口径
 
-1. 节点字段 = `readonly` → 内置表单不可改。  
-2. = `hidden` → 不展示。  
-3. = `editable` → 可改。  
-4. = `masked` → 展示脱敏，提交策略符合表单侧约定（是否回传原文由业务定）。  
-5. 业务表单 mock：能收到相同 `field → mode` 映射并自行处理。
+1. `readonly` → 内置不可改。  
+2. `hidden` → 不展示。  
+3. `editable` → 可改。  
+4. `masked` → 展示脱敏；`getValue()` 仍为原文。  
+5. 业务表单可读 `FieldModes`。
 
 ---
 
@@ -267,7 +261,7 @@
 - [x] [特性说明-待办人管道.md](./特性说明-待办人管道.md)：R4 / §7.3 对齐空人默认拒绝与 NodePolicy（2026-11-01）
 - [ ] [特性说明-引擎能力基线.md](./特性说明-引擎能力基线.md)（空人/超时验收 + 办理命令若列表 + Transfer）
 - [ ] 宿主 `sailflow-assignee-candidate-design.md`（若仍写空人/转办旧口径）
-- [ ] 宿主表单/办理文档：节点字段 mode string 契约（含业务表单自行适配）
+- [x] 宿主表单/办理文档：节点字段 mode string 契约（`sailflow-field-modes.md`）
 
 ---
 
@@ -523,7 +517,7 @@ interface ISailFormBizHandler
 
 - [x] Host API：`POST …/ButtonsOperation`  
 - [x] Dispatcher：未知 Id → `OperationHandlerMissing`  
-- [x] Handlers：Approve/Reject/SendBack/SignForward/**Transfer**/Withdraw/Resend/Close/Jump/Revise/Reverse  
+- [x] Handlers：Approve/Reject/SendBack/SignForward/**Transfer**/Withdraw/Resend/Close/**Terminate**/**Discard**/Jump/Revise/Reverse  
 - [x] 办理条引擎按钮全部改走统一入口（Copy 除外）  
 - [ ] 与 §H：Approve Handler 内调 FormBizHandler  
 - [x] 与 §G：有 BackSrc 时办理台两分文案；策略落盘仍待 §J  
