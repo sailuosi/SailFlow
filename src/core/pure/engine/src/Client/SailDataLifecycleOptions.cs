@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace saiflow.engine.Client;
 
 /// <summary>
@@ -10,6 +12,7 @@ public sealed class SailDataLifecycleOptions
     public const int DefaultArchiveRetentionDays = 90;
     public const int DefaultArchiveBatchSize = 100;
     public const int DefaultLogRetentionDays = 90;
+    public const int DefaultHotShardSuffixMaxLength = 64;
 
     // --- 流程实例归档 / 冷表 ---
 
@@ -63,6 +66,22 @@ public sealed class SailDataLifecycleOptions
     /// </summary>
     public string LogFileDirectory { get; set; } = "logs/sail";
 
+    // --- P2：轨迹 / 变量热表白名单分表 ---
+
+    /// <summary>
+    /// 启用热侧分表的 <c>process_id</c> 白名单；空 = 全走默认单表。
+    /// </summary>
+    public List<string> HotShardProcessIds { get; set; } = new();
+
+    /// <summary>
+    /// 热分表名：{0}=逻辑基名（transition_instance / process_variable），{1}=清洗后的 process_id 后缀。
+    /// 例：wf_transition_instance__abc123。
+    /// </summary>
+    public string HotShardTableNameFormat { get; set; } = "wf_{0}__{1}";
+
+    /// <summary>分表后缀最大长度（清洗后截断）。</summary>
+    public int HotShardSuffixMaxLength { get; set; } = DefaultHotShardSuffixMaxLength;
+
     /// <summary>从另一实例拷贝字段（Builder / 配置合并用）。</summary>
     public void Apply(SailDataLifecycleOptions source)
     {
@@ -89,11 +108,21 @@ public sealed class SailDataLifecycleOptions
         LogRetentionDays = source.LogRetentionDays;
         if (source.LogFileDirectory != null)
             LogFileDirectory = source.LogFileDirectory;
+
+        if (source.HotShardProcessIds != null)
+            HotShardProcessIds = new List<string>(source.HotShardProcessIds);
+        if (source.HotShardTableNameFormat != null)
+            HotShardTableNameFormat = source.HotShardTableNameFormat;
+        HotShardSuffixMaxLength = source.HotShardSuffixMaxLength;
     }
 
     /// <summary>按办结年解析冷表物理名。</summary>
     public string FormatHistTableName(string logicalBaseName, int endedYear)
         => string.Format(HistTableNameFormat, logicalBaseName, endedYear);
+
+    /// <summary>按 process_id 后缀解析热分表物理名。</summary>
+    public string FormatHotShardTableName(string logicalBaseName, string suffix)
+        => string.Format(HotShardTableNameFormat, logicalBaseName, suffix);
 }
 
 /// <summary>引擎诊断日志 Sink 种类。</summary>

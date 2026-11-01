@@ -38,13 +38,19 @@ namespace saiflow.data
 
         /// <summary>配置 INSERT 字段；调用方再 <c>doInsert</c> 或 <c>toInsert</c>。</summary>
         public static (SQLBuilder Kit, object KeyValue) PrepareInsert<T>(T entity, SQLBuilder kit = null) where T : class
+            => PrepareInsertOnTable(entity, SailEntityMapper.ResolveTableName<T>(), kit);
+
+        /// <summary>向指定物理表 INSERT（热分表 / 冷表）。</summary>
+        public static (SQLBuilder Kit, object KeyValue) PrepareInsertOnTable<T>(
+            T entity, string physicalTable, SQLBuilder kit = null) where T : class
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
+            if (string.IsNullOrWhiteSpace(physicalTable))
+                throw new ArgumentException("Physical table is required.", nameof(physicalTable));
 
-            var table = SailEntityMapper.ResolveTableName<T>();
             var maps = SailEntityMapper.GetColumnMaps<T>();
-            kit = (kit ?? NewKit()).setTable(table).newRow();
+            kit = (kit ?? NewKit()).setTable(physicalTable).newRow();
 
             object keyVal = null;
             foreach (var map in maps)
@@ -64,13 +70,19 @@ namespace saiflow.data
         }
 
         public static SQLBuilder PrepareUpdate<T>(T entity, SQLBuilder kit = null) where T : class
+            => PrepareUpdateOnTable(entity, SailEntityMapper.ResolveTableName<T>(), kit);
+
+        /// <summary>在指定物理表 UPDATE。</summary>
+        public static SQLBuilder PrepareUpdateOnTable<T>(
+            T entity, string physicalTable, SQLBuilder kit = null) where T : class
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
+            if (string.IsNullOrWhiteSpace(physicalTable))
+                throw new ArgumentException("Physical table is required.", nameof(physicalTable));
 
-            var table = SailEntityMapper.ResolveTableName<T>();
             var maps = SailEntityMapper.GetColumnMaps<T>();
-            kit = (kit ?? NewKit()).setTable(table);
+            kit = (kit ?? NewKit()).setTable(physicalTable);
 
             ColumnMap keyMap = null;
             object keyVal = null;
@@ -92,17 +104,29 @@ namespace saiflow.data
         }
 
         public static SQLBuilder PrepareDeleteById<T>(object primaryId, SQLBuilder kit = null) where T : class
+            => PrepareDeleteByIdOnTable<T>(primaryId, SailEntityMapper.ResolveTableName<T>(), kit);
+
+        /// <summary>在指定物理表按主键 DELETE。</summary>
+        public static SQLBuilder PrepareDeleteByIdOnTable<T>(
+            object primaryId, string physicalTable, SQLBuilder kit = null) where T : class
         {
-            var table = SailEntityMapper.ResolveTableName<T>();
-            return (kit ?? NewKit()).setTable(table).where(KeyColumn<T>(), primaryId);
+            if (string.IsNullOrWhiteSpace(physicalTable))
+                throw new ArgumentException("Physical table is required.", nameof(physicalTable));
+            return (kit ?? NewKit()).setTable(physicalTable).where(KeyColumn<T>(), primaryId);
         }
 
         public static SQLBuilder PrepareSelectById<T>(object primaryId, SQLBuilder kit = null) where T : class
+            => PrepareSelectByIdOnTable<T>(primaryId, SailEntityMapper.ResolveTableName<T>(), kit);
+
+        /// <summary>在指定物理表按主键 SELECT。</summary>
+        public static SQLBuilder PrepareSelectByIdOnTable<T>(
+            object primaryId, string physicalTable, SQLBuilder kit = null) where T : class
         {
-            var table = SailEntityMapper.ResolveTableName<T>();
+            if (string.IsNullOrWhiteSpace(physicalTable))
+                throw new ArgumentException("Physical table is required.", nameof(physicalTable));
             return (kit ?? NewKit())
                 .select("*")
-                .from(table)
+                .from(physicalTable)
                 .where(KeyColumn<T>(), primaryId);
         }
 

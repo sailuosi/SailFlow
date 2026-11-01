@@ -161,6 +161,24 @@ public partial class SailClient
         return this;
     }
 
+    private saiflow.engine.HotShard.ISailHotShardRouter _hotShard;
+
+    /// <summary>
+    /// 轨迹/变量热表白名单分表路由（默认 <see cref="saiflow.engine.HotShard.NullSailHotShardRouter"/>）。
+    /// 白名单实现由 saiflow.data <c>UseSailData</c> 按 Options 挂载。
+    /// </summary>
+    public saiflow.engine.HotShard.ISailHotShardRouter HotShard
+    {
+        get => _hotShard ??= saiflow.engine.HotShard.NullSailHotShardRouter.Instance;
+        set => _hotShard = value;
+    }
+
+    public SailClient useHotShard(saiflow.engine.HotShard.ISailHotShardRouter router)
+    {
+        _hotShard = router ?? throw new ArgumentNullException(nameof(router));
+        return this;
+    }
+
     /// <summary><see cref="Hooks.HookOutboxDrainLoop.StartBackground"/> 返回的 CTS（<c>autoStart</c> 或宿主手动启动时赋值）。</summary>
     public CancellationTokenSource HookOutboxDrainCts { get; set; }
 

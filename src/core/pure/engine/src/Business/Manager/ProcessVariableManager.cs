@@ -8,13 +8,14 @@ using saiflow.engine.Business.Entity;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
 using saiflow.engine.Event;
+using saiflow.engine.HotShard;
 using saiflow.engine.Xpdl;
 using saiflow.hub.Localize;
 
 namespace saiflow.engine.Business.Manager
 {
     /// <summary>
-    /// 流程运行变量（wf_process_variable）。
+    /// 流程运行变量（wf_process_variable / 白名单热分表）。
     /// 终态：无事务从 Client 取 kit；有事务只用传入的同一个 kit。
     /// </summary>
     internal class ProcessVariableManager
@@ -25,6 +26,9 @@ namespace saiflow.engine.Business.Manager
         }
 
         protected SailClient Sail { get; }
+
+        ISailHotShardRouter Router => Sail.HotShard;
+
         /// <summary>同库同事务的新 kit，避免链式 select 状态互相污染。</summary>
         private static SQLBuilder Sibling(SQLBuilder kit)
         {
@@ -35,10 +39,11 @@ namespace saiflow.engine.Business.Manager
         }
 
         internal ProcessVariableEntity GetVariableById(int variableId)
-            => Sail.UseRunSQL().useRepo<ProcessVariableEntity, int>().GetById(variableId);
+            => GetVariableById(Sail.UseRunSQL(), variableId);
 
         internal ProcessVariableEntity GetVariableById(SQLBuilder kit, int variableId)
-            => Sibling(kit).useRepo<ProcessVariableEntity, int>().GetById(variableId);
+            => HotShardEntityAccess.GetByIdProbing<ProcessVariableEntity>(
+                Sibling(kit), Router.VariableLookupTables, variableId);
 
         internal string GetVariable(
             ProcessVariableScopeEnum variableType,
@@ -116,22 +121,30 @@ namespace saiflow.engine.Business.Manager
 
         internal IList<ProcessVariableEntity> GetVariableList(SQLBuilder kit, int processInstanceId)
         {
-            var clip = Sibling(kit).useClip();
-            clip.from<ProcessVariableEntity>(out var v);
-            clip.where(() => v.ProcessInstanceId, processInstanceId);
-            clip.orderBy(() => v.ActivityId);
-            return clip.select(v).queryList().ToList();
+            var processId = ResolveProcessId(kit, processInstanceId);
+            return QueryWithFallback(kit, processId, table =>
+            {
+                var clip = Sibling(kit).useClip();
+                clip.from<ProcessVariableEntity>(table, out var v);
+                clip.where(() => v.ProcessInstanceId, processInstanceId);
+                clip.orderBy(() => v.ActivityId);
+                return clip.select(v).queryList().ToList();
+            });
         }
 
         internal IList<ProcessVariableEntity> GetVariableList(
             SQLBuilder kit, int processInstanceId, int activityInstanceId)
         {
-            var clip = Sibling(kit).useClip();
-            clip.from<ProcessVariableEntity>(out var v);
-            clip.where(() => v.ProcessInstanceId, processInstanceId);
-            clip.where(() => v.ActivityInstanceId, activityInstanceId);
-            clip.orderBy(() => v.ActivityId);
-            return clip.select(v).queryList().ToList();
+            var processId = ResolveProcessId(kit, processInstanceId);
+            return QueryWithFallback(kit, processId, table =>
+            {
+                var clip = Sibling(kit).useClip();
+                clip.from<ProcessVariableEntity>(table, out var v);
+                clip.where(() => v.ProcessInstanceId, processInstanceId);
+                clip.where(() => v.ActivityInstanceId, activityInstanceId);
+                clip.orderBy(() => v.ActivityId);
+                return clip.select(v).queryList().ToList();
+            });
         }
 
         internal ProcessVariableEntity GetVariableEntity(ProcessVariableQuery query)
@@ -169,13 +182,17 @@ namespace saiflow.engine.Business.Manager
 
         internal ProcessVariableEntity GetVariableByProcess(SQLBuilder kit, int processInstanceId, string name)
         {
-            var clip = Sibling(kit).useClip();
-            clip.from<ProcessVariableEntity>(out var v);
-            clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Process.ToString());
-            clip.where(() => v.ProcessInstanceId, processInstanceId);
-            clip.where(() => v.Name, name);
-            clip.orderBy(() => v.ActivityId);
-            return clip.select(v).queryList().FirstOrDefault();
+            var processId = ResolveProcessId(kit, processInstanceId);
+            return QueryWithFallback(kit, processId, table =>
+            {
+                var clip = Sibling(kit).useClip();
+                clip.from<ProcessVariableEntity>(table, out var v);
+                clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Process.ToString());
+                clip.where(() => v.ProcessInstanceId, processInstanceId);
+                clip.where(() => v.Name, name);
+                clip.orderBy(() => v.ActivityId);
+                return clip.select(v).queryList().ToList();
+            }).FirstOrDefault();
         }
 
         internal ProcessVariableEntity GetVariableByActivity(
@@ -188,14 +205,18 @@ namespace saiflow.engine.Business.Manager
         internal ProcessVariableEntity GetVariableByActivity(
             SQLBuilder kit, int processInstanceId, int activityInstanceId, string name)
         {
-            var clip = Sibling(kit).useClip();
-            clip.from<ProcessVariableEntity>(out var v);
-            clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString());
-            clip.where(() => v.ProcessInstanceId, processInstanceId);
-            clip.where(() => v.ActivityInstanceId, activityInstanceId);
-            clip.where(() => v.Name, name);
-            clip.orderBy(() => v.Name);
-            return clip.select(v).queryList().FirstOrDefault();
+            var processId = ResolveProcessId(kit, processInstanceId);
+            return QueryWithFallback(kit, processId, table =>
+            {
+                var clip = Sibling(kit).useClip();
+                clip.from<ProcessVariableEntity>(table, out var v);
+                clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString());
+                clip.where(() => v.ProcessInstanceId, processInstanceId);
+                clip.where(() => v.ActivityInstanceId, activityInstanceId);
+                clip.where(() => v.Name, name);
+                clip.orderBy(() => v.Name);
+                return clip.select(v).queryList().ToList();
+            }).FirstOrDefault();
         }
 
         internal IList<ProcessVariableEntity> GetVariableListByActivity(
@@ -213,19 +234,23 @@ namespace saiflow.engine.Business.Manager
             int activityInstanceId,
             IList<string> variableNameList)
         {
-            var clip = Sibling(kit).useClip();
-            clip.from<ProcessVariableEntity>(out var v);
-            clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString());
-            clip.where(() => v.ProcessInstanceId, processInstanceId);
-            clip.where(() => v.ActivityInstanceId, activityInstanceId);
+            var processId = ResolveProcessId(kit, processInstanceId);
+            return QueryWithFallback(kit, processId, table =>
+            {
+                var clip = Sibling(kit).useClip();
+                clip.from<ProcessVariableEntity>(table, out var v);
+                clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString());
+                clip.where(() => v.ProcessInstanceId, processInstanceId);
+                clip.where(() => v.ActivityInstanceId, activityInstanceId);
 
-            if (variableNameList != null && variableNameList.Count == 1)
-                clip.where(() => v.Name, variableNameList[0]);
-            else if (variableNameList != null && variableNameList.Count > 1)
-                clip.whereIn(() => v.Name, variableNameList);
+                if (variableNameList != null && variableNameList.Count == 1)
+                    clip.where(() => v.Name, variableNameList[0]);
+                else if (variableNameList != null && variableNameList.Count > 1)
+                    clip.whereIn(() => v.Name, variableNameList);
 
-            clip.orderBy(() => v.Name);
-            return clip.select(v).queryList().ToList();
+                clip.orderBy(() => v.Name);
+                return clip.select(v).queryList().ToList();
+            });
         }
 
         internal int SaveVariable(ProcessVariableEntity entity)
@@ -239,6 +264,9 @@ namespace saiflow.engine.Business.Manager
             if (string.IsNullOrEmpty(entity.Name) || string.IsNullOrEmpty(entity.Value))
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("processvariablemanager.savevariable.error"));
 
+            if (string.IsNullOrWhiteSpace(entity.ProcessId) && entity.ProcessInstanceId.HasValue)
+                entity.ProcessId = ResolveProcessId(kit, entity.ProcessInstanceId.Value);
+
             ProcessVariableEntity existProcessVariable;
             if (entity.Id != 0)
                 existProcessVariable = GetVariableById(kit, entity.Id.Value);
@@ -250,6 +278,8 @@ namespace saiflow.engine.Business.Manager
             {
                 existProcessVariable.Value = entity.Value;
                 existProcessVariable.UpdatedDateTime = DateTime.UtcNow;
+                if (string.IsNullOrWhiteSpace(existProcessVariable.ProcessId))
+                    existProcessVariable.ProcessId = entity.ProcessId;
                 Update(kit, existProcessVariable);
                 return existProcessVariable.Id.Value;
             }
@@ -285,20 +315,84 @@ namespace saiflow.engine.Business.Manager
             return parsed;
         }
 
-        private static int Insert(SQLBuilder kit, ProcessVariableEntity entity)
+        private int Insert(SQLBuilder kit, ProcessVariableEntity entity)
         {
-            var newId = Sibling(kit).useRepo<ProcessVariableEntity, int>().InsertReturnId(entity);
+            var table = Router.ResolveVariableTable(entity?.ProcessId);
+            var newId = HotShardEntityAccess.InsertReturnId(Sibling(kit), table, entity);
             entity.Id = newId;
             return newId;
         }
 
-        private static void Update(SQLBuilder kit, ProcessVariableEntity entity)
-            => Sibling(kit).useRepo<ProcessVariableEntity>().Update(entity);
+        private void Update(SQLBuilder kit, ProcessVariableEntity entity)
+        {
+            var table = Router.ResolveVariableTable(entity?.ProcessId);
+            // 旧行可能仍在默认表：先试解析表，失败再探测
+            try
+            {
+                HotShardEntityAccess.Update(Sibling(kit), table, entity);
+            }
+            catch
+            {
+                if (!Router.IsSharded(entity?.ProcessId))
+                    throw;
+                HotShardEntityAccess.Update(Sibling(kit), Router.DefaultVariableTable, entity);
+            }
+        }
 
         internal void DeleteVariable(int variableId)
-            => Sail.UseRunSQL().useRepo<ProcessVariableEntity, int>().DeleteById(variableId);
+            => DeleteVariable(Sail.UseRunSQL(), variableId);
 
         internal void DeleteVariable(SQLBuilder kit, int variableId)
-            => Sibling(kit).useRepo<ProcessVariableEntity, int>().DeleteById(variableId);
+            => HotShardEntityAccess.DeleteByIdProbing<ProcessVariableEntity>(
+                Sibling(kit), Router.VariableLookupTables, variableId);
+
+        private string ResolveProcessId(SQLBuilder kit, int processInstanceId)
+            => HotShardEntityAccess.ResolveProcessId(kit, processInstanceId);
+
+        private List<ProcessVariableEntity> QueryWithFallback(
+            SQLBuilder kit,
+            string processId,
+            Func<string, List<ProcessVariableEntity>> query)
+        {
+            var primary = Router.ResolveVariableTable(processId);
+            List<ProcessVariableEntity> rows;
+            try
+            {
+                rows = query(primary) ?? new List<ProcessVariableEntity>();
+            }
+            catch
+            {
+                rows = new List<ProcessVariableEntity>();
+            }
+
+            if (!Router.IsSharded(processId))
+                return rows;
+
+            var def = Router.DefaultVariableTable;
+            if (string.Equals(primary, def, StringComparison.OrdinalIgnoreCase))
+                return rows;
+
+            List<ProcessVariableEntity> legacy;
+            try
+            {
+                legacy = query(def) ?? new List<ProcessVariableEntity>();
+            }
+            catch
+            {
+                return rows;
+            }
+
+            if (legacy.Count == 0)
+                return rows;
+
+            var seen = new HashSet<int>(rows.Where(x => x.Id.HasValue).Select(x => x.Id.Value));
+            foreach (var row in legacy)
+            {
+                if (row.Id.HasValue && seen.Contains(row.Id.Value))
+                    continue;
+                rows.Add(row);
+            }
+            return rows;
+        }
     }
 }

@@ -539,22 +539,38 @@ namespace saiflow.engine.Business.Manager
                 clip.setTable<TaskEntity>(out var t);
                 clip.where(() => t.ProcessInstanceId, processInstanceId);
                 clip.doDelete();
-                clip = Sibling(kit).useClip();
-                clip.setTable<TransitionInstanceEntity>(out var ti);
-                clip.where(() => ti.ProcessInstanceId, processInstanceId);
-                clip.doDelete();
+
+                DeleteByProcessInstance(kit, Sail.HotShard.ResolveTransitionTable(entity.ProcessId), processInstanceId);
+                if (Sail.HotShard.IsSharded(entity.ProcessId))
+                    DeleteByProcessInstance(kit, Sail.HotShard.DefaultTransitionTable, processInstanceId);
+
                 clip = Sibling(kit).useClip();
                 clip.setTable<ActivityInstanceEntity>(out var ai);
                 clip.where(() => ai.ProcessInstanceId, processInstanceId);
                 clip.doDelete();
-                clip = Sibling(kit).useClip();
-                clip.setTable<ProcessVariableEntity>(out var pv);
-                clip.where(() => pv.ProcessInstanceId, processInstanceId);
-                clip.doDelete();
+
+                DeleteByProcessInstance(kit, Sail.HotShard.ResolveVariableTable(entity.ProcessId), processInstanceId);
+                if (Sail.HotShard.IsSharded(entity.ProcessId))
+                    DeleteByProcessInstance(kit, Sail.HotShard.DefaultVariableTable, processInstanceId);
+
                 Sibling(kit).useRepo<ProcessInstanceEntity, int>().DeleteById(processInstanceId);
                 return true;
             }
             throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.delete.error"));
+        }
+
+        static void DeleteByProcessInstance(SQLBuilder kit, string physicalTable, int processInstanceId)
+        {
+            try
+            {
+                Sibling(kit).setTable(physicalTable)
+                    .where("process_instance_id", processInstanceId)
+                    .doDelete();
+            }
+            catch
+            {
+                // 分表未创建时忽略
+            }
         }
 
         internal bool Delete(string processId, string version)
