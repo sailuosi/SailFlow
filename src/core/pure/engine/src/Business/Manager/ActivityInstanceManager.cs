@@ -8,6 +8,7 @@ using saiflow.engine.Assignee;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
+using saiflow.engine.Core.Runtime;
 using saiflow.engine.Xpdl;
 using saiflow.engine.Xpdl.Common;
 using saiflow.engine.Xpdl.Entity;
@@ -1227,7 +1228,7 @@ namespace saiflow.engine.Business.Manager
         {
             var childActivityInstanceList = GetValidActivityInstanceListOfMI(kit, mainActivityInstance.Id.Value, mainActivityInstance.ProcessInstanceId.Value);
 
-            // S1：优先 IAssigneePipeline.TryCanLeave（含 Legacy 会签推断）；未处理则双轨回落
+            // R2：已挂管道时只走 LeaveJudge（含 Legacy 会签→Collaborate 推断）；禁止回落旧通过率旁路
             var pipeline = Sail.AssigneePipeline;
             string leaveProcessId = mainActivityInstance.ProcessId;
             string leaveVersion = null;
@@ -1243,28 +1244,37 @@ namespace saiflow.engine.Business.Manager
                 /* 读版本失败时仍尝试 Leave；Pipeline 可再自查 */
             }
 
-            if (pipeline != null
-                && pipeline.TryCanLeave(
-                    new LeaveInvokeRequest
-                    {
-                        ProcessInstanceId = mainActivityInstance.ProcessInstanceId.Value,
-                        ActivityInstanceId = currentActivityInstance.Id.Value,
-                        ProcessId = leaveProcessId,
-                        Version = leaveVersion,
-                        CurrentActivityInstance = currentActivityInstance,
-                        MainActivityInstance = mainActivityInstance,
-                        ChildActivityInstances = childActivityInstanceList
-                    },
-                    out var leave)
-                && leave != null)
+            if (pipeline != null)
             {
-                if (string.Equals(leave.Decision, LeaveDecisions.Passed, StringComparison.OrdinalIgnoreCase))
-                    return NodePassedTypeEnum.Passed;
-                if (string.Equals(leave.Decision, LeaveDecisions.NotPassed, StringComparison.OrdinalIgnoreCase))
-                    return NodePassedTypeEnum.NotPassed;
-                if (string.Equals(leave.Decision, LeaveDecisions.Waiting, StringComparison.OrdinalIgnoreCase))
-                    return NodePassedTypeEnum.NeedToBeMoreApproved;
-                return NodePassedTypeEnum.Default;
+                if (pipeline.TryCanLeave(
+                        new LeaveInvokeRequest
+                        {
+                            ProcessInstanceId = mainActivityInstance.ProcessInstanceId.Value,
+                            ActivityInstanceId = currentActivityInstance.Id.Value,
+                            ProcessId = leaveProcessId,
+                            Version = leaveVersion,
+                            CurrentActivityInstance = currentActivityInstance,
+                            MainActivityInstance = mainActivityInstance,
+                            ChildActivityInstances = childActivityInstanceList
+                        },
+                        out var leave)
+                    && leave != null)
+                {
+                    if (string.Equals(leave.Decision, LeaveDecisions.Passed, StringComparison.OrdinalIgnoreCase))
+                        return NodePassedTypeEnum.Passed;
+                    if (string.Equals(leave.Decision, LeaveDecisions.NotPassed, StringComparison.OrdinalIgnoreCase))
+                        return NodePassedTypeEnum.NotPassed;
+                    if (string.Equals(leave.Decision, LeaveDecisions.Waiting, StringComparison.OrdinalIgnoreCase))
+                        return NodePassedTypeEnum.NeedToBeMoreApproved;
+                    return NodePassedTypeEnum.Default;
+                }
+
+                throw new WfAssigneeException(
+                    AssigneeReasonCodes.LeaveConfigMissing,
+                    "LeaveJudge missing for multi-instance activity '"
+                    + (mainActivityInstance.ActivityId ?? mainActivityInstance.Id?.ToString())
+                    + "'. Configure LeaveJudge in designer (R6). ReasonCode="
+                    + AssigneeReasonCodes.LeaveConfigMissing);
             }
 
             var passedType = NodePassedTypeEnum.Default;

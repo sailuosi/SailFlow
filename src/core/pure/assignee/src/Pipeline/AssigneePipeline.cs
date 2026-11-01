@@ -62,8 +62,7 @@ public class AssigneePipeline : IAssigneePipeline
         var resolved = resolver.Resolve(ctx) ?? new PerformerList();
         if (resolved.Count == 0)
         {
-            // Specific / StarterPick 无数据：交回既有路径；RoleGroup 空也交回以免静默
-            // R4 目标：有显式 ConfigPair 且空结果时应拒绝；Mediator 侧见硬失败路径
+            // 空结果交 Mediator：已挂管道时按 R2/R4 抛 WfAssigneeException（不再双轨回落）
             return false;
         }
 

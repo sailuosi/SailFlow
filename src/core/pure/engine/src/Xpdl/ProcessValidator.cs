@@ -61,8 +61,43 @@ namespace saiflow.engine.Xpdl
                 return result;
             }
 
+            // R6：用户任务发布前 Resolve + Leave Type 均不得为空
+            var assigneeIssues = ValidateUserTaskAssigneeConfig(process.ActivityList);
+            if (assigneeIssues.Count > 0)
+            {
+                result.ProcessValidatedResultType = ProcessValidateResultTypeEnum.AssigneeConfigIncomplete;
+                result.Issues = assigneeIssues;
+                result.Message = string.Join("; ", assigneeIssues);
+                return result;
+            }
+
             result.ProcessValidatedResultType = ProcessValidateResultTypeEnum.Successed;
             return result;
+        }
+
+        /// <summary>R6：人工任务须具备 AssigneeResolve + LeaveJudge Type。</summary>
+        internal static IList<string> ValidateUserTaskAssigneeConfig(IList<Activity> activities)
+        {
+            var issues = new List<string>();
+            if (activities == null)
+                return issues;
+
+            foreach (var a in activities)
+            {
+                if (a == null || a.ActivityType != ActivityTypeEnum.TaskNode)
+                    continue;
+
+                var label = string.IsNullOrWhiteSpace(a.ActivityName)
+                    ? a.ActivityId
+                    : a.ActivityName + "(" + a.ActivityId + ")";
+
+                if (string.IsNullOrWhiteSpace(a.AssigneeResolveType))
+                    issues.Add("UserTask '" + label + "' missing AssigneeResolve Type");
+                if (string.IsNullOrWhiteSpace(a.LeaveJudgeType))
+                    issues.Add("UserTask '" + label + "' missing LeaveJudge Type");
+            }
+
+            return issues;
         }
 
         /// <summary>

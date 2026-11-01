@@ -62,7 +62,10 @@ namespace saiflow.engine.Core.Runtime
             }
             catch (WfRuntimeException rx)
             {
-                WfExecutedResult.Status = WfExecutedStatus.Exception;
+                if (rx is WfAssigneeException ax)
+                    WfExecutedResult.ApplyAssigneeException(ax);
+                else
+                    WfExecutedResult.Status = WfExecutedStatus.Exception;
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, AppRunner, rx);
                 throw;
             }

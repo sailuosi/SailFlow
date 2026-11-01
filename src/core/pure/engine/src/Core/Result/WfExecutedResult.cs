@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using saiflow.engine.Common;
+using saiflow.engine.Core.Runtime;
 using saiflow.engine.Hooks;
 
 namespace saiflow.engine.Core.Result
@@ -15,6 +16,9 @@ namespace saiflow.engine.Core.Result
     {
         public WfExecutedStatus Status { get; set; }
         public String Message { get; set; }
+
+        /// <summary>R4：办理人管道等业务拒绝码（如 <c>AssigneeConfigMissing</c> / <c>AssigneeEmpty</c>）。</summary>
+        public string ReasonCode { get; set; }
 
         /// <summary>Gate 业务拒绝码（非引擎事故）。</summary>
         public string ValidationCode { get; set; }
@@ -78,6 +82,21 @@ namespace saiflow.engine.Core.Result
 
         /// <summary>同 <see cref="IsValidationReject"/>，供 API 语义命名。</summary>
         public bool IsBusinessValidationFailure() => IsValidationReject();
+
+        /// <summary>R4：办理人管道拒绝（带 <see cref="ReasonCode"/>）。</summary>
+        public bool IsAssigneeReject() =>
+            !string.IsNullOrEmpty(ReasonCode)
+            && (Status == WfExecutedStatus.Failed || Status == WfExecutedStatus.Exception);
+
+        /// <summary>写入办理人拒绝结果。</summary>
+        public void ApplyAssigneeException(WfAssigneeException ex)
+        {
+            if (ex == null) return;
+            Status = WfExecutedStatus.Failed;
+            Message = ex.Message ?? string.Empty;
+            ReasonCode = ex.ReasonCode;
+            ExceptionType = ex.ReasonCode;
+        }
     }
 
     /// <summary>

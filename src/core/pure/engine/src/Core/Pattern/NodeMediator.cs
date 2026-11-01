@@ -1110,7 +1110,7 @@ namespace saiflow.engine.Core.Pattern
         protected ActivityInstanceEntity GenerateActivityAssignedUserInfo(ActivityInstanceEntity toActivityInstance,
             ActivityResource activityResource)
         {
-            // R2/R4：已挂管道时优先 Assignee；节点有显式 Resolve Type 则禁止回落 Definition
+            // R2/R4：已挂管道时只走 Assignee；禁止回落 Definition/Specific/Single 双轨
             var pipeline = Sail.AssigneePipeline;
             var activityDef = ActivityForwardContext?.CurrentActivity;
             var hasExplicitResolve = !string.IsNullOrWhiteSpace(activityDef?.AssigneeResolveType);
@@ -1140,19 +1140,26 @@ namespace saiflow.engine.Core.Pattern
                     return toActivityInstance;
                 }
 
-                if (hasExplicitResolve)
-                {
-                    throw new ApplicationException(
-                        "AssigneeConfigMissingOrEmpty: Resolve Type '"
-                        + activityDef.AssigneeResolveType
-                        + "' produced no performers. Fix design ConfigPair or supply Specific performers. ReasonCode=AssigneeEmpty");
-                }
+                var reason = hasExplicitResolve
+                    ? AssigneeReasonCodes.AssigneeEmpty
+                    : AssigneeReasonCodes.AssigneeConfigMissing;
+                var typeHint = hasExplicitResolve
+                    ? activityDef.AssigneeResolveType
+                    : "(missing)";
+                throw new WfAssigneeException(
+                    reason,
+                    "Assignee resolve failed for activity '"
+                    + toActivityInstance.ActivityId
+                    + "' Type='"
+                    + typeHint
+                    + "'. Configure Resolve ConfigPair in designer (R6) or supply performers. ReasonCode="
+                    + reason);
             }
 
+            // 未挂管道时保留旧路径（无 assignee 包的宿主）
             if (activityResource.AppRunner.NextPerformerType == NextPerformerIntTypeEnum.Specific
                 && activityResource.NextActivityPerformers != null)
             {
-                //The front-end explicitly specifies the list of executing users for the next step
                 toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(
                     activityResource.NextActivityPerformers[toActivityInstance.ActivityId]);
                 toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(
@@ -1160,7 +1167,6 @@ namespace saiflow.engine.Core.Pattern
             }
             else if (activityResource.AppRunner.NextPerformerType ==  NextPerformerIntTypeEnum.Definition)
             {
-                //Obtain the list of executing users for the next step based on the role definition on the node
                 var performers = ActivityForwardContext.ProcessModel.GetActivityPerformers(toActivityInstance.ActivityId);
                 activityResource.NextActivityPerformers = performers;
 
@@ -1171,7 +1177,6 @@ namespace saiflow.engine.Core.Pattern
             }
             else if (activityResource.AppRunner.NextPerformerType == NextPerformerIntTypeEnum.Single)
             {
-                //Single user list for testing purposes
                 activityResource.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(toActivityInstance.ActivityId,
                     activityResource.AppRunner.UserId,
                     activityResource.AppRunner.UserName);

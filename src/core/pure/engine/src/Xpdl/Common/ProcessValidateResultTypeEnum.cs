@@ -40,6 +40,11 @@ namespace saiflow.engine.Xpdl.Common
         /// Without start end path
         /// 存在孤立活动
         /// </summary>
-        WithoutStartEndPath = 4
+        WithoutStartEndPath = 4,
+
+        /// <summary>
+        /// R6：用户任务 Resolve/Leave Type 为空，禁止发布
+        /// </summary>
+        AssigneeConfigIncomplete = 5
     }
 }

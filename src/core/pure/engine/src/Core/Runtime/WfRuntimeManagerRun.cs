@@ -62,9 +62,14 @@ namespace saiflow.engine.Core.Runtime
             }
             catch (WfRuntimeException rx)
             {
-                result.Status = WfExecutedStatus.Failed;
-                result.ExceptionType = WfExceptionType.RunApp_RuntimeError;
-                result.Message = rx.Message;
+                if (rx is WfAssigneeException ax)
+                    result.ApplyAssigneeException(ax);
+                else
+                {
+                    result.Status = WfExecutedStatus.Failed;
+                    result.ExceptionType = WfExceptionType.RunApp_RuntimeError;
+                    result.Message = rx.Message;
+                }
                 throw;
             }
             catch (System.Exception ex)
