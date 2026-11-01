@@ -60,12 +60,15 @@ namespace saiflow.engine.Core.Runtime
             {
                 ExecuteInstanceImp(kit);
             }
+            catch (WfAssigneeException ax)
+            {
+                // R4：办理人拒绝写进结果供 API 读 ReasonCode，不再向外抛（事务由上层按 Status 决定是否 commit）
+                WfExecutedResult.ApplyAssigneeException(ax);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, AppRunner, ax);
+            }
             catch (WfRuntimeException rx)
             {
-                if (rx is WfAssigneeException ax)
-                    WfExecutedResult.ApplyAssigneeException(ax);
-                else
-                    WfExecutedResult.Status = WfExecutedStatus.Exception;
+                WfExecutedResult.Status = WfExecutedStatus.Exception;
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, AppRunner, rx);
                 throw;
             }

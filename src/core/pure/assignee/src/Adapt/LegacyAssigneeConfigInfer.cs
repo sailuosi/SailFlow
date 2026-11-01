@@ -18,19 +18,13 @@ public static class LegacyAssigneeConfigInfer
         var runner = request.Runner;
         var activityId = request.ActivityId;
 
+        // R2：仅适配「前端已带 Specific 名单」或测试 Single；禁止 Definition→RoleGroup 运行时静默回落
+        //（角色须在 BPMN 显式写 AssigneeResolve Type=RoleGroup）
         if (runner.NextPerformerType == NextPerformerIntTypeEnum.Specific)
         {
             if (HasPerformers(request, activityId))
                 return ConfigPair.Create(AssigneeResolveTypeCodes.Specific);
             return null;
-        }
-
-        if (runner.NextPerformerType == NextPerformerIntTypeEnum.Definition)
-        {
-            return ConfigPair.Create(AssigneeResolveTypeCodes.RoleGroup, new Dictionary<string, object?>
-            {
-                ["useActivityRoles"] = true
-            });
         }
 
         if (runner.NextPerformerType == NextPerformerIntTypeEnum.Single)
