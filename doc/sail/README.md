@@ -10,6 +10,9 @@
 | [架构设计-项目依赖与分层.md](./架构设计-项目依赖与分层.md) | 程序集依赖与分层哲学 |
 | [业务管道特性设计.md](./业务管道特性设计.md) | SailClient / Builder / UseXxx |
 | [特性设计-回调与事件.md](./特性设计-回调与事件.md) | Gate / Hook / Notifier / Outbox 设计 |
+| [todo-产品缺口.md](./todo-产品缺口.md) | **待办**：NodePolicy；按钮；表单编辑性；**转办**；退回后再走（Run vs Resend） |
+| [存疑参考功能点.md](./存疑参考功能点.md) | **存疑对照**：外来引擎功能点（如 AntFlow 承办）；不默认纳入基线 |
+| [特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md) | **OA 动词**：场景/名称、Sail 编码、执行含义；含候选未入码表项 |
 | [progress/](./progress/) | 分期落地记录（Hook 等） |
 
 产品壳（菜单、Host API、办理 UX）见宿主仓 `sleveen-admin/doc/sailflow-features.md`。
