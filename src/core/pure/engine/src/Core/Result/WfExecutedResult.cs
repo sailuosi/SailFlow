@@ -189,6 +189,13 @@ namespace saiflow.engine.Core.Result
         public const string SignForward_ErrorArguments = "SignForward_ErrorArguments";
         public const string SignForward_NoneSigners = "SignForward_NoneSigners";
         public const string SignForward_RuntimeError = "SignForward_RuntimeError";
+
+        // 转办
+        public const string Transfer_ErrorArguments = "Transfer_ErrorArguments";
+        public const string Transfer_NoneTargets = "Transfer_NoneTargets";
+        public const string Transfer_NotMineTask = "Transfer_NotMineTask";
+        public const string Transfer_NotInRunning = "Transfer_NotInRunning";
+        public const string Transfer_RuntimeError = "Transfer_RuntimeError";
     }
 }
 

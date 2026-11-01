@@ -3,7 +3,24 @@
 > 状态：**Open**  
 > 录入：2026-11-01（空人/同人 → 超时 → 按钮 → 表单编辑性；本文为合并稿）  
 > 续录：2026-11-01（**F 转办**、**G 退回两分**、**H 表单生命周期**、**I 按钮分发**、**J 退回策略 DisagreeType 枚举化**）  
+> 拍板：2026-11-01 — **空人默认=拒绝**（禁止默认自动通过；`=2` 细义=**R4 拒绝推进**）；退回 = **目标维 × 再发送维** 正交（见 §G / §J）  
+> 实施：2026-11-01 — **§F/I/G/J**：转办 + ButtonsOperation + 办理台两分 + **NodePolicy 两维落盘**（`sendBackTarget`/`resubmitMode`）；联调验收待做  
+
 > 关联：[特性说明-待办人管道.md](./特性说明-待办人管道.md) **R4**；[特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md)；[特性设计-回调与事件.md](./特性设计-回调与事件.md)；宿主 `sailflow-buttons-capability.md`、节点 `sf:NodePolicy` / `sf:ButtonsSetting` / 表单接入
+
+### 优先级（实施顺序建议）
+
+| 序 | 块 | 优先级 | 依赖 / 说明 |
+|----|----|--------|-------------|
+| 1 | **I** 按钮分发 | P0 | 后续新按钮（转办等）不堆 if |
+| 2 | **F** 转办 | P0 | 中国式高频；依赖 I 或与 I 同轮 |
+| 3 | **G** 退回两维办理台 | P0 | 目标维 + 再发送维 UX；引擎命令已有 |
+| 4 | **J** 两维落盘/设计器 | P1 | 紧随 G |
+| 5 | **A** 空人/同人（含默认拒绝） | P1 | 与 R4 对齐；超时可后置为 P2 |
+| 6 | **C** 字段 mode string | P1 | 可与 H 并行 |
+| 7 | **B** 终止/作废 | P2 | 引擎已有，偏管理面 |
+| 8 | **H** 表单生命周期 | P2 | 与 I 骨架可同轮，请假样例作验收 |
+| 9 | **D** 文档同步 | 随各块收尾 | 宿主转办口径已先改 |
 
 ---
 
@@ -15,13 +32,19 @@
 
 | 配置面 | 字段 | UI 选项 | 运行时 |
 |--------|------|---------|--------|
-| 审批人为空 | `assignEmptyHandlerType` + `assignEmptyUserIds` | 1 自动通过 · 2 自动拒绝 · 3 指定人员 · 4 转交流程管理员 | **未消费** |
+| 审批人为空 | `assignEmptyHandlerType` + `assignEmptyUserIds` | 1 自动通过 · **2 自动拒绝（产品默认）** · 3 指定人员 · 4 转交流程管理员 | **未消费** |
 | 与发起人相同 | `assignStartUserHandlerType` | 1 自己审 · 2 自动跳过 · 3 转部门负责人 | **未消费** |
 | 审批超时 | `timeoutHandlerEnable` + `timeoutHandlerType` + `timeDuration` / `timeUnit` + `maxRemindCount` | 启用后：1 自动提醒 · 2 **自动同意** · 3 自动拒绝 | **未消费**（无调度作业） |
 
 类型注释（宿主）已写明：`引擎不解释，Host/办理台消费`；sleveen-admin 后端亦无 `assignEmpty*` / `timeoutHandler*` 消费点。
 
 **空人现状：** 挂 Assignee 管道后，算人为空且无显式 Resolve `Fallback` → **拒绝推进**（R4），不会自动跳过、转管理员或指定人。
+
+**空人默认（已拍板 2026-11-01）：** 新建节点 / merge 缺省 → `assignEmptyHandlerType=2`（**拒绝**）。**禁止**默认 `=1` 自动通过（与 R4「禁止暗默认跳过」一致）。`=1/3/4` 必须建模者显式改配才生效。
+
+**`=2` 细义（已拍板）：** 对齐 **R4 拒绝推进**——不落待办、流程不静默继续，`WfExecutedResult` 带可识别 `ReasonCode`（如 `AssigneeEmpty`）。**不等于**默认调用 `RejectProcess` 结束整单；若产品要「空人则整单驳回结束」，须另开显式选项或复用 `rejectHandlerType`，不得与默认 `=2` 混名。
+
+**同属 NodePolicy、本文未单独立项：** `approveType` / `rejectHandlerType`（设计器已有、同样未消费）——与空人拒绝路径相关时在 A3 捎带拍板，完整产品化可另开或并入本块尾声。
 
 **超时现状：** 无「到点自动同意/拒绝/提醒」闭环；与 `sf:Boundaries` / BPMN Timer 不是同一条产品语义。
 
@@ -43,12 +66,15 @@
 
 **空人 / 同人**
 
+- [x] **默认空人 = 拒绝**（`assignEmptyHandlerType` 缺省/新建 = `2`；禁止默认自动通过）— 2026-11-01 拍板
+- [x] **`=2` = R4 拒绝推进**（不落待办 + ReasonCode；**不是**默认 `RejectProcess` 整单结束）— 2026-11-01 拍板
 - [ ] 空人策略执行归属：**引擎解释 NodePolicy** vs **Host Gate/Hook 消费** vs **导入期转写为 Resolve `Fallback` / Skip**
-- [ ] 「自动通过」语义：跳过本节点继续流转，还是生成系统代办并自动同意
+- [ ] 「自动通过」语义：跳过本节点继续流转，还是生成系统代办并自动同意（仅显式选 1 时）
 - [ ] 「转交流程管理员」：管理员身份键来源（配置项 / 租户角色 / 流程定义字段）
-- [ ] 「自动拒绝」：结束流程 vs 走现有 Reject 路径；与 `rejectHandlerType` 关系
+- [ ] 是否另增「空人则 Reject 结束整单」选项（与默认 `=2` 分离）；若有，与 `rejectHandlerType` 关系
 - [ ] 同人「自动跳过 / 转部门负责人」与空人策略是否同一执行管线
-- [ ] 与 R4 / 发布校验：未配策略时空结果仍拒绝；配了策略才允许跳过/换人
+- [ ] 与 R4 / 发布校验：默认拒绝；仅显式 `=1/3/4` 才允许跳过/换人；旧图若曾落盘 `=1` 按显式配置尊重
+- [ ] `approveType` / `rejectHandlerType`：本轮是否一并接线，或只文档记债
 
 **超时**
 
@@ -69,13 +95,14 @@
 **空人 / 同人**
 
 - [ ] 在 **Resolve 之后、建待办之前** 挂空人处理（与管道单轨一致，禁止回落 Definition）
-- [ ] `assignEmptyHandlerType=1` 自动通过 / 跳过
-- [ ] `assignEmptyHandlerType=2` 自动拒绝
+- [ ] 设计器 / merge：`assignEmptyHandlerType` **默认 2**；文案突出「默认拒绝」
+- [ ] `assignEmptyHandlerType=2` 拒绝（默认路径；细义见 A3）
+- [ ] `assignEmptyHandlerType=1` 自动通过 / 跳过（显式才开）
 - [ ] `assignEmptyHandlerType=3` 指定 `assignEmptyUserIds`（Account 编码，对齐 R3）
 - [ ] `assignEmptyHandlerType=4` 转流程管理员
 - [ ] `assignStartUserHandlerType` 同人三策略
 - [ ] 收敛设计器 Fallback UI：`onEmpty` 与真实 `FallbackAssigneeResolver` Params 对齐，或标注废弃
-- [ ] 单测 + 宿主联调（设计器勾选 → 发起算人为空 → 行为符合选项）
+- [ ] 单测 + 宿主联调（默认空人拒绝；显式勾选通过/指定人/管理员 → 行为符合）
 
 **超时**
 
@@ -95,10 +122,10 @@
 
 ### A6. 验收口径
 
-1. 空人=指定人员 → 待办落指定 Account。  
-2. 空人=转管理员可解析 → 落管理员；未配置 → **拒绝** + 明确 ReasonCode。  
-3. 空人=自动通过 → 越过该人工节点（或等价语义），可追溯。  
-4. 未配空人策略且算人为空 → 仍 **拒绝推进**。  
+1. **新建节点未改空人策略** + 算人为空 → **拒绝推进**（默认 `=2` = R4 + ReasonCode），**不得**自动通过，也**不得**默认整单 `RejectProcess`。  
+2. 空人=指定人员 → 待办落指定 Account。  
+3. 空人=转管理员可解析 → 落管理员；管理员未配置 → **拒绝** + 明确 ReasonCode。  
+4. 空人=自动通过（显式 `=1`）→ 越过该人工节点（或等价语义），可追溯。  
 5. 同人=自动跳过 有对应用例。  
 6. 超时=自动同意 + 短时长 → 系统身份办结，审计可辨。  
 7. 超时=自动拒绝 → 符合拍板语义。  
@@ -233,9 +260,13 @@
 
 ## D. 文档同步
 
-- [ ] [特性说明-待办人管道.md](./特性说明-待办人管道.md)（空人显式策略与 R4）
-- [ ] [特性说明-引擎能力基线.md](./特性说明-引擎能力基线.md)（空人/超时验收 + 办理命令若列表）
-- [ ] 宿主 `sailflow-assignee-candidate-design.md` / `sailflow-buttons-capability.md` / `sailflow-designer-sidebar-gap.md`
+- [x] 宿主 `sailflow-buttons-capability.md`：转办改为须有；Terminate/Discard 记缺口；委派仍暂缓（2026-11-01）
+- [x] 宿主 `sailflow-designer-sidebar-gap.md`：转办/委派口径拆开（2026-11-01）
+- [x] [存疑参考功能点.md](./存疑参考功能点.md)：承办对照表不再写「转办刻意不进码表」（2026-11-01）
+- [x] [特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md) §4.1：退回两维（2026-11-01）
+- [x] [特性说明-待办人管道.md](./特性说明-待办人管道.md)：R4 / §7.3 对齐空人默认拒绝与 NodePolicy（2026-11-01）
+- [ ] [特性说明-引擎能力基线.md](./特性说明-引擎能力基线.md)（空人/超时验收 + 办理命令若列表 + Transfer）
+- [ ] 宿主 `sailflow-assignee-candidate-design.md`（若仍写空人/转办旧口径）
 - [ ] 宿主表单/办理文档：节点字段 mode string 契约（含业务表单自行适配）
 
 ---
@@ -254,55 +285,58 @@
 | `sleveen-admin/web/.../bpmn/buttonsCatalog.ts` | 前端码表 |
 | `sleveen-admin/backend/saiflow/Utility/SailButtonsCatalog.cs` | 后端码表 |
 | `sleveen-admin/web/.../SailOperationBar.vue` | 办理条 |
-| `sailflow/.../IWorkflowService.cs` | Terminate / Discard / Cancel / Suspend；**无** Transfer |
-| `sleveen-admin/.../Wf2XmlController.Runtime.cs` | Workbench；已有 Withdraw/Close/Resend，缺 Terminate/Discard/Transfer |
+| `sailflow/.../IWorkflowService.cs` | 含 `TransferProcess`；Terminate / Discard / Cancel / Suspend |
+| `sleveen-admin/.../Wf2XmlController.Runtime.cs` | 含 Transfer / ButtonsOperation；缺 Terminate/Discard 产品入口 |
+| `sleveen-admin/.../Operations/*` | Host 办理分发：`SailOperationDispatcher` + Handlers |
 | `sailflow/.../FormService.cs` | `GetFieldActivityEditByForm`（IsReadOnly / IsNotVisible） |
 | `sleveen-admin/web/.../utils/formCreate.ts` | `applyFieldPermissions`（仅隐藏/只读） |
 | `sleveen-admin/backend/saiflow/.../WfFormController.cs` | Get/Save FieldPermissions |
 | `sailflow/.../WfRuntimeManagerResend.cs` | 引擎「返送」；依赖 `BackSrcActivityInstanceId` |
 | `sailflow/.../WfRuntimeManagerFactory.CreateRuntimeInstanceResend` | 默认办理人：退回源节点 + 当前活动 `CreatedUser*` |
 | [特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md) | 动词编码与 Disagree 候选策略 |
-| AntFlow `ProcessDisagreeTypeEnum` | 对照：退回目标 × 再走落点五型 |
+| AntFlow `ProcessDisagreeTypeEnum` | 对照别名：目标维 × 再发送维（非 Sail 主契约） |
 | AntFlow `IFormOperationAdaptor` / `ThirdPartyAccountApplyService` | 对照：一 formCode 一类生命周期 |
 | AntFlow `IProcessOperationAdaptor` / `ButtonOperationService` / `FormOperationTagParser` | 对照：operationType → 一动词一类 |
 | `sleveen-admin/.../WfLeaveController` + `SailLeaveService` + `SailLeaveStatusHook` | 现状：发起/查询/回写分散，待收口为 Handler |
-| `sleveen-admin/.../SailOperationBar.vue` + `Wf2XmlController.Runtime` | 现状：办理条按按钮分别调 API，无统一分发注册表 |
+| `sleveen-admin/.../SailOperationBar.vue` + `Wf2XmlController.Runtime` | 转办已走 `ButtonsOperation`；其余按钮仍可直调旧 API |
 
 ---
 
-## F. 转办（常用 · 须有）：个人办结 + 加签，不发生节点流转
+## F. 转办（常用 · 须有）：个人办结 + 本节点交人，不发生节点流转
+
+> **实施进度（2026-11-01）：** 引擎 `TransferProcess` + 码表 + Host API/`ButtonsOperation` + 办理条已接线。联调验收项仍开放。
 
 ### F1. 产品定型（2026-11-01 拍板意向）
 
 | 项 | 约定 |
 |----|------|
 | 编码 | 码表 Id：`Transfer`（办理条 `handle`） |
-| 语义 | **转办 = 当前人待办办结（结束本人任务）+ 在本节点加签式交给他人** |
+| 语义 | **转办 = 当前人待办办结（结束本人任务）+ 在本节点交给他人** |
 | 关键 | **不发生节点流转**（不走到下一 Activity；图位置仍在当前 UserTask） |
-| 与加签 | 复用/对齐 `SignForward` 的「本节点加人」能力，但转办侧必须**关掉自己的待办**（加签通常保留自己） |
+| 与加签 | 转办关掉自己的待办（`Closed`，不计入会签完成）；加签通常保留自己 |
 | 与委派 | **不做**「办完回到原人」；转办是责任转移。委派 `Delegate` 另项，本缺口不绑 |
-| 优先级 | **高**——中国式 OA 高频；原「暂缓/禁止空壳」改为 **必须产品化** |
+| 优先级 | **高**——已落地命令；验收联调中 |
 
-### F2. 现状
+### F2. 现状（接线后）
 
 | 层 | 现状 |
 |----|------|
-| 引擎 | 无独立 `TransferProcess`；有 `SignForwardProcess`、任务结束 API |
-| 码表 / 办理条 | **未入** `Transfer`（宿主文档刻意未纳入） |
-| 审计 | **不另建** AntFlow 式 `BpmFlowrunEntrust` 委托/转办流水表（2026-11-01 拍板：现有**审批轨迹**已能体现责任变更，单独流水没必要） |
+| 引擎 | **有** `TransferProcess`：关原待办 → 同活动建新人待办 → 刷新 `AssignedUser*`；Gate/Hook=`Transfer` |
+| 码表 / 办理条 | **已入** `Transfer`；办理条经 `ButtonsOperation` |
+| 审计 | **不另建** entrust 流水表；任务生命周期 `Entrusted` + 轨迹可辨 |
 
-### F3. 建议实现路径（供拍板）
+### F3. 已实现路径
 
-1. **引擎：** 新增 `TransferProcess`（或 Host 事务内组合，但须单一命令语义可测）：校验当前待办 → 结束本人任务（非 `Run` 出节点）→ 本节点为指定人创建待办（对齐 SignForward 建人，**禁止**推进网关/下一节点）。  
-2. **Leave：** 转办不触发「离开节点」；会签计数/抢办规则需写清（转出人是否仍计入 Collaborate——建议 **转出后不再计入未办**）。  
-3. **码表：** `Transfer` 进 `SailButtonsCatalog`，默认 enable 待拍（建议 **true** 或按项目）；`Engine=TransferProcess`。  
-4. **办理条：** 选人控件 → 调 Transfer API；成功后原人待办消失、新人待办出现、活动仍为当前节点。  
-5. **轨迹：** 转办在现有审批轨迹/任务历史上留下可辨记录即可（操作类型或意见文案区分转办 vs 加签 vs 通过）；**不**新增专用流水表。  
-6. **禁止：** 用 `Jump`/`Run`/`Approve` 冒充转办；禁止无引擎命令的空壳按钮。
+1. **引擎：** `TaskManager.Transfer` + `WorkflowService.TransferProcess`（事务 + Gate/Hook）。  
+2. **Leave：** 转出人任务 `Closed`，并从活动 `AssignedUser*` 移除，**不再占用会签未办名额**。  
+3. **码表：** 前后端 `Transfer` / `TransferProcess`，默认 enable=true。  
+4. **办理条：** 选人 → `ButtonsOperation{ButtonId:Transfer}`。  
+5. **禁止：** 用 `Jump`/`Run`/`Approve` 冒充转办。
 
 ### F4. 验收
 
-- [ ] A 转办给 B → A 待办结束，B 待办在**同一** `ActivityId`，实例未进入下一节点  
+- [x] 引擎/Host/码表/办理条接线（编译通过）  
+- [ ] A 转办给 B → A 待办结束，B 待办在**同一** `ActivityId`，实例未进入下一节点（联调）  
 - [ ] 会签节点转办后，完成条件按「转出人不再占用名额」可测  
 - [ ] 设计器可启停/改名「转办」  
 - [ ] 审批轨迹能看出本次为转办（及对象）；**无**独立 entrust 表依赖  
@@ -310,37 +344,66 @@
 
 ---
 
-## G. 退回后再走：正常发送 vs 返送退回人（节点+人）
+## G. 退回：两维模型（目标 × 再发送）
 
-### G1. 问题（产品两分）
+### G1. 定型（已拍板 2026-11-01）
 
-退回（`SendBack`）之后，被退回方再次送出时，中国式 OA 常见两种：
+退回**不是**一个五选一扁枚举；是两个**正交维度**：
 
-| 模式 | 含义 | Sail 引擎锚点 |
-|------|------|----------------|
-| **正常发送** | 按图/下一跳继续走（不强制回到打回人） | 通常 `RunProcess`（或选支路后 Run） |
-| **返送退回人** | 回到**退回发生的那个节点**，并尽量落到**当时退回的那个人** | **`ResendProcess`（引擎已有，类注释即「返送」）** |
+| 维度 | 问的是什么 | 何时决定 | 引擎锚点 |
+|------|------------|----------|----------|
+| **① 退回目标** | 可以退到**哪个节点** | 点 `SendBack` 时（可被节点/流程策略约束） | `SendBackProcess` + 目标 Activity |
+| **② 再发送方式** | 被退回人改完后再送出：正常走还是返送 | 节点/流程策略；办理台按策略露出出口 | `Run`/`Approve` vs `ResendProcess` |
 
-### G2. 引擎现状（已有能力 · 产品未收口）
+```text
+SendBack 时 ──► 维度① 选定目标节点（上一 / 发起 / 历史自选…）
+                 同时记下 BackSrc（谁从哪退下来的）
+
+被退回人再发送 ──► 维度②
+                    ├─ 正常发送 → Run / Approve（沿出边/下一跳，不强制回退回人）
+                    └─ 返送     → Resend（回退回节点 + 尽量原退回人）
+```
+
+**禁止**把「退到哪」和「再怎么走」揉成唯一主键却在文档里又拆开说——对外契约以**两维字段**为准；AntFlow 五码只作对照别名（见 §J）。
+
+### G2. 维度①：退回目标（可退到哪）
+
+| 目标码（候选） | 含义 | 办理 UX |
+|----------------|------|---------|
+| `Prev` | 上一节点 | 常可自动解析，可不弹选 |
+| `Starter` | 发起人节点 | 固定目标 |
+| `History` | 自选历史节点 | 退回时弹出历史树/列表 |
+
+策略可限制「本节点只允许 Prev / 只允许 Starter / 允许 History」。引擎侧 `SendBack` 已支持选历史节点；缺的是**产品策略约束 + 办理台按策略收窄可选集**。
+
+### G3. 维度②：再发送（正常 vs 返送）
+
+| 再发送码（候选） | 含义 | Sail 引擎锚点 |
+|------------------|------|----------------|
+| `ForwardNormal` | 按图/下一跳继续，**不**强制回打回人 | `RunProcess`（或选支路后 Run） |
+| `ReturnToSender` | 回到**退回发生的那个节点**，并尽量落到**当时退回的那个人** | **`ResendProcess`**（依赖 `BackSrcActivityInstanceId`） |
+
+### G4. 引擎 / 办理台现状
 
 | 能力 | 说明 |
 |------|------|
-| `SendBackProcess` | 退到可选历史节点；活动上可记 `BackSrcActivityInstanceId`（退回源） |
-| `ResendProcess` | **要求**存在 `BackSrcActivityInstanceId`；目标活动 = 退回源的 `ActivityId`；默认办理人取当前活动 `CreatedUserId/Name`（典型即退回操作创建侧/返送对象）；可选 `RecreatedMultipleInstanceWhenResending` 改用 Runner 指定人 |
-| 码表 | 已有 `SendBack`（handle）、`Resend`（done） |
-| **缺口** | ① 未产品化「退回时/节点上选择：改完后默认正常发送还是必须返送」；② 办理台未把两种出口讲清（何时出 Resend、何时出 Approve/Run）；③ Disagree 策略枚举未落 `sf:*`；④ `CreatedUser*` 是否**恒等于**退回人需联调验收，必要时改为显式存「退回人 UserId」 |
+| `SendBackProcess` | 退到可选历史节点；活动上可记 `BackSrcActivityInstanceId` |
+| `ResendProcess` | 要求 `BackSrcActivityInstanceId`；回退回节点 + 尽量原退回人 |
+| Workbench | **已下发** `HasBackSrc` / `BackSrcActivityInstanceId` |
+| 办理条 | **已分流**：有 BackSrc 时 Approve 文案「正常发送」、Resend「返送退回人」；Resend 可在 handle 露出 |
+| **仍缺** | ① 目标维/再发送维**落盘策略**（§J）；② SendBack 按目标维收窄可选集；③ 策略互斥默认只露一个出口；④ `CreatedUser*` vs 显式退回人联调 |
 
-### G3. 建议产品化（最小两分 · 先交付）
+### G5. 产品化清单
 
-- [ ] 节点或流程配置先落地两分：`ForwardNormal` \| `ReturnToSender`（完整五型见 **§J**）  
-- [ ] **返送**：Workbench 在「被退回且存在 BackSrc」时突出 `Resend`；文案「返送退回人」  
-- [ ] **正常发送**：同场景可走 `Approve`/`Run`（或单独「提交」），**不**读 BackSrc  
-- [ ] 互斥/引导：若策略=`ReturnToSender`，默认只露出返送；若=`ForwardNormal`，默认正常发送（仍可管理态例外）  
-- [ ] 验收：退回人 U1 从节点 N2 退到 N1 → N1 办理人返送 → 待办回到 **N2 + U1**；另一路径 Run 则按出边到下一跳而非强制 U1  
+- [x] 办理台探测 BackSrc + 两分文案/入口  
+- [x] 落盘两字段：`sendBackTarget` + `resubmitMode`（§J / NodePolicy）  
+- [x] 办理台 `SendBack`：按目标维收窄 PreviousNodes（Prev/Starter/History）  
+- [x] 互斥：读 `resubmitMode` — ReturnToSender 只露返送；ForwardNormal 只露正常发送  
+- [ ] 验收联调：U1 从 N2 退到 N1 → 返送 → **N2+U1**；ForwardNormal → Run 沿出边  
 
-### G4. 与 OA / §J
+### G6. 与 OA / §J
 
-详见 [特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md) §4.1；**枚举全集与设计器落盘见 §J**。G = 办理台两分先行；J = DisagreeType 配置与映射收口。
+详见 [特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md) §4.1。G = 两维语义 + 办理台先行；J = 落盘、设计器、与 AntFlow 五码对照表。
 
 ---
 
@@ -442,108 +505,108 @@ interface ISailFormBizHandler
   →（按需）FormBizHandler.OnConsent / OnSubmit / …
 ```
 
-### I3. 现状缺口
+### I3. 现状（接线后）
 
 | 层 | 现状 |
 |----|------|
-| 码表 | `SailButtonsCatalog` 已有 Id ↔ Engine 名，**无** Handler 注册层 |
-| 办理条 | 前端按按钮分别调各 Runtime API；逻辑分散、转办等新按钮易漏接线 |
-| 引擎 | 命令已拆好（Run/Reject/SendBack/…）；**不必**改成 AntFlow 枚举硬编码进 pure |
-| 与 §F | 转办进码表后若无分发层，仍会在 UI/Controller 各写一摊 |
+| 码表 | Id ↔ Engine + **Handler 注册**（`AddSailOperationHandlers`） |
+| 办理条 | **引擎按钮均走** `ButtonsOperation`（Copy 仍产品表） |
+| 引擎 | 未改 AntFlow 枚举；已补 `TransferProcess` |
+| 探针 | `GET api/Wf2Xml/ProbeOperationHandlers` |
 
-### I4. 建议契约（供拍板）
+### I4. 契约（已落地骨架）
 
 ```csharp
-interface ISailOperationHandler
-{
-    IReadOnlyList<string> SupportedButtonIds { get; }  // 如 "Approve","Transfer"
-    Task<WfExecutedResult> ExecuteAsync(SailOperationContext ctx);
-}
-
-// 注册示例（名待定）
-builder.UseOperationHandler<ApproveOperationHandler>();     // → RunProcess
-builder.UseOperationHandler<TransferOperationHandler>();   // → TransferProcess（§F）
-builder.UseOperationHandler<SendBackOperationHandler>();   // → SendBackProcess
+// DI: AddSailOperationHandlers() → SailOperationDispatcher
+// POST api/Wf2Xml/ButtonsOperation { ButtonId, Runner }
 ```
 
-- [ ] Host API：`POST …/ButtonsOperation`（或挂在现有 Wf2Xml 下）；入参含码表 Id、任务/实例、意见、选人、下一跳等  
-- [ ] Dispatcher：未知 Id → 明确错误；**码表有 Id 但未注册 Handler → 禁止上线空壳**（与按钮能力文档一致）  
-- [ ] 办理条改为只调统一入口（可保留旧 API 一段时间作兼容）  
-- [ ] 与 §H：`Submit`/`Approve` Handler 内调用 FormBizHandler；FormCode 缺失策略写清  
-- [ ] 与 §G：`Resend` vs `Approve` 各一 Handler，DisagreePolicy 只影响默认露出哪个按钮，不把两套推进揉进一个 Handler 的巨型分支  
-- [ ] 设计器/码表：新增按钮必须同步加 Handler 注册（文档 + 可选启动自检）  
+- [x] Host API：`POST …/ButtonsOperation`  
+- [x] Dispatcher：未知 Id → `OperationHandlerMissing`  
+- [x] Handlers：Approve/Reject/SendBack/SignForward/**Transfer**/Withdraw/Resend/Close/Jump/Revise/Reverse  
+- [x] 办理条引擎按钮全部改走统一入口（Copy 除外）  
+- [ ] 与 §H：Approve Handler 内调 FormBizHandler  
+- [x] 与 §G：有 BackSrc 时办理台两分文案；策略落盘仍待 §J  
+- [x] 探针列出码表 Id × 是否已挂 Handler（Copy 无 Handler 属预期）  
 
 ### I5. 红线
 
-1. **不**把 Dispatcher/Handler 放进 pure；pure 只暴露稳定命令。  
-2. **禁止**「码表 enable 了但无 Handler」的空壳按钮。  
-3. 一个按钮 Id **唯一** Handler（后注册覆盖须打日志，对齐 Assignee 同码覆盖诊断思路）。  
-4. 与 AntFlow 枚举数值 **不必**兼容；Sail 以字符串码表 Id 为准。
+1. **不**把 Dispatcher/Handler 放进 pure。  
+2. **禁止**空壳按钮（Copy 走产品表，不经本 Dispatcher）。  
+3. 一个按钮 Id **唯一** Handler（后注册覆盖打日志）。  
+4. 对外以字符串码表 Id 为准。
 
 ### I6. 验收
 
-- [ ] `Approve`/`Reject`/`SendBack`/`SignForward`/`Withdraw`/`Resend`/… 均经 Dispatcher，行为与现网一致  
-- [ ] 新增 `Transfer`（§F）= 仅加 Handler + 码表 + 注册，办理条无新 `if` 分支  
-- [ ] 未注册 Id 调用 → 4xx/业务错误，不落半截数据  
-- [ ] 启动或探针可列出：码表 Id × 是否已挂 Handler（便于查空壳）  
+- [x] Dispatcher + 办理条引擎按钮均走 ButtonsOperation  
+- [x] Transfer / Resend / Approve… 统一入口  
+- [x] 未注册 Id → 业务错误  
+- [x] ProbeOperationHandlers 可用  
 
 ---
 
-## J. 退回策略枚举化（DisagreeType）
+## J. 退回策略落盘（两维 · 对照 AntFlow 五码）
 
 ### J1. 目标
 
-把「退回到哪 + 改完后再往哪走」收成**稳定字符串枚举**（学 AntFlow `ProcessDisagreeTypeEnum`），落在节点/流程配置，运行时映射到现有 `SendBack` + `Resend` / `Run` /（必要时）`Jump`，**禁止**再发明第五套推进内核，也禁止每次退回靠口头约定。
+把 §G 两维落成**稳定配置**（节点/流程），运行时映射到现有 `SendBack` + `Resend` / `Run`，**禁止**再发明第五套推进内核。
 
-与 **§G** 关系：G 先交付办理台「正常发送 vs 返送」两分体验；J 定**完整枚举、落盘、设计器、SendBack 目标解析与返送落点**。
+**对外契约（已拍板）：两维字段，不是单一五选一。**
 
-### J2. 建议枚举（Sail 字符串码 · 对照 AntFlow）
+| 字段（候选名） | 维 | 取值 |
+|----------------|----|------|
+| `sendBackTarget` | ① 退回目标 | `Prev` \| `Starter` \| `History` |
+| `resubmitMode` | ② 再发送 | `ForwardNormal` \| `ReturnToSender` |
 
-| Sail 码（候选） | AntFlow | 退回目标 | 改完后再走 |
-|-----------------|---------|----------|------------|
-| `BackPrevThenNext` | 1 退回上一节点提交下一节点 | 上一节点 | **正常发送**（`Run` 沿出边/下一跳） |
-| `BackStarterThenNext` | 2 退回发起人提交下一节点 | 发起人节点 | 正常发送 |
-| `BackStarterThenReturn` | 3 退回发起人提交回退节点（其默认） | 发起人节点 | **返送**退回节点+人（`Resend`） |
-| `BackHistoryThenNext` | 4 退回历史节点提交下一节点 | 自选历史节点 | 正常发送 |
-| `BackHistoryThenReturn` | 5 退回历史节点提交回退节点 | 自选历史节点 | 返送 |
+与 **§G** 关系：G 定语义与办理台；J 定落盘、设计器、Handler 消费与 AntFlow 对照。
 
-§G 两分可视为投影：
+### J2. 与 AntFlow 五码对照（仅别名，非主契约）
 
-- `*ThenNext` → 产品 `ForwardNormal`  
-- `*ThenReturn` → 产品 `ReturnToSender`  
+AntFlow `ProcessDisagreeTypeEnum` = 两维笛卡尔积中的常见组合，**导入/对照用**，不要当成 Sail 唯一主键：
 
-另可保留别名 `ForwardNormal` / `ReturnToSender` 仅作「再走」维度；**完整策略仍用上表五码**（或五码 + 退回目标由 UI 另选）。
+| AntFlow | 对照别名（可选） | `sendBackTarget` | `resubmitMode` |
+|---------|------------------|------------------|----------------|
+| 1 退回上一节点提交下一节点 | `BackPrevThenNext` | `Prev` | `ForwardNormal` |
+| 2 退回发起人提交下一节点 | `BackStarterThenNext` | `Starter` | `ForwardNormal` |
+| 3 退回发起人提交回退节点（其默认） | `BackStarterThenReturn` | `Starter` | `ReturnToSender` |
+| 4 退回历史节点提交下一节点 | `BackHistoryThenNext` | `History` | `ForwardNormal` |
+| 5 退回历史节点提交回退节点 | `BackHistoryThenReturn` | `History` | `ReturnToSender` |
 
-### J3. 现状缺口
+设计器 UI：**两个下拉/单选**（目标 + 再发送），不要只给一个「五型」下拉却在别处又拆维。若需兼容展示，可用上表生成只读别名。
+
+### J3. 现状（接线后）
 
 | 层 | 现状 |
 |----|------|
-| 引擎 | `SendBack` 可选历史节点；`Resend` 依赖 `BackSrcActivityInstanceId`；**无** DisagreeType 配置消费 |
-| 设计器 / NodePolicy | 无「退回策略」枚举面板 |
-| 办理台 | 退回选人/选节点与「回来怎么走」未绑定策略 |
-| 文档 | OA 要素 §4.1 已列候选；**未**进按钮码表（正确：这是**配置要素**不是办理按钮） |
+| 落盘 | 并入 `sf:NodePolicy.json`：`sendBackTarget` + `resubmitMode`（默认 Starter + ReturnToSender） |
+| 设计器 | 节点弹窗「退回策略（两维）」两单选 |
+| Host | `SailNodePolicyCatalog.ParseForActivity`；Workbench 下发并收窄 `PreviousNodes` |
+| 办理台 | 按 `resubmitMode` 互斥 Approve/Resend；有 BackSrc 时文案两分 |
+| **仍缺** | 联调验收；`BackSrcUserId` 显式字段；流程级默认覆盖；单测矩阵 |
 
-### J4. 落盘与消费（供拍板）
+### J4. 落盘与消费
 
-- [ ] 扩展：`sf:DisagreePolicy`（或并入 `sf:NodePolicy.json` 字段 `disagreeType`）  
-- [ ] 设计器：节点「退回策略」下拉五码 + 文案；流程级默认 + 节点覆盖  
-- [ ] **SendBack Handler（§I）**：读策略 → 解析退回目标（上一节点 / 发起 / 历史自选）→ 调 `SendBackProcess`；写清 BackSrc / 退回人，供 Resend  
-- [ ] **再走**：策略为 `*ThenReturn` 时办理台默认 `Resend`；`*ThenNext` 默认 `Run`/`Approve`（与 §G 互斥规则一致）  
-- [ ] 映射表单测：五码 ×（无历史 / 有并行）边界；非法组合拒绝并给 Reason  
-- [ ] **不**把 AntFlow 数字 1–5 当对外契约；对外只用 Sail 字符串码  
+- [x] 并入 `sf:NodePolicy.json`：`sendBackTarget` + `resubmitMode`  
+- [x] 设计器两维控件；缺字段 merge 默认 `Starter` + `ReturnToSender`  
+- [x] Workbench 按目标维收窄 PreviousNodes；按再发送维互斥出口  
+- [ ] SendBack Handler 内再强校验目标（当前依赖 Workbench 已收窄列表）  
+- [ ] 单测：两维 × 边界；非法组合 Reason  
+- [x] 对外不用 AntFlow 1–5 数字  
 
 ### J5. 红线
 
-1. 枚举只描述「退哪 + 回哪」，**不**替代 Leave / 会签。  
-2. 实现 = 组合现有命令；禁止为 Disagree 新开并行 RuntimeManager 家族（除非现命令语义不足并先改基线文档）。  
-3. 与 `Reject`（驳回）分离：DisagreeType 服务 **SendBack 后退回路径**；驳回整单/拒绝对另语义。  
-4. 退回人身份以显式字段为准（验收 `CreatedUser*` 不可靠则补 `BackSrcUserId`），见 §G2④。
+1. 两维只描述「退哪 + 再怎么走」，**不**替代 Leave / 会签。  
+2. 实现 = 组合现有命令；禁止为 Disagree 新开并行 RuntimeManager 家族。  
+3. 与 `Reject`（驳回）分离：本策略服务 **SendBack**；驳回整单另语义。  
+4. 退回人身份以显式字段为准（`CreatedUser*` 不可靠则补 `BackSrcUserId`），见 §G4④。  
+5. **禁止**只落一个扁枚举却在运行时再拆维却无字段——主存储必须是两维（或等价可逆拆分）。
 
 ### J6. 验收
 
-- [ ] 节点配 `BackStarterThenReturn`：退到发起人 → 发起人点返送 → 回到退回节点且办理人为原退回人  
-- [ ] 节点配 `BackPrevThenNext`：退到上一节点 → 改完点通过 → **不**强制回退回人，沿下一跳  
-- [ ] `BackHistoryThen*`：退回时可选历史节点；再走符合 ThenNext / ThenReturn  
-- [ ] 未配置策略：有文档默认（建议对齐 AntFlow 默认 `BackStarterThenReturn` 或项目级默认）且行为可测  
-- [ ] 设计器保存 XML 含策略码；旧图无字段不崩（merge 默认）  
+- [x] 设计器可配两维并写入 NodePolicy JSON  
+- [x] Workbench 返回 `SendBackTarget` / `ResubmitMode`；PreviousNodes 按维①收窄  
+- [x] 有 BackSrc 时维②互斥露出返送或正常发送  
+- [ ] 联调：`Starter`+`ReturnToSender` 返送落点正确  
+- [ ] 联调：`Prev`+`ForwardNormal` 不强制回退回人  
+- [ ] 旧图无字段 merge 默认不崩  
 

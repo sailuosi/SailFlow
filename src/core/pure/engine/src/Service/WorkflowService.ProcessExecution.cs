@@ -9,6 +9,7 @@ using saiflow.engine.Common;
 using saiflow.engine.Xpdl;
 using saiflow.engine.Business.Entity;
 using saiflow.engine.Business.Manager;
+using saiflow.engine.Business.Result;
 using saiflow.engine.Core.Result;
 using saiflow.engine.Event;
 using saiflow.engine.Core.Event;
@@ -1860,6 +1861,167 @@ namespace saiflow.engine.Service
                 return SignForwardProcess(runner);
             });
             return task;
+        }
+
+        #endregion
+
+        #region Process Transfer
+        /// <summary>
+        /// 转办：结束本人待办 + 本节点交给他人，不推进下一节点。
+        /// </summary>
+        public WfExecutedResult TransferProcess(WfAppRunner runner)
+        {
+            _wfAppRunner = runner;
+            using (var kit = Sail.UseRunSQL())
+            {
+                kit.beginTransaction();
+                try
+                {
+                    var result = Transfer(kit);
+                    if (result.Status == WfExecutedStatus.Success)
+                        kit.commit();
+                    return result;
+                }
+                catch
+                {
+                    throw;
+                }
+            }
+        }
+
+        public async Task<WfExecutedResult> TransferProcessAsync(WfAppRunner runner)
+        {
+            return await Task.Run(() => TransferProcess(runner));
+        }
+
+        public WfExecutedResult Transfer(SQLBuilder kit)
+        {
+            var runner = _wfAppRunner;
+            var result = WfExecutedResult.Default();
+
+            try
+            {
+                if (runner == null || runner.TaskId == null)
+                {
+                    result.Status = WfExecutedStatus.Exception;
+                    result.ExceptionType = WfExceptionType.Transfer_ErrorArguments;
+                    result.Message = "Transfer requires TaskId.";
+                    return result;
+                }
+
+                var targets = FlattenTransferTargets(runner);
+                if (targets.Count == 0)
+                {
+                    result.Status = WfExecutedStatus.Exception;
+                    result.ExceptionType = WfExceptionType.Transfer_NoneTargets;
+                    result.Message = "Transfer requires NextActivityPerformers with at least one user.";
+                    return result;
+                }
+
+                var tm = new TaskManager(Sail);
+                var taskView = tm.GetTaskView(kit, runner.TaskId.Value);
+                if (taskView?.ActivityInstanceId == null)
+                {
+                    result.Status = WfExecutedStatus.Exception;
+                    result.ExceptionType = WfExceptionType.Transfer_ErrorArguments;
+                    result.Message = "Transfer task not found.";
+                    return result;
+                }
+
+                var aim = new ActivityInstanceManager(Sail);
+                var activityInstance = aim.GetById(kit, taskView.ActivityInstanceId.Value);
+                var processInstanceId = activityInstance.ProcessInstanceId ?? 0;
+
+                var gateCtx = WorkflowCapabilityPipeline.BuildGateContext(
+                    Sail,
+                    kit,
+                    runner,
+                    processInstanceId,
+                    activityInstance,
+                    runner.TaskId,
+                    WorkflowOperation.Transfer);
+                if (!WorkflowCapabilityPipeline.TryGate(Sail, kit, gateCtx, result))
+                    return result;
+
+                Event.EventExecutor.InvokeExternalEvent(
+                    Sail, kit,
+                    EventFireTypeEnum.OnProcessTransferring,
+                    runner.EventSubscriptionList,
+                    processInstanceId);
+
+                var managed = tm.Transfer(kit, runner.TaskId.Value, runner, targets);
+                if (managed.Status != WfDataManagedStatusEnum.Success)
+                {
+                    result.Status = WfExecutedStatus.Exception;
+                    result.ExceptionType = MapTransferException(managed.Message);
+                    result.Message = managed.Message;
+                    return result;
+                }
+
+                result.Status = WfExecutedStatus.Success;
+                result.Message = "Transfer succeeded.";
+
+                Event.EventExecutor.InvokeExternalEvent(
+                    Sail, kit,
+                    EventFireTypeEnum.OnProcessTransferred,
+                    runner.EventSubscriptionList,
+                    processInstanceId);
+
+                var hookCtx = WorkflowCapabilityPipeline.BuildHookContext(
+                    Sail,
+                    kit,
+                    runner,
+                    processInstanceId,
+                    activityInstance,
+                    runner.TaskId,
+                    EventFireTypeEnum.OnProcessTransferred,
+                    WorkflowOperation.Transfer);
+                WorkflowCapabilityPipeline.AfterSuccess(
+                    Sail, kit, hookCtx, EventFireTypeEnum.OnProcessTransferred);
+            }
+            catch (System.Exception e)
+            {
+                result.Status = WfExecutedStatus.Failed;
+                result.ExceptionType = WfExceptionType.Transfer_RuntimeError;
+                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
+                result.Message = "TransferProcess error: " + error;
+                LogManager.RecordLog(Sail, "WF_PROCESS_TRANSFER_ERROR", LogEventType.Error, LogPriority.High, runner, e);
+            }
+
+            return result;
+        }
+
+        private static PerformerList FlattenTransferTargets(WfAppRunner runner)
+        {
+            var list = new PerformerList();
+            if (runner?.NextActivityPerformers == null)
+                return list;
+            foreach (var kv in runner.NextActivityPerformers)
+            {
+                if (kv.Value == null) continue;
+                foreach (var p in kv.Value)
+                {
+                    if (p != null && !string.IsNullOrWhiteSpace(p.UserId))
+                        list.Add(p);
+                }
+            }
+            return list;
+        }
+
+        private static string MapTransferException(string message)
+        {
+            if (string.IsNullOrEmpty(message))
+                return WfExceptionType.Transfer_RuntimeError;
+            if (message.Contains("self", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("current user's", StringComparison.OrdinalIgnoreCase))
+                return WfExceptionType.Transfer_NotMineTask;
+            if (message.Contains("ready/running", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("to-do", StringComparison.OrdinalIgnoreCase))
+                return WfExceptionType.Transfer_NotInRunning;
+            if (message.Contains("target", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("performer", StringComparison.OrdinalIgnoreCase))
+                return WfExceptionType.Transfer_NoneTargets;
+            return WfExceptionType.Transfer_RuntimeError;
         }
 
         #endregion

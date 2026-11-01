@@ -516,6 +516,103 @@ namespace saiflow.engine.Business.Manager
             return WfDataManagedResult.Success();
         }
 
+        /// <summary>
+        /// 转办：结束本人待办（Closed，不计入会签完成），在本活动实例为接收人建待办，并刷新 AssignedUser*。
+        /// 不推进下一节点。与 <see cref="Entrust"/> 相近，但面向产品 Transfer 命令且强制换写活动办理人集合。
+        /// </summary>
+        internal WfDataManagedResult Transfer(
+            SQLBuilder kit,
+            int taskId,
+            WfAppRunner runner,
+            PerformerList targets)
+        {
+            if (targets == null || targets.Count == 0)
+                return WfDataManagedResult.Exception("Transfer requires at least one target performer.");
+
+            var task = GetTask(kit, taskId);
+            if (task == null)
+                return WfDataManagedResult.Exception("Transfer task not found.");
+
+            if (!string.Equals(task.AssignedUserId, runner.UserId, StringComparison.OrdinalIgnoreCase))
+                return WfDataManagedResult.Exception("Transfer is only allowed on the current user's task.");
+
+            if (task.TaskState != (short)TaskStateEnum.Waiting
+                && task.TaskState != (short)TaskStateEnum.Reading)
+                return WfDataManagedResult.Exception("Transfer task is not in to-do state.");
+
+            var am = new ActivityInstanceManager(Sail);
+            var activityInstance = am.GetById(kit, task.ActivityInstanceId.Value);
+            if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
+                && activityInstance.ActivityState != (short)ActivityStateEnum.Running)
+            {
+                return WfDataManagedResult.Exception("Transfer activity is not ready/running.");
+            }
+
+            // 关闭原人待办：Closed（勿用 Completed，避免被会签计为已办）
+            task.TaskState = (short)TaskStateEnum.Closed;
+            task.EndedDateTime = DateTime.UtcNow;
+            task.EndedUserId = runner.UserId;
+            task.EndedUserName = runner.UserName;
+            Update(kit, task);
+            Sail.CapabilityDispatcher.FireTaskLifecycle(
+                kit, task, activityInstance, runner, TaskNotifyKind.Entrusted);
+
+            var existing = GetTaskListByActivity(
+                kit,
+                activityInstance.ProcessInstanceId.Value,
+                activityInstance.Id.Value);
+
+            foreach (var target in targets)
+            {
+                if (string.IsNullOrWhiteSpace(target?.UserId))
+                    continue;
+                if (string.Equals(target.UserId, runner.UserId, StringComparison.OrdinalIgnoreCase))
+                    return WfDataManagedResult.Exception("Cannot transfer to self.");
+
+                var hasOpen = existing.Any(t =>
+                    string.Equals(t.AssignedUserId, target.UserId, StringComparison.OrdinalIgnoreCase)
+                    && (t.TaskState == (short)TaskStateEnum.Waiting
+                        || t.TaskState == (short)TaskStateEnum.Reading));
+                if (hasOpen)
+                    return WfDataManagedResult.Exception(
+                        $"Transfer target already has an open task: {target.UserId}");
+
+                Insert(kit, activityInstance, target.UserId, target.UserName,
+                    runner.UserId, runner.UserName, taskId, runner);
+            }
+
+            // 按仍打开的待办重写活动 AssignedUser*，转出人不再占用会签名额
+            RefreshActivityAssignedUsersFromOpenTasks(kit, activityInstance);
+            return WfDataManagedResult.Success();
+        }
+
+        /// <summary>用 Waiting/Reading 待办重建活动 AssignedUserIds/Names。</summary>
+        internal void RefreshActivityAssignedUsersFromOpenTasks(
+            SQLBuilder kit,
+            ActivityInstanceEntity activityInstance)
+        {
+            var open = GetTaskListByActivity(
+                    kit,
+                    activityInstance.ProcessInstanceId.Value,
+                    activityInstance.Id.Value)
+                .Where(t => t.TaskState == (short)TaskStateEnum.Waiting
+                    || t.TaskState == (short)TaskStateEnum.Reading)
+                .ToList();
+
+            var ids = new StringBuilder(256);
+            var names = new StringBuilder(256);
+            foreach (var t in open)
+            {
+                if (ids.Length > 0) ids.Append(',');
+                if (names.Length > 0) names.Append(',');
+                ids.Append(t.AssignedUserId);
+                names.Append(t.AssignedUserName);
+            }
+            activityInstance.AssignedUserIds = ids.ToString();
+            activityInstance.AssignedUserNames = names.ToString();
+            new ActivityInstanceManager(Sail).Update(kit, activityInstance);
+        }
+
         internal void CancelEntrustedTask(int taskId)
         {
             using (var kit = Sail.UseRunSQL())

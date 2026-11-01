@@ -37,5 +37,7 @@ namespace saiflow.engine.Hooks
         Close,
         Jump,
         SignForward,
+        /// <summary>转办：结束本人待办并在本节点交给他人，不推进下一节点。</summary>
+        Transfer,
     }
 }

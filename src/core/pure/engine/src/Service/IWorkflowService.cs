@@ -157,6 +157,13 @@ namespace saiflow.engine.Service
         WfExecutedResult SignForwardProcess(WfAppRunner runner);
         Task<WfExecutedResult> SignForwardProcessAsync(WfAppRunner runner);
 
+        /// <summary>
+        /// 转办：结束本人待办，在本节点为指定人创建待办，不发生节点流转。
+        /// 目标人取自 <c>NextActivityPerformers</c>（任意 ActivityId 键下的 Performer 列表）。
+        /// </summary>
+        WfExecutedResult TransferProcess(WfAppRunner runner);
+        Task<WfExecutedResult> TransferProcessAsync(WfAppRunner runner);
+
         //审批决策
         //Approval
         void AgreeTask(int taskId);

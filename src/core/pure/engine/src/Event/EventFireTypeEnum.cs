@@ -72,6 +72,10 @@ namespace saiflow.engine.Event
 
         OnProcessClosed = 27,
 
+        OnProcessTransferring = 28,
+
+        OnProcessTransferred = 29,
+
         OnActivityCreated = 40,
 
         OnActivityExecuting = 41,

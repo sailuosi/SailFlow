@@ -65,7 +65,7 @@
 
 | 场景 / 常用名 | 建议 Sail 编码 | 建议引擎落点 | 执行含义 | 现状 |
 |---------------|----------------|--------------|----------|------|
-| 转办 | `Transfer` | 待定 `TransferProcess` | **个人办结 + 本节点加签式交人，不发生节点流转**（原人待办结束，新人同 Activity 待办；≠ 委派回转） | **须有**；见 [todo-产品缺口.md](./todo-产品缺口.md) **§F** |
+| 转办 | `Transfer` | `TransferProcess` | **个人办结 + 本节点交人，不发生节点流转**（原人待办 Closed，新人同 Activity 待办；刷新 AssignedUser*；≠ 委派回转） | **已接线**（码表 + Host `ButtonsOperation`）；见 [todo-产品缺口.md](./todo-产品缺口.md) **§F** |
 | 委派 / 委托 | `Delegate` | 待定 | 请他人代办，办完或规则满足后**可回到**原责任人（与转办区分）；审计优先走**审批轨迹**，不默认单独流水表 | 暂缓 |
 | 变更处理人 | `ChangeAssignee` | 待定（管理改派） | 管理员/有权人改当前节点办理人集合 | 无产品命令 |
 | 承办 / 认领 | `Claim`（勿用 Undertake 当万能名） | 待定认领命令；**仅** `Leave=Race` | 或签多人时先独占待办，**不推进**；再 `Approve`/`Reject` | 存疑，默认不跟 AntFlow 按钮 |
@@ -83,28 +83,28 @@
 | 挂起 / 恢复 | `Suspend` / `Resume` | `SuspendProcess` 等 | 暂停与恢复 | 未产品化 |
 | 转发（知会外的转发） | 慎用；多归 `Copy` | Host 抄送或独立 | AntFlow Forward：偏知会/转发；易与抄送混淆 | 以 `Copy` 为主通道 |
 
-### 4.1 退回后再走：Disagree 策略（配置要素，非单独按钮）
+### 4.1 退回策略：两维（配置要素，非单独按钮）
 
-产品最小两分（高频）：
+**已拍板：** 退回 = **两个正交维度**，不要扁成单一五选一主键。
 
-| 模式 | 含义 | Sail 现状 |
-|------|------|-----------|
-| **正常发送** | 退回修改后按图继续（不强制回打回人） | 引擎可用 `RunProcess`；**缺**策略配置与办理台分流 |
-| **返送退回人** | 回到**退回节点** + 尽量**原退回人** | 引擎 **`ResendProcess` 已有**（类注释「返送」；依赖 `BackSrcActivityInstanceId`）；码表有 `Resend`；**缺**与「正常发送」的产品互斥/默认策略 |
+| 维度 | 问什么 | 候选码 | Sail 锚点 |
+|------|--------|--------|-----------|
+| **① 退回目标** | 可以退到哪个节点 | `Prev` / `Starter` / `History` | `SendBackProcess` + 目标约束 |
+| **② 再发送方式** | 被退回人改完后再送：正常还是返送 | `ForwardNormal` / `ReturnToSender` | `Run`/`Approve` vs **`ResendProcess`** |
 
-AntFlow 五型 Disagree 可后扩；建议配置码（候选）：
+```text
+维度①（SendBack 时）     维度②（被退回人再发送时）
+Prev | Starter | History  ×  ForwardNormal | ReturnToSender
+```
 
-| 策略场景 | 建议配置码（候选） | 执行含义 |
-|----------|-------------------|----------|
-| 退回后正常发送（沿出边/下一跳） | `ForwardNormal` | 改完后不强制回到退回人 → `Run` |
-| 退回后返送退回节点+人 | `ReturnToSender` | → `Resend` |
-| 退回上一节点，再提交进下一节点 | `BackPrevThenNext` | 五型细项，可后扩 |
-| 退回发起人，再提交进下一节点 | `BackStarterThenNext` | |
-| 退回发起人，再提交回退回节点 | `BackStarterThenReturn` | |
-| 退回历史节点，再提交进下一节点 | `BackHistoryThenNext` | |
-| 退回历史节点，再提交回退回节点 | `BackHistoryThenReturn` | |
+| 维② | 含义 | 现状 |
+|-----|------|------|
+| `ForwardNormal` | 按图/下一跳继续，不强制回打回人 | 有 `RunProcess`；办理台有 BackSrc 时文案「正常发送」；策略落盘见 todo §J |
+| `ReturnToSender` | 回**退回节点** + 尽量**原退回人** | 有 `ResendProcess`；Workbench 下发 `HasBackSrc` 时露出「返送退回人」；策略互斥见 §J |
 
-落地：`sf:DisagreePolicy`（名待定）+ 现有 `SendBack` / `Resend` / `Run`；办理台两分见 [todo-产品缺口.md](./todo-产品缺口.md) **§G**；**枚举全集与设计器**见同文档 **§J**。
+AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`BackPrevThenNext` 等），见 [todo-产品缺口.md](./todo-产品缺口.md) **§J**。对外落盘用两维字段。
+
+落地：并入 `sf:NodePolicy.json`（`sendBackTarget` + `resubmitMode`，默认 Starter + ReturnToSender）+ `SendBack` / `Resend` / `Run`；办理台见 todo **§G/§J**。
 
 ---
 
@@ -113,7 +113,7 @@ AntFlow 五型 Disagree 可后扩；建议配置码（候选）：
 | 办理上下文 | 典型动词（码表） | 说明 |
 |------------|------------------|------|
 | 发起页 | （无码表 Id）`StartProcess` | 选定义、填表、选人后启动 |
-| 待办 `handle` | `Approve` `Reject` `SendBack` `SignForward` `Copy` `Revise` | 当前用户有待办 |
+| 待办 `handle` | `Approve` `Reject` `SendBack` `SignForward` `Transfer` `Copy` `Revise` | 当前用户有待办 |
 | 已办 `done` | `Withdraw` `Resend` | 本人已办且流程仍运行 |
 | 管理 `admin` | `Jump` `Close` `Reverse` | 运维/有权跳转关闭 |
 | 候选扩展 | `Transfer` `Delegate` `Claim` `Terminate` `Discard` … | 见 §4 |
@@ -152,3 +152,5 @@ AntFlow 五型 Disagree 可后扩；建议配置码（候选）：
 |------|------|
 | 2026-11-01 | 初版：已入码表动词 + Leave 模式 + 中国式候选动词/Disagree 策略 + 易混对照 |
 | 2026-11-01 | 转办定为「个人办结+本节点交人、不流转」须有；退回后再走两分对齐 Resend/Run + todo F/G |
+| 2026-11-01 | 退回改为两维定型（目标 × 再发送）；AntFlow 五码降为对照别名 |
+| 2026-11-01 | 转办 `TransferProcess` 接线：码表 + Host ButtonsOperation + 办理条 |
