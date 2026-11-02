@@ -1274,8 +1274,6 @@ namespace saiflow.engine.Core.Pattern
             return toActivityInstance;
 
             // 旧双轨（已废弃，保留注释备查）：
-            // if (activityResource.AppRunner.NextPerformerType == NextPerformerIntTypeEnum.Specific
-            //     && activityResource.NextActivityPerformers != null)
             // {
             //     toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(
             //         activityResource.NextActivityPerformers[toActivityInstance.ActivityId]);

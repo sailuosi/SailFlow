@@ -12,8 +12,7 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Auto
 {
     /// <summary>
-    /// Script node mediator
-    /// ����ڵ�ִ����
+    /// 脚本节点执行器
     /// </summary>
     internal class NodeMediatorScript : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
     {
@@ -30,7 +29,7 @@ namespace saiflow.engine.Core.Pattern.Auto
         }
 
         /// <summary>
-        /// Created automatically
+        /// 自动创建
         /// </summary>
         public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, WfAppRunner runner, SQLBuilder kit)
         {
@@ -41,14 +40,13 @@ namespace saiflow.engine.Core.Pattern.Auto
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
             try
             {
-                //��ɽڵ��ϰ󶨵��ⲿ�����߼������
-                //Complete the external program logic or service bound on the node
+                //完成节点绑定的外部程序逻辑或服务
                 OnExecutingServiceItem();
             }
             catch (Exception ex)
@@ -58,7 +56,7 @@ namespace saiflow.engine.Core.Pattern.Auto
         }
 
         /// <summary>
-        /// Complete automatically
+        /// 自动完成
         /// </summary>
         public NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,
             string transitionId,

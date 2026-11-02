@@ -17,7 +17,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Timer
 {
     /// <summary>
-    /// Intermediate timer go node mediator
     /// 中间事件节点处理类
     /// </summary>
     internal class NodeMediatorInterTimerGo : NodeMediator
@@ -29,20 +28,20 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
             try
             {
                 //检查Timer节点运行条件
-                //Check if the operating conditions of the node are met
+                //检查节点运行条件是否满足
                 CheckBeingExecutedInfo();
 
                 OnBeforeExecuteWorkItem();
 
                 //完成当前的任务节点
-                //Complete current task node
+                //完成当前任务节点
                 bool canContinueForwardCurrentNode = CompleteWorkItem(ActivityForwardContext.TaskId,
                     ActivityForwardContext.ActivityResource,
                     Kit);
@@ -50,7 +49,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
                 OnAfterExecuteWorkItem();
 
                 //获取下一步节点列表：并继续执行
-                //Get the next node list: and continue execution
+                //获取下一节点列表并继续执行
                 if (canContinueForwardCurrentNode)
                 {
                     ContinueForwardCurrentNode(ActivityForwardContext.IsNotParsedByTransition, Kit);
@@ -63,7 +62,6 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
         }
 
         /// <summary>
-        /// Check if the operating conditions of the node are met
         /// 检查节点运行条件是否满足
         /// </summary>
         private void CheckBeingExecutedInfo()
@@ -75,7 +73,6 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
         }
 
         /// <summary>
-        /// Complete work item
         /// 完成任务实例
         /// </summary>     
         internal bool CompleteWorkItem(int? taskId,
@@ -91,8 +88,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
             if (taskId != null)
             {
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
-                //Complete this task, return that the task has been transferred to the next co signing task,
-                //and do not continue to execute other nodes
+                //完成本任务后转入下一会签任务，不再继续执行其它节点
                 TaskManager.Complete(SailSqlAccess.Sibling(kit), taskId.Value, activityResource.AppRunner);
             }
 
@@ -105,7 +101,6 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
         }
 
         /// <summary>
-        /// Create activity task transition instance
         /// 创建活动任务转移实例数据
         /// </summary>
         internal override void CreateActivityTaskTransitionInstance(Activity toActivity,
@@ -121,8 +116,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
             bool isParallel = false;
             if (fromActivityInstance.ActivityType == (short)ActivityTypeEnum.GatewayNode)
             {
-                //并发多实例分支判断(AndSplit Multiple)
-                //Concurrent multi instance branch judgment (AndSplit Multiple)
+                //并发多实例分支判定（AndSplit Multiple）
                 var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, SailSqlAccess.Sibling(kit),
                     processInstance);
                 var activityNode = processModel.GetActivity(fromActivityInstance.ActivityId);
@@ -132,12 +126,10 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
             if (isParallel)
             {
                 //并行多实例容器
-                //Parallel multi instance container
                 var entity = new ActivityInstanceEntity();
                 var plist = activityResource.NextActivityPerformers[toActivity.ActivityId];
 
                 //创建并行多实例分支
-                //Create parallel multi instance branches
                 for (var i = 0; i < plist.Count; i++)
                 {
                     entity = CreateActivityInstanceObject(toActivity, processInstance, activityResource.AppRunner);
@@ -168,7 +160,6 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
             else
             {
                 //普通任务节点
-                //Normal task node
                 var toActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, activityResource.AppRunner);
 
                 toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;

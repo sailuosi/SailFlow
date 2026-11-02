@@ -19,7 +19,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event
 {
     /// <summary>
-    /// End node mediator
     /// 结束节点处理类
     /// </summary>
     internal class NodeMediatorEnd : NodeMediator
@@ -31,7 +30,7 @@ namespace saiflow.engine.Core.Pattern.Event
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
@@ -43,8 +42,7 @@ namespace saiflow.engine.Core.Pattern.Event
                 ActivityForwardContext.ActivityResource.AppRunner);
 
             //如果当前流程是子流程，则子流程完成，主流程流转到下一节点
-            //If the current process is a subprocess,
-            //then the subprocess is completed and the main process flows to the next node
+            //若当前为子流程，则完成子流程并推动主流程进入下一节点
             if (pim.IsSubProcess(processInstance) == true)
             {
                 ContinueMainProcessRunning(processInstance, this.Kit);
@@ -54,7 +52,6 @@ namespace saiflow.engine.Core.Pattern.Event
         }
 
         /// <summary>
-        /// Continue main process
         /// 继续执行主流程
         /// </summary>
         /// <param name="processInstance"></param>
@@ -62,14 +59,12 @@ namespace saiflow.engine.Core.Pattern.Event
         private void ContinueMainProcessRunning(ProcessInstanceEntity processInstance,
             SQLBuilder kit)
         {
-            //读取流程下一步办理人员列表信息
-            //Read the personnel list information for the next step in the process
+            //读取流程下一步人员列表
             var runner = FillNextActivityPerformersByRoleList(processInstance.InvokedActivityInstanceId.Value, 
                 processInstance.InvokedActivityId, 
                 kit);
 
-            //开始执行下一步
-            //Continue next step
+            //继续下一步
             var runAppResult = WfExecutedResult.Default();
             var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(Sail, runner, kit, ref runAppResult);
             if (runAppResult.Status == WfExecutedStatus.Exception)
@@ -77,8 +72,7 @@ namespace saiflow.engine.Core.Pattern.Event
                 throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorend.ContinueMainProcessRunning.warn", runAppResult.Message));
             }
 
-            //注册事件并运行
-            //Register the event and run it
+            //注册并触发事件
             WfRuntimeManagerFactory.RegisterEvent(runtimeInstance,
                 runtimeInstance_OnWfProcessRunning,
                 runtimeInstance_OnWfProcessContinued);
@@ -106,7 +100,6 @@ namespace saiflow.engine.Core.Pattern.Event
         }
 
         /// <summary>
-        /// Add role users using process defined resources
         /// 使用流程定义资源添加角色用户
         /// </summary>
         private WfAppRunner FillNextActivityPerformersByRoleList(int mainActivityInstanceId,
@@ -118,8 +111,7 @@ namespace saiflow.engine.Core.Pattern.Event
             var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, kit, mainProcessInstance);
             var nextSteps = processModel.GetNextActivityTreeView(mainActivityId);
 
-            //获取主流程的任务
-            //The task of obtaining the mainstream process
+            //获取主流程任务
             var task = (new TaskManager(Sail)).GetTaskByActivity(SailSqlAccess.Sibling(kit), mainProcessInstance.Id.Value, mainActivityInstanceId);
             var runner = new WfAppRunner
             {
@@ -139,8 +131,7 @@ namespace saiflow.engine.Core.Pattern.Event
                 if (node.ActivityType != ActivityTypeEnum.EndNode
                     && performerList.Count == 0)
                 {
-                    //此处没有模拟测试用户，所以给出异常信息
-                    //There are no simulated test users here, so abnormal information is provided
+                    //此处无模拟测试用户，返回异常信息
                     throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorend.FillNextActivityPerformersByRoleList.warn", node.ActivityName));
                 }
                 dict.Add(node.ActivityId, performerList);
@@ -151,7 +142,6 @@ namespace saiflow.engine.Core.Pattern.Event
         }
 
         /// <summary>
-        /// End node activity and transfer instantiation, no task data available
         /// 结束节点活动及转移实例化，没有任务数据
         /// </summary>
         internal override void CreateActivityTaskTransitionInstance(Activity toActivity,

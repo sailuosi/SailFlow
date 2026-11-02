@@ -15,7 +15,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
-    /// Node Mediator Sign Forward
     /// 加签主节点执行器
     /// </summary>
     internal class NodeMediatorSignForward : NodeMediator
@@ -27,7 +26,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
@@ -35,8 +34,8 @@ namespace saiflow.engine.Core.Pattern
             {
                 //读取加签控制参数
                 //记录加签通过类型和通过率
-                //Read signature control parameters
-                //Record the type and rate of approval for additional signatures
+                //读取加签控制参数
+                //记录加签审批类型与通过率
                 var controlParamSheet = base.ActivityForwardContext.ActivityResource.AppRunner.ControlParameterSheet;
                 if (controlParamSheet != null
                     && controlParamSheet.SignForwardCompareType.ToUpper() == "COUNT")
@@ -54,12 +53,12 @@ namespace saiflow.engine.Core.Pattern
                 }
 
                 //更新当前实例节点为主节点，并且置当前节点为挂起状态
-                //Update the current instance node as the primary node and put the current node in a suspended state
+                //将当前实例升级为主节点并挂起
                 var signForwardType = EnumHelper.ParseEnum<SignForwardTypeEnum>(controlParamSheet.SignForwardType);
                 UpgradeToMainSignForwardNode(base.ActivityForwardContext.FromActivityInstance, signForwardType);
 
                 //产生加签记录，即要发送给加签人的活动实例记录
-                //Generate endorsement records, which are activity instance records to be sent to the endorser
+                //生成加签记录（发给加签人的活动实例）
                 CreateSignForwardTasks(ActivityForwardContext.ActivityResource);
             }
             catch (System.Exception ex)
@@ -69,7 +68,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Upgrade the current node to become the signing master node
         /// 升级当前节点为加签主节点
         /// </summary>
         /// <param name="currentActivityInstance"></param>
@@ -93,7 +91,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create a signature node record
         /// 创建加签节点记录
         /// </summary>
         /// <param name="activityResource"></param>
@@ -102,9 +99,7 @@ namespace saiflow.engine.Core.Pattern
             SignForwardTypeEnum signForwardType = (SignForwardTypeEnum)Enum.Parse(typeof(SignForwardTypeEnum), 
                 base.ActivityForwardContext.ActivityResource.AppRunner.ControlParameterSheet.SignForwardType);
 
-            //根据当前活动实例的记录为加签发起人创建一条新的记录，并修改CompleteOrder
-            //Create a new record for adding the issuer based on the current activity instance record,
-            //and modify the CompleteOrder accordingly
+            //基于当前活动实例新建加签人记录，并相应修改 CompleteOrder
             var newActivityInstance = base.ActivityInstanceManager.CreateActivityInstanceObject(base.ActivityForwardContext.FromActivityInstance);
             newActivityInstance.AssignedUserIds = activityResource.AppRunner.UserId;
             newActivityInstance.AssignedUserNames = activityResource.AppRunner.UserName;
@@ -126,11 +121,10 @@ namespace saiflow.engine.Core.Pattern
             newActivityInstance.ComplexType = (short)ComplexTypeEnum.SignForward;
 
             //获取加签人集合
-            //Obtain the collection of signatories
             var plist = activityResource.NextActivityPerformers[base.ActivityForwardContext.CurrentActivity.ActivityId];
 
             //前加签是别人先审核，然后自己再审核
-            //Sign forward before is someone else's first review, and then self review
+            //前加签：他人先审，再本人审
             if (signForwardType == SignForwardTypeEnum.SignForwardBefore)
             {
                 newActivityInstance.CompleteOrder = plist.Count + 1;
@@ -139,7 +133,7 @@ namespace saiflow.engine.Core.Pattern
             else if (signForwardType == SignForwardTypeEnum.SignForwardBehind)
             {
                 //后加签是自己审批后，其他接收人再加签
-                //Sign forward behind refers to the process of obtaining approval from oneself and then having other recipients sign again
+                //后加签：本人先审，再由其他人加签
                 newActivityInstance.CompleteOrder = 1;
             }
 			else if (signForwardType == SignForwardTypeEnum.SignForwardParallel)
@@ -149,15 +143,14 @@ namespace saiflow.engine.Core.Pattern
             }
 
             //主节点挂起后，插入当前人的加签记录信息, 并插入任务记录
-            //After the master node is suspended,
-            //insert the signature record information of the current person and insert the task record
+            //主节点挂起后，插入当前人加签记录与任务记录
             base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(Kit), newActivityInstance);
             var signer = new Performer(base.ActivityForwardContext.ActivityResource.AppRunner.UserId,
                 base.ActivityForwardContext.ActivityResource.AppRunner.UserName);
             base.TaskManager.Insert(SailSqlAccess.Sibling(Kit), newActivityInstance, signer, base.ActivityForwardContext.ActivityResource.AppRunner);
 
             //创建新加签节点记录
-            //Create a new signing node record
+            //创建新的加签节点记录
             var signforwardActivityInstance = new ActivityInstanceEntity();
             for (var i = 0; i < plist.Count; i++)
             {
@@ -179,7 +172,7 @@ namespace saiflow.engine.Core.Pattern
                     if (i > 0)
                     {
                         //加签是串行加签，逐次完成
-                        //Sign forward is a serial signing process that is completed step by step
+                        //加签为逐步完成的串行过程
                         signforwardActivityInstance.ActivityState = (short)ActivityStateEnum.Suspended;
                     }
                 }

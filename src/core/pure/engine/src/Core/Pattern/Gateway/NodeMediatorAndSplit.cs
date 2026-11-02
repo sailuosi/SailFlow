@@ -14,7 +14,6 @@ using saiflow.engine.Xpdl.Entity;
 namespace saiflow.engine.Core.Pattern.Gateway
 {
     /// <summary>
-    /// AndSplit Node Mediator
     /// AndSplit 节点处理类
     /// </summary>
     internal class NodeMediatorAndSplit : NodeMediatorGateway, ICompleteGatewayAutomaticlly
@@ -26,7 +25,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
         }
 
         /// <summary>
-        /// Complete automatically
+        /// 自动完成
         /// </summary>
         public NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,
             string transitionId,

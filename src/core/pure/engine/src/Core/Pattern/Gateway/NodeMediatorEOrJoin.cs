@@ -14,7 +14,6 @@ using saiflow.engine.Xpdl.Entity;
 namespace saiflow.engine.Core.Pattern.Gateway
 {
     /// <summary>
-    /// EOrJoin Node Mediator
     /// EOrJoin 节点处理类
     /// </summary>
     internal class NodeMediatorEOrJoin : NodeMediatorGateway, ICompleteGatewayAutomaticlly
@@ -26,7 +25,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
         }
 
         /// <summary>
-        /// Complete automatically
+        /// 自动完成
         /// </summary>
         public NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,
             string transitionId,
@@ -49,8 +48,6 @@ namespace saiflow.engine.Core.Pattern.Gateway
         }
 
         /// <summary>
-        /// Node completion method for EORJoin merging
-        /// The front-end dynamically passes the number of tokens to be merged
         /// EOrJoin合并时的节点完成方法
         /// 前端动态传递要合并的Tokens的数目
         /// </summary>
@@ -73,8 +70,6 @@ namespace saiflow.engine.Core.Pattern.Gateway
         }
 
         /// <summary>
-        /// Node completion method for EORJoin merging
-        /// Determine the completion of merging nodes based on whether to force branching as defined on the pre transfer
         /// EOrJoin合并时的节点完成方法
         /// 根据前置转移上定义的是否强制分支来判断完成合并节点
         /// </summary>
@@ -95,13 +90,11 @@ namespace saiflow.engine.Core.Pattern.Gateway
                 throw new WfXpdlException(Sail.Messages.GetEngineMessage("nodemediatoreorjoin.CompleteAutomaticallyByForcedBranchesCount.error"));
             }
 
-            //根据强制分支的数目和具体分支来完成增强合并节点
-            //Enhance and merge nodes based on the number of mandatory branches and specific branches
+            //按强制分支数与具体分支增强合并节点
             var forcedCount = forcedTransitionList.Where(t => t.TransitionId == transitionId).Count();
             if (forcedCount == 0)
             {
-                //当前执行的分支不是强制分支，直接返回就可以
-                //The currently executing branch is not a mandatory branch, simply return it directly
+                //当前分支非强制分支，直接返回
                 result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.NotForcedBrancheWhenEOrJoin);
             }
             else if (forcedCount == 1)
@@ -112,8 +105,6 @@ namespace saiflow.engine.Core.Pattern.Gateway
         }
 
         /// <summary>
-        /// Node completion method for EORJoin merging
-        /// Internal execution logic
         /// EOrJoin合并时的节点完成方法
         /// 内部执行逻辑
         /// </summary>
@@ -128,28 +119,24 @@ namespace saiflow.engine.Core.Pattern.Gateway
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Unknown);
             //当前执行的分支就是强制分支
             //检查是否有运行中的合并节点实例
-            //The current executing branch is the forced branch
-            //Check if there are any running merge node instances
+            //当前为强制分支；检查是否已有运行中的合并节点实例
             ActivityInstanceEntity joinNode = base.ActivityInstanceManager.GetActivityRunning(SailSqlAccess.Sibling(kit), 
                     processInstance.Id.Value, base.GatewayActivity.ActivityId); ;
 
             if (joinNode == null)
             {
-                //第一个分支首次运行
-                //The first branch runs for the first time
+                //首个分支首次运行
                 joinNode = base.CreateActivityInstanceObject(base.GatewayActivity,
                     processInstance, runner);
 
-                //计算总需要的Token数目
-                //Calculate the total number of tokens required
+                //计算所需令牌总数
                 joinNode.TokensRequired = tokensCountRequired;
                 joinNode.TokensHad = 1;
 
                 joinNode.ActivityState = (short)ActivityStateEnum.Running;
                 joinNode.GatewayDirectionTypeId = (short)GatewayDirectionEnum.OrJoin;
 
-                //写入默认第一次的预选步骤用户列表
-                //Write the default user list for the first pre selection step
+                //写入首步预选默认用户列表
                 joinNode.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
 
                 base.InsertActivityInstance(joinNode,
@@ -168,8 +155,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
                 joinNode.TokensHad += 1;
                 base.GatewayActivityInstance = joinNode;
 
-                //更新Token数目
-                //Increase tokens count
+                //增加令牌计数
                 base.ActivityInstanceManager.IncreaseTokensHad(SailSqlAccess.Sibling(kit), base.GatewayActivityInstance.Id.Value, runner);
                 base.InsertTransitionInstance(processInstance,
                     transitionId,
@@ -181,19 +167,16 @@ namespace saiflow.engine.Core.Pattern.Gateway
                     kit);
             }
 
-            //判断是否到达合并节点的通过Token数目要求
-            //Determine whether the required number of tokens for merging nodes has been reached
+            //判断合并节点所需令牌数是否已达到
             if (joinNode.TokensHad == joinNode.TokensRequired)
             {
-                //如果达到完成节点的Token数，则设置该节点状态为完成
-                //If the number of tokens for the completion node is reached, set the node status to complete
+                //达到完成所需令牌数时，将节点状态设为完成
                 base.CompleteActivityInstance(base.GatewayActivityInstance.Id.Value,
                     runner,
                     kit);
                 base.GatewayActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 
-                //更新其它分支上的待办节点为阻止状态(CanRenewInstance = 0)
-                //Update pending nodes on other branches to block status(CanRenewInstance = 0)
+                //将其余分支待办节点置为阻断（CanRenewInstance = 0）
                 base.ActivityInstanceManager.UpdateActivityInstanceBlockedBetweenSplitJoin(SailSqlAccess.Sibling(kit), base.GatewayActivity, base.GatewayActivityInstance, base.ProcessModel);
 
                 result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Successed);

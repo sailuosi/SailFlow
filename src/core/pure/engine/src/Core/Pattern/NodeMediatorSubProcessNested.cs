@@ -22,7 +22,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
-    /// Node Mediator Sub Process Nested
     /// 子流程节点执行器
     /// </summary>
     internal class NodeMediatorSubProcessNested : NodeMediator
@@ -39,7 +38,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
@@ -48,7 +47,7 @@ namespace saiflow.engine.Core.Pattern
                 if (base.LinkContext.FromActivity.ActivityType == ActivityTypeEnum.SubProcessNode)
                 {
                     //检查子流程是否结束
-                    //Check if the sub process has ended
+                    //检查子流程是否已结束
                     var pim = new ProcessInstanceManager(Sail);
                     var kit = SailSqlAccess.Sibling(Kit);
                     bool isCompleted = pim.CheckSubProcessInstanceCompleted(kit,
@@ -62,13 +61,13 @@ namespace saiflow.engine.Core.Pattern
                 }
 
                 //完成当前的任务节点
-                //Complete current node
+                //完成当前节点
                 bool canContinueForwardCurrentNode = CompleteWorkItem(ActivityForwardContext.TaskId,
                     ActivityForwardContext.ActivityResource,
                     this.Kit);
 
                 //获取下一步节点列表：并继续执行
-                //Get the next node list: and continue execution
+                //获取下一节点列表并继续执行
                 if (canContinueForwardCurrentNode)
                 {
                     ContinueForwardCurrentNode(ActivityForwardContext.IsNotParsedByTransition, this.Kit);
@@ -81,7 +80,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Complete work item
+        /// 完成工作项
         /// </summary>
         internal bool CompleteWorkItem(int? taskId,
             ActivityResource activityResource,
@@ -92,48 +91,47 @@ namespace saiflow.engine.Core.Pattern
             if (taskId != null)
             {
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
-                //Complete this task, return that the task has been transferred to the next co signing task,
-                //and do not continue to execute other nodes
+                //完成本任务后转入下一会签任务，不再继续执行其它节点
                 base.TaskManager.Complete(SailSqlAccess.Sibling(kit), taskId.Value, activityResource.AppRunner);
             }
 
             //设置活动节点的状态为完成状态
-            //Set the status of the activity node to complete status
+            //将活动节点状态设为完成
             base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 
             //先判断是否是多实例类型的任务
-            //First, determine whether it is a multi instance type task
+            //先判断是否为多实例任务
             var miDetail = base.LinkContext.FromActivity.MultiSignDetail;
             if (miDetail != null && miDetail.ComplexType == ComplexTypeEnum.SignTogether)
             {
                 //取出主节点信息
-                //Retrieve main node information
+                //获取主节点信息
                 var mainNodeIndex = base.LinkContext.FromActivityInstance.MainActivityInstanceId.Value;
                 var mainActivityInstance = base.ActivityInstanceManager.GetById(mainNodeIndex);
 
                 //取出多实例节点列表
-                //Retrieve a list of multiple instance nodes
+                //获取多实例节点列表
                 var sqList = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithState(
                     SailSqlAccess.Sibling(kit),mainNodeIndex,base.LinkContext.FromActivityInstance.ProcessInstanceId.Value,(short)ActivityStateEnum.Suspended).ToList<ActivityInstanceEntity>();
 
                 if (base.LinkContext.FromActivity.MultiSignDetail.MergeType == MergeTypeEnum.Sequence)
                 {
                     //取出最大执行节点
-                    //Retrieve the maximum execution node 
+                    //获取最大执行序号节点
                     short maxOrder = (short)sqList.Max<ActivityInstanceEntity>(t => t.CompleteOrder).Value;
 
                     if (base.LinkContext.FromActivityInstance.CompleteOrder < maxOrder)
                     {
                         //设置下一个任务进入准备状态
-                        //Set the next task to enter preparation mode
+                        //将下一任务设为就绪
                         var currentNodeIndex = (short)base.LinkContext.FromActivityInstance.CompleteOrder.Value;
                         var nextActivityInstance = sqList[currentNodeIndex];
                         nextActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
                         base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), nextActivityInstance);
 
                         //设置下一个任务对应的子流程进入运行状态
-                        //Set the sub process corresponding to the next task to enter the running state
+                        //将下一任务对应子流程设为运行
                         base.ProcessInstanceManager.RecallSubProcess(SailSqlAccess.Sibling(Kit),
                             nextActivityInstance.Id.Value,
                             activityResource.AppRunner);
@@ -144,12 +142,11 @@ namespace saiflow.engine.Core.Pattern
                     else if (base.LinkContext.FromActivityInstance.CompleteOrder == maxOrder)
                     {
                         //完成最后一个会签任务，会签主节点状态由挂起设置为准备状态
-                        //Complete the last countersignature task,
-                        //and set the status of the countersignature master node from suspended to ready
+                        //完成最后一会签任务，并将会签主节点从挂起改为就绪
                         mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
                         base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
                         //将执行权责交由会签主节点
-                        //Transfer the execution responsibilities to the main signing node
+                        //将执行权移交会签主节点
                         base.LinkContext.FromActivityInstance = mainActivityInstance;
                     }
                 }
@@ -163,11 +160,11 @@ namespace saiflow.engine.Core.Pattern
                     if (completedCount / allCount >= mainActivityInstance.CompleteOrder)
                     {
                         //如果超过约定的比例数，则执行下一步节点
-                        //If the agreed proportion is exceeded, proceed to the next node
+                        //超过约定通过比例则进入下一节点
                         mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
                         base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
                         //将执行权责交由会签主节点
-                        //Transfer the execution responsibilities to the main signing node
+                        //将执行权移交会签主节点
                         base.LinkContext.FromActivityInstance = mainActivityInstance;
                     }
                     else
@@ -181,7 +178,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create activity task transition instance
         /// 创建活动任务转移数据
         /// </summary>
         internal override void CreateActivityTaskTransitionInstance(Activity toActivity,
@@ -206,7 +202,6 @@ namespace saiflow.engine.Core.Pattern
                 var entity = new ActivityInstanceEntity();
                 var plist = activityResource.NextActivityPerformers[toActivity.ActivityId];
                 //创建并行多实例分支
-                //Create parallel multi instance branches
                 for (var i = 0; i < plist.Count; i++)
                 {
                     var performer = plist[i];
@@ -231,7 +226,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create sub process 
         /// 创建子流程节点数据以及子流程记录
         /// </summary>
         private void CreateSubProcessNode(Activity toActivity,
@@ -251,7 +245,7 @@ namespace saiflow.engine.Core.Pattern
             if (performer != null)
             {
                 //并行容器中的子流程节点，每个人发起一个子流程
-                //Sub process nodes in parallel containers, where each person initiates a sub process
+                //并行容器中的子流程节点，每人发起一个子流程
                 toActivityInstance.AssignedUserIds = performer.UserId;
                 toActivityInstance.AssignedUserNames = performer.UserName;
 
@@ -278,12 +272,10 @@ namespace saiflow.engine.Core.Pattern
                 kit);
 
             //启动子流程
-            //Startup sub process
             var subProcessNode = (SubProcessNode)toActivity.Node;
             subProcessNode.ActivityInstance = toActivityInstance;
 
             //复制子流程启动用户信息
-            //Copy sub process to start user information
             WfAppRunner subRunner = null;
             var performerList = new PerformerList();
             if (performer != null)
@@ -318,7 +310,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create multiple instance
         /// 会签类型的主节点, 多实例节点处理
         /// </summary>
         internal new void CreateMultipleInstance(Activity toActivity,
@@ -330,8 +321,7 @@ namespace saiflow.engine.Core.Pattern
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            //实例化主节点Activity
-            //Instantiate the main node Activity
+            // 实例化主节点 Activity
             var toActivityInstance = CreateActivityInstanceObject(toActivity,
                 processInstance, activityResource.AppRunner);
 
@@ -355,7 +345,6 @@ namespace saiflow.engine.Core.Pattern
                 kit);
 
             //插入会签子节点实例数据
-            //Insert signature sub node instance data
             var plist = activityResource.NextActivityPerformers[toActivity.ActivityId];
             ActivityInstanceEntity entity = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)
@@ -373,7 +362,7 @@ namespace saiflow.engine.Core.Pattern
                 entity.CompleteOrder = (short)(i + 1);
 
                 //只有第一个节点处于运行状态，其它节点挂起
-                //Only the first node is running, while the other nodes are suspended
+                //仅第一个节点运行，其余节点挂起
                 if ((i > 0) && (toActivity.MultiSignDetail.MergeType == MergeTypeEnum.Sequence))
                 {
                     entity.ActivityState = (short)ActivityStateEnum.Suspended;
@@ -384,7 +373,6 @@ namespace saiflow.engine.Core.Pattern
                 base.TaskManager.Insert(SailSqlAccess.Sibling(kit), entity, plist[i], activityResource.AppRunner);
 
                 //启动子流程
-                //Startup sub process
                 var subKit = Sail.UseRunSQL();
                 var subProcessNode = (SubProcessNode)toActivity.Node;
                 subProcessNode.ActivityInstance = entity;   
@@ -407,8 +395,7 @@ namespace saiflow.engine.Core.Pattern
                 runtimeInstance.Execute(subKit);
 
                 //如果是串行会签，只有第一个子流程可以运行，其它子流程处于挂起状态
-                //If it is a serial countersignature,
-                //only the first subprocess can run, and the other subprocesses are in a suspended state
+                //串行会签时仅第一个子流程运行，其余子流程挂起
                 if ((i > 0) && (toActivity.MultiSignDetail.MergeType == MergeTypeEnum.Sequence))
                 {
                     base.ProcessInstanceManager.Suspend(subKit,
@@ -418,7 +405,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// When creating a subprocess, regenerate the runner information
         /// 创建子流程时，重新生成runner信息
         /// </summary>
         /// <returns></returns>
@@ -437,8 +423,6 @@ namespace saiflow.engine.Core.Pattern
 
             #region Dynamic sub process called
             //如果是动态调用子流程，则需要获取具体子流程实体对象
-            //var isSubProcessNotExisted = false;
-            //if (subProcessNode.SubProcessType == SubProcessTypeEnum.Dynamic)
             //{
             //    var subProcessId = runner.DynamicVariables[subProcessNode.SubVarName];
             //    if (!string.IsNullOrEmpty(subProcessId))

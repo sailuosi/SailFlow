@@ -18,7 +18,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Timer
 {
     /// <summary>
-    /// Start timer node mediator
     /// 开始节点执行器
     /// </summary>
     internal class NodeMediatorStartTimer : NodeMediator
@@ -30,7 +29,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
@@ -49,8 +48,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
 
                 OnAfterExecuteWorkItem();
 
-                //执行开始节点之后的节点集合
-                //Collection of nodes after executing the start node
+                //执行开始节点后的后续节点集合
                 ContinueForwardCurrentNode(ActivityForwardContext.IsNotParsedByTransition, Kit);
             }
             catch (Exception ex)
@@ -60,7 +58,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
         }
 
         /// <summary>
-        /// Complete automatically
+        /// 自动完成
         /// </summary>
         /// <param name="processInstance"></param>
         /// <param name="activityResource"></param>

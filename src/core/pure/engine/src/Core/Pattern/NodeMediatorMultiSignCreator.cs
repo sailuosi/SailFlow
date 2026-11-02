@@ -11,7 +11,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
-    /// Creator for multi instance node scenes
     /// 多实例节点场景的创建器
     /// </summary>
     internal class NodeMediatorMultiSignCreator : NodeMediator
@@ -40,7 +39,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create activity task transition instance
+        /// 创建活动任务转移实例
         /// </summary>
         internal override void CreateActivityTaskTransitionInstance(Activity toActivity,
             ProcessInstanceEntity processInstance,
@@ -51,14 +50,12 @@ namespace saiflow.engine.Core.Pattern
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            //判断是否是会签节点，如果是创建会签节点
-            //Determine whether it is a countersignature node, and if it is a creation countersignature node
+            //判断是否为会签节点；若是则创建会签节点
             if (toActivity.ActivityType == ActivityTypeEnum.MultiSignNode)
             {
                 if (toActivity.MultiSignDetail.ComplexType == ComplexTypeEnum.SignForward)          
                 {
-                    //加签节点生成，跟普通任务节点生成一样
-                    //Generate signature nodes, just like generating regular task nodes
+                    //生成加签节点（同普通任务节点）
                     var toActivityInstance = base.CreateActivityInstanceObject(toActivity, processInstance, activityResource.AppRunner);
                     toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
                     toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
@@ -78,8 +75,7 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else if (toActivity.MultiSignDetail.ComplexType == ComplexTypeEnum.SignTogether)            
                 {
-                    //创建会签节点的主节点，以及会签主节点下的实例子节点记录
-                    //Create the master node for the countersignature node and record the instance child nodes under the countersignature master node
+                    //创建会签主节点并记录其下多实例子节点
                     CreateMultipleInstance(toActivity, processInstance, fromActivityInstance,
                         transitionId, transitionType, flyingType, activityResource, kit);
                 }

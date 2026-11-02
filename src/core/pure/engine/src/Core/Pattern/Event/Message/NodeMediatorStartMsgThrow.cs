@@ -15,7 +15,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Message
 {
     /// <summary>
-    /// Start message nodemediator throw
     /// 开始节点执行器
     /// </summary>
     internal class NodeMediatorStartMsgThrow : NodeMediator
@@ -27,7 +26,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
@@ -46,8 +45,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
 
                 OnAfterExecuteWorkItem();
 
-                //执行开始节点之后的节点集合
-                //Collection of nodes after executing the start node
+                //执行开始节点后的后续节点集合
                 ContinueForwardCurrentNode(ActivityForwardContext.IsNotParsedByTransition, Kit);
             }
             catch (Exception ex)
@@ -57,7 +55,6 @@ namespace saiflow.engine.Core.Pattern.Event.Message
         }
 
         /// <summary>
-        /// Complete automatically
         /// 置开始节点为结束状态
         /// </summary>
         /// <param name="processInstance"></param>
@@ -77,8 +74,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
             fromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             LinkContext.FromActivityInstance = fromActivityInstance;
 
-            //执行节点上的消息发布
-            //Publish messages on the execution node
+            //在执行节点发布消息
             var msgDelegateService = new MessageDelegateService(Sail);
             msgDelegateService.PublishMessage(processInstance, LinkContext.FromActivity, fromActivityInstance);
 

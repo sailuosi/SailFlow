@@ -14,7 +14,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Gateway
 {
     /// <summary>
-    /// Gatewayt Node Mediator
     /// 网关控制节点执行器
     /// </summary>
     internal class NodeMediatorGateway
@@ -69,7 +68,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
         #endregion
 
         /// <summary>
-        /// Create activity instance
+        /// 创建活动实例
         /// </summary>
         protected ActivityInstanceEntity CreateActivityInstanceObject(Activity activity,
             ProcessInstanceEntity processInstance,
@@ -88,7 +87,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
         }
 
         /// <summary>
-        /// Insert activity instance
+        /// 插入活动实例
         /// </summary>
         /// <param name="activityInstance"></param>
         /// <param name="kit"></param>
@@ -99,7 +98,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
         }
 
         /// <summary>
-        /// Insert transition instance
+        /// 插入转移实例
         /// </summary>
         internal virtual int InsertTransitionInstance(ProcessInstanceEntity processInstance,
             string transitionId,
@@ -125,7 +124,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
         }
 
         /// <summary>
-        /// Compelete activity instance
+        /// 完成活动实例
         /// </summary>
         internal virtual void CompleteActivityInstance(int ActivityInstanceId,
             WfAppRunner runner,

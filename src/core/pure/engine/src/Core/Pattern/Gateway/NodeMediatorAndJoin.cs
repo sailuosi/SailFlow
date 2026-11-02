@@ -9,7 +9,6 @@ using saiflow.engine.Xpdl.Entity;
 namespace saiflow.engine.Core.Pattern.Gateway
 {
     /// <summary>
-    /// AndJoin Node Mediator
     /// 与合并节点处理类
     /// </summary>
     internal class NodeMediatorAndJoin : NodeMediatorGateway, ICompleteGatewayAutomaticlly
@@ -21,7 +20,6 @@ namespace saiflow.engine.Core.Pattern.Gateway
         }
 
         /// <summary>
-        /// Calculate the number of converged tokens
         /// 计算汇合Token数目
         /// </summary>
         /// <returns></returns>
@@ -32,7 +30,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
         }
 
         /// <summary>
-        /// Complete automatically
+        /// 自动完成
         /// </summary>
         public NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,
             string transitionId,
@@ -41,8 +39,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
             WfAppRunner runner,
             SQLBuilder kit)
         {
-            //检查是否有运行中的合并节点实例
-            //Check if there are any running merge node instances
+            //检查是否已有运行中的合并节点实例
             ActivityInstanceEntity joinNode = base.ActivityInstanceManager.GetActivityRunning(SailSqlAccess.Sibling(kit), processInstance.Id.Value, base.GatewayActivity.ActivityId);
 
             int tokensRequired = 0;
@@ -53,8 +50,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
                 var joinActivityInstance = base.CreateActivityInstanceObject(base.GatewayActivity, 
                     processInstance, runner);
 
-                //计算总需要的Token数目
-                //Calculate the total number of tokens required
+                //计算所需令牌总数
                 joinActivityInstance.TokensRequired = GetTokensRequired();
                 joinActivityInstance.TokensHad = 1;
                 tokensRequired = joinActivityInstance.TokensRequired.Value;
@@ -62,8 +58,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
                 joinActivityInstance.ActivityState = (short)ActivityStateEnum.Running;
                 joinActivityInstance.GatewayDirectionTypeId = (short)GatewayDirectionEnum.AndJoin;
 
-                //写入默认第一次的预选步骤用户列表
-                //Write the default user list for the first pre selection step
+                //写入首步预选默认用户列表
                 joinActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
 
                 base.InsertActivityInstance(joinActivityInstance,
@@ -83,8 +78,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
                 tokensRequired = base.GatewayActivityInstance.TokensRequired.Value;
                 tokensHad = base.GatewayActivityInstance.TokensHad.Value;
 
-                //更新Token数目
-                //Increase the tokens had
+                //累加已到达令牌数
                 base.ActivityInstanceManager.IncreaseTokensHad(SailSqlAccess.Sibling(kit), base.GatewayActivityInstance.Id.Value, runner);
                 base.InsertTransitionInstance(processInstance,
                     transitionId,
@@ -97,8 +91,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
             }
             if ((tokensHad + 1) == tokensRequired)
             {
-                //如果达到完成节点的Token数，则设置该节点状态为完成
-                //If the number of tokens for the completion node is reached, set the node status to complete
+                //达到完成所需令牌数时，将节点状态设为完成
                 base.CompleteActivityInstance(base.GatewayActivityInstance.Id.Value,
                     runner,
                     kit);

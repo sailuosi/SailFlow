@@ -14,7 +14,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
-    /// Node Mediator Revise
     /// 流程修订的具体执行类
     /// </summary>
     internal class NodeMediatorRevise : NodeMediator
@@ -32,7 +31,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
@@ -40,13 +39,12 @@ namespace saiflow.engine.Core.Pattern
             {
                 OnBeforeExecuteWorkItem();
 
-                //先取出原始退回节点信息
-                //First, retrieve the original return node information
+                //先获取原始退回节点信息
                 var backSrcActivityInstanceId = base.ActivityForwardContext.FromActivityInstance.BackSrcActivityInstanceId;
                 if (backSrcActivityInstanceId != null)
                 {
                     //完成当前的任务节点
-                    //Complete the current task node
+                    //完成当前任务节点
                     bool canContinueForwardCurrentNode = CompleteWorkItem(ActivityForwardContext.TaskId,
                         ActivityForwardContext.ActivityResource,
                         this.Kit);
@@ -56,20 +54,17 @@ namespace saiflow.engine.Core.Pattern
                         var aim = new ActivityInstanceManager(Sail);
                         var backSrcActivityInstance = aim.GetById(backSrcActivityInstanceId.Value);
 
-                        //取出下一步办理人员信息
-                        //Retrieve the information of the next processing personnel
+                        //获取下一步办理人信息
                         var nextStep = base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers;
                         var performerList = nextStep[backSrcActivityInstance.ActivityId];
 
-                        //判断不同的修订模式
-                        //Determine different revision modes
+                        //判定不同修订模式
                         var mainActivityInstanceId = backSrcActivityInstance.MainActivityInstanceId;
                         if (mainActivityInstanceId != null)
                         {
                             //会签模式
                             //复制与会签子节点相同的活动实例和任务记录 
-                            //Signing mode
-                            //Copy activity instances and task records with the same attendance child nodes
+                            //加签模式：复制同出席子节点的活动实例与任务记录
                             var mainActivityInstance = aim.GetById(mainActivityInstanceId.Value);
                             CloneChildNodeOfMI(performerList, mainActivityInstance, base.Kit);
                         }
@@ -84,8 +79,7 @@ namespace saiflow.engine.Core.Pattern
                                 var gatewayNode = ActivityForwardContext.ProcessModel.GetActivity(transition.FromActivityId);
                                 if (gatewayNode.GatewayDetail.DirectionType == GatewayDirectionEnum.AndSplitMI)
                                 {
-                                    //复制并行分支多实例
-                                    //Copy parallel branches with multiple instances
+                                    //复制并行多实例分支
                                     var gatewayActivityInstance = base.ActivityInstanceManager.GetActivityInstanceLatest(SailSqlAccess.Sibling(Kit), 
                                         backSrcActivityInstance.ProcessInstanceId.Value, gatewayNode.ActivityId);
                                     CloneChildNodeOfAndSplitMI(performerList, transition.TransitionId, gatewayActivityInstance, backSrcActivityInstance, base.Kit);
@@ -119,7 +113,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Complete work item
+        /// 完成工作项
         /// </summary>
         internal bool CompleteWorkItem(int? taskId,
             ActivityResource activityResource,
@@ -136,12 +130,11 @@ namespace saiflow.engine.Core.Pattern
             if (taskId != null)
             {
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
-                //Complete this task, return that the task has been transferred to the next co signing task,
-                //and do not continue to execute other nodes
+                //完成本任务后转入下一会签任务，不再继续执行其它节点
                 base.TaskManager.Complete(SailSqlAccess.Sibling(kit), taskId.Value, activityResource.AppRunner);
 
                 //设置活动节点的状态为完成状态
-                //Set the status of the activity node to complete status
+                //将活动节点状态设为完成
                 var activityInstanceId = base.ActivityInstanceManager.GetByTask(taskId.Value).Id;
                 base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), activityInstanceId.Value, activityResource.AppRunner);
             }
@@ -149,7 +142,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Copy multi instance node data
         /// 复制多实例子节点数据
         /// </summary>
         /// <param name="plist"></param>
@@ -169,33 +161,28 @@ namespace saiflow.engine.Core.Pattern
                 var isTaskExisted = IsTaskExisted(childNodeListOfMI, userId);
                 if (isTaskExisted == true)
                 {
-                    //如果活动或者任务已经存在，则不用创建新活动和任务
-                    //If an activity or task already exists, there is no need to create a new one
+                    //若活动或任务已存在则无需新建
                     continue;
                 }
 
-                //根据主节点来复制子节点数据
-                //Copy child node data based on the master node
+                //基于主节点复制子节点数据
                 entity = ActivityInstanceManager.CreateActivityInstanceObject(mainActivityInstance);
                 entity.AssignedUserIds = userId;
                 entity.AssignedUserNames = userName;
                 entity.MainActivityInstanceId = mainActivityInstance.Id;
 
-                //并行串行下，多实例子节点的执行顺序设置
-                //Setting the Execution Order of Multiple Real Example Nodes in Parallel Serial
+                //设置多实例子节点串行/并行执行顺序
                 if (mainActivityInstance.MergeType == (short)MergeTypeEnum.Sequence)
                 {
                     entity.CompleteOrder = (short)(i + 1);
                 }
                 else if (mainActivityInstance.MergeType == (short)MergeTypeEnum.Parallel)
                 {
-                    //并行模式下CompleteOrder的优先级一样，所以置为 -1
-                    //In parallel mode, the priority of Completed Order is the same, so it is set to -1
+                    //并行模式下完成顺序相同，设为 -1
                     entity.CompleteOrder = -1;       
                 }
 
-                //如果是串行会签，只有第一个节点处于运行状态，其它节点挂起
-                //If it is a serial countersignature, only the first node is running, and the other nodes are suspended
+                //串行会签时仅第一个节点运行，其余挂起
                 if ((i > 0) && (mainActivityInstance.MergeType.Value == (short)MergeTypeEnum.Sequence))
                 {
                     entity.ActivityState = (short)ActivityStateEnum.Suspended;
@@ -208,7 +195,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Determine whether the activity instance already exists
         /// 判断活动实例是否已经存在
         /// </summary>
         /// <param name="childNodeOfMI"></param>
@@ -227,7 +213,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Copy parallel branch multi instance node data
         /// 复制并行分支多实例节点数据
         /// </summary>
         private void CloneChildNodeOfAndSplitMI(PerformerList plist,
@@ -246,8 +231,7 @@ namespace saiflow.engine.Core.Pattern
                 var isTaskExisted = IsTaskExisted(childNodeListOfAndSplitMI, userId);
                 if (isTaskExisted == true)
                 {
-                    //如果活动或者任务已经存在，则不用创建新活动和任务
-                    //If an activity or task already exists, there is no need to create a new one
+                    //若活动或任务已存在则无需新建
                     continue;
                 }
 

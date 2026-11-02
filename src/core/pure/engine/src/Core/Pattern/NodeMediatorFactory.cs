@@ -21,7 +21,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
-    /// Node Mediator Factory
     /// 节点执行器的工厂类
     /// </summary>
     internal class NodeMediatorFactory
@@ -33,7 +32,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create Method
+        /// 创建方法
         /// </summary>
         /// <param name="forwardContext"></param>
         /// <param name="kit"></param>
@@ -208,7 +207,7 @@ namespace saiflow.engine.Core.Pattern
             else if (forwardContext.CurrentActivity.ActivityType == ActivityTypeEnum.TaskNode)        
             {
                 //普通任务节点，运行时临时加签变为多实例节点
-                //Normal task node, temporarily signed at runtime to become a multi instance node
+                //普通任务节点
                 var controlParamSheet = forwardContext.ActivityResource.AppRunner.ControlParameterSheet;
                 if (controlParamSheet != null)
                 {
@@ -225,7 +224,6 @@ namespace saiflow.engine.Core.Pattern
                 else if(forwardContext.FromActivityInstance.MainActivityInstanceId != null)
                 {
                     //加签子实例
-                    //Signature forward sub instance
                     return new NodeMediatorMultiSignForward(forwardContext, kit, client);
                 }
                 else
@@ -266,15 +264,13 @@ namespace saiflow.engine.Core.Pattern
                 }
                 else if (forwardContext.FromActivityInstance.MainActivityInstanceId == null)
                 {
-                    //加签主节点的分发操作
-                    //Distribution operation of signing the main node
+                    //加签主节点分发操作
                     if (forwardContext.CurrentActivity.MultiSignDetail.ComplexType == ComplexTypeEnum.SignForward)
                     {
                         var aim = new ActivityInstanceManager(client);
                         var miChildList = aim.GetActivityMulitipleInstanceWithState(forwardContext.FromActivityInstance.Id.Value, forwardContext.FromActivityInstance.ProcessInstanceId.Value);
 
-                        //加签的动态变量传入
-                        //Pass in the signed dynamic variable
+                        //传入加签动态变量
                         var controlParamSheet = forwardContext.ActivityResource.AppRunner.ControlParameterSheet;
                         if (controlParamSheet != null)
                         {
@@ -320,7 +316,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Throw uncertern xml node type exception
+        /// 抛出未知 XML 节点类型异常
         /// </summary>
         /// <param name="activityType"></param>
         /// <param name="triggerType"></param>
@@ -343,7 +339,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create Node Mediator Gateway
         /// 创建Gateway节点处理类实例
         /// </summary>
         /// <param name="gActivity"></param>
@@ -410,7 +405,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create Node Mediator Event
         /// 创建中间事件节点处理类实例
         /// </summary>
         internal static NodeMediator CreateNodeMediatorEvent(ActivityForwardContext forwardContext, Activity eventActivity, IProcessModel processModel, SQLBuilder kit, SailClient client)
@@ -499,7 +493,6 @@ namespace saiflow.engine.Core.Pattern
 
 
         /// <summary>
-        /// Create Node Mediator End
         /// 创建结束事件节点处理类实例
         /// </summary>
         /// <param name="forwardContext"></param>
@@ -548,7 +541,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create Node Mediator Sub Process
         /// 创建子流程节点处理类实例
         /// </summary>
         /// <param name="forwardContext"></param>
@@ -572,7 +564,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create Node Mediator Sub Process
         /// 创建子流程节点处理类实例
         /// </summary>
         /// <param name="activity"></param>

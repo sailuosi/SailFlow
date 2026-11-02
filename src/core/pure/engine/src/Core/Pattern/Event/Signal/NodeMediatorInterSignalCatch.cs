@@ -14,7 +14,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Signal
 {
     /// <summary>
-    /// Intermediate singal catch node mediator
     /// 中间事件节点处理类
     /// </summary>
     internal class NodeMediatorInterSignalCatch : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
@@ -26,21 +25,20 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
         }
 
         /// <summary>
-        /// Created automatically
+        /// 自动创建
         /// </summary>
         public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, WfAppRunner runner, SQLBuilder kit)
         {
             var nextActivityInstance = base.CreateActivityInstanceObject(toActivity, processInstance, runner);
 
-            //写入默认第一次的预选步骤用户列表
-            //Write the default user list for the first pre selection step
+            //写入首步预选默认用户列表
             nextActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
             base.InsertActivityInstance(nextActivityInstance, kit);
             return nextActivityInstance;
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
@@ -57,7 +55,6 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
         }
 
         /// <summary>
-        /// Complete Automatically
         /// 自动完成
         /// </summary>
         public NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,

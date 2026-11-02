@@ -15,7 +15,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Signal
 {
     /// <summary>
-    /// Intermediate singal catch continue node mediator
     /// 中间事件节点处理类
     /// </summary>
     internal class NodeMediatorInterSignalCatchContinue : NodeMediator
@@ -27,7 +26,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
@@ -41,7 +40,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
                 OnAfterExecuteWorkItem();
 
                 //获取下一步节点列表：并继续执行
-                //Get the next node list: and continue execution
+                //获取下一节点列表并继续执行
                 if (canContinueForwardCurrentNode)
                 {
                     ContinueForwardCurrentNode(ActivityForwardContext.IsNotParsedByTransition, Kit);
@@ -54,7 +53,6 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
         }
 
         /// <summary>
-        /// Complete work item
         /// 完成节点实例
         /// </summary>
         /// <param name="activityResource"></param>

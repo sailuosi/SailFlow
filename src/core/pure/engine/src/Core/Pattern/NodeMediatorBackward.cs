@@ -15,7 +15,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
-    /// Backward Node Mediator
     /// 退回处理时的节点调节器
     /// </summary>
     internal class NodeMediatorBackward : NodeMediator
@@ -32,7 +31,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create backward activity task transition instance
         /// 创建退回时的流转节点对象、任务和转移数据
         /// </summary>
         internal void CreateBackwardActivityTaskTransitionInstance(ProcessInstanceEntity processInstance,
@@ -71,10 +69,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Return is handled in the case of countersignature:
-        /// The node to be returned is the countersign node
-        /// 1) Instantiate all multi instance nodes under the co signing node
-        /// 2) Only obtain nodes that have been processed and ensure the uniqueness of the Completed Order
         /// 退回是会签情况下的处理：
         /// 要退回的节点是会签节点
         /// 1) 全部实例化会签节点下的多实例节点
@@ -94,23 +88,18 @@ namespace saiflow.engine.Core.Pattern
             //上一步节点是会签节点的退回处理
             //需要重新实例化会签节点上的所有办理人的任务
             //重新封装任务办理人为AssignedUsers, AssignedUsernames
-            //The previous node is the return processing of the countersignature node
-            //Need to re instantiated the tasks of all handlers on the co signing node
-            //Encapsulate the task handler as Assigned To Users, AssignedUsernames
             var performerList = AntiGenerateActivityPerformerList(previousMainInstance);
 
             activityResource.NextActivityPerformers.Clear();
             activityResource.NextActivityPerformers = new Dictionary<string, PerformerList>();
             activityResource.NextActivityPerformers.Add(backwardToTaskActvity.ActivityId, performerList);
 
-            //重新生成会签节点的多实例数据
-            //Re generate multi instance data for the countersignature node
+            //重新生成会签节点多实例数据
             CreateMultipleInstance(backwardToTaskActvity, processInstance, fromActivityInstance,
                 transitionId, transitionType, flyingType, activityResource, kit);
         }
 
         /// <summary>
-        /// Create active instances and task data for rollback between multiple instance nodes
         /// 创建多实例节点之间回滚时的活动实例，任务数据
         /// </summary>
         internal void CreateBackwardActivityTaskOfInnerMultipleInstance(ProcessInstanceEntity processInstance,
@@ -120,8 +109,7 @@ namespace saiflow.engine.Core.Pattern
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            //创建回滚到的节点信息
-            //Create rollback to node information
+            //创建退回目标节点信息
             var rollbackPreviousActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
                 backSrcActivityInstanceId,
@@ -145,7 +133,6 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// The withdraw operation of the last multi instance node with multiple signatures
         /// 最后一个会签多实例子节点的撤销操作
         /// </summary>
         internal void CreateBackwardActivityTaskTransitionOfLastMultipleInstance(ProcessInstanceEntity processInstance,
@@ -158,8 +145,7 @@ namespace saiflow.engine.Core.Pattern
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            //创建回滚到的节点信息
-            //Create rollback to node information
+            //创建退回目标节点信息
             var rollbackPreviousActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
                 fromActivityInstance.Id.Value,

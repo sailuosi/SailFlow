@@ -18,7 +18,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Conditional
 {
     /// <summary>
-    /// Intermediate event node (condition) processing class
     /// 中间事件节点(条件)处理类
     /// </summary>
     internal class NodeMediatorInterConditional : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
@@ -30,19 +29,17 @@ namespace saiflow.engine.Core.Pattern.Event.Conditional
         }
 
         /// <summary>
-        /// Created automatically
+        /// 自动创建
         /// </summary>
         public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, WfAppRunner runner, SQLBuilder kit)
         {
             var condActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, runner);
-            //存储下一步步骤人员信息
-            //Store performer information for the next step
+            //保存下一步办理人信息
             condActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
             condActivityInstance.AssignedUserIds = WfDefine.SYSTEM_JOBTIMER_USER_ID;
             condActivityInstance.AssignedUserNames = WfDefine.SYSTEM_JOBTIMER_USER_NAME;
 
-            //定时作业信息
-            //Job timer info
+            //作业定时器信息
             condActivityInstance.JobTimerType = (short)JobTimerTypeEnum.Conditional;
             condActivityInstance.JobTimerStatus = (short)JobTimerStatusEnum.Ready;
             condActivityInstance.TriggerExpression = toActivity.TriggerDetail.Expression;
@@ -69,7 +66,6 @@ namespace saiflow.engine.Core.Pattern.Event.Conditional
 
         #region ICompleteAutomaticlly Member
         /// <summary>
-        /// Complete Automatically
         /// 自动完成
         /// </summary>
         public NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,
@@ -84,8 +80,7 @@ namespace saiflow.engine.Core.Pattern.Event.Conditional
             base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), toActivityInstance, runner);
             LinkContext.CurrentActivityInstance = toActivityInstance;
 
-            //写节点转移实例数据
-            //Write transition instance data
+            //写入转移实例数据
             base.InsertTransitionInstance(processInstance,
                 transitionId,
                 fromActivityInstance,
@@ -96,7 +91,6 @@ namespace saiflow.engine.Core.Pattern.Event.Conditional
                 kit);
 
             //插入任务数据
-            //Insert task data
             var tm = new TaskManager(Sail);
             var newTaskId = tm.Insert(SailSqlAccess.Sibling(kit), toActivityInstance,
                 new Performer(WfDefine.SYSTEM_JOBTIMER_USER_ID, WfDefine.SYSTEM_JOBTIMER_USER_NAME),

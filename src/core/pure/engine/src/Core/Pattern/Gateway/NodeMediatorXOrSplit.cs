@@ -13,7 +13,6 @@ using saiflow.engine.Xpdl.Entity;
 namespace saiflow.engine.Core.Pattern.Gateway
 {
     /// <summary>
-    /// XOrSplit Node Mediator
     /// XOrSplit 节点处理类
     /// </summary>
     internal class NodeMediatorXOrSplit : NodeMediatorGateway, ICompleteGatewayAutomaticlly
@@ -25,7 +24,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
         }
 
         /// <summary>
-        /// Complete automatically
+        /// 自动完成
         /// </summary>
         public NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,
             string transitionId,

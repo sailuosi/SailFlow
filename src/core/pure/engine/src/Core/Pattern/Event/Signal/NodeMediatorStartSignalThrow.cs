@@ -12,7 +12,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Signal
 {
     /// <summary>
-    /// Start signal throw node mediator
     /// 开始节点执行器
     /// </summary>
     internal class NodeMediatorStartSignalThrow : NodeMediator
@@ -24,7 +23,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
@@ -43,8 +42,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
 
                 OnAfterExecuteWorkItem();
 
-                //执行开始节点之后的节点集合
-                //Collection of nodes after executing the start node
+                //执行开始节点后的后续节点集合
                 ContinueForwardCurrentNode(ActivityForwardContext.IsNotParsedByTransition, Kit);
             }
             catch (Exception ex)
@@ -54,7 +52,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
         }
 
         /// <summary>
-        /// Complete automatically
+        /// 自动完成
         /// </summary>
         /// <param name="processInstance"></param>
         /// <param name="activityResource"></param>
@@ -73,8 +71,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
             fromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             LinkContext.FromActivityInstance = fromActivityInstance;
 
-            //执行节点上的信号发布
-            //Signal release on the execution node
+            //在执行节点释放信号
             var signalDelegateService = new SignalDelegateService(Sail);
             signalDelegateService.PublishSignal(processInstance, LinkContext.FromActivity, fromActivityInstance);
 

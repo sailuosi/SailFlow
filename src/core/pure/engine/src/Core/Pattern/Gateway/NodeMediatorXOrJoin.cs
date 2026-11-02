@@ -9,7 +9,6 @@ using saiflow.engine.Xpdl.Entity;
 namespace saiflow.engine.Core.Pattern.Gateway
 {
     /// <summary>
-    /// XOrJoin Node Mediator
     /// XOrJoin 节点处理类
     /// </summary>
     internal class NodeMediatorXOrJoin : NodeMediatorGateway, ICompleteGatewayAutomaticlly
@@ -21,7 +20,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
         }
 
         /// <summary>
-        /// Complete automatically
+        /// 自动完成
         /// </summary>
         public NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,
             string transitionId,
@@ -32,9 +31,7 @@ namespace saiflow.engine.Core.Pattern.Gateway
         {
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Unknown);
 
-            //XOrJoin合并，直接置为完成状态，因为始终只有一个分支可以得到执行，其它分支被排斥
-            //XOrJoin merge, directly set to completion state, because only one branch can always be executed,
-            //and the other branches are excluded
+            //XOrJoin 合并直接置为完成：始终仅一分支执行，其余被排斥
             var gatewayActivityInstance = base.CreateActivityInstanceObject(base.GatewayActivity, 
                 processInstance, runner);
 

@@ -15,7 +15,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Message
 {
     /// <summary>
-    /// Intermediate Node Mediator Message Catch Continue
     /// 中间事件节点处理类
     /// </summary>
     internal class NodeMediatorInterMsgCatchContinue : NodeMediator
@@ -27,7 +26,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
         }
 
         /// <summary>
-        /// Execute Work Item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
@@ -41,7 +40,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
                 OnAfterExecuteWorkItem();
 
                 //获取下一步节点列表：并继续执行
-                //Get the next node list: and continue execution
+                //获取下一节点列表并继续执行
                 if (canContinueForwardCurrentNode)
                 {
                     ContinueForwardCurrentNode(ActivityForwardContext.IsNotParsedByTransition, Kit);
@@ -54,7 +53,6 @@ namespace saiflow.engine.Core.Pattern.Event.Message
         }
 
         /// <summary>
-        /// Complete work item
         /// 完成节点实例
         /// </summary>
         /// <param name="activityResource"></param>
@@ -69,7 +67,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
             };
 
             //设置活动节点的状态为完成状态
-            //Set the status of the activity node to complete status
+            //将活动节点状态设为完成
             ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
 
             LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;

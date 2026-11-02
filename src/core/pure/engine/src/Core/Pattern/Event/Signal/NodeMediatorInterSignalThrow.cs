@@ -15,7 +15,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Signal
 {
     /// <summary>
-    /// Intermediate Signal throw node mediator
     /// 中间事件节点处理类
     /// </summary>
     internal class NodeMediatorInterSignalThrow : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
@@ -27,7 +26,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
         }
 
         /// <summary>
-        /// Created automatically
+        /// 自动创建
         /// </summary>
         public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, WfAppRunner runner, SQLBuilder kit)
         {
@@ -38,7 +37,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
@@ -55,7 +54,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
         }
 
         /// <summary>
-        /// Complete automatically
+        /// 自动完成
         /// </summary>
         public NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,
             string transitionId,
@@ -71,8 +70,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
             LinkContext.CurrentActivity = toActivity;
             LinkContext.CurrentActivityInstance = toActivityInstance;
 
-            //执行节点上的信号发布
-            //Signal release on the execution node
+            //在执行节点释放信号
             var signalDelegateService = new SignalDelegateService(Sail);
             signalDelegateService.PublishSignal(processInstance, LinkContext.CurrentActivity, toActivityInstance);
 

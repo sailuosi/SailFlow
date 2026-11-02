@@ -12,8 +12,7 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern
 {
     /// <summary>
-    /// Node Mediator Task
-    /// ����ڵ�ִ����
+    /// 任务节点执行器
     /// </summary>
     internal class NodeMediatorTask : NodeMediator
     {
@@ -30,7 +29,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
@@ -44,8 +43,7 @@ namespace saiflow.engine.Core.Pattern
 
                 OnAfterExecuteWorkItem();
 
-                //��ȡ��һ���ڵ��б���������ִ��
-                //Get the next node list: and continue execution
+                //获取下一节点列表并继续执行
                 if (canContinueForwardCurrentNode)
                 {
                     ContinueForwardCurrentNode(ActivityForwardContext.IsNotParsedByTransition, this.Kit);
@@ -58,8 +56,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Complete work item
-        /// ��ɽڵ�ʵ��
+        /// 完成工作项
         /// </summary>   
         internal bool CompleteWorkItem(int? taskId,
             ActivityResource activityResource,
@@ -73,14 +70,11 @@ namespace saiflow.engine.Core.Pattern
 
             if (taskId != null)
             {
-                //��ɱ����񣬷��������Ѿ�ת�Ƶ���һ����ǩ���񣬲�����ִ�������ڵ�
-                //Complete this task, return that the task has been transferred to the next co signing task,
-                //and do not continue to execute other nodes
+                //完成本任务后转入下一会签任务，不再继续执行其它节点
                 base.TaskManager.Complete(SailSqlAccess.Sibling(kit), taskId.Value, activityResource.AppRunner);
             }
 
-            //���û�ڵ��״̬Ϊ���״̬
-            //Set the status of the activity node to complete status
+            //将活动节点状态设为完成
             base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
 
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
@@ -90,8 +84,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Create activity task transition instance
-        /// ���������ת��ʵ������
+        /// 创建活动任务转移实例
         /// </summary>
         internal override void CreateActivityTaskTransitionInstance(Activity toActivity,
             ProcessInstanceEntity processInstance,
@@ -105,8 +98,7 @@ namespace saiflow.engine.Core.Pattern
             Boolean isParallel = false;
             if (fromActivityInstance.ActivityType == (short)ActivityTypeEnum.GatewayNode)
             {
-                //������ʵ����֧�ж�(AndSplit Multiple)
-                //Concurrent multi instance branch judgment (AndSplit Multiple)
+                //并发多实例分支判定（AndSplit Multiple）
                 var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, SailSqlAccess.Sibling(kit), processInstance);
                 var activityNode = processModel.GetActivity(fromActivityInstance.ActivityId);
                 isParallel = processModel.IsAndSplitMI(activityNode);
@@ -114,13 +106,11 @@ namespace saiflow.engine.Core.Pattern
 
             if (isParallel)
             {
-                //���ж�ʵ������
-                //Parallel mutiple instance container
+                //并行多实例容器
                 ActivityInstanceEntity entity = null;
                 var plist = activityResource.NextActivityPerformers[toActivity.ActivityId];
 
-                //�������ж�ʵ����֧
-                //Create parallel multi instance branches
+                //创建并行多实例分支
                 for (var i = 0; i < plist.Count; i++)
                 {
                     entity = base.CreateActivityInstanceObject(toActivity, processInstance, activityResource.AppRunner);
@@ -150,12 +140,10 @@ namespace saiflow.engine.Core.Pattern
             }
             else
             {
-                //��ͨ����ڵ�
-                //Normal Task Node
+                //普通任务节点
                 var toActivityInstance = base.CreateActivityInstanceObject(toActivity, processInstance, activityResource.AppRunner);
 
-                //��������˻غ�ķ���
-                //Handling returns after multiple returns
+                //处理多次退回后的返回
                 WriteBackSrcOrgInformation(toActivityInstance, fromActivityInstance, kit);
 
                 toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
@@ -174,8 +162,7 @@ namespace saiflow.engine.Core.Pattern
                     activityResource.AppRunner,
                     kit);
 
-                //�����ⲿ�¼���ע�᷽��
-                //Call the registration method for external events
+                //调用外部事件注册方法
                 var EventContext = new EventContext
                 {
                     AppInstanceId = processInstance.AppInstanceId,
@@ -193,8 +180,7 @@ namespace saiflow.engine.Core.Pattern
         }
 
         /// <summary>
-        /// Maintain source node information for multiple returns
-        /// ά������˻�ʱ��Դ�ڵ���Ϣ
+        /// 维护多次退回时的源节点信息
         /// </summary>
         /// <param name="toActivityInstance"></param>
         /// <param name="fromActivityInstance"></param>

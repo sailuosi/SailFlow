@@ -20,8 +20,7 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Message
 {
     /// <summary>
-    /// End node mediator message throw
-    /// �����ڵ㴦����
+    /// 结束消息抛出节点执行器
     /// </summary>
     internal class NodeMediatorEndMsgThrow : NodeMediator
     {
@@ -32,56 +31,47 @@ namespace saiflow.engine.Core.Pattern.Event.Message
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
-            //ִ��ǰAction�б�
-            //On before execute work item
+            //工作项执行前
             OnBeforeExecuteWorkItem();
 
-            //�����������
-            //Set process instance completed
+            //将流程实例设为完成
             ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
             var kit = SailSqlAccess.Sibling(Kit);
             var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id.Value,
                 ActivityForwardContext.ActivityResource.AppRunner);
 
-            //ִ�нڵ��ϵ���Ϣ����
-            //Publish messages on the execution node
+            //在执行节点发布消息
             var msgDelegateService = new MessageDelegateService(Sail);
             msgDelegateService.PublishMessage(processInstance, LinkContext.CurrentActivity, ActivityForwardContext.FromActivityInstance);
 
-            //�����ǰ�����������̣�����������ɣ���������ת����һ�ڵ�
-            //If the current process is a subprocess,
-            //then the subprocess is completed and the main process flows to the next node
+            //若当前为子流程，则完成子流程并推动主流程进入下一节点
             if (pim.IsSubProcess(processInstance) == true)
             {
                 ContinueMainProcessRunning(processInstance, Kit);
             }
 
-            //ִ�к�Action�б�
-            //On after execute work item
+            //工作项执行后
             OnAfterExecuteWorkItem();
         }
 
         /// <summary>
-        /// Continue to execute the main process
-        /// ����ִ��������
+        /// 继续执行主流程
         /// </summary>
         /// <param name="processInstance"></param>
         /// <param name="kit"></param>
         private void ContinueMainProcessRunning(ProcessInstanceEntity processInstance,
             SQLBuilder kit)
         {
-            //��ȡ������һ��������Ա�б���Ϣ
-            //Read the personnel list information for the next step in the process
+            //读取流程下一步人员列表
             var runner = FillNextActivityPerformersByRoleList(processInstance.InvokedActivityInstanceId.Value,
                 processInstance.InvokedActivityId,
                 kit);
 
-            //��ʼִ����һ��
-            //Start executing the next step
+            //开始执行下一步
             var runAppResult = WfExecutedResult.Default();
             var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(Sail, runner, kit, ref runAppResult);
             if (runAppResult.Status == WfExecutedStatus.Exception)
@@ -89,8 +79,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
                 throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorend.ContinueMainProcessRunning.warn", runAppResult.Message));
             }
 
-            //ע���¼�������
-            //Register the event and run it
+            //注册并触发事件
             WfRuntimeManagerFactory.RegisterEvent(runtimeInstance,
                 runtimeInstance_OnWfProcessRunning,
                 runtimeInstance_OnWfProcessContinued);
@@ -118,8 +107,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
         }
 
         /// <summary>
-        /// Add role users using process defined resources
-        /// ʹ�����̶�����Դ���ӽ�ɫ�û�
+        /// 按流程定义资源添加角色用户
         /// </summary>
         private WfAppRunner FillNextActivityPerformersByRoleList(int mainActivityInstanceId,
             string mainActivityId,
@@ -130,8 +118,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
             var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, kit, mainProcessInstance);
             var nextSteps = processModel.GetNextActivityTreeView(mainActivityId);
 
-            //��ȡ�����̵�����
-            //The task of obtaining the mainstream process
+            //获取主流程任务
             var task = new TaskManager(Sail).GetTaskByActivity(SailSqlAccess.Sibling(kit), mainProcessInstance.Id.Value, mainActivityInstanceId);
             var runner = new WfAppRunner
             {
@@ -163,8 +150,7 @@ namespace saiflow.engine.Core.Pattern.Event.Message
         }
 
         /// <summary>
-        /// End node activity and transfer instantiation, no task data available
-        /// �����ڵ���ת��ʵ������û����������
+        /// 结束节点活动与转移实例化（无任务数据）
         /// </summary>
         internal override void CreateActivityTaskTransitionInstance(Activity toActivity,
             ProcessInstanceEntity processInstance,

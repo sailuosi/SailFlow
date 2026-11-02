@@ -17,7 +17,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Timer
 {
     /// <summary>
-    /// Intermediate timer node mediator
     /// 中间事件节点处理类
     /// </summary>
     internal class NodeMediatorInterTimer : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
@@ -29,24 +28,21 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
         }
 
         /// <summary>
-        /// Created automatically
+        /// 自动创建
         /// </summary>
         public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, WfAppRunner runner, SQLBuilder kit)
         {
             var timerActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, runner);
 
-            //存储下一步步骤人员信息
-            //Store personnel information for the next step
+            //保存下一步人员信息
             timerActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
 
-            //延时时间信息
-            //Overdue datetime
+            //逾期时间
             timerActivityInstance.OverdueDateTime = CalcDataTimeFromVariable(toActivity);
             timerActivityInstance.AssignedUserIds = WfDefine.SYSTEM_JOBTIMER_USER_ID;
             timerActivityInstance.AssignedUserNames = WfDefine.SYSTEM_JOBTIMER_USER_NAME;
 
-            //定时作业信息
-            //job timer
+            //作业定时器
             timerActivityInstance.JobTimerType = (short)JobTimerTypeEnum.Timer;
             timerActivityInstance.JobTimerStatus = (short)JobTimerStatusEnum.Ready;
 
@@ -57,7 +53,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
@@ -74,7 +70,7 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
         }
 
         /// <summary>
-        /// Complete automatically
+        /// 自动完成
         /// </summary>
         public NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,
             string transitionId,
@@ -109,7 +105,6 @@ namespace saiflow.engine.Core.Pattern.Event.Timer
         }
 
         /// <summary>
-        /// Calculate delay time
         /// 计算延迟时间
         /// </summary>
         /// <param name="timerActivity"></param>

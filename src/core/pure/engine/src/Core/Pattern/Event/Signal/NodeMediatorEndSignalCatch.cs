@@ -8,7 +8,6 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event.Signal
 {
     /// <summary>
-    /// End signal catch node mediator
     /// 信号结束节点的Catch类
     /// </summary>
     internal class NodeMediatorEndSignalCatch : NodeMediator
@@ -20,7 +19,7 @@ namespace saiflow.engine.Core.Pattern.Event.Signal
         }
 
         /// <summary>
-        /// Execute work item
+        /// 执行工作项
         /// </summary>
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {

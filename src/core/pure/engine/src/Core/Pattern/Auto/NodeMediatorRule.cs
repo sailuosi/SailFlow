@@ -10,7 +10,7 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Auto
 {
     /// <summary>
-    /// Business rule task mediator
+    /// 业务规则任务执行器
     /// </summary>
     internal class NodeMediatorRule : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
     {

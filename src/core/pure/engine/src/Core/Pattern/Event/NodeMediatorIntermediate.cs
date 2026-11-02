@@ -15,8 +15,7 @@ using saiflow.engine.Client;
 namespace saiflow.engine.Core.Pattern.Event
 {
     /// <summary>
-    /// Intermediate node mediator
-    /// �м��¼��ڵ㴦����
+    /// 中间节点执行器
     /// </summary>
     internal class NodeMediatorIntermediate : NodeMediator, ICreatedAutomaticlly, ICompletedAutomaticlly
     {
@@ -27,7 +26,7 @@ namespace saiflow.engine.Core.Pattern.Event
         }
 
         /// <summary>
-        /// Created automatically
+        /// 自动创建
         /// </summary>
         public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, WfAppRunner runner, SQLBuilder kit)
         {
@@ -52,7 +51,7 @@ namespace saiflow.engine.Core.Pattern.Event
         }
 
         /// <summary>
-        /// Complete automatically
+        /// 自动完成
         /// </summary>
         public NodeAutoExecutedResult CompleteAutomaticlly(ProcessInstanceEntity processInstance,
             string transitionId,
