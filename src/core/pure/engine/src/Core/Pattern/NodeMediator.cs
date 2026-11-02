@@ -539,351 +539,441 @@ namespace saiflow.engine.Core.Pattern
                             );
                     }
                 }
-                else if (comp.Activity.ActivityType == ActivityTypeEnum.TaskNode)                  
+                else
                 {
-                    // 任务节点：依据来源活动实例状态判断是否可创建任务
-                    if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
+                    switch (comp.Activity.ActivityType)
                     {
-                        // 创建新任务节点
-                        NodeMediator taskNodeMediator = new NodeMediatorTask(Kit, Sail);
-                        taskNodeMediator.CreateActivityTaskTransitionInstance(comp.Activity,
-                            ActivityForwardContext.ProcessInstance,
-                            fromActivityInstance,
-                            comp.Transition.TransitionId,
-                            comp.Transition.DirectionType == TransitionDirectionTypeEnum.Loop ?
-                                TransitionTypeEnum.Loop : TransitionTypeEnum.Forward, 
-                            isNotParsedForward == true ?
-                                TransitionFlyingTypeEnum.ForwardFlying : TransitionFlyingTypeEnum.NotFlying,
-                            activityResource,
-                            Kit);
-                    }
-                    else
-                    {
-                        // 下一任务节点尚未创建，需给出提示
-                        if (IsWaitingOneOfJoin(fromActivity.GatewayDetail) == true)
-                        {
-                            mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
-                                WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
-                            LogManager.RecordLog(Sail, "NodeMediator.TaskNode.NeedOtherGatewayBranchesToJoin.Exception",
-                                LogEventType.Exception,
-                                LogPriority.Normal,
-                                null,
-                                new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
-                                );
-                        }
-                        else
-                        {
-                            mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
-                                WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
-                            LogManager.RecordLog(Sail, "NodeMediator.TaskNode.NeedOtherGatewayBranchesToJoin.OtherUnkownReaseon.Exception",
-                                LogEventType.Exception,
-                                LogPriority.Normal,
-                                null,
-                                new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
-                                );
-                        }
+                        case ActivityTypeEnum.TaskNode:
+                            ContinueForwardTaskNode(fromActivity, fromActivityInstance, comp, isNotParsedForward, activityResource, ref mediatorResult);
+                            break;
+                        case ActivityTypeEnum.AIServiceNode:
+                            ContinueForwardAIServiceNode(fromActivity, fromActivityInstance, comp, isNotParsedForward, activityResource, ref mediatorResult);
+                            break;
+                        case ActivityTypeEnum.ServiceNode:
+                            ContinueForwardServiceNode(fromActivity, fromActivityInstance, comp, isNotParsedForward, activityResource, ref mediatorResult);
+                            break;
+                        case ActivityTypeEnum.ScriptNode:
+                            ContinueForwardScriptNode(fromActivity, fromActivityInstance, comp, conditionKeyValuePair, isNotParsedForward, activityResource, ref mediatorResult);
+                            break;
+                        case ActivityTypeEnum.MultiSignNode:
+                            ContinueForwardMultiSignNode(fromActivity, fromActivityInstance, comp, isNotParsedForward, activityResource, ref mediatorResult);
+                            break;
+                        case ActivityTypeEnum.SubProcessNode:
+                            ContinueForwardSubProcessNode(fromActivityInstance, comp, activityResource);
+                            break;
+                        case ActivityTypeEnum.EndNode:
+                            ContinueForwardEndNode(fromActivity, fromActivityInstance, comp, activityResource, ref mediatorResult);
+                            break;
+                        default:
+                            ContinueForwardUnknownLeafNode(comp, ref mediatorResult);
+                            break;
                     }
                 }
-                else if (comp.Activity.ActivityType == ActivityTypeEnum.AIServiceNode)
+            }
+        }
+
+        /// <summary>
+        /// 任务节点：依据来源活动实例状态判断是否可创建任务
+        /// </summary>
+        private void ContinueForwardTaskNode(Activity fromActivity,
+            ActivityInstanceEntity fromActivityInstance,
+            NextActivityComponent comp,
+            Boolean isNotParsedForward,
+            ActivityResource activityResource,
+            ref List<WfNodeMediatedResult> mediatorResult)
+        {
+            if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
+            {
+                // 创建新任务节点
+                NodeMediator taskNodeMediator = new NodeMediatorTask(Kit, Sail);
+                taskNodeMediator.CreateActivityTaskTransitionInstance(comp.Activity,
+                    ActivityForwardContext.ProcessInstance,
+                    fromActivityInstance,
+                    comp.Transition.TransitionId,
+                    comp.Transition.DirectionType == TransitionDirectionTypeEnum.Loop ?
+                        TransitionTypeEnum.Loop : TransitionTypeEnum.Forward,
+                    isNotParsedForward == true ?
+                        TransitionFlyingTypeEnum.ForwardFlying : TransitionFlyingTypeEnum.NotFlying,
+                    activityResource,
+                    Kit);
+            }
+            else
+            {
+                // 下一任务节点尚未创建，需给出提示
+                if (IsWaitingOneOfJoin(fromActivity.GatewayDetail) == true)
                 {
-                    NodeAutoExecutedResult aiServiceExecutedResult = null;
-                    NodeMediator aiServiceNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
-
-                    ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)aiServiceNodeMediator;
-                    var currentActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity,
-                        ActivityForwardContext.ProcessInstance,
-                        activityResource.AppRunner,
-                        Kit);
-
-                    aiServiceNodeMediator.ExecuteWorkItem(currentActivityInstance);
-
-                    ICompletedAutomaticlly autoEvent = (ICompletedAutomaticlly)aiServiceNodeMediator;
-                    aiServiceExecutedResult = autoEvent.CompleteAutomaticlly(ActivityForwardContext.ProcessInstance,
-                        comp.Transition.TransitionId,
-                        fromActivity,
-                        fromActivityInstance,
-                        comp.Activity,
-                        currentActivityInstance,
-                        activityResource.AppRunner,
-                        Kit);
-
-                    if (aiServiceExecutedResult.Status == NodeAutoExecutedStatus.Successed)
-                    {
-                        var outputVariableNameList = ActivityForwardContext.ProcessModel.GetActivityOutputVarialbeNameList(comp.Activity);
-
-                        var kit = SailSqlAccess.Sibling(Kit);
-                        var pvm = new ProcessVariableManager(Sail);
-                        var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id.Value, currentActivityInstance.Id.Value,
-                            outputVariableNameList);
-
-                        var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
-
-                        var processModelBPMNCore = new ProcessModelBPMNCore();
-                        var aiServiceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId, currentActivityInstance.Id, newConditionKeyValuePair, Kit);
-
-                        if (aiServiceNextMatchedResult.MatchedType != NextActivityMatchedType.Successed
-                            || aiServiceNextMatchedResult.Root == null
-                            || aiServiceNextMatchedResult.Root.HasChildren == false)
-                        {
-                            throw new WfRuntimeException(
-                                "RuleTask/ServiceTask/AI output variables did not match any outgoing transition conditions.");
-                        }
-
-                        var newActivityResource = ActivityResourceFactory.Create(ActivityForwardContext.ProcessModel,
-                            aiServiceNextMatchedResult.Root,
-                            activityResource.AppRunner,
-                            newConditionKeyValuePair);
-
-                        ContinueForwardCurrentNodeRecurisivly(aiServiceNodeMediator.LinkContext.CurrentActivity,
-                            currentActivityInstance,
-                            aiServiceNextMatchedResult.Root,
-                            newConditionKeyValuePair,
-                            isNotParsedForward,
-                            newActivityResource,
-                            ref mediatorResult);
-                    }
-                    else
-                    {
-                        mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
-                            WfNodeMediatedFeedback.IntermediateEventFailed));
-                        LogManager.RecordLog(Sail, "AIServiceNodeExecuteException",
-                            LogEventType.Exception,
-                            LogPriority.Normal,
-                            null,
-                            new WfRuntimeException(aiServiceExecutedResult.Status.ToString()));
-                    }
-                }
-                else if (comp.Activity.ActivityType == ActivityTypeEnum.ServiceNode)
-                {
-                    // 服务节点：调用外部业务逻辑后继续向下流转
-                    NodeAutoExecutedResult serviceExecutedResult = null;
-                    NodeMediator serviceNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
-
-                    ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)serviceNodeMediator;
-                    var currentActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity,
-                        ActivityForwardContext.ProcessInstance,
-                        activityResource.AppRunner,
-                        Kit);
-
-                    serviceNodeMediator.ExecuteWorkItem(currentActivityInstance);
-
-                    ICompletedAutomaticlly autoEvent = (ICompletedAutomaticlly)serviceNodeMediator;
-                    serviceExecutedResult = autoEvent.CompleteAutomaticlly(ActivityForwardContext.ProcessInstance,
-                        comp.Transition.TransitionId,
-                        fromActivity,
-                        fromActivityInstance,
-                        comp.Activity,
-                        currentActivityInstance,
-                        activityResource.AppRunner,
-                        Kit);
-
-                    if (serviceExecutedResult.Status == NodeAutoExecutedStatus.Successed)
-                    {
-                        var outputVariableNameList = ActivityForwardContext.ProcessModel.GetActivityOutputVarialbeNameList(comp.Activity);
-
-                        var kit = SailSqlAccess.Sibling(Kit);
-                        var pvm = new ProcessVariableManager(Sail);
-                        var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id.Value, currentActivityInstance.Id.Value,
-                            outputVariableNameList);
-                        var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
-
-                        var processModelBPMNCore = new ProcessModelBPMNCore();
-                        var serviceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId, currentActivityInstance.Id, newConditionKeyValuePair, Kit);
-
-                        if (serviceNextMatchedResult.MatchedType != NextActivityMatchedType.Successed
-                            || serviceNextMatchedResult.Root == null
-                            || serviceNextMatchedResult.Root.HasChildren == false)
-                        {
-                            throw new WfRuntimeException(
-                                "RuleTask/ServiceTask output variables did not match any outgoing transition conditions.");
-                        }
-
-                        var newActivityResource = ActivityResourceFactory.Create(ActivityForwardContext.ProcessModel,
-                            serviceNextMatchedResult.Root,
-                            activityResource.AppRunner,
-                            newConditionKeyValuePair);
-
-                        // 继续遍历后续子节点
-                        ContinueForwardCurrentNodeRecurisivly(serviceNodeMediator.LinkContext.CurrentActivity,
-                            currentActivityInstance,
-                            serviceNextMatchedResult.Root,
-                            newConditionKeyValuePair,
-                            isNotParsedForward,
-                            newActivityResource,
-                            ref mediatorResult);
-                    }
-                    else
-                    {
-                        mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
-                            WfNodeMediatedFeedback.IntermediateEventFailed));
-                        LogManager.RecordLog(Sail, "ServiceNodeExecuteException",
-                            LogEventType.Exception,
-                            LogPriority.Normal,
-                            null,
-                            new WfRuntimeException(serviceExecutedResult.Status.ToString()));
-                    }
-                }
-                else if (comp.Activity.ActivityType == ActivityTypeEnum.ScriptNode)
-                {
-                    // 脚本节点：执行脚本后继续向下流转
-                    NodeAutoExecutedResult scriptExecutedResult = null;
-                    NodeMediator scriptNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
-
-                    ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)scriptNodeMediator;
-                    var toActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity,
-                        ActivityForwardContext.ProcessInstance,
-                        activityResource.AppRunner,
-                        Kit);
-
-                    scriptNodeMediator.ExecuteWorkItem(toActivityInstance);
-
-                    ICompletedAutomaticlly autoEvent = (ICompletedAutomaticlly)scriptNodeMediator;
-                    scriptExecutedResult = autoEvent.CompleteAutomaticlly(ActivityForwardContext.ProcessInstance,
-                        comp.Transition.TransitionId,
-                        fromActivity,
-                        fromActivityInstance,
-                        comp.Activity,
-                        toActivityInstance,
-                        activityResource.AppRunner,
-                        Kit);
-                    if (scriptExecutedResult.Status == NodeAutoExecutedStatus.Successed)
-                    {
-                        ContinueForwardCurrentNodeRecurisivly(scriptNodeMediator.LinkContext.CurrentActivity,
-                            toActivityInstance,
-                            comp,
-                            conditionKeyValuePair,
-                            isNotParsedForward,
-                            activityResource,
-                            ref mediatorResult);
-                    }
-                    else
-                    {
-                        mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(WfNodeMediatedFeedback.IntermediateEventFailed));
-                        LogManager.RecordLog(Sail, "ScriptNodeExecuteException",
-                            LogEventType.Exception,
-                            LogPriority.Normal,
-                            null,
-                            new WfRuntimeException(scriptExecutedResult.Status.ToString()));
-                    }
-                }
-                else if (comp.Activity.ActivityType == ActivityTypeEnum.MultiSignNode)
-                {
-                    if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
-                    {
-                        // 会签节点：依据来源活动实例状态创建多实例
-                        NodeMediator mediatorMICreator = new NodeMediatorMultiSignCreator(Kit, Sail);
-                        mediatorMICreator.CreateActivityTaskTransitionInstance(comp.Activity,
-                            ActivityForwardContext.ProcessInstance,
-                            fromActivityInstance,
-                            comp.Transition.TransitionId,
-                            comp.Transition.DirectionType == TransitionDirectionTypeEnum.Loop ?
-                                TransitionTypeEnum.Loop : TransitionTypeEnum.Forward,
-                            isNotParsedForward == true ?
-                                TransitionFlyingTypeEnum.ForwardFlying : TransitionFlyingTypeEnum.NotFlying,
-                            activityResource,
-                            Kit);
-                    }
-                    else
-                    {
-                        // 下一会签节点尚未创建，需给出提示
-                        if (IsWaitingOneOfJoin(fromActivity.GatewayDetail) == true)
-                        {
-                            mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
-                                WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
-                            LogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
-                                LogEventType.Exception,
-                                LogPriority.Normal,
-                                null,
-                                new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
-                                );
-                        }
-                        else
-                        {
-                            mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
-                                WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
-                            LogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
-                                LogEventType.Exception,
-                                LogPriority.Normal,
-                                null,
-                                new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
-                                );
-                        }
-                    }
-                }
-                else if (comp.Activity.ActivityType == ActivityTypeEnum.SubProcessNode)
-                {
-                    if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
-                    {
-                        var subNodeMediator = NodeMediatorFactory.CreateNodeMediatorSubProcess(comp.Activity, this.Kit, Sail);
-                        subNodeMediator.CreateActivityTaskTransitionInstance(comp.Activity,
-                            ActivityForwardContext.ProcessInstance,
-                            fromActivityInstance,
-                            comp.Transition.TransitionId,
-                            comp.Transition.DirectionType == TransitionDirectionTypeEnum.Loop ?
-                                TransitionTypeEnum.Loop : TransitionTypeEnum.Forward,
-                            TransitionFlyingTypeEnum.NotFlying,
-                            activityResource,
-                            Kit);
-                    }
-                }
-                else if (comp.Activity.ActivityType == ActivityTypeEnum.EndNode)
-                {
-                    if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
-                    {
-                        // 结束节点：完结流程
-                        var endMediator = NodeMediatorFactory.CreateNodeMediatorEnd(ActivityForwardContext, comp.Activity, Kit, Sail);
-                        endMediator.LinkContext.CurrentActivity = comp.Activity;
-
-                        // 创建结束节点实例与转移数据
-                        endMediator.CreateActivityTaskTransitionInstance(comp.Activity, ActivityForwardContext.ProcessInstance,
-                            fromActivityInstance, comp.Transition.TransitionId, TransitionTypeEnum.Forward,
-                            TransitionFlyingTypeEnum.NotFlying,
-                            activityResource,
-                            Kit);
-
-                        // 执行结束节点
-                        endMediator.ExecuteWorkItem(null);
-                    }
-                    else
-                    {
-                        // 结束节点尚未创建，需给出提示
-                        if (IsWaitingOneOfJoin(fromActivity.GatewayDetail) == true)
-                        {
-                            mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
-                                WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
-                            LogManager.RecordLog(Sail, "NodeMediator.EndNode.NeedOtherGatewayBranchesToJoin.Exception",
-                                LogEventType.Exception,
-                                LogPriority.Normal,
-                                null,
-                                new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
-                                );
-                        }
-                        else
-                        {
-                            mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
-                                WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
-                            LogManager.RecordLog(Sail, "NodeMediator.EndNode.NeedOtherGatewayBranchesToJoin.OtherUnkownReaseon.Exception",
-                                LogEventType.Exception,
-                                LogPriority.Normal,
-                                null,
-                                new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
-                                );
-                        }
-                    }
+                    mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
+                        WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
+                    LogManager.RecordLog(Sail, "NodeMediator.TaskNode.NeedOtherGatewayBranchesToJoin.Exception",
+                        LogEventType.Exception,
+                        LogPriority.Normal,
+                        null,
+                        new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
+                        );
                 }
                 else
                 {
                     mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
-                        WfNodeMediatedFeedback.UnknownNodeTypeToWatch));
-                    LogManager.RecordLog(Sail, "NodeMediator.UnkonwNodeType.Exception",
+                        WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
+                    LogManager.RecordLog(Sail, "NodeMediator.TaskNode.NeedOtherGatewayBranchesToJoin.OtherUnkownReaseon.Exception",
                         LogEventType.Exception,
                         LogPriority.Normal,
                         null,
-                        new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.unknowntype.warn",
-                            comp.Activity.ActivityType.ToString()))
+                        new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
                         );
                 }
             }
+        }
+
+        /// <summary>
+        /// AI 服务节点：执行后按输出变量重算后续节点并继续流转
+        /// </summary>
+        private void ContinueForwardAIServiceNode(Activity fromActivity,
+            ActivityInstanceEntity fromActivityInstance,
+            NextActivityComponent comp,
+            Boolean isNotParsedForward,
+            ActivityResource activityResource,
+            ref List<WfNodeMediatedResult> mediatorResult)
+        {
+            NodeAutoExecutedResult aiServiceExecutedResult = null;
+            NodeMediator aiServiceNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
+
+            ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)aiServiceNodeMediator;
+            var currentActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity,
+                ActivityForwardContext.ProcessInstance,
+                activityResource.AppRunner,
+                Kit);
+
+            aiServiceNodeMediator.ExecuteWorkItem(currentActivityInstance);
+
+            ICompletedAutomaticlly autoEvent = (ICompletedAutomaticlly)aiServiceNodeMediator;
+            aiServiceExecutedResult = autoEvent.CompleteAutomaticlly(ActivityForwardContext.ProcessInstance,
+                comp.Transition.TransitionId,
+                fromActivity,
+                fromActivityInstance,
+                comp.Activity,
+                currentActivityInstance,
+                activityResource.AppRunner,
+                Kit);
+
+            if (aiServiceExecutedResult.Status == NodeAutoExecutedStatus.Successed)
+            {
+                var outputVariableNameList = ActivityForwardContext.ProcessModel.GetActivityOutputVarialbeNameList(comp.Activity);
+
+                var kit = SailSqlAccess.Sibling(Kit);
+                var pvm = new ProcessVariableManager(Sail);
+                var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id.Value, currentActivityInstance.Id.Value,
+                    outputVariableNameList);
+
+                var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
+
+                var processModelBPMNCore = new ProcessModelBPMNCore();
+                var aiServiceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId, currentActivityInstance.Id, newConditionKeyValuePair, Kit);
+
+                if (aiServiceNextMatchedResult.MatchedType != NextActivityMatchedType.Successed
+                    || aiServiceNextMatchedResult.Root == null
+                    || aiServiceNextMatchedResult.Root.HasChildren == false)
+                {
+                    throw new WfRuntimeException(
+                        "RuleTask/ServiceTask/AI output variables did not match any outgoing transition conditions.");
+                }
+
+                var newActivityResource = ActivityResourceFactory.Create(ActivityForwardContext.ProcessModel,
+                    aiServiceNextMatchedResult.Root,
+                    activityResource.AppRunner,
+                    newConditionKeyValuePair);
+
+                ContinueForwardCurrentNodeRecurisivly(aiServiceNodeMediator.LinkContext.CurrentActivity,
+                    currentActivityInstance,
+                    aiServiceNextMatchedResult.Root,
+                    newConditionKeyValuePair,
+                    isNotParsedForward,
+                    newActivityResource,
+                    ref mediatorResult);
+            }
+            else
+            {
+                mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
+                    WfNodeMediatedFeedback.IntermediateEventFailed));
+                LogManager.RecordLog(Sail, "AIServiceNodeExecuteException",
+                    LogEventType.Exception,
+                    LogPriority.Normal,
+                    null,
+                    new WfRuntimeException(aiServiceExecutedResult.Status.ToString()));
+            }
+        }
+
+        /// <summary>
+        /// 服务节点：调用外部业务逻辑后继续向下流转
+        /// </summary>
+        private void ContinueForwardServiceNode(Activity fromActivity,
+            ActivityInstanceEntity fromActivityInstance,
+            NextActivityComponent comp,
+            Boolean isNotParsedForward,
+            ActivityResource activityResource,
+            ref List<WfNodeMediatedResult> mediatorResult)
+        {
+            NodeAutoExecutedResult serviceExecutedResult = null;
+            NodeMediator serviceNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
+
+            ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)serviceNodeMediator;
+            var currentActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity,
+                ActivityForwardContext.ProcessInstance,
+                activityResource.AppRunner,
+                Kit);
+
+            serviceNodeMediator.ExecuteWorkItem(currentActivityInstance);
+
+            ICompletedAutomaticlly autoEvent = (ICompletedAutomaticlly)serviceNodeMediator;
+            serviceExecutedResult = autoEvent.CompleteAutomaticlly(ActivityForwardContext.ProcessInstance,
+                comp.Transition.TransitionId,
+                fromActivity,
+                fromActivityInstance,
+                comp.Activity,
+                currentActivityInstance,
+                activityResource.AppRunner,
+                Kit);
+
+            if (serviceExecutedResult.Status == NodeAutoExecutedStatus.Successed)
+            {
+                var outputVariableNameList = ActivityForwardContext.ProcessModel.GetActivityOutputVarialbeNameList(comp.Activity);
+
+                var kit = SailSqlAccess.Sibling(Kit);
+                var pvm = new ProcessVariableManager(Sail);
+                var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id.Value, currentActivityInstance.Id.Value,
+                    outputVariableNameList);
+                var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
+
+                var processModelBPMNCore = new ProcessModelBPMNCore();
+                var serviceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId, currentActivityInstance.Id, newConditionKeyValuePair, Kit);
+
+                if (serviceNextMatchedResult.MatchedType != NextActivityMatchedType.Successed
+                    || serviceNextMatchedResult.Root == null
+                    || serviceNextMatchedResult.Root.HasChildren == false)
+                {
+                    throw new WfRuntimeException(
+                        "RuleTask/ServiceTask output variables did not match any outgoing transition conditions.");
+                }
+
+                var newActivityResource = ActivityResourceFactory.Create(ActivityForwardContext.ProcessModel,
+                    serviceNextMatchedResult.Root,
+                    activityResource.AppRunner,
+                    newConditionKeyValuePair);
+
+                // 继续遍历后续子节点
+                ContinueForwardCurrentNodeRecurisivly(serviceNodeMediator.LinkContext.CurrentActivity,
+                    currentActivityInstance,
+                    serviceNextMatchedResult.Root,
+                    newConditionKeyValuePair,
+                    isNotParsedForward,
+                    newActivityResource,
+                    ref mediatorResult);
+            }
+            else
+            {
+                mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
+                    WfNodeMediatedFeedback.IntermediateEventFailed));
+                LogManager.RecordLog(Sail, "ServiceNodeExecuteException",
+                    LogEventType.Exception,
+                    LogPriority.Normal,
+                    null,
+                    new WfRuntimeException(serviceExecutedResult.Status.ToString()));
+            }
+        }
+
+        /// <summary>
+        /// 脚本节点：执行脚本后继续向下流转
+        /// </summary>
+        private void ContinueForwardScriptNode(Activity fromActivity,
+            ActivityInstanceEntity fromActivityInstance,
+            NextActivityComponent comp,
+            IDictionary<string, string> conditionKeyValuePair,
+            Boolean isNotParsedForward,
+            ActivityResource activityResource,
+            ref List<WfNodeMediatedResult> mediatorResult)
+        {
+            NodeAutoExecutedResult scriptExecutedResult = null;
+            NodeMediator scriptNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
+
+            ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)scriptNodeMediator;
+            var toActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity,
+                ActivityForwardContext.ProcessInstance,
+                activityResource.AppRunner,
+                Kit);
+
+            scriptNodeMediator.ExecuteWorkItem(toActivityInstance);
+
+            ICompletedAutomaticlly autoEvent = (ICompletedAutomaticlly)scriptNodeMediator;
+            scriptExecutedResult = autoEvent.CompleteAutomaticlly(ActivityForwardContext.ProcessInstance,
+                comp.Transition.TransitionId,
+                fromActivity,
+                fromActivityInstance,
+                comp.Activity,
+                toActivityInstance,
+                activityResource.AppRunner,
+                Kit);
+            if (scriptExecutedResult.Status == NodeAutoExecutedStatus.Successed)
+            {
+                ContinueForwardCurrentNodeRecurisivly(scriptNodeMediator.LinkContext.CurrentActivity,
+                    toActivityInstance,
+                    comp,
+                    conditionKeyValuePair,
+                    isNotParsedForward,
+                    activityResource,
+                    ref mediatorResult);
+            }
+            else
+            {
+                mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(WfNodeMediatedFeedback.IntermediateEventFailed));
+                LogManager.RecordLog(Sail, "ScriptNodeExecuteException",
+                    LogEventType.Exception,
+                    LogPriority.Normal,
+                    null,
+                    new WfRuntimeException(scriptExecutedResult.Status.ToString()));
+            }
+        }
+
+        /// <summary>
+        /// 会签节点：依据来源活动实例状态创建多实例
+        /// </summary>
+        private void ContinueForwardMultiSignNode(Activity fromActivity,
+            ActivityInstanceEntity fromActivityInstance,
+            NextActivityComponent comp,
+            Boolean isNotParsedForward,
+            ActivityResource activityResource,
+            ref List<WfNodeMediatedResult> mediatorResult)
+        {
+            if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
+            {
+                NodeMediator mediatorMICreator = new NodeMediatorMultiSignCreator(Kit, Sail);
+                mediatorMICreator.CreateActivityTaskTransitionInstance(comp.Activity,
+                    ActivityForwardContext.ProcessInstance,
+                    fromActivityInstance,
+                    comp.Transition.TransitionId,
+                    comp.Transition.DirectionType == TransitionDirectionTypeEnum.Loop ?
+                        TransitionTypeEnum.Loop : TransitionTypeEnum.Forward,
+                    isNotParsedForward == true ?
+                        TransitionFlyingTypeEnum.ForwardFlying : TransitionFlyingTypeEnum.NotFlying,
+                    activityResource,
+                    Kit);
+            }
+            else
+            {
+                // 下一会签节点尚未创建，需给出提示
+                if (IsWaitingOneOfJoin(fromActivity.GatewayDetail) == true)
+                {
+                    mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
+                        WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
+                    LogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
+                        LogEventType.Exception,
+                        LogPriority.Normal,
+                        null,
+                        new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
+                        );
+                }
+                else
+                {
+                    mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
+                        WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
+                    LogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
+                        LogEventType.Exception,
+                        LogPriority.Normal,
+                        null,
+                        new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
+                        );
+                }
+            }
+        }
+
+        /// <summary>
+        /// 子流程节点：源实例完成后创建子流程任务转移
+        /// </summary>
+        private void ContinueForwardSubProcessNode(ActivityInstanceEntity fromActivityInstance,
+            NextActivityComponent comp,
+            ActivityResource activityResource)
+        {
+            if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
+            {
+                var subNodeMediator = NodeMediatorFactory.CreateNodeMediatorSubProcess(comp.Activity, this.Kit, Sail);
+                subNodeMediator.CreateActivityTaskTransitionInstance(comp.Activity,
+                    ActivityForwardContext.ProcessInstance,
+                    fromActivityInstance,
+                    comp.Transition.TransitionId,
+                    comp.Transition.DirectionType == TransitionDirectionTypeEnum.Loop ?
+                        TransitionTypeEnum.Loop : TransitionTypeEnum.Forward,
+                    TransitionFlyingTypeEnum.NotFlying,
+                    activityResource,
+                    Kit);
+            }
+        }
+
+        /// <summary>
+        /// 结束节点：完结流程
+        /// </summary>
+        private void ContinueForwardEndNode(Activity fromActivity,
+            ActivityInstanceEntity fromActivityInstance,
+            NextActivityComponent comp,
+            ActivityResource activityResource,
+            ref List<WfNodeMediatedResult> mediatorResult)
+        {
+            if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
+            {
+                var endMediator = NodeMediatorFactory.CreateNodeMediatorEnd(ActivityForwardContext, comp.Activity, Kit, Sail);
+                endMediator.LinkContext.CurrentActivity = comp.Activity;
+
+                // 创建结束节点实例与转移数据
+                endMediator.CreateActivityTaskTransitionInstance(comp.Activity, ActivityForwardContext.ProcessInstance,
+                    fromActivityInstance, comp.Transition.TransitionId, TransitionTypeEnum.Forward,
+                    TransitionFlyingTypeEnum.NotFlying,
+                    activityResource,
+                    Kit);
+
+                // 执行结束节点
+                endMediator.ExecuteWorkItem(null);
+            }
+            else
+            {
+                // 结束节点尚未创建，需给出提示
+                if (IsWaitingOneOfJoin(fromActivity.GatewayDetail) == true)
+                {
+                    mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
+                        WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
+                    LogManager.RecordLog(Sail, "NodeMediator.EndNode.NeedOtherGatewayBranchesToJoin.Exception",
+                        LogEventType.Exception,
+                        LogPriority.Normal,
+                        null,
+                        new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
+                        );
+                }
+                else
+                {
+                    mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
+                        WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
+                    LogManager.RecordLog(Sail, "NodeMediator.EndNode.NeedOtherGatewayBranchesToJoin.OtherUnkownReaseon.Exception",
+                        LogEventType.Exception,
+                        LogPriority.Normal,
+                        null,
+                        new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
+                        );
+                }
+            }
+        }
+
+        /// <summary>
+        /// 未知叶子节点类型
+        /// </summary>
+        private void ContinueForwardUnknownLeafNode(NextActivityComponent comp,
+            ref List<WfNodeMediatedResult> mediatorResult)
+        {
+            mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
+                WfNodeMediatedFeedback.UnknownNodeTypeToWatch));
+            LogManager.RecordLog(Sail, "NodeMediator.UnkonwNodeType.Exception",
+                LogEventType.Exception,
+                LogPriority.Normal,
+                null,
+                new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.unknowntype.warn",
+                    comp.Activity.ActivityType.ToString()))
+                );
         }
 
         /// <summary>
