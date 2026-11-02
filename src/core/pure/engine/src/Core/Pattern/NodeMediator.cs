@@ -411,120 +411,13 @@ namespace saiflow.engine.Core.Pattern
             {
                 if (comp.HasChildren)
                 {
-                    NodeAutoExecutedResult nodeExecutedResult = null;
                     if (XPDLHelper.IsGatewayComponentNode(comp.Activity.ActivityType) == true)
                     {
-                        // 网关节点：依据来源活动实例状态判断是否可继续
-                        if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
-                        {
-                            // 分支/合并网关：先实例化当前节点（自动完成）
-                            NodeMediatorGateway gatewayNodeMediator = NodeMediatorFactory.CreateNodeMediatorGateway(comp.Activity, this.ActivityForwardContext.ProcessModel, Kit, Sail);
-
-                            ICompleteGatewayAutomaticlly autoGateway = (ICompleteGatewayAutomaticlly)gatewayNodeMediator;
-                            nodeExecutedResult = autoGateway.CompleteAutomaticlly(ActivityForwardContext.ProcessInstance,
-                                comp.Transition.TransitionId,
-                                fromActivity,
-                                fromActivityInstance,
-                                activityResource.AppRunner,
-                                Kit);
-
-                            if (nodeExecutedResult.Status == NodeAutoExecutedStatus.Successed)
-                            {
-                                // 继续遍历后续子节点
-                                ContinueForwardCurrentNodeRecurisivly(gatewayNodeMediator.GatewayActivity,
-                                    gatewayNodeMediator.GatewayActivityInstance,
-                                    comp,
-                                    conditionKeyValuePair,
-                                    isNotParsedForward,
-                                    activityResource,
-                                    ref mediatorResult);
-                            }
-                            else
-                            {
-                                mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
-                                    WfNodeMediatedFeedback.OrJoinOneBranchHasBeenFinishedWaittingOthers));
-                                LogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
-                                    LogEventType.Exception,
-                                    LogPriority.Normal,
-                                    null,
-                                    new WfRuntimeException(
-                                        Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.warn"))
-                                    );
-                            }
-                        }
-                        else
-                        {
-                            // 下一节点尚未创建，需给出提示
-                            if (IsWaitingOneOfJoin(fromActivity.GatewayDetail) == true)
-                            {
-                                mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
-                                    WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
-                                LogManager.RecordLog(Sail, "NodeMediator.ContinueForwardCurrentNodeRecurisivly.IsWaintingOneOfJoin.Exception",
-                                    LogEventType.Exception,
-                                    LogPriority.Normal,
-                                    null,
-                                    new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
-                                    );
-                            }
-                            else
-                            {
-                                mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
-                                    WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
-                                LogManager.RecordLog(Sail, "NodeMediator.ContinueForwardCurrentNodeRecurisivly.IsWaintingOneOfJoin.OtherUnknownReason.Exception",
-                                    LogEventType.Exception,
-                                    LogPriority.Normal,
-                                    null,
-                                    new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
-                                    );
-                            }
-                        }
+                        ContinueForwardGatewayNode(fromActivity, fromActivityInstance, comp, conditionKeyValuePair, isNotParsedForward, activityResource, ref mediatorResult);
                     }
                     else if (XPDLHelper.IsCrossOverComponentNode(comp.Activity.ActivityType) == true)
                     {
-                        // 中间事件节点：调用外部业务逻辑后继续向下流转
-                        NodeMediator eventNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
-                        eventNodeMediator.LinkContext.FromActivity = fromActivity;
-                        eventNodeMediator.LinkContext.CurrentActivity = comp.Activity;
-
-                        ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)eventNodeMediator;
-                        var toActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity, 
-                            ActivityForwardContext.ProcessInstance,
-                            activityResource.AppRunner,
-                            Kit);
-
-                        eventNodeMediator.ExecuteWorkItem(toActivityInstance);
-
-                        ICompletedAutomaticlly autoCompletedEvent = (ICompletedAutomaticlly)eventNodeMediator;
-                        nodeExecutedResult = autoCompletedEvent.CompleteAutomaticlly(ActivityForwardContext.ProcessInstance,
-                            comp.Transition.TransitionId,
-                            fromActivity,
-                            fromActivityInstance,
-                            comp.Activity,
-                            toActivityInstance,
-                            activityResource.AppRunner,
-                            Kit);
-
-                        if (nodeExecutedResult.Status == NodeAutoExecutedStatus.Successed)
-                        {
-                            // 继续遍历后续子节点
-                            ContinueForwardCurrentNodeRecurisivly(eventNodeMediator.LinkContext.CurrentActivity,
-                                toActivityInstance,
-                                comp,
-                                conditionKeyValuePair,
-                                isNotParsedForward,
-                                activityResource,
-                                ref mediatorResult);
-                        }
-                        else
-                        {
-                            mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
-                                WfNodeMediatedFeedback.IntermediateEventFailed));
-                            LogManager.RecordLog(Sail, "IntermediateNodeExecuteException",
-                                LogEventType.Exception,
-                                LogPriority.Normal,
-                                null,
-                                new WfRuntimeException(nodeExecutedResult.Status.ToString()));
-                        }
+                        ContinueForwardIntermediateNode(fromActivity, fromActivityInstance, comp, conditionKeyValuePair, isNotParsedForward, activityResource, ref mediatorResult);
                     }
                     else
                     {
@@ -571,6 +464,140 @@ namespace saiflow.engine.Core.Pattern
                 }
             }
         }
+
+        #region ContinueForward 复合节点处理
+        /// <summary>
+        /// 网关节点：依据来源活动实例状态判断是否可继续
+        /// </summary>
+        private void ContinueForwardGatewayNode(Activity fromActivity,
+            ActivityInstanceEntity fromActivityInstance,
+            NextActivityComponent comp,
+            IDictionary<string, string> conditionKeyValuePair,
+            Boolean isNotParsedForward,
+            ActivityResource activityResource,
+            ref List<WfNodeMediatedResult> mediatorResult)
+        {
+            if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
+            {
+                // 分支/合并网关：先实例化当前节点（自动完成）
+                NodeMediatorGateway gatewayNodeMediator = NodeMediatorFactory.CreateNodeMediatorGateway(comp.Activity, this.ActivityForwardContext.ProcessModel, Kit, Sail);
+
+                ICompleteGatewayAutomaticlly autoGateway = (ICompleteGatewayAutomaticlly)gatewayNodeMediator;
+                NodeAutoExecutedResult nodeExecutedResult = autoGateway.CompleteAutomaticlly(ActivityForwardContext.ProcessInstance,
+                    comp.Transition.TransitionId,
+                    fromActivity,
+                    fromActivityInstance,
+                    activityResource.AppRunner,
+                    Kit);
+
+                if (nodeExecutedResult.Status == NodeAutoExecutedStatus.Successed)
+                {
+                    // 继续遍历后续子节点
+                    ContinueForwardCurrentNodeRecurisivly(gatewayNodeMediator.GatewayActivity,
+                        gatewayNodeMediator.GatewayActivityInstance,
+                        comp,
+                        conditionKeyValuePair,
+                        isNotParsedForward,
+                        activityResource,
+                        ref mediatorResult);
+                }
+                else
+                {
+                    mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
+                        WfNodeMediatedFeedback.OrJoinOneBranchHasBeenFinishedWaittingOthers));
+                    LogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
+                        LogEventType.Exception,
+                        LogPriority.Normal,
+                        null,
+                        new WfRuntimeException(
+                            Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.warn"))
+                        );
+                }
+            }
+            else
+            {
+                // 下一节点尚未创建，需给出提示
+                if (IsWaitingOneOfJoin(fromActivity.GatewayDetail) == true)
+                {
+                    mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
+                        WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
+                    LogManager.RecordLog(Sail, "NodeMediator.ContinueForwardCurrentNodeRecurisivly.IsWaintingOneOfJoin.Exception",
+                        LogEventType.Exception,
+                        LogPriority.Normal,
+                        null,
+                        new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.waitingothers.warn"))
+                        );
+                }
+                else
+                {
+                    mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
+                        WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
+                    LogManager.RecordLog(Sail, "NodeMediator.ContinueForwardCurrentNodeRecurisivly.IsWaintingOneOfJoin.OtherUnknownReason.Exception",
+                        LogEventType.Exception,
+                        LogPriority.Normal,
+                        null,
+                        new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediator.ContinueForwardCurrentNodeRecurisivly.otherreason.warn"))
+                        );
+                }
+            }
+        }
+
+        /// <summary>
+        /// 中间事件节点：调用外部业务逻辑后继续向下流转
+        /// </summary>
+        private void ContinueForwardIntermediateNode(Activity fromActivity,
+            ActivityInstanceEntity fromActivityInstance,
+            NextActivityComponent comp,
+            IDictionary<string, string> conditionKeyValuePair,
+            Boolean isNotParsedForward,
+            ActivityResource activityResource,
+            ref List<WfNodeMediatedResult> mediatorResult)
+        {
+            NodeMediator eventNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
+            eventNodeMediator.LinkContext.FromActivity = fromActivity;
+            eventNodeMediator.LinkContext.CurrentActivity = comp.Activity;
+
+            ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)eventNodeMediator;
+            var toActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity,
+                ActivityForwardContext.ProcessInstance,
+                activityResource.AppRunner,
+                Kit);
+
+            eventNodeMediator.ExecuteWorkItem(toActivityInstance);
+
+            ICompletedAutomaticlly autoCompletedEvent = (ICompletedAutomaticlly)eventNodeMediator;
+            NodeAutoExecutedResult nodeExecutedResult = autoCompletedEvent.CompleteAutomaticlly(ActivityForwardContext.ProcessInstance,
+                comp.Transition.TransitionId,
+                fromActivity,
+                fromActivityInstance,
+                comp.Activity,
+                toActivityInstance,
+                activityResource.AppRunner,
+                Kit);
+
+            if (nodeExecutedResult.Status == NodeAutoExecutedStatus.Successed)
+            {
+                // 继续遍历后续子节点
+                ContinueForwardCurrentNodeRecurisivly(eventNodeMediator.LinkContext.CurrentActivity,
+                    toActivityInstance,
+                    comp,
+                    conditionKeyValuePair,
+                    isNotParsedForward,
+                    activityResource,
+                    ref mediatorResult);
+            }
+            else
+            {
+                mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
+                    WfNodeMediatedFeedback.IntermediateEventFailed));
+                LogManager.RecordLog(Sail, "IntermediateNodeExecuteException",
+                    LogEventType.Exception,
+                    LogPriority.Normal,
+                    null,
+                    new WfRuntimeException(nodeExecutedResult.Status.ToString()));
+            }
+        }
+        #endregion
 
         #region ContinueForward 叶子节点处理
         /// <summary>
