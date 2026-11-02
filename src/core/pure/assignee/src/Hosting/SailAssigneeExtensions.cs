@@ -10,7 +10,7 @@ namespace saiflow.assignee.Hosting;
 /// <summary>挂载办理人管道与内置 Type（后注册可覆盖）。</summary>
 public static class SailAssigneeExtensions
 {
-    public const string FeatureName = "assignee";
+    public const string FeatureName = SailFeatureNames.Assignee;
 
     /// <summary>创建默认 Registry、注册内置、注入 <see cref="IAssigneePipeline"/>。</summary>
     public static SailClient UseAssignees(this SailClient client)

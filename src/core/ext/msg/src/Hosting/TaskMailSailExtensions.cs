@@ -14,9 +14,10 @@ namespace saiflow.msg.Hosting
             ArgumentNullException.ThrowIfNull(services);
             return services.AddFeature(new SailFeatureDescriptor
             {
-                Name = "saiflow.msg.DefaultMail",
+                Name = SailFeatureNames.DefaultTaskMail,
                 Phase = SailFeaturePhase.ConfigureClient,
                 Order = 110,
+                DependsOn = new[] { SailFeatureNames.Json },
                 ConfigureClient = (client, _) =>
                 {
                     client.useTaskNotifier(new DefaultMailTaskNotifier(client), new HookRegistrationOptions

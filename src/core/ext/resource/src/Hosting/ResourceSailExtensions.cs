@@ -14,7 +14,7 @@ namespace saiflow.hub.Resource.Hosting
 
             return services.AddFeature(new SailFeatureDescriptor
             {
-                Name = "Resource",
+                Name = SailFeatureNames.Resource,
                 Phase = SailFeaturePhase.ConfigureClient,
                 Order = 110,
                 ConfigureClient = (client, coll) =>

@@ -13,6 +13,7 @@ public static class SailJsonSerializerExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(serializer);
         services.Properties[SailBuilderKeys.JsonSerializer] = serializer;
+        services.ProvideFeature(SailFeatureNames.Json, order: 10);
         return services;
     }
 }

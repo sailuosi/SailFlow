@@ -19,9 +19,10 @@ public static class SailHookOutboxDrainExtensions
 
         services.AddFeature(new SailFeatureDescriptor
         {
-            Name = "HookOutboxDrain",
+            Name = SailFeatureNames.HookOutboxDrain,
             Phase = SailFeaturePhase.ConfigureClient,
             Order = 160,
+            DependsOn = new[] { SailFeatureNames.Json },
             ConfigureClient = ApplyToClient,
         });
 
@@ -29,9 +30,10 @@ public static class SailHookOutboxDrainExtensions
         {
             services.AddFeature(new SailFeatureDescriptor
             {
-                Name = "HookOutboxDrain.AutoStart",
+                Name = SailFeatureNames.HookOutboxDrainAutoStart,
                 Phase = SailFeaturePhase.PostBuild,
                 Order = 960,
+                DependsOn = new[] { SailFeatureNames.HookOutboxDrain },
                 PostBuild = StartDrainIfRequested,
             });
         }

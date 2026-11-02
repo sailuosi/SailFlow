@@ -17,9 +17,10 @@ namespace saiflow.data.Hosting
 
             builder.Services.AddFeature(new SailFeatureDescriptor
             {
-                Name = "sail.data",
+                Name = SailFeatureNames.SailData,
                 Phase = SailFeaturePhase.PostBuild,
                 Order = 100,
+                DependsOn = new[] { SailFeatureNames.Database },
                 PostBuild = (client, _) => Apply(client)
             });
 

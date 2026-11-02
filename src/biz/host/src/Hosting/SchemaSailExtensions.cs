@@ -17,9 +17,10 @@ public static class SchemaSailExtensions
 
         return services.AddFeature(new SailFeatureDescriptor
         {
-            Name = "Schema",
+            Name = SailFeatureNames.Schema,
             Phase = SailFeaturePhase.PostBuild,
             Order = 900,
+            DependsOn = new[] { SailFeatureNames.Database },
             PostBuild = (client, _) =>
             {
                 SailSchemaInitializer.EnsureTables(client, includeAi: opt.IncludeAi);

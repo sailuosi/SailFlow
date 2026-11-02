@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace saiflow.engine.Client.Hosting;
 
@@ -25,6 +26,12 @@ public sealed class SailFeatureDescriptor
     public SailFeaturePhase Phase { get; init; }
 
     public int Order { get; init; }
+
+    /// <summary>
+    /// 依赖的其它能力 <see cref="Name"/>（跨 Phase）。Build 时由
+    /// <see cref="SailFeatureDependencyValidator"/> 校验；缺依赖则失败。
+    /// </summary>
+    public IReadOnlyList<string>? DependsOn { get; init; }
 
     /// <summary>ConfigureServices：仅操作 collection / MS DI。</summary>
     public Action<ISailCollection>? ConfigureServices { get; init; }

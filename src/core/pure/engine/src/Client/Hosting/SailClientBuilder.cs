@@ -132,6 +132,8 @@ public sealed class SailClientBuilder
     /// <summary>积极构建：得到 <see cref="SailClient"/>，由宿主自行持有并注入工作类。</summary>
     public SailClient Build()
     {
+        SailFeatureDependencyValidator.Validate(Services);
+
         foreach (var d in Services.OrderBy(x => x.Order)
                      .Where(x => x.Phase == SailFeaturePhase.ConfigureServices))
         {
@@ -244,6 +246,20 @@ public sealed class SailClientBuilder
         {
             d.PostBuild?.Invoke(client, Services);
         }
+
+        client.InstalledFeatures = Services
+            .OrderBy(x => x.Order)
+            .ThenBy(x => x.Name, StringComparer.Ordinal)
+            .Select(d => new SailInstalledFeature
+            {
+                Name = d.Name,
+                Phase = d.Phase,
+                Order = d.Order,
+                DependsOn = d.DependsOn is { Count: > 0 }
+                    ? d.DependsOn.ToArray()
+                    : Array.Empty<string>(),
+            })
+            .ToList();
 
         return client;
     }

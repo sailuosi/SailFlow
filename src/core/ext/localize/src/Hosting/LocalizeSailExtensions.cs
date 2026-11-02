@@ -14,7 +14,7 @@ namespace saiflow.hub.Localize.Hosting
 
             return services.AddFeature(new SailFeatureDescriptor
             {
-                Name = "Localize",
+                Name = SailFeatureNames.Localize,
                 Phase = SailFeaturePhase.ConfigureClient,
                 Order = 50,
                 ConfigureClient = (client, coll) =>

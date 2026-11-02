@@ -87,10 +87,12 @@ public static class MyCapabilityExtensions
             Name = FeatureName,
             Phase = SailFeaturePhase.PostBuild,
             Order = 2xx,
+            // 若依赖 Outbox / Json 等，声明 DependsOn，Build 缺依赖即失败
+            // DependsOn = new[] { SailFeatureNames.Json },
             PostBuild = (client, _) => Register(client, sp)
         });
 
-        // 3) 旁路能力一并内聚（如 Drain）
+        // 3) 旁路能力一并内聚（如 Drain）；Drain 本身 DependsOn json，须先 UseBizJson
         // builder.UseHookOutboxDrain(autoStart: true);
 
         return builder;
@@ -106,7 +108,8 @@ public static class MyCapabilityExtensions
 2. **一事一包**：调试 Hook、请假 Status、门户推送分三个 `Use*`，组合根只剩链式清单。  
 3. **不在扩展里 `Build()`**。  
 4. **幂等**：同名 Feature / Hook `Name` 重复注册策略与引擎一致（后覆盖 + 可观测）。  
-5. **三线分离**：Assignee ≠ Hook ≠ Task Notifier；抄送另通道（见待办人管道 R5）。
+5. **三线分离**：Assignee ≠ Hook ≠ Task Notifier；抄送另通道（见待办人管道 R5）。  
+6. **依赖显式**：硬前置能力写 `DependsOn`（常量见 `SailFeatureNames`）；Property 插槽用 `ProvideFeature`；启动后用 `ProbeInstalledFeatures` / `client.HasFeature` 验收。
 
 ---
 

@@ -10,6 +10,7 @@ public static class SailDatabaseExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(dbFactory);
         services.Properties[SailBuilderKeys.DbFactory] = dbFactory;
+        services.ProvideFeature(SailFeatureNames.Database, order: 0);
         return services;
     }
 

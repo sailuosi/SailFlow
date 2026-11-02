@@ -23,9 +23,10 @@ namespace saiflow.data.Hosting
 
             builder.Services.AddFeature(new SailFeatureDescriptor
             {
-                Name = "sail.lifecycle.archive.immediate",
+                Name = SailFeatureNames.ImmediateArchive,
                 Phase = SailFeaturePhase.PostBuild,
                 Order = 220,
+                DependsOn = new[] { SailFeatureNames.Json },
                 PostBuild = (client, _) => Register(client, configure)
             });
 

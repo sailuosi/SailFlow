@@ -14,6 +14,7 @@ public static class SailMessageQueueExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(messageQueue);
         services.Properties[SailBuilderKeys.MessageQueue] = messageQueue;
+        services.ProvideFeature(SailFeatureNames.MessageQueue, order: 20);
         return services;
     }
 }

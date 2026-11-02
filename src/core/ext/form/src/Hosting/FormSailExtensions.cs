@@ -14,7 +14,7 @@ namespace saiflow.hub.Form.Hosting
 
             return services.AddFeature(new SailFeatureDescriptor
             {
-                Name = "Form",
+                Name = SailFeatureNames.Form,
                 Phase = SailFeaturePhase.ConfigureClient,
                 Order = 120,
                 ConfigureClient = (client, coll) =>

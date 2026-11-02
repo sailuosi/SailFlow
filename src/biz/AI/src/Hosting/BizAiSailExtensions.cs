@@ -33,6 +33,7 @@ public static class BizAiSailExtensions
                 Name = "BizAI.Schema",
                 Phase = SailFeaturePhase.PostBuild,
                 Order = 920,
+                DependsOn = new[] { SailFeatureNames.Database },
                 PostBuild = (client, _) => AiRuntime.EnsureTables(client.UseRunSQL())
             });
         }

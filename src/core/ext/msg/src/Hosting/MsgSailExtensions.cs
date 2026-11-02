@@ -22,9 +22,10 @@ namespace saiflow.msg.Hosting
             var options = new RabbitMqOptions();
             configure?.Invoke(options);
 
+            services.ProvideFeature(SailFeatureNames.MessageQueue, order: 20);
             return services.AddFeature(new SailFeatureDescriptor
             {
-                Name = "saiflow.msg.RabbitMq",
+                Name = SailFeatureNames.RabbitMq,
                 Phase = SailFeaturePhase.ConfigureClient,
                 Order = 100,
                 ConfigureClient = (client, _) =>

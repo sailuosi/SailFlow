@@ -13,6 +13,6 @@
 | [todo-产品缺口.md](./todo-产品缺口.md) | **待办**：转办；退回两维（目标×再发送）；空人默认拒绝；表单生命周期；按钮分发；… |
 | [存疑参考功能点.md](./存疑参考功能点.md) | **存疑对照**：外来引擎功能点（如 AntFlow 承办）；不默认纳入基线 |
 | [特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md) | **OA 动词**：场景/名称、Sail 编码、执行含义；含候选未入码表项 |
-| [progress/](./progress/) | 分期落地记录（Hook 等） |
+| [progress/](./progress/) | 分期落地记录（Hook、Feature DependsOn 等） |
 
 产品壳（菜单、Host API、办理 UX）见宿主仓 `sleveen-admin/doc/sailflow-features.md`。

@@ -19,6 +19,7 @@ public static class SailWorkflowCapabilityExtensions
         var options = new HookRegistrationOptions();
         configure?.Invoke(options);
         GetPending(services).Add(r => r.RegisterGate(gate, options));
+        services.ProvideFeature(SailFeatureNames.FlowGate, order: 30);
         return services;
     }
 
@@ -42,6 +43,7 @@ public static class SailWorkflowCapabilityExtensions
         var options = new HookRegistrationOptions();
         configure?.Invoke(options);
         GetPending(services).Add(r => r.RegisterHook(hook, options));
+        services.ProvideFeature(SailFeatureNames.FlowHook, order: 31);
         return services;
     }
 
@@ -65,6 +67,7 @@ public static class SailWorkflowCapabilityExtensions
         var options = new HookRegistrationOptions();
         configure?.Invoke(options);
         GetPending(services).Add(r => r.RegisterNotifier(notifier, options));
+        services.ProvideFeature(SailFeatureNames.TaskNotifier, order: 32);
         return services;
     }
 

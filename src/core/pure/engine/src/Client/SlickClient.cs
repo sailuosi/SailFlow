@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using mooSQL.data;
 using saiflow.engine.Actions;
 using saiflow.engine.Assignee;
+using saiflow.engine.Client.Hosting;
 using saiflow.engine.Hooks;
 using saiflow.engine.Rules;
 using saiflow.hub.Essential.Common;
@@ -132,6 +135,17 @@ public partial class SailClient
 
     /// <summary>Outbox Worker / drain 运行参数（<see cref="Hosting.SailHookOutboxDrainExtensions.UseHookOutboxDrain"/> 可覆盖）。</summary>
     public HookOutboxOptions HookOutboxOptions { get; set; } = new();
+
+    /// <summary>
+    /// Build 时登记的已装能力快照（UseXxx / ProvideFeature）。宿主探针可读；手动 new 的 Client 为空。
+    /// </summary>
+    public IReadOnlyList<SailInstalledFeature> InstalledFeatures { get; internal set; } =
+        Array.Empty<SailInstalledFeature>();
+
+    /// <summary>是否已登记指定能力名（跨 Phase）。</summary>
+    public bool HasFeature(string name) =>
+        !string.IsNullOrWhiteSpace(name)
+        && InstalledFeatures.Any(f => string.Equals(f.Name, name, StringComparison.Ordinal));
 
     /// <summary>
     /// 冷热归档 / 冷库 / 引擎日志分表等生命周期参数（默认见 <see cref="SailDataLifecycleOptions"/>）。

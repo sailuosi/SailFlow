@@ -17,9 +17,10 @@ public static class BizAssigneeSailExtensions
         services.UseAssignees();
         services.AddFeature(new SailFeatureDescriptor
         {
-            Name = "biz-assignee-samples",
+            Name = SailFeatureNames.BizAssigneeSamples,
             Order = 41,
             Phase = SailFeaturePhase.ConfigureClient,
+            DependsOn = new[] { SailFeatureNames.Assignee },
             ConfigureClient = (client, _) => RegisterBizSamples(client)
         });
         return services;
