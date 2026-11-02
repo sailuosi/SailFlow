@@ -572,6 +572,7 @@ namespace saiflow.engine.Core.Pattern
             }
         }
 
+        #region ContinueForward 叶子节点处理
         /// <summary>
         /// 任务节点：依据来源活动实例状态判断是否可创建任务
         /// </summary>
@@ -975,6 +976,7 @@ namespace saiflow.engine.Core.Pattern
                     comp.Activity.ActivityType.ToString()))
                 );
         }
+        #endregion
 
         /// <summary>
         /// 判断是否处于合并网关等待场景（OrJoin / XOrJoin / AndJoin / AndJoinMI）
