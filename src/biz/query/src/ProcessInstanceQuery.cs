@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using saiflow.engine.Business.Entity;
 
-namespace saiflow.engine.Business.Entity
+namespace saiflow.biz.query
 {
     /// <summary>
     /// Process Instance Query

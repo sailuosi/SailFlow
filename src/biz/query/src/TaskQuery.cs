@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using saiflow.engine.Business.Entity;
 
-namespace saiflow.engine.Business.Entity
+namespace saiflow.biz.query
 {
     /// <summary>
     /// Task Query
@@ -19,6 +16,5 @@ namespace saiflow.engine.Business.Entity
         public string UserName { get; set; }
         public string EndedUserId { get; set; }
         public string EndedUserName { get; set; }
-
     }
 }
