@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using mooSQL.data;
 using saiflow.engine.Common;
 
 namespace saiflow.engine.Assignee
@@ -14,5 +15,10 @@ namespace saiflow.engine.Assignee
         public string ActivityCode { get; set; }
         public WfAppRunner Runner { get; set; }
         public IDictionary<string, PerformerList> NextActivityPerformers { get; set; }
+
+        /// <summary>
+        /// 可选：当前发送主路径事务 kit。锚点入 Outbox 时与发送同事务（R10）。
+        /// </summary>
+        public SQLBuilder Kit { get; set; }
     }
 }

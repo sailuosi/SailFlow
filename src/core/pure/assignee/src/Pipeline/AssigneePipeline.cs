@@ -387,7 +387,8 @@ public class AssigneePipeline : IAssigneePipeline
 
         try
         {
-            AnchorStore.Enqueue(Sail, enriched);
+            // 优先与发送主路径同事务（AssigneeInvokeRequest.Kit）；无 kit 时 Store 自开事务
+            AnchorStore.Enqueue(Sail, enriched, ctx.Request?.Kit);
         }
         catch (Exception ex)
         {

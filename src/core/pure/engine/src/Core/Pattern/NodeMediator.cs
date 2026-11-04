@@ -1233,7 +1233,8 @@ namespace saiflow.engine.Pattern
                         ActivityId = toActivityInstance.ActivityId,
                         ActivityCode = toActivityInstance.ActivityCode,
                         Runner = activityResource.AppRunner,
-                        NextActivityPerformers = activityResource.NextActivityPerformers
+                        NextActivityPerformers = activityResource.NextActivityPerformers,
+                        Kit = Kit
                     },
                     out var resolved);
 

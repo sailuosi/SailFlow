@@ -104,7 +104,18 @@ public sealed class AutoApproveAnchorWorker
             return;
         }
 
-        // §11.3 苛刻前置（首批）：须有明确 Waiting 待办 + 可代办用户；否则 Skip/Postpone，回落手动
+        // §11.3 苛刻前置：实例须运行中；须有明确 Waiting 待办 + 可代办用户；否则 Skip/Postpone
+        if (!IsProcessInstanceRunnable(anchor.ProcessInstanceId!.Value))
+        {
+            using var kit = Sail.UseRunSQL();
+            kit.beginTransaction();
+            om.MarkFailed(kit, row,
+                AssigneeReasonCodes.AutoApproveSkipped + ": process instance not running.",
+                Options.MaxAttempts);
+            kit.commit();
+            return;
+        }
+
         var task = FindWaitingTask(anchor);
         if (task == null)
         {
@@ -226,5 +237,26 @@ public sealed class AutoApproveAnchorWorker
 
         // 仅 ActivityId：取唯一 Waiting；多条则拒绝自动（避免误代办）
         return list.Count == 1 ? list[0] : null;
+    }
+
+    bool IsProcessInstanceRunnable(int processInstanceId)
+    {
+        try
+        {
+            using var kit = Sail.UseRunSQL();
+            var clip = SailSqlAccess.Sibling(kit).useClip();
+            clip.from<ProcessInstanceEntity>(out var p);
+            clip.where(() => p.Id, processInstanceId);
+            var pi = clip.select(p).queryList()?.FirstOrDefault();
+            if (pi == null)
+                return false;
+            return pi.ProcessState == (short)ProcessStateEnum.Running
+                   || pi.ProcessState == (short)ProcessStateEnum.Ready;
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceWarning("[Assignee.AutoApprove] read ProcessInstance failed: {0}", ex.Message);
+            return false;
+        }
     }
 }

@@ -124,8 +124,8 @@
 - API 优先 **`AddResolver<T>`**；Filter 注册序=执行序。  
 - 现行 `__sail_policy_skip__` 可作迁移双写，目标收敛到锚点 Job。  
 
-**引擎进度（2026-11-04）：** `UseAssign` / Filter / Empty / `AssigneeAutoApprove` Outbox + Drain **已在 sailflow.assignee 落地**。  
-**Host 过渡（同日复核）：** `NodePolicyAssigneePipeline` **catch `AssigneeEmpty`** 后再套空人 1/3/4（避免内层 `RejectEmptyAction` 短路）。宿主待办：迁到 `EmptyActionSelector` / Filter，去掉装饰器与 `__sail_policy_skip__`；`UseAutoApproveJob` 或复用 JobWorker 调 `AutoApproveAnchorWorker`。
+**引擎进度（2026-11-04）：** `UseAssign` / Filter / Empty / `AssigneeAutoApprove` Outbox + Drain；**`Request.Kit` 同事务入队**。  
+**Host（同日续）：** `UseSleveenNodePolicyAssignee` → **EmptyActionSelector + Filter**（已去掉装饰器）。执行仍 `__sail_policy_skip__` + `SailNodePolicyJobWorker`；可选 `UseSleveenAssigneeAutoApproveJob`。待办：策略跳过全面切锚点 Job、删除 Obsolete 装饰类型。
 
 ### A6. 验收口径
 
