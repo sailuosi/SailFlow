@@ -11,6 +11,12 @@ public class FallbackAssigneeResolver : IAssigneeResolver
 {
     public AssigneeCapabilityRegistry? Registry { get; set; }
 
+    /// <summary>
+    /// 嵌套 Resolver 注入（由 <see cref="AssigneePipeline"/> 挂 <c>WireSail</c>），
+    /// 确保 RoleGroup / ProcessRelative / BusinessCallback 等拿到 Sail/Callbacks。
+    /// </summary>
+    public Action<IAssigneeResolver>? WireNested { get; set; }
+
     public virtual string Type => AssigneeResolveTypeCodes.Fallback;
 
     public virtual PerformerList Resolve(AssigneeResolveContext ctx)
@@ -33,6 +39,8 @@ public class FallbackAssigneeResolver : IAssigneeResolver
         // 避免 Fallback 自递归
         if (string.Equals(resolver.Type, Type, StringComparison.OrdinalIgnoreCase))
             return new PerformerList();
+
+        WireNested?.Invoke(resolver);
 
         return resolver.Resolve(new AssigneeResolveContext
         {

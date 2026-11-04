@@ -79,7 +79,14 @@ public class AssigneePipeline : IAssigneePipeline
             return false;
 
         if (!Registry.TryGetResolver(config.Type, out var resolver) || resolver == null)
-            return false;
+        {
+            throw new WfAssigneeException(
+                AssigneeReasonCodes.AssigneeTypeUnregistered,
+                "Assignee Resolve Type '"
+                + config.Type
+                + "' is not registered. ReasonCode="
+                + AssigneeReasonCodes.AssigneeTypeUnregistered);
+        }
 
         if (Registry.IsResolverOverridden(config.Type))
         {
@@ -156,7 +163,14 @@ public class AssigneePipeline : IAssigneePipeline
             return false;
 
         if (!Registry.TryGetLeaveJudge(config.Type, out var judge) || judge == null)
-            return false;
+        {
+            throw new WfAssigneeException(
+                AssigneeReasonCodes.LeaveTypeUnregistered,
+                "LeaveJudge Type '"
+                + config.Type
+                + "' is not registered. ReasonCode="
+                + AssigneeReasonCodes.LeaveTypeUnregistered);
+        }
 
         if (Registry.IsLeaveJudgeOverridden(config.Type))
         {
@@ -371,8 +385,17 @@ public class AssigneePipeline : IAssigneePipeline
 
     void FlushAnchors(AssigneeFilterContext ctx)
     {
-        if (ctx.Anchors.Count == 0 || AnchorStore == null || Sail == null)
+        if (ctx.Anchors.Count == 0)
             return;
+
+        if (AnchorStore == null || Sail == null)
+        {
+            throw new WfAssigneeException(
+                AssigneeReasonCodes.AutoApproveAnchorStoreMissing,
+                "AutoApprove anchors present but AnchorStore/Sail is not configured. "
+                + "Call UseSleveenNodePolicyAssignee / UseAutoApproveJob / UseAnchorStore. ReasonCode="
+                + AssigneeReasonCodes.AutoApproveAnchorStoreMissing);
+        }
 
         var processId = ctx.Request.ProcessId ?? ctx.Request.Runner?.ProcessId;
         var version = ctx.Request.Version ?? ctx.Request.Runner?.Version ?? "1";
@@ -422,6 +445,11 @@ public class AssigneePipeline : IAssigneePipeline
         }
     }
 
+    /// <summary>
+    /// 供 Filter / 宿主旁路复用：注入 Sail / Callbacks / Fallback.WireNested。
+    /// </summary>
+    public void WireResolver(IAssigneeResolver resolver) => WireSail(resolver);
+
     protected virtual void WireSail(IAssigneeResolver resolver)
     {
         if (resolver is Builtin.RoleGroupAssigneeResolver rg && Sail != null)
@@ -431,6 +459,9 @@ public class AssigneePipeline : IAssigneePipeline
         if (resolver is Builtin.BusinessCallbackAssigneeResolver bc)
             bc.Callbacks = Callbacks;
         if (resolver is Builtin.FallbackAssigneeResolver fb)
+        {
             fb.Registry = Registry;
+            fb.WireNested = WireSail;
+        }
     }
 }

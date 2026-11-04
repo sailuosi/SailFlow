@@ -9,11 +9,26 @@ namespace saiflow.engine.Assignee
         /// <summary>Resolve Type 已配置但算人为空（且无显式 Fallback / NodePolicy 换人失败）。</summary>
         public const string AssigneeEmpty = "AssigneeEmpty";
 
+        /// <summary>Resolve ConfigPair.Type 已配置但未注册对应 IAssigneeResolver。</summary>
+        public const string AssigneeTypeUnregistered = "AssigneeTypeUnregistered";
+
         /// <summary>NodePolicy 空人=转管理员，但宿主未配置 ProcessAdminUserIds。</summary>
         public const string ProcessAdminNotConfigured = "ProcessAdminNotConfigured";
 
         /// <summary>NodePolicy 空人=指定人员，但 assignEmptyUserIds 为空。</summary>
         public const string AssignEmptyUsersMissing = "AssignEmptyUsersMissing";
+
+        /// <summary>同人策略=换人，但未配置 assignStartResolveType。</summary>
+        public const string SameAsStarterResolveTypeMissing = "SameAsStarterResolveTypeMissing";
+
+        /// <summary>同人策略=换人，指定 Resolve Type 算人为空。</summary>
+        public const string SameAsStarterResolveEmpty = "SameAsStarterResolveEmpty";
+
+        /// <summary>同人策略=换部门负责人（deptBoss）未命中；兼容旧码，等同 SameAsStarterResolveEmpty。</summary>
+        public const string SameAsStarterLeaderMissing = "SameAsStarterLeaderMissing";
+
+        /// <summary>打了自动审批锚点但未挂 AnchorStore（禁止静默丢锚点）。</summary>
+        public const string AutoApproveAnchorStoreMissing = "AutoApproveAnchorStoreMissing";
 
         /// <summary>会签/多实例子节点流出时无 LeaveJudge 配置且管道未处理。</summary>
         public const string LeaveConfigMissing = "LeaveConfigMissing";
