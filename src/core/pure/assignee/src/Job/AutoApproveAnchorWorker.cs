@@ -104,6 +104,7 @@ public sealed class AutoApproveAnchorWorker
             return;
         }
 
+        // §11.3 苛刻前置（首批）：须有明确 Waiting 待办 + 可代办用户；否则 Skip/Postpone，回落手动
         var task = FindWaitingTask(anchor);
         if (task == null)
         {
@@ -213,17 +214,17 @@ public sealed class AutoApproveAnchorWorker
         if (list.Count == 0)
             return null;
 
+        // 禁止「扫任意 Waiting」：有 TaskId / PreferUserId 时必须命中，否则 null → Skip
         if (anchor.TaskId is > 0)
-            return list.FirstOrDefault(x => x.Id == anchor.TaskId) ?? list[0];
+            return list.FirstOrDefault(x => x.Id == anchor.TaskId);
 
         if (!string.IsNullOrWhiteSpace(anchor.PreferUserId))
         {
-            var match = list.FirstOrDefault(x =>
+            return list.FirstOrDefault(x =>
                 string.Equals(x.AssignedUserId, anchor.PreferUserId, StringComparison.OrdinalIgnoreCase));
-            if (match != null)
-                return match;
         }
 
-        return list[0];
+        // 仅 ActivityId：取唯一 Waiting；多条则拒绝自动（避免误代办）
+        return list.Count == 1 ? list[0] : null;
     }
 }
