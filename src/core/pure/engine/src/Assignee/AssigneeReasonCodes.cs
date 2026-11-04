@@ -20,5 +20,11 @@ namespace saiflow.engine.Assignee
 
         /// <summary>LeaveJudge Type 未注册。</summary>
         public const string LeaveTypeUnregistered = "LeaveTypeUnregistered";
+
+        /// <summary>R10：自动审批锚点复核未过（不代办，回落手动）。</summary>
+        public const string AutoApproveSkipped = "AutoApproveSkipped";
+
+        /// <summary>R10：自动审批已尝试 Run 失败（回落手动）。</summary>
+        public const string AutoApproveFailed = "AutoApproveFailed";
     }
 }

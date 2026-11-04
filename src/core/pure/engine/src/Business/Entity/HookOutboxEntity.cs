@@ -63,6 +63,9 @@ namespace saiflow.engine.Entity
     {
         public const string Hook = "Hook";
         public const string Notify = "Notify";
+
+        /// <summary>R10：待办人自动审批锚点（Assignee Filter/EmptyAction 入队；普通 Job 消费）。</summary>
+        public const string AssigneeAutoApprove = "AssigneeAutoApprove";
     }
 
     public static class HookOutboxStatus

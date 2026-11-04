@@ -42,6 +42,11 @@ public static class SailAssigneeExtensions
         return client;
     }
 
+    /// <summary>R10：优先泛型注册 Resolver。</summary>
+    public static SailClient useAssigneeResolver<TResolver>(this SailClient client)
+        where TResolver : class, IAssigneeResolver, new() =>
+        client.useAssigneeResolver(new TResolver());
+
     public static SailClient useAssigneeResolver(
         this SailClient client,
         string type,
@@ -50,6 +55,28 @@ public static class SailAssigneeExtensions
         ArgumentNullException.ThrowIfNull(resolve);
         return client.useAssigneeResolver(new DelegateAssigneeResolver(type, resolve));
     }
+
+    public static SailClient useAssigneeFilter(this SailClient client, IAssigneeResolveFilter filter, int? order = null)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        EnsurePipeline(client).AddFilter(filter, order);
+        return client;
+    }
+
+    public static SailClient useAssigneeFilter<TFilter>(this SailClient client, int? order = null)
+        where TFilter : class, IAssigneeResolveFilter, new() =>
+        client.useAssigneeFilter(new TFilter(), order);
+
+    public static SailClient useAssigneeEmptyAction(this SailClient client, IAssigneeEmptyAction action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        EnsurePipeline(client).RegisterEmptyAction(action);
+        return client;
+    }
+
+    public static SailClient useAssigneeEmptyAction<TAction>(this SailClient client)
+        where TAction : class, IAssigneeEmptyAction, new() =>
+        client.useAssigneeEmptyAction(new TAction());
 
     public static SailClient useLeaveJudge(this SailClient client, IActivityLeaveJudge judge)
     {
@@ -69,25 +96,13 @@ public static class SailAssigneeExtensions
         return client.useLeaveJudge(new DelegateLeaveJudge(type, canLeave));
     }
 
-    public static ISailCollection UseAssignees(this ISailCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        services.AddFeature(new SailFeatureDescriptor
-        {
-            Name = FeatureName,
-            Order = 40,
-            Phase = SailFeaturePhase.ConfigureClient,
-            ConfigureClient = (client, _) => client.UseAssignees()
-        });
-        return services;
-    }
+    /// <summary>等同 <see cref="SailAssignExtensions.UseAssign"/> 无额外配置（内置 Resolve/Leave + RejectEmpty）。</summary>
+    public static ISailCollection UseAssignees(this ISailCollection services) =>
+        services.UseAssign();
 
-    public static SailClientBuilder UseAssignees(this SailClientBuilder builder)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        builder.Services.UseAssignees();
-        return builder;
-    }
+    /// <summary>等同 <see cref="SailAssignExtensions.UseAssign"/> 无额外配置。</summary>
+    public static SailClientBuilder UseAssignees(this SailClientBuilder builder) =>
+        builder.UseAssign();
 
     public static void RegisterBuiltins(AssigneeCapabilityRegistry registry)
     {

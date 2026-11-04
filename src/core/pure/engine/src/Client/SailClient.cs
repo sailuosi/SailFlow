@@ -196,6 +196,9 @@ public partial class SailClient
     /// <summary><see cref="Hooks.HookOutboxDrainLoop.StartBackground"/> 返回的 CTS（<c>autoStart</c> 或宿主手动启动时赋值）。</summary>
     public CancellationTokenSource HookOutboxDrainCts { get; set; }
 
+    /// <summary>R10：Assignee 自动审批锚点 drain CTS（UseAssign.UseAutoApproveJob AutoStart）。</summary>
+    public CancellationTokenSource AssigneeAutoApproveDrainCts { get; set; }
+
     /// <summary>
     /// 规则引擎注册表（按 <c>wf_rule_set.mode</c> 调度）。实现由业务侧 <see cref="useRuleEngine"/> 挂载。
     /// </summary>

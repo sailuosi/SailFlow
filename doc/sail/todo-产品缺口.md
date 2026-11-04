@@ -122,7 +122,9 @@
 - 空人/同人/去重等 → `UseAssign` 的 **EmptyAction / Filter**，不再堆装饰 Pipeline 或新 Resolve Type。  
 - 「自动通过」→ 时刻 A **打锚点**，发送成功后由**普通 Job** 苛刻复核代办；失败回落手动。  
 - API 优先 **`AddResolver<T>`**；Filter 注册序=执行序。  
-- 现行 `__sail_policy_skip__` 可作迁移双写，目标收敛到锚点 Job。
+- 现行 `__sail_policy_skip__` 可作迁移双写，目标收敛到锚点 Job。  
+
+**引擎进度（2026-11-04）：** `UseAssign` / Filter / Empty / `AssigneeAutoApprove` Outbox + Drain **已在 sailflow.assignee 落地**。宿主待办：用 Filter 替换 `NodePolicyAssigneePipeline`；`UseAutoApproveJob(o => o.AutoStart = true)` 或复用现有 JobWorker 调 `AutoApproveAnchorWorker`。
 
 ### A6. 验收口径
 

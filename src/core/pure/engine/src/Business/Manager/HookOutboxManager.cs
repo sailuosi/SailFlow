@@ -26,13 +26,27 @@ namespace saiflow.engine.Manager
             Sibling(kit).useRepo<HookOutboxEntity>().Insert(entity);
         }
 
-        public IList<HookOutboxEntity> GetPending(SQLBuilder kit, int limit = 50)
+        public IList<HookOutboxEntity> GetPending(SQLBuilder kit, int limit = 50) =>
+            GetPending(kit, limit, kind: null);
+
+        /// <param name="kind">
+        /// 非空时仅取该 Kind（如 <see cref="HookOutboxKinds.AssigneeAutoApprove"/>）。
+        /// 为空时取 Hook/Notify 等，<b>排除</b> <see cref="HookOutboxKinds.AssigneeAutoApprove"/>（由 Assignee Job 单独认领）。
+        /// </param>
+        public IList<HookOutboxEntity> GetPending(SQLBuilder kit, int limit, string kind)
         {
             var now = DateTime.UtcNow;
             var clip = Sibling(kit).useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Status, HookOutboxStatus.Pending);
             return clip.select(o).queryList()
+                .Where(x =>
+                {
+                    if (!string.IsNullOrEmpty(kind))
+                        return string.Equals(x.Kind, kind, StringComparison.OrdinalIgnoreCase);
+                    // 默认 drain 不抢 Assignee 自动审批锚点
+                    return !string.Equals(x.Kind, HookOutboxKinds.AssigneeAutoApprove, StringComparison.OrdinalIgnoreCase);
+                })
                 .Where(x => x.NextRetryAt == null || x.NextRetryAt <= now)
                 .OrderBy(x => x.Id)
                 .Take(limit)
@@ -44,11 +58,20 @@ namespace saiflow.engine.Manager
             SQLBuilder kit,
             int limit,
             int maxAttempts = HookOutboxOptions.DefaultMaxAttempts,
-            int leaseSeconds = HookOutboxOptions.DefaultLeaseSeconds)
+            int leaseSeconds = HookOutboxOptions.DefaultLeaseSeconds) =>
+            TryClaimPending(kit, limit, maxAttempts, leaseSeconds, kind: null);
+
+        /// <summary>按 Kind 认领 Pending。</summary>
+        public IList<HookOutboxEntity> TryClaimPending(
+            SQLBuilder kit,
+            int limit,
+            int maxAttempts,
+            int leaseSeconds,
+            string kind)
         {
             _ = maxAttempts;
             var now = DateTime.UtcNow;
-            var candidates = GetPending(kit, Math.Max(limit * 3, limit));
+            var candidates = GetPending(kit, Math.Max(limit * 3, limit), kind);
             var claimed = new List<HookOutboxEntity>(limit);
 
             foreach (var candidate in candidates)
@@ -57,6 +80,9 @@ namespace saiflow.engine.Manager
                     break;
 
                 if (candidate.NextRetryAt != null && candidate.NextRetryAt > now)
+                    continue;
+
+                if (candidate.Id is not > 0)
                     continue;
 
                 if (TryClaimOne(kit, candidate.Id.Value, leaseSeconds, out var row))
@@ -118,6 +144,19 @@ namespace saiflow.engine.Manager
         {
             row.Status = HookOutboxStatus.Succeeded;
             row.UpdatedAt = DateTime.UtcNow;
+            row.LeasedUntil = null;
+            Sibling(kit).useRepo<HookOutboxEntity>().Update(row);
+        }
+
+        /// <summary>退回 Pending 并推迟（不增加 Attempt；用于任务尚未可见等软等待）。</summary>
+        public void Postpone(SQLBuilder kit, HookOutboxEntity row, TimeSpan delay, string note = null)
+        {
+            row.Status = HookOutboxStatus.Pending;
+            row.LeasedUntil = null;
+            row.NextRetryAt = DateTime.UtcNow.Add(delay);
+            row.UpdatedAt = DateTime.UtcNow;
+            if (!string.IsNullOrEmpty(note))
+                row.LastError = Truncate(note, 2000);
             Sibling(kit).useRepo<HookOutboxEntity>().Update(row);
         }
 
