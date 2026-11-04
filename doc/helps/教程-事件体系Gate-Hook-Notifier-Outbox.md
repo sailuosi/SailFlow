@@ -47,7 +47,9 @@ Gate（推进落库前，可 Reject）
 
 ## 二、启用事件能力（宿主初始化）
 
-推荐用总包 `UseFlowAspects` 收拢，内层仍调用分轨 API（真实方法名如下，**没有** `opt.AddGate` 这种单一 Options 对象写法）。
+推荐用总包 `UseFlowAspects` 收拢，内层用分轨 `Use*` 或无参构造糖 `Add*`（二者等价；**不是** `opt.AddGate` 那种单一 Options 对象）。
+
+### 2.1 `Use*` 显式实例（可带构造参数）
 
 ```csharp
 using saiflow.engine.Client;
@@ -67,7 +69,6 @@ var client = SailClient.CreateBuilder(configuration)
             o.ActivityCodes = new[] { "finance_leader_approve" }; // 可选
             o.Order = 10;
         });
-        // 无参构造糖：b.AddGate<MyGate>(o => { ... });
 
         // Hook：须声明 Events；默认 Mode = AsyncOutbox
         b.UseFlowHook(new FinanceAggregateHook(), o =>
@@ -78,7 +79,7 @@ var client = SailClient.CreateBuilder(configuration)
             o.Order = 20;
         });
 
-        // 本地强一致回写：显式 Sync
+        // 委托形式（无需写 class）
         b.UseFlowHook("biz.writeback", ctx =>
         {
             // 按 ctx.AppInstanceId / ProcessInstanceId 回写业务表
@@ -95,6 +96,7 @@ var client = SailClient.CreateBuilder(configuration)
         });
 
         // Notifier：须声明 TaskKinds；强制 AsyncOutbox（配 Sync 也会被改回）
+        // 有参构造 → 只能 UseTaskNotifier(new ...)，不能 AddNotifier<T>
         b.UseTaskNotifier(new SampleHttpTaskNotifier("https://example/callback"), o =>
         {
             o.Match = HookMatch.All;
@@ -105,16 +107,13 @@ var client = SailClient.CreateBuilder(configuration)
                 TaskNotifyKind.Entrusted,
             };
         });
-        // 无参构造糖：b.AddNotifier<MyNotifier>(...);
     })
-    // 默认 SMTP 待办邮件（显式开启；内部 UseTaskNotifier）
     .UseDefaultTaskMail()
-    // Outbox 后台消费（opt-in；autoStart 才会 PostBuild 拉起循环）
     .UseHookOutboxDrain(o =>
     {
         o.MaxAttempts = 5;
         o.BatchSize = 50;
-        o.PollInterval = TimeSpan.FromSeconds(5);   // 默认 5s
+        o.PollInterval = TimeSpan.FromSeconds(5);
         o.LeaseSeconds = 120;
         o.ProcessingStaleSeconds = 300;
         o.SucceededRetentionDays = 7;
@@ -122,15 +121,91 @@ var client = SailClient.CreateBuilder(configuration)
     }, autoStart: true)
     .Build();
 
-// Sync Hook 硬超时（毫秒；默认 2000；0 = 不限制）
 client.CapabilityOptions.SyncHookTimeoutMs = 2000;
-
-// 可选指标
 client.CapabilityMetrics = new InMemoryFlowCapabilityMetrics();
-
-// 进程退出时取消 Drain
 // client.HookOutboxDrainCts?.Cancel();
 ```
+
+### 2.2 `Add*` 无参构造语法糖（推荐无依赖 Handler）
+
+`AddGate<T>` / `AddHook<T>` / `AddNotifier<T>` ≡ `Use*(new T(), configure)`，约束：`T : class, IFlowXxx, new()`（**必须有无参构造**）。  
+`SailClientBuilder` 与 `ISailCollection` 均有同名扩展，可链式写在 Builder 上，也可写在 `UseFlowAspects` 回调里。
+
+```csharp
+// 无参 Gate / Hook（引擎样例 FinancePreSendGate、FinanceAggregateHook 均满足 new()）
+var client = SailClient.CreateBuilder(configuration)
+    .UseDatabase(/* ... */)
+    .AddGate<FinancePreSendGate>(o =>
+    {
+        o.ProcessCodes = new[] { "EXPENSE", "PAYMENT" };
+        o.ActivityCodes = new[] { "finance_leader_approve" };
+        o.Order = 10;
+    })
+    .AddHook<FinanceAggregateHook>(o =>
+    {
+        o.ProcessCodes = new[] { "EXPENSE" };
+        o.Events = new[] { EventFireTypeEnum.OnProcessContinued };
+        o.Mode = HookMode.AsyncOutbox;
+        o.Order = 20;
+    })
+    // 自写无参 Notifier 时可用 AddNotifier；有参则改回 UseTaskNotifier(new ...)
+    .AddNotifier<ConsoleTaskNotifier>(o =>
+    {
+        o.Match = HookMatch.All;
+        o.TaskKinds = new[] { TaskNotifyKind.Created, TaskNotifyKind.Completed };
+    })
+    .UseDefaultTaskMail()
+    .UseHookOutboxDrain(autoStart: true)
+    .Build();
+```
+
+在总包内混用（与上面等价）：
+
+```csharp
+builder.UseFlowAspects(b =>
+{
+    b.AddGate<FinancePreSendGate>(o => o.ProcessCodes = new[] { "EXPENSE" });
+    b.AddHook<FinanceAggregateHook>(o =>
+    {
+        o.ProcessCodes = new[] { "EXPENSE" };
+        o.Events = new[] { EventFireTypeEnum.OnProcessContinued };
+    });
+    b.AddNotifier<ConsoleTaskNotifier>(o =>
+    {
+        o.Match = HookMatch.All;
+        o.TaskKinds = new[] { TaskNotifyKind.Created };
+    });
+
+    // 需要注入服务 / 有参构造时仍用 Use*
+    b.UseFlowGate(new AmountLimitGate(billService), o => o.Match = HookMatch.All);
+    b.UseTaskNotifier(new SampleHttpTaskNotifier(callbackUrl), o =>
+    {
+        o.Match = HookMatch.All;
+        o.TaskKinds = new[] { TaskNotifyKind.Created };
+    });
+});
+```
+
+无参 Notifier 示例（供 `AddNotifier<T>` 使用）：
+
+```csharp
+public sealed class ConsoleTaskNotifier : ITaskNotifier
+{
+    public string Name => "sample.console";
+
+    public Task NotifyAsync(TaskNotifyContext ctx, CancellationToken ct)
+    {
+        Console.WriteLine($"[notify] {ctx.Kind} task={ctx.TaskId} user={ctx.AssignedUserId}");
+        return Task.CompletedTask;
+    }
+}
+```
+
+| 写法 | 适用 | 注意 |
+|------|------|------|
+| `AddGate<T>` / `AddHook<T>` / `AddNotifier<T>` | 无参构造、无构造期依赖 | 内部 `new T()`，**不能**注入 `IBizBillService` 等 |
+| `UseFlowGate(instance)` / `UseFlowHook` / `UseTaskNotifier` | 有参构造、已解析好的实例 | 宿主自行 `new` 或从 DI 取出再传入 |
+| `UseFlowGate(name, validate)` 等委托重载 | 临时/短逻辑 | 不必单独建 class |
 
 **注册要点**
 
@@ -548,9 +623,9 @@ o.Mode = HookMode.Sync;                  // 仅 Hook 有意义
 | 用途 | API |
 |------|-----|
 | 总包 | `UseFlowAspects` |
-| Gate | `UseFlowGate` / `AddGate<T>` / `useFlowGate` |
-| Hook | `UseFlowHook` / `AddHook<T>` / `useFlowHook` |
-| Notifier | `UseTaskNotifier` / `AddNotifier<T>` / `useTaskNotifier` |
+| Gate | `UseFlowGate` / **`AddGate<T>`**（`new()` 糖） / `useFlowGate` |
+| Hook | `UseFlowHook` / **`AddHook<T>`** / `useFlowHook` |
+| Notifier | `UseTaskNotifier` / **`AddNotifier<T>`** / `useTaskNotifier` |
 | 默认邮件 | `UseDefaultTaskMail` / `UseBizTaskMail` |
 | Outbox Drain | `UseHookOutboxDrain` / `UseBizHookOutboxDrain` |
 | 结果 | `HookResult` · `WfExecutedResult.ApplyGateReject` · `IsValidationReject` |
