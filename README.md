@@ -93,7 +93,7 @@ Host  →  biz（组合根 / UseBiz*）
 
 ### 7. 事件特性 · 回调强化
 
-Gate（校验拦截）/ Hook（生命周期副作用）/ Task Notifier（待办通知）三线分离；支持同步执行、异步 Outbox Drain，以及委托与 class 并存的注册形态。宿主一项能力一个 `UseXxx`，开关与建表内聚。详见 [特性设计-回调与事件.md](./doc/sail/特性设计-回调与事件.md)。
+Gate（校验拦截）/ Hook（生命周期副作用）/ Task Notifier（待办通知）三线分离；支持同步执行、异步 Outbox Drain，以及委托与 class 并存的注册形态。宿主一项能力一个 `UseXxx`，开关与建表内聚。使用教程见 [doc/helps](./doc/helps/README.md)；设计论证见 [特性设计-回调与事件.md](./doc/sail/特性设计-回调与事件.md)。
 
 ### 8. 强化的分表与归档策略
 
@@ -109,7 +109,7 @@ Gate（校验拦截）/ Hook（生命周期副作用）/ Task Notifier（待办�
 
 ### 9. 多种示例 · 轻松 UseXxx 增强
 
-仓库内置 Gate / Hook / Notifier 等样例（如财务预发送 Gate、聚合 Hook、HTTP 待办通知），biz 层提供默认 `UseBiz*` 门面；宿主可复制能力包模板自建插件。设计文档与进度见 [doc/sail](./doc/sail/README.md)。
+仓库内置 Gate / Hook / Notifier 等样例（如财务预发送 Gate、聚合 Hook、HTTP 待办通知），biz 层提供默认 `UseBiz*` 门面；宿主可复制能力包模板自建插件。用户指南见 [doc/helps](./doc/helps/README.md)；设计与进度见 [doc/sail](./doc/sail/README.md)。
 
 ---
 
