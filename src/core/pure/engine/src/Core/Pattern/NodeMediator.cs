@@ -1040,12 +1040,22 @@ namespace saiflow.engine.Pattern
             ActivityResource activityResource,
             SQLBuilder kit)
         {
+            // R10：自动审批锚点已入队 → 不插人工待办
+            if (activityResource.AutoApprovePending)
+                return;
+
             if (activityResource.NextActivityPerformers == null)
             {
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("nodemediator.createnewtask.warn"));
             }
 
-            TaskManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance, activityResource.NextActivityPerformers[toActivityInstance.ActivityId], activityResource.AppRunner);
+            var performers = activityResource.NextActivityPerformers[toActivityInstance.ActivityId];
+            if (performers == null || performers.Count == 0)
+            {
+                throw new WorkflowException(Sail.Messages.GetEngineMessage("nodemediator.createnewtask.warn"));
+            }
+
+            TaskManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance, performers, activityResource.AppRunner);
         }
 
         /// <summary>
@@ -1100,6 +1110,32 @@ namespace saiflow.engine.Pattern
             var toActivityInstance = CreateActivityInstanceObject(toActivity,
                 processInstance, activityResource.AppRunner);
 
+            // 经 Assignee 管道定范围（补齐原先未走 Generate 的缺口）
+            toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
+
+            // R10：会签须有子办理人；零 Performer 自动过不适用 SignTogether
+            if (activityResource.AutoApprovePending)
+            {
+                throw new WfAssigneeException(
+                    AssigneeReasonCodes.AssigneeAutoApproveNotForMultiSign,
+                    "SignTogether multi-sign cannot auto-approve with zero performers. "
+                    + "Configure real assignees or NodePolicy empty=3/4. ReasonCode="
+                    + AssigneeReasonCodes.AssigneeAutoApproveNotForMultiSign);
+            }
+
+            activityResource.NextActivityPerformers ??= new Dictionary<string, PerformerList>();
+            if (!activityResource.NextActivityPerformers.TryGetValue(toActivity.ActivityId, out var plist)
+                || plist == null
+                || plist.Count == 0)
+            {
+                throw new WfAssigneeException(
+                    AssigneeReasonCodes.AssigneeEmpty,
+                    "SignTogether requires at least one performer for activity '"
+                    + toActivity.ActivityId
+                    + "'. ReasonCode="
+                    + AssigneeReasonCodes.AssigneeEmpty);
+            }
+
             toActivityInstance.ActivityState = (short)ActivityStateEnum.Suspended;
             toActivityInstance.ComplexType = (short)ComplexTypeEnum.SignTogether;
 
@@ -1107,10 +1143,8 @@ namespace saiflow.engine.Pattern
             toActivityInstance.CompareType = (short)toActivity.MultiSignDetail.CompareType;
             toActivityInstance.CompleteOrder = toActivity.MultiSignDetail.CompleteOrder;
 
-            toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(
-                activityResource.NextActivityPerformers[toActivity.ActivityId]);
-            toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(
-                activityResource.NextActivityPerformers[toActivity.ActivityId]);
+            toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(plist);
+            toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(plist);
 
             ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
             InsertTransitionInstance(processInstance,
@@ -1123,7 +1157,6 @@ namespace saiflow.engine.Pattern
                 kit);
 
             // 插入会签子节点实例
-            var plist = activityResource.NextActivityPerformers[toActivity.ActivityId];
             ActivityInstanceEntity entity = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)
             {
@@ -1223,20 +1256,20 @@ namespace saiflow.engine.Pattern
 
             if (pipeline != null)
             {
-                var handled = pipeline.TryResolveForTaskCreate(
-                    new AssigneeInvokeRequest
-                    {
-                        ProcessId = toActivityInstance.ProcessId
-                            ?? activityResource.AppRunner?.ProcessId,
-                        Version = activityResource.AppRunner?.Version,
-                        ProcessInstanceId = toActivityInstance.ProcessInstanceId,
-                        ActivityId = toActivityInstance.ActivityId,
-                        ActivityCode = toActivityInstance.ActivityCode,
-                        Runner = activityResource.AppRunner,
-                        NextActivityPerformers = activityResource.NextActivityPerformers,
-                        Kit = Kit
-                    },
-                    out var resolved);
+                var invoke = new AssigneeInvokeRequest
+                {
+                    ProcessId = toActivityInstance.ProcessId
+                        ?? activityResource.AppRunner?.ProcessId,
+                    Version = activityResource.AppRunner?.Version,
+                    ProcessInstanceId = toActivityInstance.ProcessInstanceId,
+                    ActivityId = toActivityInstance.ActivityId,
+                    ActivityCode = toActivityInstance.ActivityCode,
+                    Runner = activityResource.AppRunner,
+                    NextActivityPerformers = activityResource.NextActivityPerformers,
+                    Kit = Kit
+                };
+
+                var handled = pipeline.TryResolveForTaskCreate(invoke, out var resolved);
 
                 if (handled && resolved != null && resolved.Count > 0)
                 {
@@ -1244,6 +1277,19 @@ namespace saiflow.engine.Pattern
                     activityResource.NextActivityPerformers[toActivityInstance.ActivityId] = resolved;
                     toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(resolved);
                     toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(resolved);
+                    activityResource.AutoApprovePending = false;
+                    return toActivityInstance;
+                }
+
+                // R10：仅锚点、零 Performer — 建活动不建待办，Job 走 RunProcessAuto
+                if (handled && invoke.ResultAutoApprovePending)
+                {
+                    activityResource.NextActivityPerformers ??= new Dictionary<string, PerformerList>();
+                    activityResource.NextActivityPerformers[toActivityInstance.ActivityId] =
+                        resolved ?? new PerformerList();
+                    toActivityInstance.AssignedUserIds = null;
+                    toActivityInstance.AssignedUserNames = null;
+                    activityResource.AutoApprovePending = true;
                     return toActivityInstance;
                 }
 

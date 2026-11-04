@@ -65,7 +65,7 @@
 
 - [x] **默认空人 = 拒绝**（`assignEmptyHandlerType` 缺省/新建 = `2`；禁止默认自动通过）— 2026-11-01 拍板
 - [x] **`=2` = R4 拒绝推进**（不落待办 + ReasonCode；**不是**默认 `RejectProcess` 整单结束）— 2026-11-01 拍板
-- [x] 空人策略执行归属：**Host 装饰 Assignee 管道**（`NodePolicyAssigneePipeline`）— 2026-11-01
+- [x] 空人策略执行归属：Host EmptyAction/Filter + AutoApprove 锚点（原装饰管道已删）
 - [x] 「自动通过」(`=1`)：系统代办自动同意（`__sail_policy_skip__` + JobWorker Run）
 - [x] 「转交流程管理员」：配置项 `Sail:ProcessAdminUserIds`；未配 → 拒绝
 - [ ] 是否另增「空人则 Reject 结束整单」选项（与默认 `=2` 分离）
@@ -92,7 +92,7 @@
 
 **空人 / 同人**
 
-- [x] Resolve 之后挂空人处理（`NodePolicyAssigneePipeline`）
+- [x] Resolve 之后挂空人处理（EmptyActionSelector / Filter）
 - [x] 设计器 / merge：默认 `assignEmptyHandlerType=2`
 - [x] `=2` 拒绝推进（R4）
 - [x] `=1` 策略跳过人 + JobWorker 代办
@@ -113,7 +113,7 @@
 
 ### A5. 落地路径
 
-**空人 / 同人（现行过渡）：** `NodePolicyAssigneePipeline`；`=1`/同人`=2` → `__sail_policy_skip__`，作业代办 Run。
+**空人 / 同人（现行）：** EmptyAction/Filter；`=1`/同人`=2` → 占位 `__sail_policy_skip__` + AutoApprove 锚点；`SailNodePolicyJobWorker` 优先 `AutoApproveAnchorWorker`。
 
 **超时：** 活动创建打戳 + Host 作业扫 `OverdueDateTime`。
 
@@ -124,8 +124,7 @@
 - API 优先 **`AddResolver<T>`**；Filter 注册序=执行序。  
 - 现行 `__sail_policy_skip__` 可作迁移双写，目标收敛到锚点 Job。  
 
-**引擎进度（2026-11-04）：** `UseAssign` / Filter / Empty / `AssigneeAutoApprove` Outbox + Drain；**`Request.Kit` 同事务入队**。  
-**Host（同日续）：** `UseSleveenNodePolicyAssignee` → **EmptyActionSelector + Filter**（已去掉装饰器）。执行仍 `__sail_policy_skip__` + `SailNodePolicyJobWorker`；可选 `UseSleveenAssigneeAutoApproveJob`。待办：策略跳过全面切锚点 Job、删除 Obsolete 装饰类型。
+**引擎 / Host（2026-11-04）：** 零 Performer Skip + `RunProcessAuto`；SignTogether 拒零人自动过；锚点自动标选人未齐；设计器 approveType=2 提示。遗留魔法 skip 待办仍兜底。
 
 ### A6. 验收口径
 

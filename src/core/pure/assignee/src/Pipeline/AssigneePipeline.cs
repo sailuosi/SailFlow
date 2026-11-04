@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using saiflow.assignee.Adapt;
 using saiflow.assignee.Builtin;
+using saiflow.assignee.Job;
 using saiflow.engine.Assignee;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
@@ -118,12 +119,13 @@ public class AssigneePipeline : IAssigneePipeline
         else
         {
             ApplyFilters(filterCtx);
-            if (filterCtx.Performers.Count == 0)
+            if (filterCtx.Performers.Count == 0 && filterCtx.Anchors.Count == 0)
             {
-                // Filter 后变空：再走一次 EmptyAction（§11.2）
+                // Filter 后变空且未打锚点：再走 EmptyAction（§11.2）
                 if (!TryApplyEmptyAction(filterCtx))
                     return false;
             }
+            // Filter 清空并已打锚点（如同人跳过）→ 零 Performer 自动审批，勿再 Reject
         }
 
         if (filterCtx.RewroteSpecific)
@@ -135,7 +137,10 @@ public class AssigneePipeline : IAssigneePipeline
 
         FlushAnchors(filterCtx);
         performers = filterCtx.Performers ?? new PerformerList();
-        return performers.Count > 0;
+        // R10：仅锚点无办理人 → 仍算已处理，供 Mediator 跳过建待办
+        request.ResultAutoApprovePending =
+            performers.Count == 0 && filterCtx.Anchors.Count > 0;
+        return performers.Count > 0 || request.ResultAutoApprovePending;
     }
 
     public virtual bool TryCanLeave(LeaveInvokeRequest request, out LeaveJudgeResult result)
@@ -360,8 +365,8 @@ public class AssigneePipeline : IAssigneePipeline
 
         ctx.Performers = result.Performers ?? new PerformerList();
         ctx.Source = PerformerSources.EmptyAction;
-        // Mediator 仍要求 Performers.Count>0；仅锚点无办理人 → false
-        return ctx.Performers.Count > 0;
+        // 有人，或已打自动审批锚点（零 Performer）均可继续
+        return ctx.Performers.Count > 0 || ctx.Anchors.Count > 0;
     }
 
     void FlushAnchors(AssigneeFilterContext ctx)
@@ -369,21 +374,41 @@ public class AssigneePipeline : IAssigneePipeline
         if (ctx.Anchors.Count == 0 || AnchorStore == null || Sail == null)
             return;
 
-        var enriched = ctx.Anchors.Select(a => new AutoApproveAnchor
+        var processId = ctx.Request.ProcessId ?? ctx.Request.Runner?.ProcessId;
+        var version = ctx.Request.Version ?? ctx.Request.Runner?.Version ?? "1";
+        var fromActivityId = ctx.Request.ActivityId;
+        string? pickReason = null;
+        var needsManual = NextActivityPickProbe.RequiresManualPick(
+            Sail, processId, version, fromActivityId, out pickReason);
+
+        var enriched = ctx.Anchors.Select(a =>
         {
-            StrategyCode = a.StrategyCode,
-            Reason = a.Reason,
-            ProcessId = a.ProcessId ?? ctx.Request.ProcessId,
-            Version = a.Version ?? ctx.Request.Version,
-            ProcessInstanceId = a.ProcessInstanceId ?? ctx.Request.ProcessInstanceId,
-            ActivityId = a.ActivityId ?? ctx.Request.ActivityId,
-            ActivityCode = a.ActivityCode ?? ctx.Request.ActivityCode,
-            ActivityInstanceId = a.ActivityInstanceId,
-            TaskId = a.TaskId,
-            PreferUserId = a.PreferUserId,
-            PreferUserName = a.PreferUserName,
-            Extra = a.Extra
+            var extra = a.Extra;
+            if (needsManual)
+                extra = NextActivityPickProbe.MergeIncompleteExtra(extra, pickReason ?? "");
+            return new AutoApproveAnchor
+            {
+                StrategyCode = a.StrategyCode,
+                Reason = a.Reason,
+                ProcessId = a.ProcessId ?? processId,
+                Version = a.Version ?? version,
+                ProcessInstanceId = a.ProcessInstanceId ?? ctx.Request.ProcessInstanceId,
+                ActivityId = a.ActivityId ?? fromActivityId,
+                ActivityCode = a.ActivityCode ?? ctx.Request.ActivityCode,
+                ActivityInstanceId = a.ActivityInstanceId,
+                TaskId = a.TaskId,
+                PreferUserId = a.PreferUserId,
+                PreferUserName = a.PreferUserName,
+                Extra = extra
+            };
         }).ToList();
+
+        if (needsManual)
+        {
+            Trace.TraceInformation(
+                "[Assignee] AutoApprove anchors marked nextPerformersIncomplete Activity={0} reason={1}",
+                fromActivityId, pickReason);
+        }
 
         try
         {

@@ -46,6 +46,11 @@ namespace saiflow.engine.Common
         }
 
         /// <summary>
+        /// R10：自动审批锚点已入队、无真人待办。CreateNewTask 应跳过插任务。
+        /// </summary>
+        public bool AutoApprovePending { get; set; }
+
+        /// <summary>
         /// Construct function
         /// 构造函数
         /// </summary>

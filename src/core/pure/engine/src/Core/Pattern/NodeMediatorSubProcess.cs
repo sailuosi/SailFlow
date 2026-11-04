@@ -12,6 +12,7 @@ using saiflow.engine.Entity;
 using saiflow.engine.Manager;
 using saiflow.engine.Result;
 using saiflow.engine.Runtime;
+using saiflow.engine.Assignee;
 
 
 using saiflow.engine.Client;
@@ -325,6 +326,24 @@ namespace saiflow.engine.Pattern
             }
             toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
 
+            if (activityResource.AutoApprovePending)
+            {
+                throw new WfAssigneeException(
+                    AssigneeReasonCodes.AssigneeAutoApproveNotForMultiSign,
+                    "SignTogether (sub-process) cannot auto-approve with zero performers. ReasonCode="
+                    + AssigneeReasonCodes.AssigneeAutoApproveNotForMultiSign);
+            }
+
+            activityResource.NextActivityPerformers ??= new Dictionary<string, PerformerList>();
+            if (!activityResource.NextActivityPerformers.TryGetValue(toActivity.ActivityId, out var plist)
+                || plist == null
+                || plist.Count == 0)
+            {
+                throw new WfAssigneeException(
+                    AssigneeReasonCodes.AssigneeEmpty,
+                    "SignTogether requires performers. ReasonCode=" + AssigneeReasonCodes.AssigneeEmpty);
+            }
+
             base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
 
             InsertTransitionInstance(processInstance,
@@ -337,7 +356,6 @@ namespace saiflow.engine.Pattern
                 kit);
 
             //插入会签子节点实例数据
-            var plist = activityResource.NextActivityPerformers[toActivity.ActivityId];
             ActivityInstanceEntity entity = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)
             {

@@ -26,5 +26,8 @@ namespace saiflow.engine.Assignee
 
         /// <summary>R10：自动审批已尝试 Run 失败（回落手动）。</summary>
         public const string AutoApproveFailed = "AutoApproveFailed";
+
+        /// <summary>R10：会签 SignTogether 不支持零 Performer 自动过（须有真人子实例）。</summary>
+        public const string AssigneeAutoApproveNotForMultiSign = "AssigneeAutoApproveNotForMultiSign";
     }
 }
