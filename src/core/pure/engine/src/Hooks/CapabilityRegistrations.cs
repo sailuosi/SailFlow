@@ -13,7 +13,7 @@ namespace saiflow.engine.Hooks
         public string[] ProcessCodes { get; init; }
         public string[] ProcessIds { get; init; }
         public string[] ActivityCodes { get; init; }
-        public IWorkflowGate Handler { get; init; }
+        public IFlowGate Handler { get; init; }
     }
 
     public sealed class HookRegistration
@@ -26,7 +26,7 @@ namespace saiflow.engine.Hooks
         public string[] ActivityCodes { get; init; }
         public EventFireTypeEnum[] Events { get; init; }
         public HookMode Mode { get; init; }
-        public IWorkflowHook Handler { get; init; }
+        public IFlowHook Handler { get; init; }
     }
 
     public sealed class NotifierRegistration
@@ -42,32 +42,32 @@ namespace saiflow.engine.Hooks
         public ITaskNotifier Handler { get; init; }
     }
 
-    internal sealed class DelegateWorkflowGate : IWorkflowGate
+    internal sealed class DelegateFlowGate : IFlowGate
     {
-        private readonly Func<WorkflowHookContext, HookResult> _validate;
+        private readonly Func<FlowHookContext, HookResult> _validate;
 
-        public DelegateWorkflowGate(string name, Func<WorkflowHookContext, HookResult> validate)
+        public DelegateFlowGate(string name, Func<FlowHookContext, HookResult> validate)
         {
             Name = name;
             _validate = validate ?? throw new ArgumentNullException(nameof(validate));
         }
 
         public string Name { get; }
-        public HookResult Validate(WorkflowHookContext ctx) => _validate(ctx);
+        public HookResult Validate(FlowHookContext ctx) => _validate(ctx);
     }
 
-    internal sealed class DelegateWorkflowHook : IWorkflowHook
+    internal sealed class DelegateFlowHook : IFlowHook
     {
-        private readonly Action<WorkflowHookContext> _handle;
+        private readonly Action<FlowHookContext> _handle;
 
-        public DelegateWorkflowHook(string name, Action<WorkflowHookContext> handle)
+        public DelegateFlowHook(string name, Action<FlowHookContext> handle)
         {
             Name = name;
             _handle = handle ?? throw new ArgumentNullException(nameof(handle));
         }
 
         public string Name { get; }
-        public void Handle(WorkflowHookContext ctx) => _handle(ctx);
+        public void Handle(FlowHookContext ctx) => _handle(ctx);
     }
 
     internal sealed class DelegateTaskNotifier : ITaskNotifier

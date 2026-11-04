@@ -7,14 +7,14 @@
 
 ### 1. Sync Hook 硬超时
 
-- **`WorkflowCapabilityOptions.SyncHookTimeoutMs`**（默认 **2000**；**0** = 不限制）。
+- **`FlowCapabilityOptions.SyncHookTimeoutMs`**（默认 **2000**；**0** = 不限制）。
 - **`SailClient.CapabilityOptions`**（默认新实例）。
-- **`WorkflowCapabilityDispatcher.RunSyncHooks`**：超时路径用 **后台 Thread + `Join(timeoutMs)`**（避免 ASP.NET 同步上下文上的 sync-over-async 死锁）；超时抛 **`WorkflowSyncHookTimeoutException`**（FailFast）。
-- **`IWorkflowCapabilityMetrics.IncrementSyncHookTimeout`**（Null / InMemory 已实现）。
+- **`FlowCapabilityDispatcher.RunSyncHooks`**：超时路径用 **后台 Thread + `Join(timeoutMs)`**（避免 ASP.NET 同步上下文上的 sync-over-async 死锁）；超时抛 **`FlowSyncHookTimeoutException`**（FailFast）。
+- **`IFlowCapabilityMetrics.IncrementSyncHookTimeout`**（Null / InMemory 已实现）。
 
 ```csharp
 client.CapabilityOptions.SyncHookTimeoutMs = 2000; // 0 禁用
-client.CapabilityMetrics = new InMemoryWorkflowCapabilityMetrics();
+client.CapabilityMetrics = new InMemoryFlowCapabilityMetrics();
 ```
 
 ### 2. `UseHookOutboxDrain` 宿主
@@ -46,17 +46,17 @@ builder.UseHookOutboxDrain(o => o.PollInterval = TimeSpan.FromSeconds(3), autoSt
 ### 4. 单元测试
 
 - 工程：**`src/tests/sailflow.engine.tests/`**（net8.0, xunit），已加入 **`Sailflow.sln`**（`tests` 文件夹）。
-- **`InternalsVisibleTo`** → `sailflow.engine.tests`（测 `WorkflowCapabilityMatch`）。
+- **`InternalsVisibleTo`** → `sailflow.engine.tests`（测 `FlowCapabilityMatch`）。
 
 | 测试类 | 覆盖 |
 |--------|------|
-| `WorkflowCapabilityMatchTests` | All / Whitelist / ActivityCodes |
+| `FlowCapabilityMatchTests` | All / Whitelist / ActivityCodes |
 | `HookResultWfExecutedResultTests` | Reject、`ApplyGateReject`、`IsValidationReject` |
 | `TaskNotifyMessageIntentMappingTests` | `FromKind` |
 
 ### 5. Perf smoke（软断言）
 
-- **`WorkflowCapabilityMatchPerfTests`**：100 条白名单 × 10 000 次 ≈ **1 000 000** 次 `MatchesProcess`+`MatchesActivity`。
+- **`FlowCapabilityMatchPerfTests`**：100 条白名单 × 10 000 次 ≈ **1 000 000** 次 `MatchesProcess`+`MatchesActivity`。
 - **本机 baseline（2026-10-31）：** ~**41 ms**（阈值 **&lt; 50 ms**）。
 
 ### 6. 设计文档
@@ -75,7 +75,7 @@ dotnet test  src\tests\sailflow.engine.tests\sailflow.engine.tests.csproj -f net
 
 | Area | Paths |
 |------|--------|
-| Sync timeout | `WorkflowCapabilityOptions.cs`, `WorkflowSyncHookTimeoutException.cs`, `WorkflowCapabilityDispatcher.cs`, `IWorkflowCapabilityMetrics.cs`, `SlickClient.cs` |
+| Sync timeout | `FlowCapabilityOptions.cs`, `FlowSyncHookTimeoutException.cs`, `FlowCapabilityDispatcher.cs`, `IFlowCapabilityMetrics.cs`, `SlickClient.cs` |
 | Outbox drain hosting | `SailHookOutboxDrainExtensions.cs`, `SailBuilderKeys.cs`, `HookOutboxWorker.cs`, `HookOutboxDrainLoop.cs`, `BizHookOutboxSailExtensions.cs` |
 | Dead-letter ops | `HookOutboxManager.cs`, `HookOutboxAdmin.cs` |
 | Tests | `src/tests/sailflow.engine.tests/*`, `sailflow.engine.csproj`, `Sailflow.sln` |

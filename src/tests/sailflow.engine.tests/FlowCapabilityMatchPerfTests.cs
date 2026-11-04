@@ -6,11 +6,11 @@ using Xunit.Abstractions;
 namespace saiflow.engine.tests;
 
 /// <summary>Soft perf smoke — baseline documented in phase3b progress doc.</summary>
-public sealed class WorkflowCapabilityMatchPerfTests
+public sealed class FlowCapabilityMatchPerfTests
 {
     private readonly ITestOutputHelper _output;
 
-    public WorkflowCapabilityMatchPerfTests(ITestOutputHelper output) => _output = output;
+    public FlowCapabilityMatchPerfTests(ITestOutputHelper output) => _output = output;
 
     [Fact]
     public void Whitelist_scan_100_hooks_10k_iterations_under_soft_budget()
@@ -27,13 +27,13 @@ public sealed class WorkflowCapabilityMatchPerfTests
         {
             foreach (var codes in hookProcessCodes)
             {
-                if (WorkflowCapabilityMatch.MatchesProcess(
+                if (FlowCapabilityMatch.MatchesProcess(
                         HookMatch.Whitelist,
                         new[] { codes },
                         null,
                         targetProcessCode,
                         null)
-                    && WorkflowCapabilityMatch.MatchesActivity(null, "node-1"))
+                    && FlowCapabilityMatch.MatchesActivity(null, "node-1"))
                     matches++;
             }
         }

@@ -7,9 +7,9 @@
 
 ### Engine (`saiflow.engine`)
 
-- **Contracts** (`src/core/pure/engine/src/Hooks/`): `IWorkflowGate`, `IWorkflowHook`, `ITaskNotifier`, `HookResult`, `HookValidationItem`, `WorkflowHookContext`, `TaskNotifyContext`, enums (`TaskNotifyKind`, `HookMatch`, `HookMode`, `WorkflowOperation`), `HookRegistrationOptions`, registration DTOs, `WorkflowCapabilityRegistry`, `WorkflowCapabilityDispatcher`, `HookOutboxWorker`.
+- **Contracts** (`src/core/pure/engine/src/Hooks/`): `IFlowGate`, `IFlowHook`, `ITaskNotifier`, `HookResult`, `HookValidationItem`, `FlowHookContext`, `TaskNotifyContext`, enums (`TaskNotifyKind`, `HookMatch`, `HookMode`, `FlowOperation`), `HookRegistrationOptions`, registration DTOs, `FlowCapabilityRegistry`, `FlowCapabilityDispatcher`, `HookOutboxWorker`.
 - **Client:** `SailClient.Capabilities` / `Hooks`, `CapabilityDispatcher`, `useFlowGate` / `useFlowHook` / `useTaskNotifier`.
-- **Hosting:** `SailWorkflowCapabilityExtensions` — `UseFlowGate` / `UseFlowHook` / `UseTaskNotifier` (class + delegate) on `ISailCollection` and `SailClientBuilder`; `SailBuilderKeys.WorkflowCapabilities`; Build applies pending registrations.
+- **Hosting:** `SailFlowCapabilityExtensions` — `UseFlowGate` / `UseFlowHook` / `UseTaskNotifier` (class + delegate) on `ISailCollection` and `SailClientBuilder`; `SailBuilderKeys.FlowCapabilities`; Build applies pending registrations.
 - **Run path:** `WorkflowService.ProcessExecution.Run` — Gate after `CreateRuntimeInstanceAppRunning`, before `Execute`; Reject → `ApplyGateReject` (no `runprocess.error` wrap). On `OnProcessContinued` success: Sync hooks + Async Outbox enqueue.
 - **Task path:** `TaskManager` — removed `SendTaskEMails` / `SendEmailFlag`; `FireTaskLifecycle` on create/complete (Sync hooks, Notifier Outbox, `Subscribe` via `EventExecutor`).
 - **Outbox:** `HookOutboxEntity` (`wf_hook_outbox`), `HookOutboxManager`, schema in `SailSchemaInitializer.EnsureCoreTables`.
@@ -52,7 +52,7 @@ Gate Reject returns `WfExecutedResult` with `Status=Failed`, `Message`, `Validat
 |------|--------|
 | New Hooks | `engine/src/Hooks/*.cs` |
 | Outbox | `HookOutboxEntity.cs`, `HookOutboxManager.cs` |
-| Client/Hosting | `SlickClient.cs`, `SailClientBuilder.cs`, `SailBuilderKeys.cs`, `SailWorkflowCapabilityExtensions.cs` |
+| Client/Hosting | `SlickClient.cs`, `SailClientBuilder.cs`, `SailBuilderKeys.cs`, `SailFlowCapabilityExtensions.cs` |
 | Service/Events | `WorkflowService.ProcessExecution.cs`, `EventFireTypeEnum.cs`, `EventExecutor.cs`, `WfExecutedResult.cs` |
 | Task | `TaskManager.cs` |
 | Config | `SlickConfig.cs`, `JobAdminConfig.cs`, `SailConfigBizExtensions.cs` |

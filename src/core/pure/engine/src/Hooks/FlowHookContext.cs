@@ -3,7 +3,7 @@ using saiflow.engine.Event;
 namespace saiflow.engine.Hooks
 {
     /// <summary>Gate / Hook 统一上下文（Gate 默认只读）。</summary>
-    public sealed class WorkflowHookContext
+    public sealed class FlowHookContext
     {
         public string AppName { get; set; }
         public string AppInstanceId { get; set; }
@@ -17,7 +17,7 @@ namespace saiflow.engine.Hooks
         public int? TaskId { get; set; }
         public string AssignedUserId { get; set; }
         public string AssignedUserName { get; set; }
-        public WorkflowOperation Operation { get; set; }
+        public FlowOperation Operation { get; set; }
         public EventFireTypeEnum EventType { get; set; }
     }
 

@@ -5,17 +5,17 @@ using saiflow.engine.Event;
 namespace saiflow.engine.Hooks
 {
     /// <summary>发送前闸门：仅 Sync；用结果拒绝，不抛业务校验异常。</summary>
-    public interface IWorkflowGate
+    public interface IFlowGate
     {
         string Name { get; }
-        HookResult Validate(WorkflowHookContext ctx);
+        HookResult Validate(FlowHookContext ctx);
     }
 
     /// <summary>业务钩子：Sync 当场调；Async 由 Outbox Worker 调同一方法。</summary>
-    public interface IWorkflowHook
+    public interface IFlowHook
     {
         string Name { get; }
-        void Handle(WorkflowHookContext ctx);
+        void Handle(FlowHookContext ctx);
     }
 
     /// <summary>待办旁路：默认异步 Outbox 后再调业务实现。</summary>

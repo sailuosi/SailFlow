@@ -17,12 +17,12 @@ namespace saiflow.engine.Hooks
         {
             Sail = client ?? throw new ArgumentNullException(nameof(client));
             Options = options ?? client.HookOutboxOptions ?? new HookOutboxOptions();
-            Dispatcher = new WorkflowCapabilityDispatcher(client);
+            Dispatcher = new FlowCapabilityDispatcher(client);
         }
 
         public SailClient Sail { get; }
         public HookOutboxOptions Options { get; }
-        public WorkflowCapabilityDispatcher Dispatcher { get; }
+        public FlowCapabilityDispatcher Dispatcher { get; }
 
         /// <summary>认领一批 Pending，逐条 dispatch + 标记（各自短事务）。</summary>
         public int ProcessPending(int? limit = null, CancellationToken cancellationToken = default) =>

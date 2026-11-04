@@ -5,11 +5,11 @@ namespace saiflow.engine.Hooks.Samples
     /// <summary>
     /// 文档示例：流程继续后 Async Outbox 汇总（财务出单等）。
     /// </summary>
-    public sealed class FinanceAggregateHook : IWorkflowHook
+    public sealed class FinanceAggregateHook : IFlowHook
     {
         public string Name => "finance.aggregate";
 
-        public void Handle(WorkflowHookContext ctx)
+        public void Handle(FlowHookContext ctx)
         {
             if (ctx.EventType != EventFireTypeEnum.OnProcessContinued)
                 return;

@@ -14,18 +14,18 @@ using saiflow.engine.Event;
 namespace saiflow.engine.Hooks
 {
     /// <summary>Gate / Hook / Notifier 分发与 Outbox 写入。</summary>
-    public sealed class WorkflowCapabilityDispatcher
+    public sealed class FlowCapabilityDispatcher
     {
         private const string ProcessCodeCachePrefix = "wf:processCode:";
 
-        public WorkflowCapabilityDispatcher(SailClient client)
+        public FlowCapabilityDispatcher(SailClient client)
         {
             Sail = client ?? throw new ArgumentNullException(nameof(client));
             Registry = client.Capabilities;
         }
 
         public SailClient Sail { get; }
-        public WorkflowCapabilityRegistry Registry { get; }
+        public FlowCapabilityRegistry Registry { get; }
 
         /// <summary>由流程定义 Id+Version 解析 <see cref="ProcessEntity.ProcessCode"/> 并缓存。</summary>
         public string ResolveProcessCode(SQLBuilder kit, string processId, string version)
@@ -48,7 +48,7 @@ namespace saiflow.engine.Hooks
         }
 
         /// <summary>Run 前 Gate；首个 Reject 即返回。</summary>
-        public HookResult RunGates(SQLBuilder kit, WorkflowHookContext ctx)
+        public HookResult RunGates(SQLBuilder kit, FlowHookContext ctx)
         {
             if (ctx == null || Registry.Gates.Count == 0)
                 return HookResult.Ok();
@@ -72,7 +72,7 @@ namespace saiflow.engine.Hooks
         }
 
         /// <summary>Sync Hook，FailFast（异常向上抛）。</summary>
-        public void RunSyncHooks(SQLBuilder kit, WorkflowHookContext ctx, EventFireTypeEnum eventType)
+        public void RunSyncHooks(SQLBuilder kit, FlowHookContext ctx, EventFireTypeEnum eventType)
         {
             if (ctx == null || Registry.Hooks.Count == 0)
                 return;
@@ -114,7 +114,7 @@ namespace saiflow.engine.Hooks
                     if (!worker.Join(timeoutMs))
                     {
                         Sail.CapabilityMetrics?.IncrementSyncHookTimeout();
-                        throw new WorkflowSyncHookTimeoutException(hook.Name, timeoutMs);
+                        throw new FlowSyncHookTimeoutException(hook.Name, timeoutMs);
                     }
 
                     if (handlerError != null)
@@ -126,7 +126,7 @@ namespace saiflow.engine.Hooks
         }
 
         /// <summary>Async Hook 写入 Outbox（kit 非空时同事务）。</summary>
-        public void EnqueueAsyncHooks(SQLBuilder kit, WorkflowHookContext ctx, EventFireTypeEnum eventType)
+        public void EnqueueAsyncHooks(SQLBuilder kit, FlowHookContext ctx, EventFireTypeEnum eventType)
         {
             if (ctx == null || Registry.Hooks.Count == 0)
                 return;
@@ -215,7 +215,7 @@ namespace saiflow.engine.Hooks
                 ? EventFireTypeEnum.OnTaskCreated
                 : EventFireTypeEnum.OnTaskCompleted;
 
-            var hookCtx = BuildHookContextFromTask(task, activityInstance, eventType, WorkflowOperation.Run);
+            var hookCtx = BuildHookContextFromTask(task, activityInstance, eventType, FlowOperation.Run);
             RunSyncHooks(kit, hookCtx, eventType);
             EnqueueAsyncHooks(kit, hookCtx, eventType);
 
@@ -342,15 +342,15 @@ namespace saiflow.engine.Hooks
             }
         }
 
-        public WorkflowHookContext BuildHookContextFromRuntime(
+        public FlowHookContext BuildHookContextFromRuntime(
             WfAppRunner runner,
             int processInstanceId,
             ActivityInstanceEntity activityInstance,
             int? taskId,
             EventFireTypeEnum eventType,
-            WorkflowOperation operation)
+            FlowOperation operation)
         {
-            return new WorkflowHookContext
+            return new FlowHookContext
             {
                 AppName = runner?.AppName,
                 AppInstanceId = runner?.AppInstanceId,
@@ -375,7 +375,7 @@ namespace saiflow.engine.Hooks
             if (hook?.Handler == null)
                 throw new InvalidOperationException($"Hook handler '{row.HandlerName}' not registered.");
 
-            var ctx = Sail.JsonSerializer.Deserialize<WorkflowHookContext>(row.PayloadJson);
+            var ctx = Sail.JsonSerializer.Deserialize<FlowHookContext>(row.PayloadJson);
             if (ctx == null)
                 throw new InvalidOperationException("Hook outbox payload is empty.");
 
@@ -397,11 +397,11 @@ namespace saiflow.engine.Hooks
             Sail.CapabilityMetrics?.IncrementNotifierDispatch();
         }
 
-        private static WorkflowHookContext BuildHookContextFromTask(
+        private static FlowHookContext BuildHookContextFromTask(
             TaskEntity task,
             ActivityInstanceEntity activityInstance,
             EventFireTypeEnum eventType,
-            WorkflowOperation operation) =>
+            FlowOperation operation) =>
             new()
             {
                 AppName = task.AppName,
@@ -437,7 +437,7 @@ namespace saiflow.engine.Hooks
                 Kind = kind,
             };
 
-        private void EnsureProcessCode(SQLBuilder kit, WorkflowHookContext ctx)
+        private void EnsureProcessCode(SQLBuilder kit, FlowHookContext ctx)
         {
             if (ctx == null || !string.IsNullOrEmpty(ctx.ProcessCode))
                 return;
@@ -451,24 +451,24 @@ namespace saiflow.engine.Hooks
             ctx.ProcessCode = ResolveProcessCode(kit ?? Sail.UseRunSQL(), ctx.ProcessId, ctx.Version);
         }
 
-        private static bool MatchesGate(GateRegistration gate, WorkflowHookContext ctx) =>
-            WorkflowCapabilityMatch.MatchesProcess(gate.Match, gate.ProcessCodes, gate.ProcessIds, ctx.ProcessCode, ctx.ProcessId)
-            && WorkflowCapabilityMatch.MatchesActivity(gate.ActivityCodes, ctx.ActivityCode);
+        private static bool MatchesGate(GateRegistration gate, FlowHookContext ctx) =>
+            FlowCapabilityMatch.MatchesProcess(gate.Match, gate.ProcessCodes, gate.ProcessIds, ctx.ProcessCode, ctx.ProcessId)
+            && FlowCapabilityMatch.MatchesActivity(gate.ActivityCodes, ctx.ActivityCode);
 
-        private static bool MatchesHook(HookRegistration hook, WorkflowHookContext ctx, EventFireTypeEnum eventType)
+        private static bool MatchesHook(HookRegistration hook, FlowHookContext ctx, EventFireTypeEnum eventType)
         {
             if (hook.Events == null || hook.Events.Length == 0 || !hook.Events.Contains(eventType))
                 return false;
-            return WorkflowCapabilityMatch.MatchesProcess(hook.Match, hook.ProcessCodes, hook.ProcessIds, ctx.ProcessCode, ctx.ProcessId)
-                   && WorkflowCapabilityMatch.MatchesActivity(hook.ActivityCodes, ctx.ActivityCode);
+            return FlowCapabilityMatch.MatchesProcess(hook.Match, hook.ProcessCodes, hook.ProcessIds, ctx.ProcessCode, ctx.ProcessId)
+                   && FlowCapabilityMatch.MatchesActivity(hook.ActivityCodes, ctx.ActivityCode);
         }
 
         private static bool MatchesNotifier(NotifierRegistration notifier, TaskNotifyContext ctx)
         {
             if (notifier.TaskKinds == null || notifier.TaskKinds.Length == 0 || !notifier.TaskKinds.Contains(ctx.Kind))
                 return false;
-            return WorkflowCapabilityMatch.MatchesProcess(notifier.Match, notifier.ProcessCodes, notifier.ProcessIds, ctx.ProcessCode, ctx.ProcessId)
-                   && WorkflowCapabilityMatch.MatchesActivity(notifier.ActivityCodes, ctx.ActivityCode);
+            return FlowCapabilityMatch.MatchesProcess(notifier.Match, notifier.ProcessCodes, notifier.ProcessIds, ctx.ProcessCode, ctx.ProcessId)
+                   && FlowCapabilityMatch.MatchesActivity(notifier.ActivityCodes, ctx.ActivityCode);
         }
     }
 }

@@ -233,7 +233,7 @@ public sealed class SailClientBuilder
             client.useAssigneePipeline(assigneePipeline);
         }
 
-        SailWorkflowCapabilityExtensions.ApplyPendingRegistrations(client, Services);
+        SailFlowCapabilityExtensions.ApplyPendingRegistrations(client, Services);
 
         foreach (var d in Services.OrderBy(x => x.Order)
                      .Where(x => x.Phase == SailFeaturePhase.ConfigureClient))

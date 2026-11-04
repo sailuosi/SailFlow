@@ -9,16 +9,16 @@ using saiflow.engine.Event;
 namespace saiflow.engine.Hooks
 {
     /// <summary>Gate / 成功 Hook 的公共编排（避免 WorkflowService 重复）。</summary>
-    public static class WorkflowCapabilityPipeline
+    public static class FlowCapabilityPipeline
     {
-        public static WorkflowHookContext BuildGateContext(
+        public static FlowHookContext BuildGateContext(
             SailClient sail,
             SQLBuilder kit,
             WfAppRunner runner,
             int processInstanceId,
             ActivityInstanceEntity activityInstance,
             int? taskId,
-            WorkflowOperation operation) =>
+            FlowOperation operation) =>
             BuildHookContext(
                 sail,
                 kit,
@@ -29,7 +29,7 @@ namespace saiflow.engine.Hooks
                 EventFireTypeEnum.OnValidating,
                 operation);
 
-        public static WorkflowHookContext BuildHookContext(
+        public static FlowHookContext BuildHookContext(
             SailClient sail,
             SQLBuilder kit,
             WfAppRunner runner,
@@ -37,7 +37,7 @@ namespace saiflow.engine.Hooks
             ActivityInstanceEntity activityInstance,
             int? taskId,
             EventFireTypeEnum eventType,
-            WorkflowOperation operation)
+            FlowOperation operation)
         {
             var dispatcher = sail.CapabilityDispatcher;
             var ctx = dispatcher.BuildHookContextFromRuntime(
@@ -67,7 +67,7 @@ namespace saiflow.engine.Hooks
         }
 
         /// <summary>RunGates；Reject 时已写入 <paramref name="result"/>。返回 false 表示应中止 Execute。</summary>
-        public static bool TryGate(SailClient sail, SQLBuilder kit, WorkflowHookContext ctx, WfExecutedResult result)
+        public static bool TryGate(SailClient sail, SQLBuilder kit, FlowHookContext ctx, WfExecutedResult result)
         {
             if (sail.Capabilities.Gates.Count == 0)
                 return true;
@@ -85,7 +85,7 @@ namespace saiflow.engine.Hooks
         public static void AfterSuccess(
             SailClient sail,
             SQLBuilder kit,
-            WorkflowHookContext ctx,
+            FlowHookContext ctx,
             EventFireTypeEnum successEvent)
         {
             var dispatcher = sail.CapabilityDispatcher;

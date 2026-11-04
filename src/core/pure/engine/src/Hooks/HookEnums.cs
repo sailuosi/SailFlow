@@ -24,7 +24,7 @@ namespace saiflow.engine.Hooks
     }
 
     /// <summary>流程 API 操作类型，供 Gate 区分场景。</summary>
-    public enum WorkflowOperation
+    public enum FlowOperation
     {
         Run,
         Start,

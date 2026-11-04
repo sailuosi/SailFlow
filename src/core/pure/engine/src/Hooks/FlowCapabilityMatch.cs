@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace saiflow.engine.Hooks
 {
-    internal static class WorkflowCapabilityMatch
+    internal static class FlowCapabilityMatch
     {
         internal static bool MatchesProcess(
             HookMatch match,

@@ -10,7 +10,7 @@ namespace saiflow.engine.Client.Hosting;
 /// Gate / Hook / Notifier 注册扩展（对齐 UseRuleEngine 管道）。
 /// <see cref="UseFlowAspects"/> 为总包入口；<c>AddGate</c>/<c>AddHook</c>/<c>AddNotifier</c> 为无参构造追加别名。
 /// </summary>
-public static class SailWorkflowCapabilityExtensions
+public static class SailFlowCapabilityExtensions
 {
     /// <summary>收拢注册 Gate / Hook / Notifier（及可选 Outbox Drain）；<paramref name="configure"/> 参数即 services 自身。</summary>
     public static ISailCollection UseFlowAspects(
@@ -38,14 +38,14 @@ public static class SailWorkflowCapabilityExtensions
     public static ISailCollection AddGate<TGate>(
         this ISailCollection services,
         Action<HookRegistrationOptions> configure = null)
-        where TGate : class, IWorkflowGate, new()
+        where TGate : class, IFlowGate, new()
         => services.UseFlowGate(new TGate(), configure);
 
     /// <summary>追加无参构造 Hook（等价 <c>UseFlowHook(new THook(), configure)</c>）。</summary>
     public static ISailCollection AddHook<THook>(
         this ISailCollection services,
         Action<HookRegistrationOptions> configure = null)
-        where THook : class, IWorkflowHook, new()
+        where THook : class, IFlowHook, new()
         => services.UseFlowHook(new THook(), configure);
 
     /// <summary>追加无参构造 Notifier（等价 <c>UseTaskNotifier(new TNotifier(), configure)</c>）。</summary>
@@ -59,7 +59,7 @@ public static class SailWorkflowCapabilityExtensions
     public static SailClientBuilder AddGate<TGate>(
         this SailClientBuilder builder,
         Action<HookRegistrationOptions> configure = null)
-        where TGate : class, IWorkflowGate, new()
+        where TGate : class, IFlowGate, new()
     {
         builder.Services.AddGate<TGate>(configure);
         return builder;
@@ -69,7 +69,7 @@ public static class SailWorkflowCapabilityExtensions
     public static SailClientBuilder AddHook<THook>(
         this SailClientBuilder builder,
         Action<HookRegistrationOptions> configure = null)
-        where THook : class, IWorkflowHook, new()
+        where THook : class, IFlowHook, new()
     {
         builder.Services.AddHook<THook>(configure);
         return builder;
@@ -87,7 +87,7 @@ public static class SailWorkflowCapabilityExtensions
 
     public static ISailCollection UseFlowGate(
         this ISailCollection services,
-        IWorkflowGate gate,
+        IFlowGate gate,
         Action<HookRegistrationOptions> configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -102,16 +102,16 @@ public static class SailWorkflowCapabilityExtensions
     public static ISailCollection UseFlowGate(
         this ISailCollection services,
         string name,
-        Func<WorkflowHookContext, HookResult> validate,
+        Func<FlowHookContext, HookResult> validate,
         Action<HookRegistrationOptions> configure = null)
     {
         ArgumentNullException.ThrowIfNull(validate);
-        return services.UseFlowGate(new DelegateWorkflowGate(name, validate), configure);
+        return services.UseFlowGate(new DelegateFlowGate(name, validate), configure);
     }
 
     public static ISailCollection UseFlowHook(
         this ISailCollection services,
-        IWorkflowHook hook,
+        IFlowHook hook,
         Action<HookRegistrationOptions> configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -126,11 +126,11 @@ public static class SailWorkflowCapabilityExtensions
     public static ISailCollection UseFlowHook(
         this ISailCollection services,
         string name,
-        Action<WorkflowHookContext> handle,
+        Action<FlowHookContext> handle,
         Action<HookRegistrationOptions> configure = null)
     {
         ArgumentNullException.ThrowIfNull(handle);
-        return services.UseFlowHook(new DelegateWorkflowHook(name, handle), configure);
+        return services.UseFlowHook(new DelegateFlowHook(name, handle), configure);
     }
 
     public static ISailCollection UseTaskNotifier(
@@ -159,7 +159,7 @@ public static class SailWorkflowCapabilityExtensions
 
     public static SailClientBuilder UseFlowGate(
         this SailClientBuilder builder,
-        IWorkflowGate gate,
+        IFlowGate gate,
         Action<HookRegistrationOptions> configure = null)
     {
         builder.Services.UseFlowGate(gate, configure);
@@ -169,7 +169,7 @@ public static class SailWorkflowCapabilityExtensions
     public static SailClientBuilder UseFlowGate(
         this SailClientBuilder builder,
         string name,
-        Func<WorkflowHookContext, HookResult> validate,
+        Func<FlowHookContext, HookResult> validate,
         Action<HookRegistrationOptions> configure = null)
     {
         builder.Services.UseFlowGate(name, validate, configure);
@@ -178,7 +178,7 @@ public static class SailWorkflowCapabilityExtensions
 
     public static SailClientBuilder UseFlowHook(
         this SailClientBuilder builder,
-        IWorkflowHook hook,
+        IFlowHook hook,
         Action<HookRegistrationOptions> configure = null)
     {
         builder.Services.UseFlowHook(hook, configure);
@@ -188,7 +188,7 @@ public static class SailWorkflowCapabilityExtensions
     public static SailClientBuilder UseFlowHook(
         this SailClientBuilder builder,
         string name,
-        Action<WorkflowHookContext> handle,
+        Action<FlowHookContext> handle,
         Action<HookRegistrationOptions> configure = null)
     {
         builder.Services.UseFlowHook(name, handle, configure);
@@ -214,14 +214,14 @@ public static class SailWorkflowCapabilityExtensions
         return builder;
     }
 
-    public static SailClient useFlowGate(this SailClient client, IWorkflowGate gate, Action<HookRegistrationOptions> configure = null)
+    public static SailClient useFlowGate(this SailClient client, IFlowGate gate, Action<HookRegistrationOptions> configure = null)
     {
         ArgumentNullException.ThrowIfNull(client);
         client.Capabilities.RegisterGate(gate, ApplyOptions(configure));
         return client;
     }
 
-    public static SailClient useFlowHook(this SailClient client, IWorkflowHook hook, Action<HookRegistrationOptions> configure = null)
+    public static SailClient useFlowHook(this SailClient client, IFlowHook hook, Action<HookRegistrationOptions> configure = null)
     {
         ArgumentNullException.ThrowIfNull(client);
         client.Capabilities.RegisterHook(hook, ApplyOptions(configure));
@@ -235,21 +235,21 @@ public static class SailWorkflowCapabilityExtensions
         return client;
     }
 
-    internal static List<Action<WorkflowCapabilityRegistry>> GetPending(ISailCollection services)
+    internal static List<Action<FlowCapabilityRegistry>> GetPending(ISailCollection services)
     {
-        if (services.Properties.TryGetValue(SailBuilderKeys.WorkflowCapabilities, out var box)
-            && box is List<Action<WorkflowCapabilityRegistry>> list)
+        if (services.Properties.TryGetValue(SailBuilderKeys.FlowCapabilities, out var box)
+            && box is List<Action<FlowCapabilityRegistry>> list)
             return list;
 
-        list = new List<Action<WorkflowCapabilityRegistry>>();
-        services.Properties[SailBuilderKeys.WorkflowCapabilities] = list;
+        list = new List<Action<FlowCapabilityRegistry>>();
+        services.Properties[SailBuilderKeys.FlowCapabilities] = list;
         return list;
     }
 
     internal static void ApplyPendingRegistrations(SailClient client, ISailCollection services)
     {
-        if (!services.Properties.TryGetValue(SailBuilderKeys.WorkflowCapabilities, out var box)
-            || box is not List<Action<WorkflowCapabilityRegistry>> pending)
+        if (!services.Properties.TryGetValue(SailBuilderKeys.FlowCapabilities, out var box)
+            || box is not List<Action<FlowCapabilityRegistry>> pending)
             return;
 
         foreach (var action in pending)

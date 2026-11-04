@@ -109,8 +109,8 @@ public partial class SailClient
         return this;
     }
 
-    private WorkflowCapabilityRegistry _capabilities;
-    private WorkflowCapabilityDispatcher _capabilityDispatcher;
+    private FlowCapabilityRegistry _capabilities;
+    private FlowCapabilityDispatcher _capabilityDispatcher;
 
     private RuleEngineRegistry _ruleEngines;
     private ActionMethodRegistry _actionMethods;
@@ -118,20 +118,20 @@ public partial class SailClient
     private ServiceMethodRegistry _serviceMethods;
 
     /// <summary>Gate / Hook / Notifier 注册表（Client 级）。</summary>
-    public WorkflowCapabilityRegistry Capabilities => _capabilities ??= new WorkflowCapabilityRegistry(this);
+    public FlowCapabilityRegistry Capabilities => _capabilities ??= new FlowCapabilityRegistry(this);
 
     /// <summary>与 <see cref="Capabilities"/> 同义。</summary>
-    public WorkflowCapabilityRegistry Hooks => Capabilities;
+    public FlowCapabilityRegistry Hooks => Capabilities;
 
     /// <summary>Gate / Hook / Notifier 分发器。</summary>
-    public WorkflowCapabilityDispatcher CapabilityDispatcher =>
-        _capabilityDispatcher ??= new WorkflowCapabilityDispatcher(this);
+    public FlowCapabilityDispatcher CapabilityDispatcher =>
+        _capabilityDispatcher ??= new FlowCapabilityDispatcher(this);
 
     /// <summary>Gate / Hook / Outbox 轻量指标（默认 no-op）。</summary>
-    public IWorkflowCapabilityMetrics CapabilityMetrics { get; set; } = NullWorkflowCapabilityMetrics.Instance;
+    public IFlowCapabilityMetrics CapabilityMetrics { get; set; } = NullFlowCapabilityMetrics.Instance;
 
     /// <summary>Gate / Hook 行为（Sync 硬超时等）。</summary>
-    public WorkflowCapabilityOptions CapabilityOptions { get; set; } = new();
+    public FlowCapabilityOptions CapabilityOptions { get; set; } = new();
 
     /// <summary>Outbox Worker / drain 运行参数（<see cref="Hosting.SailHookOutboxDrainExtensions.UseHookOutboxDrain"/> 可覆盖）。</summary>
     public HookOutboxOptions HookOutboxOptions { get; set; } = new();
@@ -268,14 +268,14 @@ public partial class SailClient
     }
 
     /// <summary>注册 Gate（同名后注册覆盖）。</summary>
-    public SailClient useFlowGate(IWorkflowGate gate, HookRegistrationOptions options = null)
+    public SailClient useFlowGate(IFlowGate gate, HookRegistrationOptions options = null)
     {
         Capabilities.RegisterGate(gate, options ?? new HookRegistrationOptions());
         return this;
     }
 
     /// <summary>注册 Hook（同名后注册覆盖）。</summary>
-    public SailClient useFlowHook(IWorkflowHook hook, HookRegistrationOptions options = null)
+    public SailClient useFlowHook(IFlowHook hook, HookRegistrationOptions options = null)
     {
         Capabilities.RegisterHook(hook, options ?? new HookRegistrationOptions());
         return this;

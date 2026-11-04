@@ -9,7 +9,7 @@ namespace saiflow.engine.Hooks
     /// <summary>
     /// Client 级 Gate / Hook / Notifier 注册表；同名后注册覆盖并 Warning。
     /// </summary>
-    public sealed class WorkflowCapabilityRegistry
+    public sealed class FlowCapabilityRegistry
     {
         private readonly Dictionary<string, GateRegistration> _gates = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, HookRegistration> _hooks = new(StringComparer.OrdinalIgnoreCase);
@@ -17,7 +17,7 @@ namespace saiflow.engine.Hooks
 
         public SailClient Client { get; }
 
-        public WorkflowCapabilityRegistry(SailClient client)
+        public FlowCapabilityRegistry(SailClient client)
         {
             Client = client ?? throw new ArgumentNullException(nameof(client));
         }
@@ -26,7 +26,7 @@ namespace saiflow.engine.Hooks
         public IReadOnlyCollection<HookRegistration> Hooks => _hooks.Values.OrderBy(h => h.Order).ToList();
         public IReadOnlyCollection<NotifierRegistration> Notifiers => _notifiers.Values.OrderBy(n => n.Order).ToList();
 
-        public void RegisterGate(IWorkflowGate gate, HookRegistrationOptions options = null)
+        public void RegisterGate(IFlowGate gate, HookRegistrationOptions options = null)
         {
             ArgumentNullException.ThrowIfNull(gate);
             RegisterGate(BuildGateRegistration(gate, options ?? new HookRegistrationOptions()));
@@ -44,7 +44,7 @@ namespace saiflow.engine.Hooks
             _gates[registration.Name] = registration;
         }
 
-        public void RegisterHook(IWorkflowHook hook, HookRegistrationOptions options = null)
+        public void RegisterHook(IFlowHook hook, HookRegistrationOptions options = null)
         {
             ArgumentNullException.ThrowIfNull(hook);
             RegisterHook(BuildHookRegistration(hook, options ?? new HookRegistrationOptions()));
@@ -80,7 +80,7 @@ namespace saiflow.engine.Hooks
             _notifiers[registration.Name] = registration;
         }
 
-        internal static GateRegistration BuildGateRegistration(IWorkflowGate gate, HookRegistrationOptions o) =>
+        internal static GateRegistration BuildGateRegistration(IFlowGate gate, HookRegistrationOptions o) =>
             new()
             {
                 Name = gate.Name,
@@ -92,7 +92,7 @@ namespace saiflow.engine.Hooks
                 Handler = gate,
             };
 
-        internal static HookRegistration BuildHookRegistration(IWorkflowHook hook, HookRegistrationOptions o) =>
+        internal static HookRegistration BuildHookRegistration(IFlowHook hook, HookRegistrationOptions o) =>
             new()
             {
                 Name = hook.Name,

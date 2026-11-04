@@ -11,7 +11,7 @@
 - **Ops：** `ResetDead(kit, id)`、`QueryDead` / `QueryByStatus`。
 - **`HookOutboxOptions`：** `MaxAttempts`（默认 5）、`BatchSize`（默认 50）。
 - **`HookOutboxWorker`：** 认领单独短事务；每条 dispatch + `MarkSucceeded`/`MarkFailed` 各自短事务；`ProcessPendingAsync(CancellationToken)`；认领失败 `Trace.TraceWarning` 并抛出。
-- **`WorkflowCapabilityDispatcher`：** `DispatchPendingOutbox` 使用 `TryClaimPending`；`DispatchClaimedOutbox(Async)` 逐条处理；死信 `Trace.TraceWarning`。
+- **`FlowCapabilityDispatcher`：** `DispatchPendingOutbox` 使用 `TryClaimPending`；`DispatchClaimedOutbox(Async)` 逐条处理；死信 `Trace.TraceWarning`。
 - **Notifier + Outbox 语义：** `TaskNotifyChannelBase` 默认吞异常（`RethrowFailures=false`）。`DefaultMailTaskNotifier` 继承该行为 → **`NotifyAsync` 无 throw 时 Outbox 记 Succeeded**，即使 SMTP 失败也只走 `OnFailed` 日志。若需 Outbox 重试，实现类设 `RethrowFailures => true` 或不用骨架吞异常。
 
 ### msg 骨架
@@ -23,7 +23,7 @@
 
 ### Gate on Start
 
-- **`WorkflowService.Start(kit)`：** `CreateRuntimeInstanceStartup` 成功后、`Execute` 前：`RunGates`（`WorkflowOperation.Start`，开始节点 ActivityId/Code）；Reject → `ApplyGateReject`。
+- **`WorkflowService.Start(kit)`：** `CreateRuntimeInstanceStartup` 成功后、`Execute` 前：`RunGates`（`FlowOperation.Start`，开始节点 ActivityId/Code）；Reject → `ApplyGateReject`。
 - **`OnProcessStarted` 成功：** Sync hooks + Async Outbox（与 Run 的 `OnProcessContinued` 模式一致）。
 
 ### 文档样例（engine）
@@ -73,7 +73,7 @@ SailClient.CreateBuilder()
 | Area | Paths |
 |------|--------|
 | Outbox | `HookOutboxEntity.cs`, `HookOutboxManager.cs`, `HookOutboxWorker.cs`, `HookOutboxOptions.cs` |
-| Dispatcher | `WorkflowCapabilityDispatcher.cs` |
+| Dispatcher | `FlowCapabilityDispatcher.cs` |
 | Start Gate | `WorkflowService.ProcessExecution.cs` |
 | Samples | `Hooks/Samples/Finance*.cs` |
 | msg | `TaskNotifyChannelBase.cs`, `TaskNotifyMessageIntent.cs`, `ITaskNotifyFailureHandler.cs`, `Notify/Samples/SampleHttpTaskNotifier.cs` |
@@ -90,7 +90,7 @@ dotnet build src/Sailflow.sln -f net8.0
 
 - **Hosted scheduler**（BackgroundService / 定时 `ProcessPendingAsync`）未内置。
 - **Processing 僵尸行**：无 `leased_until` 列；崩溃后 Processing 需运维改回 Pending 或后续加 lease 回收。
-- **Gate** 未接 Withdraw / SendBack / Resend 等其它 `WorkflowOperation`。
+- **Gate** 未接 Withdraw / SendBack / Resend 等其它 `FlowOperation`。
 - Sync hook 超时 / metrics；`ValidationRejected` 状态细化。
 - Outbox 死信管理 API/UI；payload 体积治理。
 - `SampleHttpTaskNotifier` 未接集成测试。

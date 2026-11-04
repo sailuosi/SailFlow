@@ -18,7 +18,7 @@
 
 ### Gate + 成功 Hook（全操作）
 
-- **`WorkflowCapabilityPipeline`：** `BuildGateContext` / `BuildHookContext` / `TryGate` / `AfterSuccess`。
+- **`FlowCapabilityPipeline`：** `BuildGateContext` / `BuildHookContext` / `TryGate` / `AfterSuccess`。
 - **已接线：** Start、Run、Withdraw、SendBack、Resend、Revise、Reverse、Reject、Close、Jump、SignForward（Create 成功 → Gate → Execute；成功回调 Sync + Async Outbox）。
 
 ### Hosted drain（无 MS Hosting 硬依赖）
@@ -37,7 +37,7 @@ var cts = HookOutboxDrainLoop.StartBackground(client, new HookOutboxOptions
 
 ### 轻量 metrics
 
-- **`IWorkflowCapabilityMetrics`** / **`NullWorkflowCapabilityMetrics`** / **`InMemoryWorkflowCapabilityMetrics`**。
+- **`IFlowCapabilityMetrics`** / **`NullFlowCapabilityMetrics`** / **`InMemoryFlowCapabilityMetrics`**。
 - **`SailClient.CapabilityMetrics`**（默认 Null）。
 - Dispatcher / Worker 路径递增：GateReject、SyncHook、OutboxEnqueue/Succeeded/Failed/Dead、NotifierDispatch。
 
@@ -64,11 +64,11 @@ kit.commit();
 
 ## Gate 按操作过滤
 
-注册 Gate 时可通过 **`WorkflowHookContext.Operation`** 区分场景，例如仅拦截 Withdraw：
+注册 Gate 时可通过 **`FlowHookContext.Operation`** 区分场景，例如仅拦截 Withdraw：
 
 ```csharp
 .UseFlowGate("no-withdraw", ctx =>
-    ctx.Operation == WorkflowOperation.Withdraw
+    ctx.Operation == FlowOperation.Withdraw
         ? HookResult.Reject("WITHDRAW_BLOCKED", "不允许撤回")
         : HookResult.Ok(),
     o => o.ProcessCodes = new[] { "EXPENSE" })
@@ -79,9 +79,9 @@ kit.commit();
 | Area | Paths |
 |------|--------|
 | Outbox | `HookOutboxEntity.cs`, `HookOutboxManager.cs`, `HookOutboxWorker.cs`, `HookOutboxOptions.cs`, `HookOutboxDrainLoop.cs` |
-| Pipeline | `WorkflowCapabilityPipeline.cs` |
-| Metrics | `IWorkflowCapabilityMetrics.cs` |
-| Wire | `WorkflowService.ProcessExecution.cs`, `WorkflowCapabilityDispatcher.cs`, `SlickClient.cs`, `WfExecutedResult.cs` |
+| Pipeline | `FlowCapabilityPipeline.cs` |
+| Metrics | `IFlowCapabilityMetrics.cs` |
+| Wire | `WorkflowService.ProcessExecution.cs`, `FlowCapabilityDispatcher.cs`, `SlickClient.cs`, `WfExecutedResult.cs` |
 | msg | `TaskNotifyChannelBase.cs` (doc) |
 | Docs | `特性设计-回调与事件.md`, this file |
 

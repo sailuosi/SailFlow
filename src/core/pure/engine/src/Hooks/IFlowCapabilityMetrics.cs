@@ -1,7 +1,7 @@
 namespace saiflow.engine.Hooks
 {
     /// <summary>Gate / Hook / Outbox / Notifier 轻量计数（best-effort，不影响主路径）。</summary>
-    public interface IWorkflowCapabilityMetrics
+    public interface IFlowCapabilityMetrics
     {
         void IncrementGateReject();
         void IncrementSyncHook();
@@ -13,9 +13,9 @@ namespace saiflow.engine.Hooks
         void IncrementSyncHookTimeout();
     }
 
-    public sealed class NullWorkflowCapabilityMetrics : IWorkflowCapabilityMetrics
+    public sealed class NullFlowCapabilityMetrics : IFlowCapabilityMetrics
     {
-        public static readonly NullWorkflowCapabilityMetrics Instance = new();
+        public static readonly NullFlowCapabilityMetrics Instance = new();
 
         public void IncrementGateReject() { }
         public void IncrementSyncHook() { }
@@ -28,7 +28,7 @@ namespace saiflow.engine.Hooks
     }
 
     /// <summary>进程内计数，供测试或简易观测。</summary>
-    public sealed class InMemoryWorkflowCapabilityMetrics : IWorkflowCapabilityMetrics
+    public sealed class InMemoryFlowCapabilityMetrics : IFlowCapabilityMetrics
     {
         private long _gateReject;
         private long _syncHook;
