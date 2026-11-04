@@ -19,10 +19,5 @@ namespace saiflow.engine.Core
         internal ProcessInstanceEntity ProcessInstance { get; set; }
         internal String BackwardToTargetTransitionId { get; set; }
         internal WfBackwardTaskReceiver BackwardTaskReceiver { get; set; }
-        internal ActivityResource ActivityResource { get; set; }
-        internal ActivityInstanceEntity PreviousActivityInstance { get; set; }
-        internal CrossOverGatewayDetail CrossOverGatewayDetail { get; set; }
-        internal WithdrawOperationTypeEnum WithdrawOperationType { get; set; }
-        internal SendBackOperationTypeEnum SendbackOperationType { get; set; }
     }
 }
