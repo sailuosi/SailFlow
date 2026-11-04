@@ -6,9 +6,85 @@ using saiflow.engine.Hooks;
 
 namespace saiflow.engine.Client.Hosting;
 
-/// <summary>Gate / Hook / Notifier 注册扩展（对齐 UseRuleEngine 管道）。</summary>
+/// <summary>
+/// Gate / Hook / Notifier 注册扩展（对齐 UseRuleEngine 管道）。
+/// <see cref="UseFlowAspects"/> 为总包入口；<c>AddGate</c>/<c>AddHook</c>/<c>AddNotifier</c> 为无参构造追加别名。
+/// </summary>
 public static class SailWorkflowCapabilityExtensions
 {
+    /// <summary>收拢注册 Gate / Hook / Notifier（及可选 Outbox Drain）；<paramref name="configure"/> 参数即 services 自身。</summary>
+    public static ISailCollection UseFlowAspects(
+        this ISailCollection services,
+        Action<ISailCollection> configure)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configure);
+        configure(services);
+        return services;
+    }
+
+    /// <summary>收拢注册 Gate / Hook / Notifier（及可选 Outbox Drain）；<paramref name="configure"/> 参数即 builder 自身。</summary>
+    public static SailClientBuilder UseFlowAspects(
+        this SailClientBuilder builder,
+        Action<SailClientBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configure);
+        configure(builder);
+        return builder;
+    }
+
+    /// <summary>追加无参构造 Gate（等价 <c>UseFlowGate(new TGate(), configure)</c>）。</summary>
+    public static ISailCollection AddGate<TGate>(
+        this ISailCollection services,
+        Action<HookRegistrationOptions> configure = null)
+        where TGate : class, IWorkflowGate, new()
+        => services.UseFlowGate(new TGate(), configure);
+
+    /// <summary>追加无参构造 Hook（等价 <c>UseFlowHook(new THook(), configure)</c>）。</summary>
+    public static ISailCollection AddHook<THook>(
+        this ISailCollection services,
+        Action<HookRegistrationOptions> configure = null)
+        where THook : class, IWorkflowHook, new()
+        => services.UseFlowHook(new THook(), configure);
+
+    /// <summary>追加无参构造 Notifier（等价 <c>UseTaskNotifier(new TNotifier(), configure)</c>）。</summary>
+    public static ISailCollection AddNotifier<TNotifier>(
+        this ISailCollection services,
+        Action<HookRegistrationOptions> configure = null)
+        where TNotifier : class, ITaskNotifier, new()
+        => services.UseTaskNotifier(new TNotifier(), configure);
+
+    /// <summary>追加无参构造 Gate（等价 <c>UseFlowGate(new TGate(), configure)</c>）。</summary>
+    public static SailClientBuilder AddGate<TGate>(
+        this SailClientBuilder builder,
+        Action<HookRegistrationOptions> configure = null)
+        where TGate : class, IWorkflowGate, new()
+    {
+        builder.Services.AddGate<TGate>(configure);
+        return builder;
+    }
+
+    /// <summary>追加无参构造 Hook（等价 <c>UseFlowHook(new THook(), configure)</c>）。</summary>
+    public static SailClientBuilder AddHook<THook>(
+        this SailClientBuilder builder,
+        Action<HookRegistrationOptions> configure = null)
+        where THook : class, IWorkflowHook, new()
+    {
+        builder.Services.AddHook<THook>(configure);
+        return builder;
+    }
+
+    /// <summary>追加无参构造 Notifier（等价 <c>UseTaskNotifier(new TNotifier(), configure)</c>）。</summary>
+    public static SailClientBuilder AddNotifier<TNotifier>(
+        this SailClientBuilder builder,
+        Action<HookRegistrationOptions> configure = null)
+        where TNotifier : class, ITaskNotifier, new()
+    {
+        builder.Services.AddNotifier<TNotifier>(configure);
+        return builder;
+    }
+
     public static ISailCollection UseFlowGate(
         this ISailCollection services,
         IWorkflowGate gate,
