@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using saiflow.AI.Agent.Core;
+using saiflow.AI.Agent;
 
-namespace saiflow.AI.Agent.Registry
+namespace saiflow.AI.Agent
 {
     /// <summary>
     /// Global registry mapping activity IDs to their registered tool lists.

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using mooSQL.data;
 using saiflow.data;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
 using saiflow.engine.Event;
@@ -12,7 +12,7 @@ using saiflow.engine.HotShard;
 using saiflow.engine.Xpdl;
 using saiflow.hub.Localize;
 
-namespace saiflow.engine.Business.Manager
+namespace saiflow.engine.Manager
 {
     /// <summary>
     /// 流程运行变量（wf_process_variable / 白名单热分表）。

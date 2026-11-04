@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace saiflow.engine.Xpdl.Entity
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Compare by priority of connections

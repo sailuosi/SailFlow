@@ -1,7 +1,7 @@
 using System;
 using saiflow.data.Lifecycle;
 using saiflow.engine.Client;
-using saiflow.engine.Client.Hosting;
+using saiflow.engine.Hosting;
 using saiflow.engine.Event;
 using saiflow.engine.Hooks;
 

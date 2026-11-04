@@ -1,15 +1,14 @@
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Manager;
 using saiflow.engine.Common;
 using saiflow.engine.Utility;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 using System;
 using System.Collections.Generic;
 using System.Xml;
 using saiflow.WebUtility;
 
 using saiflow.engine.Client;
-namespace saiflow.engine.Xpdl.Convertor
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Convertor Builder
@@ -222,7 +221,7 @@ namespace saiflow.engine.Xpdl.Convertor
             if (actionsNode != null)
             {
                 var xmlActionList = actionsNode.ChildNodes;
-                var actionList = new List<Entity.Action>();
+                var actionList = new List<saiflow.engine.Xpdl.Action>();
                 foreach (XmlNode element in xmlActionList)
                 {
                     actionList.Add(ConvertXmlActionNodeToActionEntity(element));
@@ -243,7 +242,7 @@ namespace saiflow.engine.Xpdl.Convertor
             if (variablesNode != null)
             {
                 var xmlVariableList = variablesNode.ChildNodes;
-                var variableList = new List<Entity.VariableDetail>();
+                var variableList = new List<VariableDetail>();
                 foreach (XmlNode element in xmlVariableList)
                 {
                     variableList.Add(ConvertXmlVariableNodeToVariableEntity(element));
@@ -331,7 +330,7 @@ namespace saiflow.engine.Xpdl.Convertor
             if (servicesNode != null)
             {
                 XmlNodeList xmlServiceList = servicesNode.ChildNodes;
-                List<Entity.ServiceDetail> serviceList = new List<Entity.ServiceDetail>();
+                List<ServiceDetail> serviceList = new List<ServiceDetail>();
                 foreach (XmlNode element in xmlServiceList)
                 {
                     serviceList.Add(ConvertXmlServiceNodeToServiceEntity(element));
@@ -373,7 +372,7 @@ namespace saiflow.engine.Xpdl.Convertor
             if (scriptsNode != null)
             {
                 var xmlScriptList = scriptsNode.ChildNodes;
-                List<Entity.ScriptDetail> scriptList = new List<Entity.ScriptDetail>();
+                List<ScriptDetail> scriptList = new List<ScriptDetail>();
                 foreach (XmlNode element in xmlScriptList)
                 {
                     scriptList.Add(ConvertXmlScriptNodeToScriptEntity(element));
@@ -463,11 +462,11 @@ namespace saiflow.engine.Xpdl.Convertor
         /// </summary>
         /// <param name="node">XML节点</param>
         /// <returns>操作实体</returns>
-        private Entity.Action ConvertXmlActionNodeToActionEntity(XmlNode node)
+        private saiflow.engine.Xpdl.Action ConvertXmlActionNodeToActionEntity(XmlNode node)
         {
             if (node == null) return null;
 
-            Entity.Action action = new Entity.Action();
+            saiflow.engine.Xpdl.Action action = new saiflow.engine.Xpdl.Action();
             var actionType = XMLHelper.GetXmlAttribute(node, "type");
             action.ActionType = EnumHelper.TryParseEnum<ActionTypeEnum>(actionType);
 
@@ -621,9 +620,9 @@ namespace saiflow.engine.Xpdl.Convertor
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        private Entity.ScriptDetail ConvertXmlScriptNodeToScriptEntity(XmlNode node)
+        private ScriptDetail ConvertXmlScriptNodeToScriptEntity(XmlNode node)
         {
-            Entity.ScriptDetail script = new Entity.ScriptDetail();
+            ScriptDetail script = new ScriptDetail();
 
             var scriptMethod = XMLHelper.GetXmlAttribute(node, "method");
             script.Method = EnumHelper.TryParseEnum<ScriptMethodEnum>(scriptMethod);

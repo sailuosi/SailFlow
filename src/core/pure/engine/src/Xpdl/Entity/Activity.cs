@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using saiflow.engine.Common;
-using saiflow.engine.Xpdl.Node;
+using saiflow.engine.Xpdl;
 
-namespace saiflow.engine.Xpdl.Entity
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Activity

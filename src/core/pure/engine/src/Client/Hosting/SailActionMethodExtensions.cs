@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using saiflow.engine.Actions;
+using saiflow.engine.Client;
 
-namespace saiflow.engine.Client.Hosting;
+namespace saiflow.engine.Hosting;
 
 /// <summary>
 /// Action / Script / Service 方法处理器注册。

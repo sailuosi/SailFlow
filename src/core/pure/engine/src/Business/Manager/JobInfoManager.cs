@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
 using saiflow.data;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Client;
 
-namespace saiflow.engine.Business.Manager
+namespace saiflow.engine.Manager
 {
     /// <summary>
     /// 作业数据。终态：Client/kit，无 Session/SailDbAccess。

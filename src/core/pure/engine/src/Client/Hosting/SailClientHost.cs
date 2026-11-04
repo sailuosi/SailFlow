@@ -1,6 +1,7 @@
 using System;
+using saiflow.engine.Client;
 
-namespace saiflow.engine.Client.Hosting;
+namespace saiflow.engine.Hosting;
 
 /// <summary>
 /// 懒构建入口：首次 GetOrCreate 时执行 builder 工厂。

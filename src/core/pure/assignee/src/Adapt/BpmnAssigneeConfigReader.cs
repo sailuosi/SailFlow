@@ -1,9 +1,8 @@
 using saiflow.data;
 using saiflow.engine.Assignee;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Client;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Entity;
 
 namespace saiflow.assignee.Adapt;
 

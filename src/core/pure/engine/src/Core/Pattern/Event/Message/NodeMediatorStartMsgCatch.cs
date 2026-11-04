@@ -9,12 +9,12 @@ using saiflow.engine.Utility;
 using saiflow.data;
 using mooSQL.data;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Node;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 
 using saiflow.engine.Client;
-namespace saiflow.engine.Core.Pattern.Event.Message
+using saiflow.engine.Core;
+namespace saiflow.engine.Pattern
 {
     /// <summary>
     /// 开始节点执行器

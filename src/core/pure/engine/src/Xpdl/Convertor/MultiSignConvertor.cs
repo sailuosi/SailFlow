@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,13 +6,11 @@ using System.Xml;
 using System.Threading.Tasks;
 using saiflow.engine.Common;
 using saiflow.engine.Utility;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Xpdl.Node;
+using saiflow.engine.Xpdl;
 using saiflow.WebUtility;
 
 
-namespace saiflow.engine.Xpdl.Convertor
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Multiple Instance Convertor

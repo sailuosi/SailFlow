@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using System.Linq;
 using saiflow.engine.Common;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 using saiflow.engine.Utility;
 using saiflow.WebUtility;
 

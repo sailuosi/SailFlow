@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using saiflow.engine.Hooks;
+using saiflow.engine.Client;
 
-namespace saiflow.engine.Client.Hosting;
+namespace saiflow.engine.Hosting;
 
 /// <summary>
 /// Gate / Hook / Notifier 注册扩展（对齐 UseRuleEngine 管道）。

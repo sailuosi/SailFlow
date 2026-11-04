@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace saiflow.engine.Xpdl.Schedule
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Next Activity Matched Type

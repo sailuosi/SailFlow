@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 
 
-namespace saiflow.engine.Xpdl.Schedule
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// 单一下一步节点(不包含子节点）

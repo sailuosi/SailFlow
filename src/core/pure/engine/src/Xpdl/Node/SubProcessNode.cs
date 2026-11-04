@@ -1,12 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using saiflow.data;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 
-namespace saiflow.engine.Xpdl.Node
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Sub Process Node

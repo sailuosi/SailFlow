@@ -4,7 +4,7 @@ using System.Linq;
 using saiflow.hub.Localize;
 using saiflow.engine.Common;
 using saiflow.engine.Event;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Manager;
 
 namespace saiflow.engine.Service
 {

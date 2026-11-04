@@ -1,7 +1,7 @@
 using System;
 using saiflow.data.HotShard;
 using saiflow.engine.Client;
-using saiflow.engine.Client.Hosting;
+using saiflow.engine.Hosting;
 
 namespace saiflow.data.Hosting
 {

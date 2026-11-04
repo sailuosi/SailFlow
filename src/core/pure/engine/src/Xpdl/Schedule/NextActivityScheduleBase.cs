@@ -4,10 +4,9 @@ using saiflow.data;
 using mooSQL.data;
 using saiflow.hub.Localize;
 using saiflow.engine.Common;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 
-namespace saiflow.engine.Xpdl.Schedule
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Next Activity Schedule

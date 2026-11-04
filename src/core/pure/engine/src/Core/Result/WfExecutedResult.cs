@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using saiflow.engine.Common;
-using saiflow.engine.Core.Runtime;
+using saiflow.engine.Runtime;
 using saiflow.engine.Hooks;
+using saiflow.engine.Core;
 
-namespace saiflow.engine.Core.Result
+namespace saiflow.engine.Result
 {
     /// <summary>
     /// 执行结果对象封装

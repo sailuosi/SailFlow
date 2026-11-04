@@ -7,12 +7,11 @@ using saiflow.engine.Common;
 using saiflow.data;
 using mooSQL.data;
 using saiflow.engine.Client;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Core.Parser;
-using saiflow.engine.Business.Result;
+using saiflow.engine.Runtime;
+using saiflow.engine.Result;
 
 namespace saiflow.engine.Service
 {

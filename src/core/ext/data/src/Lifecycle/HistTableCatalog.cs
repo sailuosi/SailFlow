@@ -1,6 +1,6 @@
 using System;
 using saiflow.data;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Client;
 
 namespace saiflow.data.Lifecycle

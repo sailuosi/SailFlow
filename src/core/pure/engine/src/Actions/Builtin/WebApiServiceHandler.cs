@@ -1,8 +1,7 @@
 using System;
 using saiflow.engine.Common;
 using saiflow.engine.Event;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 using saiflow.WebUtility;
 
 namespace saiflow.engine.Actions

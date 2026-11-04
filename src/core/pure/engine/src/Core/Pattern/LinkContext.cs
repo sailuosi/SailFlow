@@ -1,8 +1,9 @@
-﻿using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Xpdl;
+using saiflow.engine.Entity;
+using saiflow.engine.Core;
 
 
-namespace saiflow.engine.Core.Pattern
+namespace saiflow.engine.Pattern
 {
     /// <summary>
     /// Link Context

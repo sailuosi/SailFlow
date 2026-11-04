@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
 using saiflow.data;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Client;
 
-namespace saiflow.engine.Business.Manager
+namespace saiflow.engine.Manager
 {
     /// <summary>
     /// 流程变量定义管理类（wf_variable）。

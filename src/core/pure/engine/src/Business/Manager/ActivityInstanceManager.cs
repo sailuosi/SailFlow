@@ -5,16 +5,14 @@ using System.Linq;
 using mooSQL.data;
 using saiflow.data;
 using saiflow.engine.Assignee;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
-using saiflow.engine.Core.Runtime;
+using saiflow.engine.Runtime;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
 using saiflow.hub.Localize;
 
-namespace saiflow.engine.Business.Manager
+namespace saiflow.engine.Manager
 {
     /// <summary>
     /// Activity Instance Manager

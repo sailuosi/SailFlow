@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using saiflow.AI.Agent.Attributes;
-using saiflow.AI.Agent.Core;
-using saiflow.AI.Agent.Reflection;
-using saiflow.AI.Agent.Tools;
+using saiflow.AI.Agent;
 
-namespace saiflow.AI.Agent.Registry
+namespace saiflow.AI.Agent
 {
     /// <summary>
     /// Global registry mapping logical tool-set names to their tool implementations.

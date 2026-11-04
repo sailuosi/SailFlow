@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using mooSQL.data;
-using saiflow.hub.Essential.Entity;
+using saiflow.hub.Essential;
 using saiflow.hub.Logging;
 
 namespace saiflow.hub.Essential

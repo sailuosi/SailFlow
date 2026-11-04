@@ -1,7 +1,7 @@
 using System;
 using saiflow.data.Hosting;
 using saiflow.engine.Client;
-using saiflow.engine.Client.Hosting;
+using saiflow.engine.Hosting;
 
 namespace saiflow.biz.Hosting
 {

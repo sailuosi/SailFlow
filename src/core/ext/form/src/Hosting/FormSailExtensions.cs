@@ -1,7 +1,8 @@
 using System;
-using saiflow.engine.Client.Hosting;
+using saiflow.engine.Hosting;
+using saiflow.hub.Form;
 
-namespace saiflow.hub.Form.Hosting
+namespace saiflow.hub.Hosting
 {
     /// <summary>
     /// Registers form implementation into the SailClient pipeline.

@@ -1,14 +1,13 @@
 using saiflow.data;
 using mooSQL.data;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
-using saiflow.engine.Core.Result;
-using saiflow.engine.Core.Pattern;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Xpdl.Node;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
+using saiflow.engine.Result;
+using saiflow.engine.Pattern;
+using saiflow.engine.Xpdl;
+using saiflow.engine.Core;
 
-namespace saiflow.engine.Core.Runtime
+namespace saiflow.engine.Runtime
 { 
     /// <summary>
     /// Runtime Manager Startup Sub Process

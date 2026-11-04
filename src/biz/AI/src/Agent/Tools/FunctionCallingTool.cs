@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using saiflow.AI.Agent.Core;
+using saiflow.AI.Agent;
 
-namespace saiflow.AI.Agent.Tools
+namespace saiflow.AI.Agent
 {
     /// <summary>
     /// Wraps a local C# function as an IAgentTool for LLM function calling.

@@ -1,13 +1,10 @@
 using saiflow.data;
 using mooSQL.data;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 using saiflow.engine.Common;
 using saiflow.engine.Utility;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Xpdl.Node;
-using saiflow.engine.Xpdl.Schedule;
+using saiflow.engine.Xpdl;
 using saiflow.hub.Form;
 using saiflow.hub.Localize;
 using saiflow.hub.Resource;
@@ -146,7 +143,7 @@ namespace saiflow.engine.Xpdl
         /// Get Activity Output Variable Name List
         /// </summary>
         /// <returns></returns>
-        public IList<string> GetActivityOutputVarialbeNameList(Entity.Activity activity)
+        public IList<string> GetActivityOutputVarialbeNameList(saiflow.engine.Xpdl.Activity activity)
         {
             var names = new List<string>();
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

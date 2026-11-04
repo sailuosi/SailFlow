@@ -1,7 +1,7 @@
 using System;
 using saiflow.engine.Client;
 
-namespace saiflow.engine.Client.Hosting;
+namespace saiflow.engine.Hosting;
 
 /// <summary>
 /// 冷热归档 / 日志分表等生命周期 Options 注册（类比 <see cref="SailConfigExtensions"/>）。

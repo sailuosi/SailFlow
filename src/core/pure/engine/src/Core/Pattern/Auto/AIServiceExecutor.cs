@@ -4,17 +4,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using saiflow.AI.Abstractions;
 using saiflow.data;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 using saiflow.engine.Common;
 using saiflow.engine.Event;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 using saiflow.hub.Localize;
 using saiflow.WebUtility;
 
 using saiflow.engine.Client;
-namespace saiflow.engine.Core.Pattern.Auto
+using saiflow.engine.Core;
+namespace saiflow.engine.Pattern
 {
     internal class AiServiceExecutor
     {

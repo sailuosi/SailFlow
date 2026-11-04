@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using saiflow.engine.Common;
 
-namespace saiflow.engine.Business.Entity
+namespace saiflow.engine.Entity
 {
     /// <summary>
     /// Process Variable Task View

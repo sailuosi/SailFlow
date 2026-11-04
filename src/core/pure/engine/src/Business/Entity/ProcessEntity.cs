@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using mooSQL.data;
 
 
-namespace saiflow.engine.Business.Entity
+namespace saiflow.engine.Entity
 {
     /// <summary>
     /// Process Entity

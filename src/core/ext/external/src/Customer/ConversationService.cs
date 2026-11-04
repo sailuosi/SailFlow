@@ -1,10 +1,9 @@
 using System;
 using saiflow.engine.Common;
 using saiflow.engine.External;
-using saiflow.hub.External.Customer.Entity;
-using saiflow.hub.External.Data;
+using saiflow.hub.External;
 
-namespace saiflow.hub.External.Customer
+namespace saiflow.hub.External
 {
     /// <summary>
     /// Saves customer–AI chat to Supabase biz_conversation from process variables:

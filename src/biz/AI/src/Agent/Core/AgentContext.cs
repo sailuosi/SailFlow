@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 
-namespace saiflow.AI.Agent.Core
+namespace saiflow.AI.Agent
 {
     /// <summary>
     /// Agent execution context: bridges Sailflow workflow variables with the ReAct runtime.

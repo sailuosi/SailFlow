@@ -1,11 +1,12 @@
 
 using saiflow.data;
 using mooSQL.data;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 
 using saiflow.engine.Client;
-namespace saiflow.engine.Core.Pattern.Event.Signal
+using saiflow.engine.Core;
+namespace saiflow.engine.Pattern
 {
     /// <summary>
     /// 信号结束节点的Catch类

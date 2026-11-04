@@ -1,6 +1,5 @@
 using saiflow.engine.Common;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 
 namespace saiflow.assignee.Adapt;
 

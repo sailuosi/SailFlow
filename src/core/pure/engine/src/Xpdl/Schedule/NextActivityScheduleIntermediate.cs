@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using saiflow.data;
 using mooSQL.data;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 
-namespace saiflow.engine.Xpdl.Schedule
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Next scheduling for intermediate event nodes

@@ -6,15 +6,15 @@ using saiflow.engine.Common;
 using saiflow.data;
 using mooSQL.data;
 using saiflow.hub.Localize;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Core.Runtime;
+using saiflow.engine.Runtime;
 using saiflow.engine.Message;
 
 using saiflow.engine.Client;
-namespace saiflow.engine.Core.Pattern.Event.Timer
+using saiflow.engine.Core;
+namespace saiflow.engine.Pattern
 {
     /// <summary>
     /// 中间事件节点处理类

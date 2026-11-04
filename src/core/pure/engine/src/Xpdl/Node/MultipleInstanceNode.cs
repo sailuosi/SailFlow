@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using saiflow.data;
 using saiflow.engine.Common;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Entity;
+using saiflow.engine.Xpdl;
 
-namespace saiflow.engine.Xpdl.Node
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Multiple Instance Node

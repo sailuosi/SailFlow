@@ -1,6 +1,7 @@
 using System;
+using saiflow.engine.Client;
 
-namespace saiflow.engine.Client.Hosting;
+namespace saiflow.engine.Hosting;
 
 /// <summary>
 /// JSON 序列化（<see cref="IJsonSerializer"/>）注册。

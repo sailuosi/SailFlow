@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using mooSQL.data;
 using saiflow.data;
 using saiflow.engine.Client;
+using saiflow.engine.Entity;
 
 namespace saiflow.engine.HotShard
 {
@@ -83,7 +84,7 @@ namespace saiflow.engine.HotShard
             {
                 using (var kit = sail.UseRunSQL())
                 {
-                    var pi = kit.useRepo<Business.Entity.ProcessInstanceEntity, int>().GetById(processInstanceId);
+                    var pi = kit.useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
                     return pi?.ProcessId;
                 }
             }
@@ -102,7 +103,7 @@ namespace saiflow.engine.HotShard
                 var next = kit.DBLive.useSQL();
                 if (kit.Executor != null)
                     next.useTransaction(kit.Executor);
-                var pi = next.useRepo<Business.Entity.ProcessInstanceEntity, int>().GetById(processInstanceId);
+                var pi = next.useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
                 return pi?.ProcessId;
             }
             catch

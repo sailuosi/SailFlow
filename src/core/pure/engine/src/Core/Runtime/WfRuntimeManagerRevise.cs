@@ -1,9 +1,10 @@
 using saiflow.data;
 using mooSQL.data;
-using saiflow.engine.Core.Result;
-using saiflow.engine.Core.Pattern;
+using saiflow.engine.Result;
+using saiflow.engine.Pattern;
+using saiflow.engine.Core;
 
-namespace saiflow.engine.Core.Runtime
+namespace saiflow.engine.Runtime
 {
     /// <summary>
     /// Handling of revise methods

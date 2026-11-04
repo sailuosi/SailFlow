@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace saiflow.engine.Xpdl.Entity
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Activity View

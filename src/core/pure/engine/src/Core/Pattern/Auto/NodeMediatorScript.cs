@@ -4,12 +4,12 @@ using mooSQL.data;
 using saiflow.engine.Common;
 using saiflow.engine.Event;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 
 
 using saiflow.engine.Client;
-namespace saiflow.engine.Core.Pattern.Auto
+using saiflow.engine.Core;
+namespace saiflow.engine.Pattern
 {
     /// <summary>
     /// 脚本节点执行器

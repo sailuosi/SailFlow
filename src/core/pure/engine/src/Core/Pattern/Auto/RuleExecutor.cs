@@ -4,16 +4,17 @@ using System.Globalization;
 using System.Linq;
 using saiflow.data;
 using mooSQL.data;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 using saiflow.engine.Common;
 using saiflow.engine.Event;
 using saiflow.engine.Executor;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 using saiflow.engine.Client;
 using saiflow.WebUtility;
+using saiflow.engine.Core;
 
-namespace saiflow.engine.Core.Pattern.Auto
+namespace saiflow.engine.Pattern
 {
     internal static class RuleExecutor
     {

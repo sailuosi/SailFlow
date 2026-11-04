@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using saiflow.engine.Client;
 
-namespace saiflow.engine.Client.Hosting;
+namespace saiflow.engine.Hosting;
 
 /// <summary>声明「本集合已提供某能力名」的薄标记（无副作用，供 DependsOn / 探针使用）。</summary>
 public static class SailFeatureProvideExtensions

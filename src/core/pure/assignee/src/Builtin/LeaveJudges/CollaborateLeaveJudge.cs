@@ -1,5 +1,5 @@
 using saiflow.engine.Assignee;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 
 namespace saiflow.assignee.Builtin;
 

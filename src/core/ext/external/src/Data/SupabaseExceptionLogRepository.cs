@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace saiflow.hub.External.Data
+namespace saiflow.hub.External
 {
     /// <summary>
     /// Inserts exception log records into Supabase table biz_exception_log.

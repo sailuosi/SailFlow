@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using saiflow.engine.Common;
 using saiflow.engine.External;
 
-namespace saiflow.hub.External.Order
+namespace saiflow.hub.External
 {
     public class OrderCompletedService : ExternalServiceBase, IExternalService
     {

@@ -7,17 +7,17 @@ using mooSQL.data;
 using saiflow.hub.Localize;
 using saiflow.hub.Resource;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
-using saiflow.engine.Core.Runtime;
-using saiflow.engine.Core.Result;
-using saiflow.engine.Core.Event;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
+using saiflow.engine.Runtime;
+using saiflow.engine.Result;
+using saiflow.engine.Runtime;
 using saiflow.engine.Event;
 using saiflow.engine.Message;
 
 using saiflow.engine.Client;
-namespace saiflow.engine.Core.Pattern.Event.Message
+using saiflow.engine.Core;
+namespace saiflow.engine.Pattern
 {
     /// <summary>
     /// 结束消息抛出节点执行器

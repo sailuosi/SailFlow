@@ -1,7 +1,8 @@
 using System;
-using saiflow.engine.Client.Hosting;
+using saiflow.engine.Hosting;
+using saiflow.hub.Resource;
 
-namespace saiflow.hub.Resource.Hosting
+namespace saiflow.hub.Hosting
 {
     /// <summary>
     /// Registers resource implementation into the SailClient pipeline.

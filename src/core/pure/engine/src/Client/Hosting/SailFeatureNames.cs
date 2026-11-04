@@ -1,4 +1,4 @@
-namespace saiflow.engine.Client.Hosting;
+namespace saiflow.engine.Hosting;
 
 /// <summary>
 /// 已约定的能力名（<see cref="SailFeatureDescriptor.Name"/> / <see cref="SailFeatureDescriptor.DependsOn"/>）。

@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Client;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 
-namespace saiflow.engine.Business.Manager
+namespace saiflow.engine.Manager
 {
     internal class ProcessVariableResolver
     {

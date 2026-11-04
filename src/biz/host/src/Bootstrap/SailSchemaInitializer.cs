@@ -5,7 +5,7 @@ using System.Threading;
 using mooSQL.data;
 using saiflow.AI.Runtime;
 using saiflow.data.Schema;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Client;
 using saiflow.biz.query;
 using saiflow.hub.Form;

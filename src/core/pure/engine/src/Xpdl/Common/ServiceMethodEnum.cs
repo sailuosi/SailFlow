@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace saiflow.engine.Xpdl.Common
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Service Method Type

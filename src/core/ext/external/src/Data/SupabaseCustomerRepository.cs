@@ -5,9 +5,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using saiflow.hub.External.Customer.Entity;
+using saiflow.hub.External;
 
-namespace saiflow.hub.External.Data
+namespace saiflow.hub.External
 {
     /// <summary>
     /// Queries, inserts and updates biz_customer table in Supabase via REST API.

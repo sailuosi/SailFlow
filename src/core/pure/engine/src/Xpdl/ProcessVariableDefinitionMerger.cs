@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Manager;
 using saiflow.engine.Client;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Xpdl.Node;
+using saiflow.engine.Xpdl;
 
 namespace saiflow.engine.Xpdl
 {

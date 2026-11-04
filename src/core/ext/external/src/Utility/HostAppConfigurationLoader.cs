@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 
-namespace saiflow.hub.External.Utility
+namespace saiflow.hub.External
 {
     /// <summary>
     /// Loads the host application's appsettings.json (e.g. sfdapi) so the plugin can read config.

@@ -2,15 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using saiflow.engine.Common;
-using saiflow.engine.Core.Result;
+using saiflow.engine.Result;
 using saiflow.engine.Service;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Manager;
 using saiflow.hub.Essential;
-using saiflow.hub.Essential.Entity;
 
 using saiflow.engine.Client;
 namespace saiflow.engine.Message

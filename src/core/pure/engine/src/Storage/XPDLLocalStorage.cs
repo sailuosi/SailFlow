@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Xml;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 
 namespace saiflow.engine.Storage
 {

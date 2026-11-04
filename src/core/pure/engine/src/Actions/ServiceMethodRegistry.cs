@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using saiflow.engine.Xpdl.Common;
+using saiflow.engine.Xpdl;
 
 namespace saiflow.engine.Actions
 {

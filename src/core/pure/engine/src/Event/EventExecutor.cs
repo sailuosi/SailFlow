@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Manager;
 using saiflow.engine.Client;
 using saiflow.engine.Core;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 
 namespace saiflow.engine.Event
 {

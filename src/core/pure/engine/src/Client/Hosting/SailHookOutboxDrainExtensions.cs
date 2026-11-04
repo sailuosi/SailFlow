@@ -1,8 +1,9 @@
 using System;
 using System.Threading;
 using saiflow.engine.Hooks;
+using saiflow.engine.Client;
 
-namespace saiflow.engine.Client.Hosting;
+namespace saiflow.engine.Hosting;
 
 /// <summary>Outbox drain 宿主扩展（配置落 <see cref="SailClient.HookOutboxOptions"/>；<c>autoStart</c> 为 opt-in）。</summary>
 public static class SailHookOutboxDrainExtensions

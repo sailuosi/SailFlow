@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using mooSQL.data;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Client;
 using saiflow.engine.Logging;
 using saiflow.hub.Logging;

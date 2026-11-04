@@ -7,25 +7,18 @@ using mooSQL.data;
 using saiflow.hub.Localize;
 using saiflow.engine.Common;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Xpdl.Schedule;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 using saiflow.engine.Assignee;
 using saiflow.engine.Client;
-using saiflow.engine.Core.Result;
-using saiflow.engine.Core.Runtime;
-using saiflow.engine.Core.Pattern.Event;
-using saiflow.engine.Core.Pattern.Gateway;
+using saiflow.engine.Result;
+using saiflow.engine.Runtime;
+using saiflow.engine.Pattern;
 using saiflow.engine.Event;
-using saiflow.engine.Core.Pattern.Event.Message;
-using saiflow.engine.Core.Pattern.Event.Timer;
-using saiflow.engine.Core.Pattern.Event.Conditional;
-using saiflow.engine.Core.Pattern.Event.Signal;
-using saiflow.engine.Core.Pattern.Auto;
+using saiflow.engine.Pattern;
+using saiflow.engine.Core;
 
-namespace saiflow.engine.Core.Pattern
+namespace saiflow.engine.Pattern
 {
     /// <summary>
     /// 节点执行器抽象基类

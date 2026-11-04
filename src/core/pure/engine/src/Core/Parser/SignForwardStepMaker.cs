@@ -7,13 +7,13 @@ using saiflow.hub.Resource;
 using saiflow.engine.Common;
 using saiflow.engine.Utility;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 using System.Reflection;
 
 using saiflow.engine.Client;
-namespace saiflow.engine.Core.Parser
+using saiflow.engine.Core;
+namespace saiflow.engine.Runtime
 {
     /// <summary>
     /// Sign Forward Step Maker

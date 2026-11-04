@@ -4,11 +4,11 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using NRules;
 using NRules.Fluent;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Common;
 using saiflow.engine.Rules;
 
-namespace saiflow.hub.BusinessRule.Engines
+namespace saiflow.hub.BusinessRule
 {
     /// <summary>
     /// 内置规则引擎：NRules Fluent（<c>ruleTypes</c> 类型名列表），mode = <c>ruleTypes</c>。

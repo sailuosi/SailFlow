@@ -6,9 +6,9 @@ using mooSQL.data;
 using saiflow.hub.Localize;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
-using saiflow.engine.Xpdl.Node;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
+using saiflow.engine.Xpdl;
 using saiflow.engine.Utility;
 using saiflow.WebUtility;
 
@@ -185,7 +185,7 @@ namespace saiflow.engine.Xpdl
         /// Build process objects with nested subprocesses
         /// 构建内嵌子流程的流程对象
         /// </summary>
-        private static ProcessEntity BuildProcessEntityFromXpdl(Xpdl.Entity.Process subProcess)
+        private static ProcessEntity BuildProcessEntityFromXpdl(saiflow.engine.Xpdl.Process subProcess)
         {
             var processEntity = new ProcessEntity();
             processEntity.ProcessId = subProcess.ProcessId;

@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using saiflow.engine.Client;
-using saiflow.engine.Client.Hosting;
+using saiflow.engine.Hosting;
 using AppSettingsManager = System.Configuration.ConfigurationManager;
 
 namespace saiflow.biz.Hosting;

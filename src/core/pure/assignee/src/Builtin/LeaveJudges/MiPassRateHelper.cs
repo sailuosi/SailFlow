@@ -1,7 +1,7 @@
 using saiflow.engine.Assignee;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Common;
-using saiflow.engine.Xpdl.Common;
+using saiflow.engine.Xpdl;
 
 namespace saiflow.assignee.Builtin;
 

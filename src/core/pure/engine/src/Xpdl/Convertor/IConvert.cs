@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 
-namespace saiflow.engine.Xpdl.Convertor
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Node Convert Interface

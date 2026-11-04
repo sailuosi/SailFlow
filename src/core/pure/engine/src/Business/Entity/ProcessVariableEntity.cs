@@ -5,7 +5,7 @@ using System.Text;
 using saiflow.engine.Common;
 using mooSQL.data;
 
-namespace saiflow.engine.Business.Entity
+namespace saiflow.engine.Entity
 {
     /// <summary>
     /// Process Variable Entity

@@ -3,8 +3,7 @@ using saiflow.engine.Common;
 using saiflow.engine.Event;
 using saiflow.engine.External;
 using saiflow.engine.Utility;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 
 namespace saiflow.engine.Actions
 {

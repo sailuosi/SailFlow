@@ -1,7 +1,8 @@
 using System;
-using saiflow.engine.Client.Hosting;
+using saiflow.engine.Hosting;
+using saiflow.hub.Localize;
 
-namespace saiflow.hub.Localize.Hosting
+namespace saiflow.hub.Hosting
 {
     /// <summary>
     /// Registers JSON-backed localization into the SailClient pipeline.

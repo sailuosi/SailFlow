@@ -1,4 +1,4 @@
-using saiflow.engine.Core.Pattern.Event.Signal;
+using saiflow.engine.Pattern;
 using System;
 using System.Collections.Generic;
 using System.Linq;

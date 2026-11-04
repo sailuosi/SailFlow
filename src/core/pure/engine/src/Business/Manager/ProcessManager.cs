@@ -1,11 +1,10 @@
 
 using saiflow.data;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
 using saiflow.engine.Utility;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Common;
 using saiflow.hub.Localize;
 using mooSQL.data;
 using System;
@@ -13,7 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 
-namespace saiflow.engine.Business.Manager
+namespace saiflow.engine.Manager
 {
     /// <summary>
     /// Process Manager

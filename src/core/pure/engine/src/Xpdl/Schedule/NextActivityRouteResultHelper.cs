@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using saiflow.engine.Common;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 
 
-namespace saiflow.engine.Xpdl.Schedule
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Help class for the next activity routing list

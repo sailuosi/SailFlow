@@ -3,7 +3,7 @@ using System;
 using saiflow.hub.Localize;
 using saiflow.engine.Common;
 
-namespace saiflow.engine.Xpdl.Schedule
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Next Activity Schedule Factory

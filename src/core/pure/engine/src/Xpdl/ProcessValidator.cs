@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using saiflow.engine.Common;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 using System.Xml;
 using saiflow.engine.Utility;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Xpdl.Common;
+using saiflow.engine.Entity;
+using saiflow.engine.Xpdl;
 
 namespace saiflow.engine.Xpdl
 {

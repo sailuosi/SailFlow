@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 using saiflow.engine.Event;
+using saiflow.engine.Core;
 
-namespace saiflow.engine.Core.Pattern.Auto
+namespace saiflow.engine.Pattern
 {
     /// <summary>
     /// Service Executor — 按 <see cref="saiflow.engine.Actions.ServiceMethodRegistry"/> 分发。

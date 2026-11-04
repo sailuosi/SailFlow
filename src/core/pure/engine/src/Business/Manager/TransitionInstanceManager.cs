@@ -5,11 +5,11 @@ using mooSQL.data;
 using saiflow.data;
 using saiflow.hub.Localize;
 using saiflow.engine.Common;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Client;
 using saiflow.engine.HotShard;
 
-namespace saiflow.engine.Business.Manager
+namespace saiflow.engine.Manager
 {
     /// <summary>
     /// 节点转移实例（wf_transition_instance / 白名单热分表）。

@@ -5,9 +5,10 @@ using mooSQL.data;
 using saiflow.engine.Actions;
 using saiflow.engine.Assignee;
 using saiflow.engine.Rules;
-using saiflow.hub.Essential.Common;
+using saiflow.hub.Essential;
+using saiflow.engine.Client;
 
-namespace saiflow.engine.Client.Hosting;
+namespace saiflow.engine.Hosting;
 
 /// <summary>
 /// Fluent builder for <see cref="SailClient"/> (类比 WebApplicationBuilder)。

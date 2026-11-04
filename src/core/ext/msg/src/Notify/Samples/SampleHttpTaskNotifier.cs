@@ -5,8 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using saiflow.engine.Hooks;
+using saiflow.msg.Notify;
 
-namespace saiflow.msg.Notify.Samples
+namespace saiflow.msg.Samples
 {
     /// <summary>
     /// 业务继承样例：仅实现 <see cref="SendCoreAsync"/>，POST JSON 到配置的回调 URL。

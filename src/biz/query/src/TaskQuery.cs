@@ -1,4 +1,4 @@
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 
 namespace saiflow.biz.query
 {

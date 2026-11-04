@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 using saiflow.engine.Common;
 using saiflow.engine.Utility;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
 
-namespace saiflow.engine.Xpdl.Convertor
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Convert Base

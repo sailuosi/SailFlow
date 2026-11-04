@@ -1,6 +1,6 @@
-﻿using saiflow.engine.Common;
+using saiflow.engine.Common;
 
-namespace saiflow.engine.Business.Entity
+namespace saiflow.engine.Entity
 {
     /// <summary>
     /// Process Query

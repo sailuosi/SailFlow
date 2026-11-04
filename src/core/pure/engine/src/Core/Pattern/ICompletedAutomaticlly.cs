@@ -5,10 +5,11 @@ using System.Text;
 using saiflow.engine.Common;
 using saiflow.data;
 using mooSQL.data;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Entity;
+using saiflow.engine.Xpdl;
+using saiflow.engine.Core;
 
-namespace saiflow.engine.Core.Pattern
+namespace saiflow.engine.Pattern
 {
     /// <summary>
     /// Complete Automatically

@@ -2,10 +2,9 @@ using System;
 using Newtonsoft.Json;
 using saiflow.engine.Common;
 using saiflow.engine.External;
-using saiflow.hub.External.Customer.Entity;
-using saiflow.hub.External.Utility;
+using saiflow.hub.External;
 
-namespace saiflow.hub.External.Customer
+namespace saiflow.hub.External
 {
     /// <summary>
     /// Extracts customer contact from process variable user_message and writes the Customer entity to process variable "customer" (JSON).

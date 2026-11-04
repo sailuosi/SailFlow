@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Xml;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 
-namespace saiflow.engine.Business.Manager
+namespace saiflow.engine.Manager
 {
     /// <summary>
     /// Process definition database storage interface

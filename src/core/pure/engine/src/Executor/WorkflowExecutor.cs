@@ -1,9 +1,8 @@
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 using saiflow.engine.Common;
-using saiflow.engine.Core.Result;
+using saiflow.engine.Result;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Entity;
 using System;
 using System.Threading.Tasks;
 

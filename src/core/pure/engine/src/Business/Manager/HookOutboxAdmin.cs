@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using mooSQL.data;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Client;
 using saiflow.engine.Hooks;
 
-namespace saiflow.engine.Business.Manager
+namespace saiflow.engine.Manager
 {
     /// <summary>Outbox 运维门面（委托 <see cref="HookOutboxManager"/>）。</summary>
     public sealed class HookOutboxAdmin

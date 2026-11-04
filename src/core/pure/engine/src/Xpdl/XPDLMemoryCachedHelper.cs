@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using mooSQL.data;
 using saiflow.engine.Utility;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 
 namespace saiflow.engine.Xpdl
 {

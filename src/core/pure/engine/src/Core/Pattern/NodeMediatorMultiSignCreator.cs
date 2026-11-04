@@ -2,13 +2,13 @@ using System;
 using saiflow.data;
 using mooSQL.data;
 using saiflow.hub.Localize;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Xpdl;
+using saiflow.engine.Entity;
 using saiflow.engine.Common;
 
 using saiflow.engine.Client;
-namespace saiflow.engine.Core.Pattern
+using saiflow.engine.Core;
+namespace saiflow.engine.Pattern
 {
     /// <summary>
     /// 多实例节点场景的创建器

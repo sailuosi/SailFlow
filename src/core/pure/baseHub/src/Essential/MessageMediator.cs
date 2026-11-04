@@ -1,6 +1,6 @@
 using System;
 using mooSQL.data;
-using saiflow.hub.Essential.Entity;
+using saiflow.hub.Essential;
 using saiflow.hub.Logging;
 
 namespace saiflow.hub.Essential

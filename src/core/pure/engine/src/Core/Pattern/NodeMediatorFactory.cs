@@ -5,20 +5,13 @@ using saiflow.data;
 using mooSQL.data;
 using saiflow.hub.Localize;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Core.Pattern.Auto;
-using saiflow.engine.Core.Pattern.Event;
-using saiflow.engine.Core.Pattern.Event.Timer;
-using saiflow.engine.Core.Pattern.Event.Message;
-using saiflow.engine.Core.Pattern.Event.Conditional;
-using saiflow.engine.Core.Pattern.Event.Signal;
-using saiflow.engine.Core.Pattern.Gateway;
-using saiflow.engine.Business.Manager;
-using saiflow.engine.Xpdl.Node;
+using saiflow.engine.Pattern;
+using saiflow.engine.Manager;
+using saiflow.engine.Xpdl;
 
 using saiflow.engine.Client;
-namespace saiflow.engine.Core.Pattern
+using saiflow.engine.Core;
+namespace saiflow.engine.Pattern
 {
     /// <summary>
     /// 节点执行器的工厂类

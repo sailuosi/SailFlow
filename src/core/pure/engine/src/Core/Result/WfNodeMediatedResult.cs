@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using saiflow.engine.Core;
 
-namespace saiflow.engine.Core.Result
+namespace saiflow.engine.Result
 {
     /// <summary>
     /// Node mediator result

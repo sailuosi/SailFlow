@@ -1,5 +1,5 @@
 using System;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.hub.Logging;
 
 namespace saiflow.engine.Logging

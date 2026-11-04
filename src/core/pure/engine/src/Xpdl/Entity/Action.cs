@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using saiflow.engine.Xpdl.Common;
+using saiflow.engine.Xpdl;
 
 
-namespace saiflow.engine.Xpdl.Entity
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Action

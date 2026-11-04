@@ -1,9 +1,9 @@
 using System;
 using saiflow.engine.Common;
 using saiflow.engine.Event;
-using saiflow.engine.Xpdl.Common;
+using saiflow.engine.Xpdl;
 using saiflow.WebUtility;
-using ActionEntity = saiflow.engine.Xpdl.Entity.Action;
+using ActionEntity = saiflow.engine.Xpdl.Action;
 
 namespace saiflow.engine.Actions
 {

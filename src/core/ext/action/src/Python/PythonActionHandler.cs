@@ -2,8 +2,8 @@ using System;
 using saiflow.engine.Actions;
 using saiflow.engine.Common;
 using saiflow.engine.Event;
-using saiflow.engine.Xpdl.Common;
-using ActionEntity = saiflow.engine.Xpdl.Entity.Action;
+using saiflow.engine.Xpdl;
+using ActionEntity = saiflow.engine.Xpdl.Action;
 
 namespace saiflow.action.Python
 {

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using saiflow.hub.Essential.Entity;
+using saiflow.hub.Essential;
 
-namespace saiflow.hub.Essential.Common
+namespace saiflow.hub.Essential
 {
     /// <summary>
     /// Message Queue Service Interface

@@ -7,13 +7,13 @@ using saiflow.hub.Localize;
 using saiflow.hub.Resource;
 using saiflow.engine.Common;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 using saiflow.WebUtility;
 
 using saiflow.engine.Client;
-namespace saiflow.engine.Core.Parser
+using saiflow.engine.Core;
+namespace saiflow.engine.Runtime
 {
     /// <summary>
     /// Previous Activity Node Parser

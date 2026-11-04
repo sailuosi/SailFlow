@@ -1,6 +1,7 @@
 using saiflow.engine.Event;
+using saiflow.engine.Hooks;
 
-namespace saiflow.engine.Hooks.Samples
+namespace saiflow.engine.Samples
 {
     /// <summary>
     /// 文档示例：流程继续后 Async Outbox 汇总（财务出单等）。

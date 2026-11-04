@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Common;
 
 namespace saiflow.engine.Assignee

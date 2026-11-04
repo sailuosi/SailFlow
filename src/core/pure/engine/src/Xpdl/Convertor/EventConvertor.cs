@@ -1,4 +1,4 @@
-﻿using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using System.Xml;
 using saiflow.engine.Common;
 using saiflow.engine.Utility;
-using saiflow.engine.Xpdl.Common;
+using saiflow.engine.Xpdl;
 using System.Xml.Linq;
 
-namespace saiflow.engine.Xpdl.Convertor
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Event Convertor

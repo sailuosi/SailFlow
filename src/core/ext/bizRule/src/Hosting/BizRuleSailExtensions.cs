@@ -1,10 +1,10 @@
 using System;
 using saiflow.engine.Client;
-using saiflow.engine.Client.Hosting;
+using saiflow.engine.Hosting;
 using saiflow.engine.Rules;
-using saiflow.hub.BusinessRule.Engines;
+using saiflow.hub.BusinessRule;
 
-namespace saiflow.hub.BusinessRule.Hosting
+namespace saiflow.hub.Hosting
 {
     /// <summary>
     /// 注册 bizRule 内置规则引擎（NRules ruleTypes + bindingsJson），并允许继续 <see cref="IRuleEngine"/> 扩展。

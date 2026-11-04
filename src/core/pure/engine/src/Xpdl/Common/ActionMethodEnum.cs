@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace saiflow.engine.Xpdl.Common
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Action Method Type

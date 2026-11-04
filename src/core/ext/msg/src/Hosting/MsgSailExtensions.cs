@@ -1,6 +1,6 @@
 using System;
 using saiflow.engine.Client;
-using saiflow.engine.Client.Hosting;
+using saiflow.engine.Hosting;
 
 namespace saiflow.msg.Hosting
 {

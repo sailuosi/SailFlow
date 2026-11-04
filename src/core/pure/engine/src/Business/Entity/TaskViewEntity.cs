@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using saiflow.engine.Common;
 using saiflow.engine.Utility;
-using saiflow.engine.Business;
 using mooSQL.data;
 
-namespace saiflow.engine.Business.Entity
+namespace saiflow.engine.Entity
 {
     /// <summary>
     /// Task View

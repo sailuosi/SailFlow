@@ -1,16 +1,16 @@
 using saiflow.data;
 using mooSQL.data;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Common;
 using saiflow.engine.Event;
 using saiflow.engine.Xpdl;
-using saiflow.engine.Xpdl.Entity;
 using System;
 using System.Text;
 
 
 using saiflow.engine.Client;
-namespace saiflow.engine.Core.Pattern.Auto
+using saiflow.engine.Core;
+namespace saiflow.engine.Pattern
 {
     /// <summary>
     /// 服务节点执行器

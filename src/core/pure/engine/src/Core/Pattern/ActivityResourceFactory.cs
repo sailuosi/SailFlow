@@ -1,14 +1,13 @@
-﻿using saiflow.engine.Common;
+using saiflow.engine.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Xpdl.Schedule;
 using saiflow.engine.Xpdl;
+using saiflow.engine.Core;
 
-namespace saiflow.engine.Core.Pattern
+namespace saiflow.engine.Pattern
 {
     /// <summary>
     /// Create Activity Resource

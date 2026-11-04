@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace saiflow.hub.External.Customer.Entity
+namespace saiflow.hub.External
 {
     /// <summary>
     /// Entity for Supabase table biz_conversation.

@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using saiflow.engine.Rules;
+using saiflow.engine.Client;
 
-namespace saiflow.engine.Client.Hosting;
+namespace saiflow.engine.Hosting;
 
 /// <summary>
 /// 规则引擎注册（引擎只规定契约，实现由业务侧提供）。

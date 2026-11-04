@@ -1,6 +1,6 @@
 using saiflow.engine.Event;
-using saiflow.engine.Xpdl.Common;
-using ActionEntity = saiflow.engine.Xpdl.Entity.Action;
+using saiflow.engine.Xpdl;
+using ActionEntity = saiflow.engine.Xpdl.Action;
 
 namespace saiflow.engine.Actions
 {

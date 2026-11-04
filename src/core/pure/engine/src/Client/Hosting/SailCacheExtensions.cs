@@ -1,7 +1,8 @@
 using System;
 using mooSQL.data;
+using saiflow.engine.Client;
 
-namespace saiflow.engine.Client.Hosting;
+namespace saiflow.engine.Hosting;
 
 /// <summary>
 /// 缓存注册（对齐 mooSQL <c>useCache(ISooCache)</c>）。

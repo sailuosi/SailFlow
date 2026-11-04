@@ -2,7 +2,7 @@ using saiflow.assignee;
 using saiflow.assignee.Hosting;
 using saiflow.biz.Assignee;
 using saiflow.engine.Client;
-using saiflow.engine.Client.Hosting;
+using saiflow.engine.Hosting;
 using saiflow.engine.Common;
 
 namespace saiflow.biz.Hosting;

@@ -1,14 +1,12 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using System.Linq;
 using saiflow.engine.Common;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Xpdl.Common;
-using saiflow.engine.Xpdl.Entity;
-using saiflow.engine.Xpdl.Node;
+using saiflow.engine.Entity;
+using saiflow.engine.Xpdl;
 using saiflow.engine.Utility;
 
 namespace saiflow.engine.Xpdl
@@ -147,7 +145,7 @@ namespace saiflow.engine.Xpdl
         /// <summary>
         /// Convert to process
         /// </summary>
-        public static Xpdl.Entity.Process ConvertToXPDLProcess(XmlDocument xmlDoc)
+        public static saiflow.engine.Xpdl.Process ConvertToXPDLProcess(XmlDocument xmlDoc)
         {
             var root = xmlDoc.DocumentElement;
             var xmlNodeProcess = root.SelectSingleNode(XPDLDefinition.BPMN_StrXmlPath_Process,

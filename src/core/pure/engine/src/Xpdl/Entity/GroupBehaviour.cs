@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using saiflow.engine.Common;
 
 
-namespace saiflow.engine.Xpdl.Entity
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Group Behaviour on Transiton

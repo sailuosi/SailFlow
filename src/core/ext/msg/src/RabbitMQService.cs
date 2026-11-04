@@ -5,8 +5,6 @@ using mooSQL.data;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using saiflow.hub.Essential;
-using saiflow.hub.Essential.Common;
-using saiflow.hub.Essential.Entity;
 
 namespace saiflow.msg
 {

@@ -1,7 +1,7 @@
-﻿using saiflow.engine.Common;
+using saiflow.engine.Common;
 using saiflow.engine.External;
 
-namespace saiflow.hub.External.Order
+namespace saiflow.hub.External
 {
     /// <summary>
     /// Order Submit Serivce

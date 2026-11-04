@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
 using saiflow.data;
-using saiflow.engine.Business.Entity;
+using saiflow.engine.Entity;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
-using saiflow.engine.Xpdl.Node;
+using saiflow.engine.Xpdl;
 using saiflow.hub.Localize;
 using saiflow.hub.Resource;
 using saiflow.WebUtility;
 
-namespace saiflow.engine.Business.Manager
+namespace saiflow.engine.Manager
 {
     /// <summary>
     /// 流程实例（wf_process_instance）。

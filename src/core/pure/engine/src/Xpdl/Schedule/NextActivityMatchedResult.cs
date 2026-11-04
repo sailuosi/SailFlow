@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using saiflow.hub.Localize;
 
-namespace saiflow.engine.Xpdl.Schedule
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Next Activity Matched Result

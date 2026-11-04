@@ -1,9 +1,9 @@
 using mooSQL.data;
 using saiflow.engine.Common;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 using saiflow.engine.Client;
-using saiflow.engine.Core.Result;
+using saiflow.engine.Result;
 using saiflow.engine.Event;
 
 namespace saiflow.engine.Hooks

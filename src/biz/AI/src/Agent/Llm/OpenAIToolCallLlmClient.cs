@@ -9,10 +9,10 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using saiflow.AI.Agent.Core;
+using saiflow.AI.Agent;
 using saiflow.AI.Entity;
 
-namespace saiflow.AI.Agent.Llm
+namespace saiflow.AI.Agent
 {
     /// <summary>
     /// Implements ILlmClient using the OpenAI-compatible function-calling format.

@@ -2,7 +2,7 @@ using System;
 using saiflow.engine.Common;
 using mooSQL.data;
 
-namespace saiflow.engine.Business.Entity
+namespace saiflow.engine.Entity
 {
     /// <summary>
     /// Rule set definition entity (wf_rule_set)

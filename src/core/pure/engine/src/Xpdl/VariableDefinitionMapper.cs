@@ -1,6 +1,6 @@
 using System;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Entity;
+using saiflow.engine.Xpdl;
 using saiflow.WebUtility;
 
 namespace saiflow.engine.Xpdl

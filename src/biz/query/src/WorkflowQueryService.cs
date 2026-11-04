@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using saiflow.engine.Business.Entity;
-using saiflow.engine.Business.Manager;
+using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 using saiflow.engine.Client;
 using mooSQL.data;
 using saiflow.engine.Common;
 using saiflow.data.Hosting;
-using saiflow.engine.Xpdl.Common;
+using saiflow.engine.Xpdl;
 using saiflow.hub.Resource;
 using saiflow.WebUtility;
 

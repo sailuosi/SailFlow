@@ -7,9 +7,9 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using saiflow.AI.Agent.Core;
+using saiflow.AI.Agent;
 
-namespace saiflow.AI.Agent.Tools
+namespace saiflow.AI.Agent
 {
     /// <summary>
     /// Proxy tool that calls a remote MCP (Model Context Protocol) server.

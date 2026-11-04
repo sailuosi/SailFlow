@@ -1,4 +1,4 @@
-using saiflow.engine.Client.Hosting;
+using saiflow.engine.Hosting;
 using Xunit;
 
 namespace saiflow.engine.tests;

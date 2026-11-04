@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using mooSQL.data;
 
-namespace saiflow.engine.Business.Entity
+namespace saiflow.engine.Entity
 {
     /// <summary>
     /// Process Instance Entity

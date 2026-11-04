@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace saiflow.AI.Agent.Core
+namespace saiflow.AI.Agent
 {
     /// <summary>
     /// Abstract base for Agent nodes.

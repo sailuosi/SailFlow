@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using mooSQL.data;
 
-namespace saiflow.engine.Business.Entity
+namespace saiflow.engine.Entity
 {
     /// <summary>
     /// Job Info Entity

@@ -1,4 +1,4 @@
-﻿using saiflow.engine.Xpdl.Entity;
+using saiflow.engine.Xpdl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ using saiflow.engine.Common;
 using saiflow.engine.Utility;
 using saiflow.WebUtility;
 
-namespace saiflow.engine.Xpdl.Convertor
+namespace saiflow.engine.Xpdl
 {
     /// <summary>
     /// Gateway Convertor
