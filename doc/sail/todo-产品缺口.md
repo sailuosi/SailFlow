@@ -6,7 +6,8 @@
 > 拍板：2026-11-01 — **空人默认=拒绝**（禁止默认自动通过；`=2` 细义=**R4 拒绝推进**）；退回 = **目标维 × 再发送维** 正交（见 §G / §J）  
 > 实施：2026-11-01 — **接线完成**（含 Boundaries 文案、会签按任务计时）；烟雾探针 `sleveen-admin/doc/scripts/sail-probe-smoke.ps1`；**联调**见 [联调清单-产品缺口.md](./联调清单-产品缺口.md)  
 
-> 关联：[特性说明-待办人管道.md](./特性说明-待办人管道.md) **R4**；[特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md)；[特性设计-回调与事件.md](./特性设计-回调与事件.md)；宿主 `sailflow-buttons-capability.md`、节点 `sf:NodePolicy` / `sf:ButtonsSetting` / 表单接入
+> 关联：[特性说明-待办人管道.md](./特性说明-待办人管道.md) **R4 / R10 / §11**；[特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md)；[特性设计-回调与事件.md](./特性设计-回调与事件.md)；宿主 `sailflow-buttons-capability.md`、节点 `sf:NodePolicy` / `sf:ButtonsSetting` / 表单接入  
+> 2026-11-04：§A 空人/同人演进口径指向待办人管道 **R10**（Filter/EmptyAction + 锚点 Job）；现行 Host 装饰器仍为过渡实现
 
 ### 优先级（实施顺序建议）
 
@@ -112,9 +113,16 @@
 
 ### A5. 落地路径
 
-**空人 / 同人：** `NodePolicyAssigneePipeline`；`=1`/同人`=2` → `__sail_policy_skip__`，作业代办 Run。
+**空人 / 同人（现行过渡）：** `NodePolicyAssigneePipeline`；`=1`/同人`=2` → `__sail_policy_skip__`，作业代办 Run。
 
 **超时：** 活动创建打戳 + Host 作业扫 `OverdueDateTime`。
+
+**演进（2026-11-04 拍板，见 [特性说明-待办人管道.md](./特性说明-待办人管道.md) R10 / §11）：**
+
+- 空人/同人/去重等 → `UseAssign` 的 **EmptyAction / Filter**，不再堆装饰 Pipeline 或新 Resolve Type。  
+- 「自动通过」→ 时刻 A **打锚点**，发送成功后由**普通 Job** 苛刻复核代办；失败回落手动。  
+- API 优先 **`AddResolver<T>`**；Filter 注册序=执行序。  
+- 现行 `__sail_policy_skip__` 可作迁移双写，目标收敛到锚点 Job。
 
 ### A6. 验收口径
 
