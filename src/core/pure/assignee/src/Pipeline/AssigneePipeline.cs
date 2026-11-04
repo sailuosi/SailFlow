@@ -18,8 +18,17 @@ public class AssigneePipeline : IAssigneePipeline
         new(StringComparer.OrdinalIgnoreCase);
     int _filterSeq;
 
-    /// <summary>空集选型：返回 EmptyAction.Key；默认 <see cref="EmptyActionKeys.Reject"/>。</summary>
+    /// <summary>
+    /// 空集选型键：优先匹配 <see cref="IAssigneeEmptyAction.Key"/>；
+    /// 未注册 EmptyAction 时再按同名（或产品码映射）<see cref="IAssigneeResolver.Type"/> 调 Resolver；
+    /// 仍无结果则默认 <see cref="EmptyActionKeys.Reject"/>。
+    /// </summary>
     public Func<AssigneeFilterContext, string?>? EmptyActionSelector { get; set; }
+
+    /// <summary>
+    /// 可选：空人/Filter 策略袋（如 NodePolicy → userIds）。在 Empty / Filter 前写入 <see cref="AssigneeFilterContext.PolicyBag"/>。
+    /// </summary>
+    public Func<AssigneeFilterContext, IDictionary<string, object?>?>? PolicyBagReader { get; set; }
 
     public IAutoApproveAnchorStore? AnchorStore { get; set; }
 
@@ -99,6 +108,7 @@ public class AssigneePipeline : IAssigneePipeline
             ResolveType = config.Type,
             Performers = resolved
         };
+        filterCtx.PolicyBag = PolicyBagReader?.Invoke(filterCtx) ?? filterCtx.PolicyBag;
 
         if (filterCtx.Performers.Count == 0)
         {
@@ -174,24 +184,173 @@ public class AssigneePipeline : IAssigneePipeline
         if (string.IsNullOrEmpty(key))
             key = EmptyActionKeys.Reject;
 
-        if (!_emptyActions.TryGetValue(key, out var action))
+        // 1) 注册的 EmptyAction（含产品码别名）
+        if (TryGetEmptyAction(key, out var action) && action != null)
+            return ApplyEmptyResult(ctx, action.Handle(ctx));
+
+        // 2) 无 EmptyAction → 调对应 Resolver（同名 Type，或 3/users→FixedUsers）；有人则采用
+        var resolverType = MapEmptyKeyToResolverType(key);
+        if (resolverType != null
+            && TryResolveAsEmptyFallback(ctx, resolverType, out var fromResolver)
+            && fromResolver.Count > 0)
         {
-            // 产品码别名：2→reject 等
-            if (string.Equals(key, EmptyActionKeys.RejectProductCode, StringComparison.Ordinal))
-                _emptyActions.TryGetValue(EmptyActionKeys.Reject, out action);
-            else if (string.Equals(key, EmptyActionKeys.SkipProductCode, StringComparison.Ordinal))
-                _emptyActions.TryGetValue(EmptyActionKeys.Skip, out action);
-            else if (string.Equals(key, EmptyActionKeys.UsersProductCode, StringComparison.Ordinal))
-                _emptyActions.TryGetValue(EmptyActionKeys.Users, out action);
-            else if (string.Equals(key, EmptyActionKeys.AdminProductCode, StringComparison.Ordinal))
-                _emptyActions.TryGetValue(EmptyActionKeys.Admin, out action);
+            ctx.Performers = fromResolver;
+            ctx.Source = PerformerSources.EmptyAction;
+            Trace.TraceInformation(
+                "[Assignee] Empty key '{0}' → Resolver '{1}' yielded {2} performer(s)",
+                key, resolverType, fromResolver.Count);
+            return true;
         }
 
-        action ??= _emptyActions.TryGetValue(EmptyActionKeys.Reject, out var reject) ? reject : null;
-        if (action == null)
+        if (!string.Equals(key, EmptyActionKeys.Reject, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(key, EmptyActionKeys.RejectProductCode, StringComparison.Ordinal))
+        {
+            Trace.TraceInformation(
+                "[Assignee] Empty key '{0}' has no EmptyAction/Resolver (or resolver empty); default Reject",
+                key);
+        }
+
+        // 3) 默认 RejectEmptyAction
+        if (!TryGetEmptyAction(EmptyActionKeys.Reject, out var reject) || reject == null)
+            reject = new RejectEmptyAction();
+        return ApplyEmptyResult(ctx, reject.Handle(ctx));
+    }
+
+    /// <summary>
+    /// 空人选型键 → 要调的 Resolver.Type；reject/skip 等纯 EmptyAction 键返回 null。
+    /// </summary>
+    static string? MapEmptyKeyToResolverType(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return null;
+
+        // 纯处置键：不走 Resolver
+        if (string.Equals(key, EmptyActionKeys.Reject, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(key, EmptyActionKeys.RejectProductCode, StringComparison.Ordinal)
+            || string.Equals(key, EmptyActionKeys.Skip, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(key, EmptyActionKeys.SkipProductCode, StringComparison.Ordinal))
+            return null;
+
+        // 产品「指定人员」→ 内置 FixedUsers（Params 来自 PolicyBag）
+        if (string.Equals(key, EmptyActionKeys.Users, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(key, EmptyActionKeys.UsersProductCode, StringComparison.Ordinal))
+            return AssigneeResolveTypeCodes.FixedUsers;
+
+        // admin/4：无内置 ProcessAdmin Resolver 时不映射；靠注册 EmptyAction 或自定义 Type
+        if (string.Equals(key, EmptyActionKeys.Admin, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(key, EmptyActionKeys.AdminProductCode, StringComparison.Ordinal))
+            return null;
+
+        // 其它：按同名 Resolver Type（如 RoleGroup / JobRelative / 业务 Type）
+        return key.Trim();
+    }
+
+    bool TryGetEmptyAction(string key, out IAssigneeEmptyAction? action)
+    {
+        action = null;
+        if (string.IsNullOrWhiteSpace(key))
             return false;
 
-        var result = action.Handle(ctx);
+        if (_emptyActions.TryGetValue(key, out action) && action != null)
+            return true;
+
+        // 产品码别名：1/2/3/4 → skip/reject/users/admin
+        var alias = key switch
+        {
+            EmptyActionKeys.RejectProductCode => EmptyActionKeys.Reject,
+            EmptyActionKeys.SkipProductCode => EmptyActionKeys.Skip,
+            EmptyActionKeys.UsersProductCode => EmptyActionKeys.Users,
+            EmptyActionKeys.AdminProductCode => EmptyActionKeys.Admin,
+            _ => null
+        };
+        if (alias != null && _emptyActions.TryGetValue(alias, out action) && action != null)
+            return true;
+
+        action = null;
+        return false;
+    }
+
+    bool TryResolveAsEmptyFallback(AssigneeFilterContext ctx, string resolverType, out PerformerList performers)
+    {
+        performers = new PerformerList();
+        if (string.IsNullOrWhiteSpace(resolverType))
+            return false;
+        if (!Registry.TryGetResolver(resolverType, out var resolver) || resolver == null)
+            return false;
+        if (string.Equals(resolver.Type, AssigneeResolveTypeCodes.Fallback, StringComparison.OrdinalIgnoreCase))
+            return false; // 空人路径不再套 Fallback，防递归
+
+        WireSail(resolver);
+        var config = BuildEmptyResolverConfig(ctx, resolverType);
+        try
+        {
+            performers = resolver.Resolve(new AssigneeResolveContext
+            {
+                Request = ctx.Request,
+                Config = config
+            }) ?? new PerformerList();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceWarning(
+                "[Assignee] Empty → Resolver '{0}' threw: {1}; will default Reject",
+                resolverType, ex.Message);
+            performers = new PerformerList();
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 空人调 Resolver 的 ConfigPair：优先 PolicyBag.emptyResolveParams / params，否则透传 PolicyBag。
+    /// </summary>
+    static ConfigPair BuildEmptyResolverConfig(AssigneeFilterContext ctx, string resolverType)
+    {
+        var parameters = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        var bag = ctx.PolicyBag;
+        if (bag != null)
+        {
+            if (TryCoerceParamsDict(bag, "emptyResolveParams", out var nested)
+                || TryCoerceParamsDict(bag, "params", out nested))
+            {
+                foreach (var kv in nested!)
+                    parameters[kv.Key] = kv.Value;
+            }
+            else
+            {
+                foreach (var kv in bag)
+                    parameters[kv.Key] = kv.Value;
+            }
+        }
+
+        return ConfigPair.Create(resolverType, parameters);
+    }
+
+    static bool TryCoerceParamsDict(
+        IDictionary<string, object?> bag,
+        string key,
+        out IDictionary<string, object?>? dict)
+    {
+        dict = null;
+        if (!bag.TryGetValue(key, out var raw) || raw == null)
+            return false;
+        if (raw is IDictionary<string, object?> d1)
+        {
+            dict = new Dictionary<string, object?>(d1, StringComparer.OrdinalIgnoreCase);
+            return true;
+        }
+
+        if (raw is IDictionary<string, object> d2)
+        {
+            dict = d2.ToDictionary(kv => kv.Key, kv => (object?)kv.Value, StringComparer.OrdinalIgnoreCase);
+            return true;
+        }
+
+        return false;
+    }
+
+    bool ApplyEmptyResult(AssigneeFilterContext ctx, EmptyActionResult result)
+    {
         if (result.IsReject)
         {
             throw new WfAssigneeException(

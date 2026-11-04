@@ -93,11 +93,22 @@ public sealed class AssigneeAssignBuilder
         return this;
     }
 
-    /// <summary>空集选型委托（返回 EmptyAction.Key）。</summary>
+    /// <summary>
+    /// 空集选型委托：返回 EmptyAction.Key 或 Resolver.Type（如 FixedUsers / 业务 Type）；
+    /// 无 EmptyAction 时管道按同名调 Resolver，调不到或仍空 → 默认 Reject。
+    /// </summary>
     public AssigneeAssignBuilder UseEmptyActionSelector(Func<AssigneeFilterContext, string?> selector)
     {
         ArgumentNullException.ThrowIfNull(selector);
         _actions.Add(p => p.EmptyActionSelector = selector);
+        return this;
+    }
+
+    /// <summary>空人/Filter 策略袋（如 NodePolicy 的 userIds），供 Empty → Resolver 的 Params。</summary>
+    public AssigneeAssignBuilder UsePolicyBag(Func<AssigneeFilterContext, IDictionary<string, object?>?> reader)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        _actions.Add(p => p.PolicyBagReader = reader);
         return this;
     }
 

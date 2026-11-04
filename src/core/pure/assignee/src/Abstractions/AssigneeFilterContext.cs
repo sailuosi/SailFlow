@@ -6,7 +6,7 @@ namespace saiflow.assignee;
 /// <summary>R10：Resolve 后置 Filter / EmptyAction 上下文。</summary>
 public sealed class AssigneeFilterContext
 {
-    public required AssigneeInvokeRequest Request { get; init; }
+    public AssigneeInvokeRequest Request { get; init; } = null!;
 
     /// <summary><see cref="PerformerSources"/> 常量。</summary>
     public string Source { get; set; } = PerformerSources.Unknown;
