@@ -190,7 +190,27 @@ public class AssigneePipeline : IAssigneePipeline
 
     void ApplyFilters(AssigneeFilterContext ctx)
     {
-        foreach (var (_, _, filter) in _filters.OrderBy(x => x.Order).ThenBy(x => x.Seq))
+        // 注册时已按 Order/Seq 插入；仅在乱序时再排（避免热路径每次 LINQ OrderBy）
+        IEnumerable<(int Order, int Seq, IAssigneeResolveFilter Filter)> ordered = _filters;
+        if (_filters.Count > 1)
+        {
+            var needSort = false;
+            for (var i = 1; i < _filters.Count; i++)
+            {
+                var prev = _filters[i - 1];
+                var cur = _filters[i];
+                if (cur.Order < prev.Order || (cur.Order == prev.Order && cur.Seq < prev.Seq))
+                {
+                    needSort = true;
+                    break;
+                }
+            }
+
+            if (needSort)
+                ordered = _filters.OrderBy(x => x.Order).ThenBy(x => x.Seq);
+        }
+
+        foreach (var (_, _, filter) in ordered)
         {
             filter.Apply(ctx);
             ctx.Performers ??= new PerformerList();
@@ -452,6 +472,13 @@ public class AssigneePipeline : IAssigneePipeline
 
     protected virtual void WireSail(IAssigneeResolver resolver)
     {
+        if (resolver is IAssigneeResolverWire wire)
+        {
+            wire.Wire(this);
+            return;
+        }
+
+        // 兼容未实现 IAssigneeResolverWire 的旧宿主 Resolver
         if (resolver is Builtin.RoleGroupAssigneeResolver rg && Sail != null)
             rg.Sail = Sail;
         if (resolver is Builtin.ProcessRelativeAssigneeResolver pr && Sail != null)

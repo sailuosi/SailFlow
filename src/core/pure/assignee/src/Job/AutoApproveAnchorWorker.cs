@@ -98,99 +98,144 @@ public sealed class AutoApproveAnchorWorker
         var anchor = Deserialize(row);
         if (anchor == null || anchor.ProcessInstanceId is not > 0 || string.IsNullOrWhiteSpace(anchor.ActivityId))
         {
-            using var kit = Sail.UseRunSQL();
-            kit.beginTransaction();
-            om.MarkFailed(kit, row, "Invalid AutoApproveAnchor payload (need ProcessInstanceId+ActivityId).", Options.MaxAttempts);
-            kit.commit();
+            TerminalSkip(om, row, "Invalid AutoApproveAnchor payload (need ProcessInstanceId+ActivityId).");
             return;
         }
 
-        // §11.3 苛刻前置：实例须运行中；须有明确 Waiting 待办 + 可代办用户；否则 Skip/Postpone
-        if (!IsProcessInstanceRunnable(anchor.ProcessInstanceId!.Value))
-        {
-            using var kit = Sail.UseRunSQL();
-            kit.beginTransaction();
-            om.MarkFailed(kit, row,
-                AssigneeReasonCodes.AutoApproveSkipped + ": process instance not running.",
-                Options.MaxAttempts);
-            kit.commit();
-            return;
-        }
+        // Outbox 列优先于 Payload（CreateNewTask 回写）
+        if (row.ActivityInstanceId is > 0)
+            anchor.ActivityInstanceId = row.ActivityInstanceId;
 
-        var task = FindWaitingTask(anchor);
-        ActivityInstanceEntity? readyAct = null;
-        if (task == null)
+        TaskEntity? task;
+        ActivityInstanceEntity? readyAct;
+        string versionHint;
+        string userId;
+        Dictionary<string, string> dyn;
+
+        using (var probeKit = Sail.UseRunSQL())
         {
-            // R10 零 Performer：无待办，按 Ready 活动实例 RunProcessAuto
-            readyAct = FindReadyActivity(anchor);
-            if (readyAct == null)
+            var sibling = SailSqlAccess.Sibling(probeKit);
+
+            if (!IsProcessInstanceRunnable(sibling, anchor.ProcessInstanceId!.Value))
+            {
+                if (IsProcessInstanceTerminal(sibling, anchor.ProcessInstanceId.Value)
+                    || IsAnchorTargetAlreadyLeft(sibling, anchor))
+                {
+                    MarkDone(om, row, alreadyDone: true);
+                    return;
+                }
+
+                TerminalSkip(om, row,
+                    AssigneeReasonCodes.AutoApproveSkipped + ": process instance not running.");
+                return;
+            }
+
+            // 幂等：上一轮 Run 已成功但 MarkSucceeded 前崩溃 → lease 回收后目标已离开
+            if (IsAnchorTargetAlreadyLeft(sibling, anchor))
+            {
+                MarkDone(om, row, alreadyDone: true);
+                return;
+            }
+
+            task = FindWaitingTask(sibling, anchor);
+            readyAct = null;
+            if (task == null)
+            {
+                readyAct = FindReadyActivity(sibling, anchor);
+                if (readyAct == null)
+                {
+                    using var kit = Sail.UseRunSQL();
+                    kit.beginTransaction();
+                    if ((row.Attempt ?? 0) + 1 >= Options.MaxAttempts)
+                    {
+                        om.MarkSkipped(kit, row,
+                            AssigneeReasonCodes.AutoApproveSkipped
+                            + ": no Waiting task / Ready activity after retries.");
+                    }
+                    else
+                    {
+                        row.Attempt = (row.Attempt ?? 0) + 1;
+                        om.Postpone(kit, row, Options.RetryWhenNoTask, "Task/activity not visible yet.");
+                    }
+
+                    kit.commit();
+                    return;
+                }
+            }
+            else if (!IsTaskActivityReady(sibling, task))
             {
                 using var kit = Sail.UseRunSQL();
                 kit.beginTransaction();
                 if ((row.Attempt ?? 0) + 1 >= Options.MaxAttempts)
                 {
-                    om.MarkFailed(kit, row,
-                        AssigneeReasonCodes.AutoApproveSkipped + ": no Waiting task / Ready activity after retries.",
-                        Options.MaxAttempts);
+                    om.MarkSkipped(kit, row,
+                        AssigneeReasonCodes.AutoApproveSkipped + ": activity not Ready/Waiting.");
                 }
                 else
                 {
                     row.Attempt = (row.Attempt ?? 0) + 1;
-                    om.Postpone(kit, row, Options.RetryWhenNoTask, "Task/activity not visible yet.");
+                    om.Postpone(kit, row, Options.RetryWhenNoTask, "Activity instance not ready yet.");
                 }
 
                 kit.commit();
                 return;
             }
-        }
-        else if (!IsTaskActivityReady(task))
-        {
-            using var kit = Sail.UseRunSQL();
-            kit.beginTransaction();
-            if ((row.Attempt ?? 0) + 1 >= Options.MaxAttempts)
+
+            var activityId = task?.ActivityId ?? readyAct?.ActivityId ?? anchor.ActivityId;
+            versionHint = string.IsNullOrWhiteSpace(anchor.Version)
+                ? ResolveVersionByProcessInstance(sibling, anchor.ProcessInstanceId)
+                : anchor.Version!;
+            if (RequiresManualNextSelection(activityId, anchor, task, versionHint, out var pickReason))
             {
-                om.MarkFailed(kit, row,
-                    AssigneeReasonCodes.AutoApproveSkipped + ": activity not Ready/Waiting.",
-                    Options.MaxAttempts);
-            }
-            else
-            {
-                row.Attempt = (row.Attempt ?? 0) + 1;
-                om.Postpone(kit, row, Options.RetryWhenNoTask, "Activity instance not ready yet.");
+                TerminalSkip(om, row, AssigneeReasonCodes.AutoApproveSkipped + ": " + pickReason);
+                return;
             }
 
-            kit.commit();
-            return;
-        }
+            userId = !string.IsNullOrWhiteSpace(anchor.PreferUserId)
+                ? anchor.PreferUserId!
+                : task?.AssignedUserId;
+            if (string.IsNullOrWhiteSpace(userId))
+                userId = "system.autoApprove";
 
-        var activityId = task?.ActivityId ?? readyAct?.ActivityId ?? anchor.ActivityId;
-        if (RequiresManualNextSelection(activityId, anchor, task, out var pickReason))
-        {
-            using var kit = Sail.UseRunSQL();
-            kit.beginTransaction();
-            om.MarkFailed(kit, row,
-                AssigneeReasonCodes.AutoApproveSkipped + ": " + pickReason,
-                Options.MaxAttempts);
-            kit.commit();
-            return;
-        }
+            dyn = new Dictionary<string, string>
+            {
+                ["sail.autoApprove"] = "1",
+                ["sail.autoApprove.strategy"] = anchor.StrategyCode ?? "",
+                ["sail.comment"] = string.IsNullOrWhiteSpace(anchor.Reason)
+                    ? "策略自动通过（Assignee AutoApprove Job）"
+                    : anchor.Reason!
+            };
+            if (userId.StartsWith("__sail_policy_", StringComparison.OrdinalIgnoreCase))
+                dyn["sail.policySkip"] = "1";
 
-        var userId = !string.IsNullOrWhiteSpace(anchor.PreferUserId)
-            ? anchor.PreferUserId!
-            : task?.AssignedUserId;
-        if (string.IsNullOrWhiteSpace(userId))
-            userId = "system.autoApprove";
-
-        var dyn = new Dictionary<string, string>
-        {
-            ["sail.autoApprove"] = "1",
-            ["sail.autoApprove.strategy"] = anchor.StrategyCode ?? "",
-            ["sail.comment"] = string.IsNullOrWhiteSpace(anchor.Reason)
-                ? "策略自动通过（Assignee AutoApprove Job）"
-                : anchor.Reason!
-        };
-        if (userId.StartsWith("__sail_policy_", StringComparison.OrdinalIgnoreCase))
-            dyn["sail.policySkip"] = "1";
+            // Run 前再确认目标仍 Waiting/Ready
+            if (task != null)
+            {
+                var stillWaiting = FindWaitingTask(sibling, anchor);
+                if (stillWaiting == null || stillWaiting.Id != task.Id)
+                {
+                    if (IsAnchorTargetAlreadyLeft(sibling, anchor))
+                        MarkDone(om, row, alreadyDone: true);
+                    else
+                        TerminalSkip(om, row,
+                            AssigneeReasonCodes.AutoApproveSkipped + ": waiting task disappeared before Run.");
+                    return;
+                }
+            }
+            else if (readyAct != null)
+            {
+                var stillReady = FindReadyActivity(sibling, anchor);
+                if (stillReady == null || stillReady.Id != readyAct.Id)
+                {
+                    if (IsAnchorTargetAlreadyLeft(sibling, anchor))
+                        MarkDone(om, row, alreadyDone: true);
+                    else
+                        TerminalSkip(om, row,
+                            AssigneeReasonCodes.AutoApproveSkipped + ": ready activity disappeared before Run.");
+                    return;
+                }
+            }
+        } // 释放 probe 连接后再 Run
 
         var wf = new WorkflowService(Sail);
         WfExecutedResult exec;
@@ -201,7 +246,7 @@ public sealed class AutoApproveAnchorWorker
                 UserId = userId,
                 UserName = anchor.PreferUserName ?? task.AssignedUserName ?? userId,
                 ProcessId = anchor.ProcessId ?? task.ProcessId,
-                Version = string.IsNullOrWhiteSpace(anchor.Version) ? ResolveVersion(task) : anchor.Version,
+                Version = string.IsNullOrWhiteSpace(anchor.Version) ? versionHint : anchor.Version,
                 TaskId = task.Id,
                 AppName = task.AppName,
                 AppInstanceId = task.AppInstanceId,
@@ -216,9 +261,7 @@ public sealed class AutoApproveAnchorWorker
                 UserId = userId,
                 UserName = anchor.PreferUserName ?? userId,
                 ProcessId = anchor.ProcessId ?? readyAct!.ProcessId,
-                Version = string.IsNullOrWhiteSpace(anchor.Version)
-                    ? ResolveVersionByProcessInstance(readyAct!.ProcessInstanceId)
-                    : anchor.Version,
+                Version = string.IsNullOrWhiteSpace(anchor.Version) ? versionHint : anchor.Version,
                 ActivityInstanceId = readyAct!.Id,
                 AppName = readyAct.AppName,
                 AppInstanceId = readyAct.AppInstanceId,
@@ -240,10 +283,19 @@ public sealed class AutoApproveAnchorWorker
                 }
                 else
                 {
-                    var msg = AssigneeReasonCodes.AutoApproveFailed + ": " + (exec.Message ?? exec.Status.ToString());
-                    if (!string.IsNullOrEmpty(exec.ReasonCode))
-                        msg += " ReasonCode=" + exec.ReasonCode;
-                    om.MarkFailed(kit, row, msg, Options.MaxAttempts);
+                    // Run「业务失败」但目标已离开 → 按已成功幂等收口，避免二次 Run
+                    if (IsAnchorTargetAlreadyLeft(SailSqlAccess.Sibling(kit), anchor))
+                    {
+                        om.MarkSucceeded(kit, row);
+                    }
+                    else
+                    {
+                        var msg = AssigneeReasonCodes.AutoApproveFailed + ": "
+                                  + (exec.Message ?? exec.Status.ToString());
+                        if (!string.IsNullOrEmpty(exec.ReasonCode))
+                            msg += " ReasonCode=" + exec.ReasonCode;
+                        om.MarkFailed(kit, row, msg, Options.MaxAttempts);
+                    }
                 }
 
                 kit.commit();
@@ -252,6 +304,28 @@ public sealed class AutoApproveAnchorWorker
             {
                 throw;
             }
+        }
+    }
+
+    void TerminalSkip(HookOutboxManager om, HookOutboxEntity row, string note)
+    {
+        using var kit = Sail.UseRunSQL();
+        kit.beginTransaction();
+        om.MarkSkipped(kit, row, note);
+        kit.commit();
+    }
+
+    void MarkDone(HookOutboxManager om, HookOutboxEntity row, bool alreadyDone)
+    {
+        using var kit = Sail.UseRunSQL();
+        kit.beginTransaction();
+        om.MarkSucceeded(kit, row);
+        kit.commit();
+        if (alreadyDone)
+        {
+            Trace.TraceInformation(
+                "[Assignee.AutoApprove] row={0} already advanced → MarkSucceeded (idempotent)",
+                row.Id);
         }
     }
 
@@ -270,10 +344,9 @@ public sealed class AutoApproveAnchorWorker
         }
     }
 
-    TaskEntity? FindWaitingTask(AutoApproveAnchor anchor)
+    static TaskEntity? FindWaitingTask(SQLBuilder kit, AutoApproveAnchor anchor)
     {
-        using var kit = Sail.UseRunSQL();
-        var clip = SailSqlAccess.Sibling(kit).useClip();
+        var clip = kit.useClip();
         clip.from<TaskEntity>(out var t);
         clip.where(() => t.ProcessInstanceId, anchor.ProcessInstanceId);
         clip.where(() => t.ActivityId, anchor.ActivityId);
@@ -282,7 +355,6 @@ public sealed class AutoApproveAnchorWorker
         if (list.Count == 0)
             return null;
 
-        // 禁止「扫任意 Waiting」：有 TaskId / PreferUserId 时必须命中，否则 null → Skip
         if (anchor.TaskId is > 0)
             return list.FirstOrDefault(x => x.Id == anchor.TaskId);
 
@@ -292,19 +364,14 @@ public sealed class AutoApproveAnchorWorker
                 string.Equals(x.AssignedUserId, anchor.PreferUserId, StringComparison.OrdinalIgnoreCase));
         }
 
-        // 仅 ActivityId：取唯一 Waiting；多条则拒绝自动（避免误代办）
         return list.Count == 1 ? list[0] : null;
     }
 
-    bool IsProcessInstanceRunnable(int processInstanceId)
+    static bool IsProcessInstanceRunnable(SQLBuilder kit, int processInstanceId)
     {
         try
         {
-            using var kit = Sail.UseRunSQL();
-            var clip = SailSqlAccess.Sibling(kit).useClip();
-            clip.from<ProcessInstanceEntity>(out var p);
-            clip.where(() => p.Id, processInstanceId);
-            var pi = clip.select(p).queryList()?.FirstOrDefault();
+            var pi = LoadProcessInstance(kit, processInstanceId);
             if (pi == null)
                 return false;
             return pi.ProcessState == (short)ProcessStateEnum.Running
@@ -317,14 +384,79 @@ public sealed class AutoApproveAnchorWorker
         }
     }
 
-    bool IsTaskActivityReady(TaskEntity task)
+    static bool IsProcessInstanceTerminal(SQLBuilder kit, int processInstanceId)
     {
-        if (task.ActivityInstanceId is not > 0)
-            return true; // 无活动实例 id 时不阻断
         try
         {
-            using var kit = Sail.UseRunSQL();
-            var clip = SailSqlAccess.Sibling(kit).useClip();
+            var pi = LoadProcessInstance(kit, processInstanceId);
+            if (pi == null)
+                return false;
+            return pi.ProcessState == (short)ProcessStateEnum.Completed
+                   || pi.ProcessState == (short)ProcessStateEnum.Discarded
+                   || pi.ProcessState == (short)ProcessStateEnum.Canceled
+                   || pi.ProcessState == (short)ProcessStateEnum.Terminated;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 目标活动已离开 Ready（Completed 等）且无 Waiting 待办 → 视为已代办成功（幂等）。
+    /// </summary>
+    static bool IsAnchorTargetAlreadyLeft(SQLBuilder kit, AutoApproveAnchor anchor)
+    {
+        try
+        {
+            if (anchor.ActivityInstanceId is > 0)
+            {
+                var clip = kit.useClip();
+                clip.from<ActivityInstanceEntity>(out var a);
+                clip.where(() => a.Id, anchor.ActivityInstanceId);
+                var act = clip.select(a).queryList()?.FirstOrDefault();
+                if (act == null)
+                    return false;
+                return IsLeftReady(act.ActivityState);
+            }
+
+            var listClip = kit.useClip();
+            listClip.from<ActivityInstanceEntity>(out var ai);
+            listClip.where(() => ai.ProcessInstanceId, anchor.ProcessInstanceId);
+            listClip.where(() => ai.ActivityId, anchor.ActivityId);
+            var list = listClip.select(ai).queryList()?.ToList() ?? new List<ActivityInstanceEntity>();
+            if (list.Count == 0)
+                return false;
+
+            var anyReady = list.Any(x =>
+                x.ActivityState == (short)ActivityStateEnum.Ready
+                || x.ActivityState == (short)ActivityStateEnum.Suspended);
+            if (anyReady)
+                return false;
+
+            return list.Any(x => IsLeftReady(x.ActivityState));
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceWarning("[Assignee.AutoApprove] IsAnchorTargetAlreadyLeft: {0}", ex.Message);
+            return false;
+        }
+    }
+
+    static bool IsLeftReady(short? state) =>
+        state == (short)ActivityStateEnum.Completed
+        || state == (short)ActivityStateEnum.Withdrawed
+        || state == (short)ActivityStateEnum.Sendbacked
+        || state == (short)ActivityStateEnum.Cancelled
+        || state == (short)ActivityStateEnum.Terminated;
+
+    static bool IsTaskActivityReady(SQLBuilder kit, TaskEntity task)
+    {
+        if (task.ActivityInstanceId is not > 0)
+            return true;
+        try
+        {
+            var clip = kit.useClip();
             clip.from<ActivityInstanceEntity>(out var a);
             clip.where(() => a.Id, task.ActivityInstanceId);
             var act = clip.select(a).queryList()?.FirstOrDefault();
@@ -336,17 +468,13 @@ public sealed class AutoApproveAnchorWorker
         catch (Exception ex)
         {
             Trace.TraceWarning("[Assignee.AutoApprove] read ActivityInstance failed: {0}", ex.Message);
-            return true; // 读失败不硬拦，交给 Run
+            return true;
         }
     }
 
-    /// <summary>
-    /// Extra 显式标记，或下一跳结构要求运行时选人 / 多出口人工。
-    /// </summary>
-    ActivityInstanceEntity? FindReadyActivity(AutoApproveAnchor anchor)
+    static ActivityInstanceEntity? FindReadyActivity(SQLBuilder kit, AutoApproveAnchor anchor)
     {
-        using var kit = Sail.UseRunSQL();
-        var clip = SailSqlAccess.Sibling(kit).useClip();
+        var clip = kit.useClip();
         clip.from<ActivityInstanceEntity>(out var a);
         clip.where(() => a.ProcessInstanceId, anchor.ProcessInstanceId);
         clip.where(() => a.ActivityId, anchor.ActivityId);
@@ -356,13 +484,15 @@ public sealed class AutoApproveAnchorWorker
             return null;
         if (anchor.ActivityInstanceId is > 0)
             return list.FirstOrDefault(x => x.Id == anchor.ActivityInstanceId);
-        return list.Count == 1 ? list[0] : list.OrderByDescending(x => x.Id).FirstOrDefault();
+        // 无 AI Id 且多 Ready：拒绝自动，避免误挑（勿 OrderByDescending）
+        return list.Count == 1 ? list[0] : null;
     }
 
     bool RequiresManualNextSelection(
         string? activityId,
         AutoApproveAnchor anchor,
         TaskEntity? task,
+        string version,
         out string reason)
     {
         reason = "next performers incomplete (manual pick required).";
@@ -377,9 +507,6 @@ public sealed class AutoApproveAnchorWorker
         }
 
         var processId = anchor.ProcessId ?? task?.ProcessId;
-        var version = string.IsNullOrWhiteSpace(anchor.Version)
-            ? (task != null ? ResolveVersion(task) : ResolveVersionByProcessInstance(anchor.ProcessInstanceId))
-            : anchor.Version!;
         if (NextActivityPickProbe.RequiresManualPick(Sail, processId, version, activityId, out var probeReason))
         {
             reason = probeReason;
@@ -389,20 +516,21 @@ public sealed class AutoApproveAnchorWorker
         return false;
     }
 
-    string ResolveVersion(TaskEntity task) =>
-        ResolveVersionByProcessInstance(task.ProcessInstanceId);
+    static ProcessInstanceEntity? LoadProcessInstance(SQLBuilder kit, int processInstanceId)
+    {
+        var clip = kit.useClip();
+        clip.from<ProcessInstanceEntity>(out var p);
+        clip.where(() => p.Id, processInstanceId);
+        return clip.select(p).queryList()?.FirstOrDefault();
+    }
 
-    string ResolveVersionByProcessInstance(int? processInstanceId)
+    static string ResolveVersionByProcessInstance(SQLBuilder kit, int? processInstanceId)
     {
         try
         {
             if (processInstanceId is not > 0)
                 return "1";
-            using var kit = Sail.UseRunSQL();
-            var clip = SailSqlAccess.Sibling(kit).useClip();
-            clip.from<ProcessInstanceEntity>(out var p);
-            clip.where(() => p.Id, processInstanceId);
-            var pi = clip.select(p).queryList()?.FirstOrDefault();
+            var pi = LoadProcessInstance(kit, processInstanceId.Value);
             return string.IsNullOrWhiteSpace(pi?.Version) ? "1" : pi!.Version;
         }
         catch

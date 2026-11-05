@@ -1040,9 +1040,12 @@ namespace saiflow.engine.Pattern
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            // R10：自动审批锚点已入队 → 不插人工待办
+            // R10：自动审批锚点已入队 → 不插人工待办；回写 AI Id 供 Job 精确认领
             if (activityResource.AutoApprovePending)
+            {
+                BindAutoApproveAnchorActivityInstance(kit, toActivityInstance);
                 return;
+            }
 
             if (activityResource.NextActivityPerformers == null)
             {
@@ -1365,6 +1368,32 @@ namespace saiflow.engine.Pattern
                 }
             }
             return performerList;
+        }
+
+        /// <summary>
+        /// R10：零 Performer 锚点入队时尚无 AI Id；活动插入后回写 Outbox 列供 Job 精确认领。
+        /// </summary>
+        protected void BindAutoApproveAnchorActivityInstance(SQLBuilder kit, ActivityInstanceEntity activityInstance)
+        {
+            if (activityInstance?.Id is not > 0
+                || activityInstance.ProcessInstanceId is not > 0
+                || string.IsNullOrWhiteSpace(activityInstance.ActivityId))
+                return;
+
+            try
+            {
+                new HookOutboxManager(Sail).BindAssigneeAutoApproveActivityInstance(
+                    SailSqlAccess.Sibling(kit),
+                    activityInstance.ProcessInstanceId.Value,
+                    activityInstance.ActivityId,
+                    activityInstance.Id.Value);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceWarning(
+                    "[Assignee] BindAutoApproveAnchorActivityInstance failed AI={0}: {1}",
+                    activityInstance.Id, ex.Message);
+            }
         }
         #endregion
 

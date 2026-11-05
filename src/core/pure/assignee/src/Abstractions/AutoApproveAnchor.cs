@@ -13,7 +13,8 @@ public sealed class AutoApproveAnchor
     public int? ProcessInstanceId { get; init; }
     public string? ActivityId { get; init; }
     public string? ActivityCode { get; init; }
-    public int? ActivityInstanceId { get; init; }
+    /// <summary>可在 Job 侧由 Outbox 列覆盖（CreateNewTask 回写）。</summary>
+    public int? ActivityInstanceId { get; set; }
     public int? TaskId { get; init; }
     /// <summary>可选：优先代办的用户编码；空则由 Job 解析 Waiting 任务办理人。</summary>
     public string? PreferUserId { get; init; }

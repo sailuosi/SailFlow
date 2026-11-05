@@ -7,7 +7,7 @@ namespace saiflow.assignee.Builtin;
 /// 缺省/兜底：先跑 primary ConfigPair，空结果再跑 fallback。
 /// Params.primary / Params.fallback = { type, params }。禁止 sealed。
 /// </summary>
-public class FallbackAssigneeResolver : IAssigneeResolver
+public class FallbackAssigneeResolver : IAssigneeResolver, IAssigneeResolverWire
 {
     public AssigneeCapabilityRegistry? Registry { get; set; }
 
@@ -18,6 +18,12 @@ public class FallbackAssigneeResolver : IAssigneeResolver
     public Action<IAssigneeResolver>? WireNested { get; set; }
 
     public virtual string Type => AssigneeResolveTypeCodes.Fallback;
+
+    public virtual void Wire(AssigneePipeline pipeline)
+    {
+        Registry = pipeline.Registry;
+        WireNested = pipeline.WireResolver;
+    }
 
     public virtual PerformerList Resolve(AssigneeResolveContext ctx)
     {

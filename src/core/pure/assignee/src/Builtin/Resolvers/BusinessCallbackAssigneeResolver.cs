@@ -6,11 +6,16 @@ namespace saiflow.assignee.Builtin;
 /// 业务动态取人。Params.callback → <see cref="AssigneeBusinessCallbackRegistry"/>。
 /// 禁止 sealed。
 /// </summary>
-public class BusinessCallbackAssigneeResolver : IAssigneeResolver
+public class BusinessCallbackAssigneeResolver : IAssigneeResolver, IAssigneeResolverWire
 {
     public AssigneeBusinessCallbackRegistry? Callbacks { get; set; }
 
     public virtual string Type => AssigneeResolveTypeCodes.BusinessCallback;
+
+    public virtual void Wire(AssigneePipeline pipeline)
+    {
+        Callbacks = pipeline.Callbacks;
+    }
 
     public virtual PerformerList Resolve(AssigneeResolveContext ctx)
     {

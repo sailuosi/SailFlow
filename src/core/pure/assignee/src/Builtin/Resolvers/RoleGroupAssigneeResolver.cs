@@ -9,11 +9,17 @@ namespace saiflow.assignee.Builtin;
 /// 角色/群组展开。Params.roleIds[]；或 useActivityRoles=true 时按节点定义角色展开。
 /// 禁止 sealed。
 /// </summary>
-public class RoleGroupAssigneeResolver : IAssigneeResolver
+public class RoleGroupAssigneeResolver : IAssigneeResolver, IAssigneeResolverWire
 {
     public SailClient? Sail { get; set; }
 
     public virtual string Type => AssigneeResolveTypeCodes.RoleGroup;
+
+    public virtual void Wire(AssigneePipeline pipeline)
+    {
+        if (pipeline.Sail != null)
+            Sail = pipeline.Sail;
+    }
 
     public virtual PerformerList Resolve(AssigneeResolveContext ctx)
     {

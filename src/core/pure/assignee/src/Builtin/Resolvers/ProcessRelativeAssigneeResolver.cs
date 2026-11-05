@@ -9,7 +9,7 @@ namespace saiflow.assignee.Builtin;
 /// 流程相对人。Params.relative = Starter | PrevSender（S1：PrevSender≈当前 runner）。
 /// 禁止 sealed。
 /// </summary>
-public class ProcessRelativeAssigneeResolver : IAssigneeResolver
+public class ProcessRelativeAssigneeResolver : IAssigneeResolver, IAssigneeResolverWire
 {
     public const string RelativeStarter = "Starter";
     public const string RelativePrevSender = "PrevSender";
@@ -18,6 +18,12 @@ public class ProcessRelativeAssigneeResolver : IAssigneeResolver
     public SailClient? Sail { get; set; }
 
     public virtual string Type => AssigneeResolveTypeCodes.ProcessRelative;
+
+    public virtual void Wire(AssigneePipeline pipeline)
+    {
+        if (pipeline.Sail != null)
+            Sail = pipeline.Sail;
+    }
 
     public virtual PerformerList Resolve(AssigneeResolveContext ctx)
     {

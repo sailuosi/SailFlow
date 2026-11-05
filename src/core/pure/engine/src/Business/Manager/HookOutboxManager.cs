@@ -36,21 +36,18 @@ namespace saiflow.engine.Manager
         public IList<HookOutboxEntity> GetPending(SQLBuilder kit, int limit, string kind)
         {
             var now = DateTime.UtcNow;
+            var take = Math.Max(1, limit);
             var clip = Sibling(kit).useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Status, HookOutboxStatus.Pending);
-            return clip.select(o).queryList()
-                .Where(x =>
-                {
-                    if (!string.IsNullOrEmpty(kind))
-                        return string.Equals(x.Kind, kind, StringComparison.OrdinalIgnoreCase);
-                    // 默认 drain 不抢 Assignee 自动审批锚点
-                    return !string.Equals(x.Kind, HookOutboxKinds.AssigneeAutoApprove, StringComparison.OrdinalIgnoreCase);
-                })
-                .Where(x => x.NextRetryAt == null || x.NextRetryAt <= now)
-                .OrderBy(x => x.Id)
-                .Take(limit)
-                .ToList();
+            clip.where(() => o.NextRetryAt == null || o.NextRetryAt <= now);
+            if (!string.IsNullOrEmpty(kind))
+                clip.where(() => o.Kind, kind);
+            else
+                clip.where(() => o.Kind != HookOutboxKinds.AssigneeAutoApprove);
+            clip.orderBy(() => o.Id);
+            return clip.select(o).take(take).queryList()?.ToList()
+                   ?? new List<HookOutboxEntity>();
         }
 
         /// <summary>CAS Pending→Processing，返回成功认领的行（due 且未死信）。</summary>
@@ -94,6 +91,7 @@ namespace saiflow.engine.Manager
 
         /// <summary>
         /// 回收僵尸 Processing：lease 过期，或无 lease 且 UpdatedAt 早于 staleBeforeUtc。
+        /// SQL 侧先收窄候选，再逐行 CAS 回 Pending。
         /// </summary>
         public int ReclaimStaleProcessing(SQLBuilder kit, DateTime staleBeforeUtc, DateTime? nowUtc = null)
         {
@@ -101,16 +99,17 @@ namespace saiflow.engine.Manager
             var clip = Sibling(kit).useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Status, HookOutboxStatus.Processing);
-            var rows = clip.select(o).queryList();
+            clip.where(() =>
+                (o.LeasedUntil != null && o.LeasedUntil < now)
+                || (o.LeasedUntil == null && o.UpdatedAt != null && o.UpdatedAt < staleBeforeUtc));
+            clip.orderBy(() => o.Id);
+            // 单次回收上限，避免极端积压时一次事务过大
+            var rows = clip.select(o).take(200).queryList() ?? new List<HookOutboxEntity>();
             var reclaimed = 0;
 
             foreach (var row in rows)
             {
-                var isStale = row.LeasedUntil.HasValue
-                    ? row.LeasedUntil < now
-                    : row.UpdatedAt.HasValue && row.UpdatedAt < staleBeforeUtc;
-
-                if (!isStale)
+                if (row.Id is not > 0)
                     continue;
 
                 var update = Sibling(kit).useClip();
@@ -146,6 +145,57 @@ namespace saiflow.engine.Manager
             row.UpdatedAt = DateTime.UtcNow;
             row.LeasedUntil = null;
             Sibling(kit).useRepo<HookOutboxEntity>().Update(row);
+        }
+
+        /// <summary>
+        /// 策略性终态跳过（如下一跳需人工选人 / 实例已非运行）：不进 Failed 重试梯。
+        /// </summary>
+        public void MarkSkipped(SQLBuilder kit, HookOutboxEntity row, string note = null)
+        {
+            row.Status = HookOutboxStatus.Skipped;
+            row.LeasedUntil = null;
+            row.NextRetryAt = null;
+            row.UpdatedAt = DateTime.UtcNow;
+            if (!string.IsNullOrEmpty(note))
+                row.LastError = Truncate(note, 2000);
+            Sibling(kit).useRepo<HookOutboxEntity>().Update(row);
+        }
+
+        /// <summary>
+        /// 活动实例插入后回写零 Performer 锚点的 <see cref="HookOutboxEntity.ActivityInstanceId"/>，
+        /// 避免 Job 在多 Ready 时误挑。Worker 优先读本列覆盖 Payload。
+        /// </summary>
+        public int BindAssigneeAutoApproveActivityInstance(
+            SQLBuilder kit,
+            int processInstanceId,
+            string activityId,
+            int activityInstanceId)
+        {
+            if (processInstanceId <= 0 || activityInstanceId <= 0 || string.IsNullOrWhiteSpace(activityId))
+                return 0;
+
+            var clip = Sibling(kit).useClip();
+            clip.from<HookOutboxEntity>(out var o);
+            clip.where(() => o.Kind, HookOutboxKinds.AssigneeAutoApprove);
+            clip.where(() => o.ProcessInstanceId, processInstanceId);
+            clip.where(() => o.Status, HookOutboxStatus.Pending);
+            clip.where(() => o.ActivityInstanceId == null);
+            clip.orderBy(() => o.Id);
+            var candidates = clip.select(o).take(50).queryList() ?? new List<HookOutboxEntity>();
+            var n = 0;
+            var repo = Sibling(kit).useRepo<HookOutboxEntity>();
+            foreach (var row in candidates)
+            {
+                if (!PayloadActivityIdMatches(row.PayloadJson, activityId))
+                    continue;
+
+                row.ActivityInstanceId = activityInstanceId;
+                row.UpdatedAt = DateTime.UtcNow;
+                repo.Update(row);
+                n++;
+            }
+
+            return n;
         }
 
         /// <summary>退回 Pending 并推迟（不增加 Attempt；用于任务尚未可见等软等待）。</summary>
@@ -265,7 +315,7 @@ namespace saiflow.engine.Manager
         }
 
         /// <summary>
-        /// 按 TTL 删除终态行（Succeeded / Dead）。以 <c>UpdatedAt</c>（空则 <c>CreatedAt</c>）与保留天数比较。
+        /// 按 TTL 删除终态行（Succeeded / Skipped / Dead）。以 <c>UpdatedAt</c>（空则 <c>CreatedAt</c>）与保留天数比较。
         /// </summary>
         public int PurgeExpiredTerminal(
             SQLBuilder kit,
@@ -285,6 +335,14 @@ namespace saiflow.engine.Manager
                     HookOutboxStatus.Succeeded,
                     now.AddDays(-succeededRetentionDays),
                     limit);
+                if (deleted < limit)
+                {
+                    deleted += PurgeStatusOlderThan(
+                        kit,
+                        HookOutboxStatus.Skipped,
+                        now.AddDays(-succeededRetentionDays),
+                        limit - deleted);
+                }
             }
 
             if (deadRetentionDays > 0 && deleted < limit)
@@ -372,6 +430,25 @@ namespace saiflow.engine.Manager
             if (string.IsNullOrEmpty(value) || value.Length <= max)
                 return value;
             return value.Substring(0, max);
+        }
+
+        static bool PayloadActivityIdMatches(string payloadJson, string activityId)
+        {
+            if (string.IsNullOrWhiteSpace(payloadJson) || string.IsNullOrWhiteSpace(activityId))
+                return false;
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(payloadJson);
+                if (!doc.RootElement.TryGetProperty("activityId", out var el)
+                    && !doc.RootElement.TryGetProperty("ActivityId", out el))
+                    return false;
+                var id = el.GetString();
+                return string.Equals(id, activityId, StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

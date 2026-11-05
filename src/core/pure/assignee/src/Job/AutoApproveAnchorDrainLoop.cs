@@ -17,9 +17,11 @@ public static class AutoApproveAnchorDrainLoop
 
         while (!cancellationToken.IsCancellationRequested)
         {
+            var processed = 0;
             try
             {
-                await worker.ProcessPendingAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+                processed = await worker.ProcessPendingAsync(cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -32,7 +34,11 @@ public static class AutoApproveAnchorDrainLoop
 
             try
             {
-                await Task.Delay(options.PollInterval, cancellationToken).ConfigureAwait(false);
+                // 有积压时缩短间隔，空转时睡满 PollInterval
+                var delay = processed > 0
+                    ? TimeSpan.FromMilliseconds(Math.Min(500, options.PollInterval.TotalMilliseconds))
+                    : options.PollInterval;
+                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {

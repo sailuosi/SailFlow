@@ -15,5 +15,13 @@ namespace saiflow.engine.Runtime
                 ? AssigneeReasonCodes.AssigneeConfigMissing
                 : reasonCode;
         }
+
+        public WfAssigneeException(string reasonCode, string message, System.Exception innerException)
+            : base(message, innerException)
+        {
+            ReasonCode = string.IsNullOrWhiteSpace(reasonCode)
+                ? AssigneeReasonCodes.AssigneeConfigMissing
+                : reasonCode;
+        }
     }
 }

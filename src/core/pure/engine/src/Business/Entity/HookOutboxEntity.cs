@@ -75,5 +75,8 @@ namespace saiflow.engine.Entity
         public const string Succeeded = "Succeeded";
         public const string Failed = "Failed";
         public const string Dead = "Dead";
+
+        /// <summary>策略性终态跳过（不代办、不进 Failed 重试梯）。</summary>
+        public const string Skipped = "Skipped";
     }
 }

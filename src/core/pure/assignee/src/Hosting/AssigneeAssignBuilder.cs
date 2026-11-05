@@ -61,9 +61,8 @@ public sealed class AssigneeAssignBuilder
         var opts = new AssigneeFilterRegistrationOptions();
         configure?.Invoke(opts);
         var order = opts.Order ?? _filterRegisterSeq;
-        var seq = _filterRegisterSeq++;
+        _filterRegisterSeq++;
         _actions.Add(p => p.AddFilter(new TFilter(), order));
-        _ = seq;
         return this;
     }
 
@@ -139,6 +138,9 @@ public sealed class AssigneeAssignBuilder
             pipeline.AnchorStore ??= new HookOutboxAutoApproveAnchorStore();
             if (_autoApproveOptions?.AutoStart == true)
             {
+                System.Diagnostics.Trace.TraceWarning(
+                    "[Assignee] UseAutoApproveJob(AutoStart=true): ensure Host JobWorker is NOT also draining "
+                    + "AssigneeAutoApprove (CAS 防双领，但仍浪费 reclaim/空转). Prefer 单消费者.");
                 client.AssigneeAutoApproveDrainCts?.Cancel();
                 client.AssigneeAutoApproveDrainCts?.Dispose();
                 client.AssigneeAutoApproveDrainCts =
