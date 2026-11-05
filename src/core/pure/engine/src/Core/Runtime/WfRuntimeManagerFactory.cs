@@ -34,12 +34,25 @@ namespace saiflow.engine.Runtime
         public static WfRuntimeManager CreateRuntimeInstanceStartup(SailClient client, WfAppRunner runner,
             ref WfExecutedResult result)
         {
+            using var kit = client.UseRunSQL();
+            return CreateRuntimeInstanceStartup(client, runner, kit, ref result);
+        }
+
+        /// <summary>Start 查重与后续 Insert 共用同一 kit/事务。</summary>
+        public static WfRuntimeManager CreateRuntimeInstanceStartup(
+            SailClient client,
+            WfAppRunner runner,
+            SQLBuilder kit,
+            ref WfExecutedResult result)
+        {
             var rmins = new WfRuntimeManagerStartup();
             rmins.WfExecutedResult = result = new WfExecutedResult();
             rmins.Sail = client;
 
             var pim = new ProcessInstanceManager(client);
-            ProcessInstanceEntity processInstance = pim.GetProcessInstanceCurrent(runner.AppInstanceId,
+            ProcessInstanceEntity processInstance = pim.GetProcessInstanceCurrent(
+                kit,
+                runner.AppInstanceId,
                 runner.ProcessId,
                 runner.Version);
 
@@ -59,7 +72,8 @@ namespace saiflow.engine.Runtime
 
             //获取流程第一个可办理节点
             //Obtain the first available processing node in the process
-            rmins.ProcessModel = ProcessModelFactory.CreateByProcess(client, runner.ProcessId, runner.Version);
+            rmins.ProcessModel = ProcessModelFactory.CreateByProcess(
+                client, kit, runner.ProcessId, runner.Version);
             var startActivity = rmins.ProcessModel.GetStartActivity();
             var nextActivityTree = rmins.ProcessModel.GetFirstActivityTreeView(startActivity, runner.Conditions);
 

@@ -245,11 +245,13 @@ namespace saiflow.engine.Manager
 
         public IList<HookOutboxEntity> QueryByStatus(SQLBuilder kit, string status, int limit = 100)
         {
+            var take = Math.Max(1, limit);
             var clip = Sibling(kit).useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Status, status);
             clip.orderBy(() => o.Id);
-            return clip.select(o).queryList().Take(limit).ToList();
+            return clip.select(o).take(take).queryList()?.ToList()
+                   ?? new List<HookOutboxEntity>();
         }
 
         public IList<HookOutboxEntity> QueryDead(SQLBuilder kit, int limit = 100) =>
@@ -261,21 +263,17 @@ namespace saiflow.engine.Manager
             string processCode,
             string handlerName)
         {
-            var rows = QueryByStatus(kit, HookOutboxStatus.Dead, Math.Max(limit, 1) * 5);
-            IEnumerable<HookOutboxEntity> filtered = rows;
+            var take = Math.Max(1, limit);
+            var clip = Sibling(kit).useClip();
+            clip.from<HookOutboxEntity>(out var o);
+            clip.where(() => o.Status, HookOutboxStatus.Dead);
             if (!string.IsNullOrEmpty(processCode))
-            {
-                filtered = filtered.Where(r =>
-                    string.Equals(r.ProcessCode, processCode, StringComparison.OrdinalIgnoreCase));
-            }
-
+                clip.where(() => o.ProcessCode, processCode);
             if (!string.IsNullOrEmpty(handlerName))
-            {
-                filtered = filtered.Where(r =>
-                    string.Equals(r.HandlerName, handlerName, StringComparison.OrdinalIgnoreCase));
-            }
-
-            return filtered.OrderBy(x => x.Id).Take(limit).ToList();
+                clip.where(() => o.HandlerName, handlerName);
+            clip.orderBy(() => o.Id);
+            return clip.select(o).take(take).queryList()?.ToList()
+                   ?? new List<HookOutboxEntity>();
         }
 
         public int CountByStatus(SQLBuilder kit, string status)
@@ -283,7 +281,7 @@ namespace saiflow.engine.Manager
             var clip = Sibling(kit).useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Status, status);
-            return clip.select(o).queryList().Count();
+            return clip.select(o).count();
         }
 
         public int ResetDeadBatch(SQLBuilder kit, IEnumerable<int> ids)
@@ -365,15 +363,13 @@ namespace saiflow.engine.Manager
             var clip = Sibling(kit).useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Status, status);
+            // UpdatedAt 优先；空则用 CreatedAt
+            clip.where(() =>
+                (o.UpdatedAt != null && o.UpdatedAt < olderThanUtc)
+                || (o.UpdatedAt == null && o.CreatedAt != null && o.CreatedAt < olderThanUtc));
             clip.orderBy(() => o.Id);
-            var candidates = clip.select(o).queryList()
-                .Where(r =>
-                {
-                    var ts = r.UpdatedAt ?? r.CreatedAt;
-                    return ts.HasValue && ts.Value < olderThanUtc;
-                })
-                .Take(limit)
-                .ToList();
+            var candidates = clip.select(o).take(limit).queryList()
+                             ?? new List<HookOutboxEntity>();
 
             var n = 0;
             var repo = Sibling(kit).useRepo<HookOutboxEntity, int>();

@@ -67,7 +67,6 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult startedResult = WfExecutedResult.Default();
-            AutoResetEvent waitHandler = new AutoResetEvent(false);
 
             //��������ִ��
             //Start method execution
@@ -79,7 +78,7 @@ namespace saiflow.engine.Service
                 startSem.Wait();
                 try
                 {
-                    runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(Sail, runner, ref startedResult);
+                    runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(Sail, runner, kit, ref startedResult);
 
                     if (startedResult.Status == WfExecutedStatus.Exception)
                     {
@@ -118,7 +117,6 @@ namespace saiflow.engine.Service
                 }
                 //do some thing else here...
                 //...
-                waitHandler.WaitOne();
             }
             catch (System.Exception e)
             {
@@ -134,7 +132,6 @@ namespace saiflow.engine.Service
                 WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
                     runtimeInstance_OnWfProcessStarting, 
                    runtimeInstance_OnWfProcessStarted);
-                waitHandler.Dispose();
             }
             return startedResult;
 
@@ -167,7 +164,6 @@ namespace saiflow.engine.Service
                         FlowOperation.Start);
                     FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessStarted);
                 }
-                waitHandler.Set();
             }
         }
 
@@ -293,7 +289,6 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult runAppResult = WfExecutedResult.Default();
-            AutoResetEvent waitHandler = new AutoResetEvent(false);
 
             //���з�����ʼִ��
             //The running method starts executing
@@ -335,7 +330,6 @@ namespace saiflow.engine.Service
                 }
                 //do some thing else here...
                 //...
-                waitHandler.WaitOne();
             }
             catch (System.Exception e)
             {
@@ -351,7 +345,6 @@ namespace saiflow.engine.Service
                 WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
                     runtimeInstance_OnWfProcessRunning,
                     runtimeInstance_OnWfProcessContinued);
-                waitHandler.Dispose();
             }
             return runAppResult;
 
@@ -384,7 +377,6 @@ namespace saiflow.engine.Service
                         FlowOperation.Run);
                     FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
                 }
-                waitHandler.Set();
             }
         }
 
@@ -457,7 +449,6 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult runAppResult = WfExecutedResult.Default();
-            AutoResetEvent waitHandler = new AutoResetEvent(false);
 
             //���з�����ʼִ��
             //The running method starts executing
@@ -488,7 +479,6 @@ namespace saiflow.engine.Service
                 }
                 //do some thing else here...
                 //...
-                waitHandler.WaitOne();
             }
             catch (System.Exception e)
             {
@@ -504,7 +494,6 @@ namespace saiflow.engine.Service
                 WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance,
                     runtimeInstance_OnWfProcessRunning,
                     runtimeInstance_OnWfProcessContinued);
-                waitHandler.Dispose();
             }
             return runAppResult;
 
@@ -526,7 +515,6 @@ namespace saiflow.engine.Service
                         runner.EventSubscriptionList,
                         runtimeInstance.ProcessInstanceId);
                 }
-                waitHandler.Set();
             }
         }
 
@@ -585,7 +573,6 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult withdrawedResult = WfExecutedResult.Default();
-            AutoResetEvent waitHandler = new AutoResetEvent(false);
 
             //����������ʼִ��
             //Withdraw method begins execution
@@ -618,8 +605,6 @@ namespace saiflow.engine.Service
                     runtimeInstance_OnWfProcessWithdrawing,
                     runtimeInstance_OnWfProcessWithdrawn);
                 bool isWithdrawn = runtimeInstance.Execute(kit);
-
-                waitHandler.WaitOne();
             }
             catch (System.Exception e)
             {
@@ -635,7 +620,6 @@ namespace saiflow.engine.Service
                 WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
                     runtimeInstance_OnWfProcessWithdrawing,
                     runtimeInstance_OnWfProcessWithdrawn);
-                waitHandler.Dispose();
             }
             return withdrawedResult;
 
@@ -668,7 +652,6 @@ namespace saiflow.engine.Service
                         FlowOperation.Withdraw);
                     FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessWithdrawn);
                 }
-                waitHandler.Set();
             }
         }
 
@@ -727,7 +710,6 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult sendbackResult = WfExecutedResult.Default();
-            AutoResetEvent waitHandler = new AutoResetEvent(false);
 
             //�˻ؿ�ʼ
             //sendback operation
@@ -758,8 +740,6 @@ namespace saiflow.engine.Service
                     runtimeInstance_OnWfProcessSendBacking,
                     runtimeInstance_OnWfProcessSendBacked);
                 bool isSendBacked = runtimeInstance.Execute(kit);
-
-                waitHandler.WaitOne();
             }
             catch (System.Exception e)
             {
@@ -775,7 +755,6 @@ namespace saiflow.engine.Service
                 WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
                     runtimeInstance_OnWfProcessSendBacking,
                     runtimeInstance_OnWfProcessSendBacked);
-                waitHandler.Dispose();
             }
             return sendbackResult;
 
@@ -809,7 +788,6 @@ namespace saiflow.engine.Service
                         FlowOperation.SendBack);
                     FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessSendBacked);
                 }
-                waitHandler.Set();
             }
         }
 
@@ -868,7 +846,6 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult resendResult = WfExecutedResult.Default();
-            AutoResetEvent waitHandler = new AutoResetEvent(false);
 
             //���ͷ�����ʼִ��
             //Resend start to execute
@@ -899,8 +876,6 @@ namespace saiflow.engine.Service
                     runtimeInstance_OnWfProcessResending,
                     runtimeInstance_OnWfProcessResent);
                 bool isResent = runtimeInstance.Execute(kit);
-
-                waitHandler.WaitOne();
             }
             catch (System.Exception e)
             {
@@ -916,7 +891,6 @@ namespace saiflow.engine.Service
                 WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
                     runtimeInstance_OnWfProcessResending,
                     runtimeInstance_OnWfProcessResent);
-                waitHandler.Dispose();
             }
             return resendResult;
 
@@ -949,7 +923,6 @@ namespace saiflow.engine.Service
                         FlowOperation.Resend);
                     FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessResent);
                 }
-                waitHandler.Set();
             }
         }
 
@@ -1010,7 +983,6 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult reviseResult = WfExecutedResult.Default();
-            AutoResetEvent waitHandler = new AutoResetEvent(false);
 
             //�޶�������ʼִ��
             //Revise method start to execute
@@ -1041,8 +1013,6 @@ namespace saiflow.engine.Service
                     runtimeInstance_OnWfProcessRevising,
                     runtimeInstance_OnWfProcessRevised);
                 bool isRevised = runtimeInstance.Execute(kit);
-
-                waitHandler.WaitOne();
             }
             catch(System.Exception e)
             {
@@ -1058,7 +1028,6 @@ namespace saiflow.engine.Service
                 WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
                     runtimeInstance_OnWfProcessRevising,
                     runtimeInstance_OnWfProcessRevised);
-                waitHandler.Dispose();
             }
             return reviseResult;
 
@@ -1091,7 +1060,6 @@ namespace saiflow.engine.Service
                         FlowOperation.Revise);
                     FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessRevised);
                 }
-                waitHandler.Set();
             }
         }
 
@@ -1152,7 +1120,6 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult reversedResult = WfExecutedResult.Default();
-            AutoResetEvent waitHandler = new AutoResetEvent(false);
 
             //��ǩ������ʼִ��
             //Reverse method start to execute
@@ -1183,8 +1150,6 @@ namespace saiflow.engine.Service
                     runtimeInstance_OnWfProcessReversing,
                     runtimeInstance_OnWfProcessReversed);
                 bool isReversed = runtimeInstance.Execute(kit);
-
-                waitHandler.WaitOne();
             }
             catch (System.Exception e)
             {
@@ -1200,7 +1165,6 @@ namespace saiflow.engine.Service
                 WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
                     runtimeInstance_OnWfProcessReversing,
                     runtimeInstance_OnWfProcessReversed);
-                waitHandler.Dispose();
             }
             return reversedResult;
 
@@ -1233,7 +1197,6 @@ namespace saiflow.engine.Service
                         FlowOperation.Reverse);
                     FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessReversed);
                 }
-                waitHandler.Set();
             }
         }
 
@@ -1294,7 +1257,6 @@ namespace saiflow.engine.Service
             
 
             WfExecutedResult rejectedResult = WfExecutedResult.Default();
-            AutoResetEvent waitHandler = new AutoResetEvent(false);
 
             //���ط�����ʼִ��
             //Reject method start to execute
@@ -1325,8 +1287,6 @@ namespace saiflow.engine.Service
                     runtimeInstance_OnWfProcessRejecting,
                     runtimeInstance_OnWfProcessRejected);
                 bool isRejected = runtimeInstance.Execute(kit);
-
-                waitHandler.WaitOne();
             }
             catch (System.Exception e)
             {
@@ -1342,7 +1302,6 @@ namespace saiflow.engine.Service
                 WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance,
                     runtimeInstance_OnWfProcessRejecting,
                     runtimeInstance_OnWfProcessRejected);
-                waitHandler.Dispose();
             }
             return rejectedResult;
 
@@ -1375,7 +1334,6 @@ namespace saiflow.engine.Service
                         FlowOperation.Reject);
                     FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessRejected);
                 }
-                waitHandler.Set();
             }
         }
 
@@ -1435,7 +1393,6 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult closedResult = WfExecutedResult.Default();
-            AutoResetEvent waitHandler = new AutoResetEvent(false);
 
             //�رշ�����ʼִ��
             //Close method start to execute
@@ -1481,7 +1438,6 @@ namespace saiflow.engine.Service
                 WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance,
                     runtimeInstance_OnWfProcessClosing,
                     runtimeInstance_OnWfProcessClosed);
-                waitHandler.Dispose();
             }
             return closedResult;
 
@@ -1514,7 +1470,6 @@ namespace saiflow.engine.Service
                         FlowOperation.Close);
                     FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessClosed);
                 }
-                waitHandler.Set();
             }
         }
 
@@ -1574,7 +1529,6 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult jumpResult = WfExecutedResult.Default();
-            AutoResetEvent waitHandler = new AutoResetEvent(false);
 
             //��ת������ʼִ��
             //Jump method start to execute
@@ -1606,8 +1560,6 @@ namespace saiflow.engine.Service
                     runtimeInstance_OnWfProcessJumping,
                     runtimeInstance_OnWfProcessJumped);          
                 bool isJumped = runtimeInstance.Execute(kit);
-
-                waitHandler.WaitOne();
             }
             catch (System.Exception e)
             {
@@ -1623,7 +1575,6 @@ namespace saiflow.engine.Service
                 WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
                     runtimeInstance_OnWfProcessJumping,
                     runtimeInstance_OnWfProcessJumped);
-                waitHandler.Dispose();
             }
             return jumpResult;
 
@@ -1656,7 +1607,6 @@ namespace saiflow.engine.Service
                         FlowOperation.Jump);
                     FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessJumped);
                 }
-                waitHandler.Set();
             }
         }
 
@@ -1751,7 +1701,6 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult signforwardResult = WfExecutedResult.Default();
-            AutoResetEvent waitHandler = new AutoResetEvent(false);
 
             //��ǩ������ʼִ��
             //Signforward start to execute
@@ -1783,8 +1732,6 @@ namespace saiflow.engine.Service
                     runtimeInstance_OnWfProcessSignForwarded);
 
                 bool isSignForwarding = runtimeInstance.Execute(kit);
-
-                waitHandler.WaitOne();
             }
             catch (System.Exception e)
             {
@@ -1800,7 +1747,6 @@ namespace saiflow.engine.Service
                 WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
                     runtimeInstance_OnWfProcessSignForwarding,
                     runtimeInstance_OnWfProcessSignForwarded);
-                waitHandler.Dispose();
             }
             return signforwardResult;
 
@@ -1833,7 +1779,6 @@ namespace saiflow.engine.Service
                         FlowOperation.SignForward);
                     FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessSignForwarded);
                 }
-                waitHandler.Set();
             }
         }
 

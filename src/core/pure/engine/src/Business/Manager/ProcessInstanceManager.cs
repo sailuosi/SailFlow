@@ -57,8 +57,7 @@ namespace saiflow.engine.Manager
             clip.where(() => pi.ProcessId, processId);
             clip.where(() => pi.Version, version);
             clip.orderByDesc(() => pi.Id);
-            var list = clip.select(pi).queryList().ToList();
-            return EnumHelper.GetFirst<ProcessInstanceEntity>(list);
+            return clip.select(pi).take(1).queryList()?.FirstOrDefault();
         }
 
         internal ProcessInstanceEntity GetByActivity(int activityInstanceId)
@@ -97,10 +96,14 @@ namespace saiflow.engine.Manager
         internal ProcessInstanceEntity GetProcessInstanceCurrent(
             SQLBuilder kit, string appInstanceId, string processId, string version)
         {
-            var processInstanceList = GetProcessInstance(kit, appInstanceId, processId, version).ToList();
-            return processInstanceList != null && processInstanceList.Count > 0
-                ? processInstanceList[0]
-                : null;
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessInstanceEntity>(out var pi);
+            clip.where(() => pi.AppInstanceId, appInstanceId);
+            clip.where(() => pi.ProcessId, processId);
+            clip.where(() => pi.Version, version);
+            clip.where(() => pi.RecordStatusInvalid, (byte)0);
+            clip.orderByDesc(() => pi.Id);
+            return clip.select(pi).take(1).queryList()?.FirstOrDefault();
         }
 
         internal IEnumerable<ProcessInstanceEntity> GetProcessInstance(string appInstanceId)

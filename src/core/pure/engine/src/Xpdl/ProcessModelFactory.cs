@@ -56,20 +56,14 @@ namespace saiflow.engine.Xpdl
         /// </summary>
         public static IProcessModel CreateByProcess(SailClient client, string processId, string version)
         {
-            var cacheKey = $"{processId}:{version}";
-            if (_modelCache.TryGetValue(cacheKey, out var cached))
-                return cached;
-
             var kit = client.UseRunSQL();
-            var processModel = CreateByProcess(client, kit, processId, version);
-            _modelCache.TryAdd(cacheKey, processModel);
-            return processModel;
+            return CreateByProcess(client, kit, processId, version);
         }
 
         /// <summary>
-        /// Create by Process version
+        /// Create by Process version（与 Start/Run 共用进程内缓存；可复用上游事务 kit）。
         /// </summary>
-        private static IProcessModel CreateByProcess(SailClient client, SQLBuilder kit,
+        public static IProcessModel CreateByProcess(SailClient client, SQLBuilder kit,
             string processId,
             string version)
         {
@@ -78,6 +72,10 @@ namespace saiflow.engine.Xpdl
             {
                 throw new WfXpdlException(client.Messages.GetEngineMessage("processmodel.factory.processnullexception"));
             }
+
+            var cacheKey = $"{processId}:{version}";
+            if (_modelCache.TryGetValue(cacheKey, out var cached))
+                return cached;
 
             var pm = new ProcessManager(client);
             var entity = pm.GetByVersion(kit, processId, version, false);
@@ -88,7 +86,20 @@ namespace saiflow.engine.Xpdl
             }
 
             IProcessModel processModel = new ProcessModelBPMN(client, entity);
+            _modelCache.TryAdd(cacheKey, processModel);
             return processModel;
+        }
+
+        /// <summary>
+        /// 定义变更后失效：进程内模型 + Sail.Cache 中的 XPDL Process。
+        /// </summary>
+        public static void Invalidate(SailClient client, string processId, string version)
+        {
+            if (!string.IsNullOrEmpty(processId) && !string.IsNullOrEmpty(version))
+                ClearCache(processId, version);
+
+            if (client?.Cache != null && !string.IsNullOrEmpty(processId) && !string.IsNullOrEmpty(version))
+                XPDLMemoryCachedHelper.RemoveXpdlCache(client.Cache, processId, version);
         }
 
         /// <summary>

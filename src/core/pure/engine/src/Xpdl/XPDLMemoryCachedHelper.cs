@@ -48,5 +48,12 @@ namespace saiflow.engine.Xpdl
             cache.Add(key, process);
             return true;
         }
+
+        /// <summary>移除流程模型缓存（定义发布/更新后调用）。</summary>
+        internal static void RemoveXpdlCache(ISooCache cache, string processId, string version)
+        {
+            if (cache == null) return;
+            cache.Remove(BuildKey(processId, version));
+        }
     }
 }

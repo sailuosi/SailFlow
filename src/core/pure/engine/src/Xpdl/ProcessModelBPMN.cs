@@ -25,30 +25,36 @@ namespace saiflow.engine.Xpdl
     public class ProcessModelBPMN : IProcessModel
     {
         #region Property and Constructor
+        Process _parsedProcess;
+
         /// <summary>
-        /// Process 
+        /// Process（实例级惰性缓存；避免同一 IProcessModel 反复 XmlDocument 解析）
         /// </summary>
         public Process Process
         {
             get
             {
+                if (_parsedProcess != null)
+                    return _parsedProcess;
+
                 var processId = ProcessEntity.ProcessId;
                 var version = ProcessEntity.Version;
 
-                if (Sail.Config.ExpiredDaysEnabled)
+                if (Sail.Config.ExpiredDaysEnabled && Sail.Cache != null)
                 {
-                    var cache = Sail.Cache;
-                    var cached = XPDLMemoryCachedHelper.GetXpdlCache(cache, processId, version);
+                    var cached = XPDLMemoryCachedHelper.GetXpdlCache(Sail.Cache, processId, version);
                     if (cached == null)
                     {
                         cached = ConvertProcessModelFromXML(ProcessEntity);
                         var seconds = Math.Max(1, Sail.Config.ExpiredDays) * 24 * 60 * 60;
-                        XPDLMemoryCachedHelper.SetXpdlCache(cache, processId, version, cached, seconds);
+                        XPDLMemoryCachedHelper.SetXpdlCache(Sail.Cache, processId, version, cached, seconds);
                     }
-                    return cached;
+                    _parsedProcess = cached;
+                    return _parsedProcess;
                 }
 
-                return ConvertProcessModelFromXML(ProcessEntity);
+                _parsedProcess = ConvertProcessModelFromXML(ProcessEntity);
+                return _parsedProcess;
             }
         }
         /// <summary>

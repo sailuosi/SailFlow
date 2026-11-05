@@ -92,7 +92,7 @@ namespace saiflow.engine.Runtime
         internal void Callback(WfExecutedResult result)
         {
             WfEventArgs args = new WfEventArgs(result);
-            _onWfProcessExecuted.Invoke(this, args);
+            _onWfProcessExecuted?.Invoke(this, args);
         }
         #endregion
 

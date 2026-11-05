@@ -207,18 +207,12 @@ namespace saiflow.engine.Manager
         internal ActivityInstanceEntity GetActivityInstanceLatest(SQLBuilder kit, int processInstanceId,
             string activityId)
         {
-            ActivityInstanceEntity activityInstance = null;
             var clip = Sibling(kit).useClip();
             clip.from<ActivityInstanceEntity>(out var ai);
             clip.where(() => ai.ProcessInstanceId, processInstanceId);
             clip.where(() => ai.ActivityId, activityId);
             clip.orderByDesc(() => ai.Id);
-            var list = clip.select(ai).queryList().ToList();
-
-            if (list.Count > 0)
-                activityInstance = list[0];
-
-            return activityInstance;
+            return clip.select(ai).take(1).queryList()?.FirstOrDefault();
         }
 
         /// <summary>
@@ -855,9 +849,32 @@ namespace saiflow.engine.Manager
         internal void IncreaseTokensHad(SQLBuilder kit, int activityInstanceId,
             WfAppRunner runner)
         {
-            var activityInstance = GetById(kit, activityInstanceId);
-            activityInstance.TokensHad += 1;
-            Update(kit, activityInstance);
+            // CAS 自增：WHERE TokensHad=旧值，避免并行汇聚丢 token
+            _ = runner;
+            for (var attempt = 0; attempt < 8; attempt++)
+            {
+                var activityInstance = GetById(kit, activityInstanceId);
+                if (activityInstance == null)
+                    return;
+
+                var prev = activityInstance.TokensHad;
+                var next = (prev ?? 0) + 1;
+                var clip = Sibling(kit).useClip();
+                clip.setTable<ActivityInstanceEntity>(out var ai);
+                clip.set(() => ai.TokensHad, next);
+                clip.set(() => ai.UpdatedDateTime, DateTime.UtcNow);
+                clip.where(() => ai.Id, activityInstanceId);
+                if (prev == null)
+                    clip.where(() => ai.TokensHad == null);
+                else
+                    clip.where(() => ai.TokensHad, prev);
+
+                if (clip.doUpdate() > 0)
+                    return;
+            }
+
+            throw new WorkflowException(
+                "IncreaseTokensHad CAS failed after retries. ActivityInstanceId=" + activityInstanceId);
         }
         #endregion
 

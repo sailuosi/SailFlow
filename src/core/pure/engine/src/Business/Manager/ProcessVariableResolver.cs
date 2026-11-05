@@ -29,18 +29,29 @@ namespace saiflow.engine.Manager
             if (variableList == null)
                 return isCheckPassed;
 
-            var outputVariableList = variableList
-                .Where(v => v.DirectionType == VariableDirectionTypeEnum.Output)
+            var requiredNames = variableList
+                .Where(v => v.DirectionType == VariableDirectionTypeEnum.Output && v.IsRequired == true)
+                .Select(v => v.Name)
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
-            var pvm = new ProcessVariableManager(Sail);
-            foreach (var ov in outputVariableList)
-            {
-                if (ov.IsRequired != true)
-                    continue;
+            if (requiredNames.Count == 0)
+                return isCheckPassed;
 
-                var ovDbEntity = pvm.GetVariableByActivity(
-                    kit, taskView.ProcessInstanceId.Value, taskView.ActivityInstanceId.Value, ov.Name);
-                if (ovDbEntity == null)
+            var pvm = new ProcessVariableManager(Sail);
+            var loaded = pvm.GetVariableListByActivity(
+                kit,
+                taskView.ProcessInstanceId.Value,
+                taskView.ActivityInstanceId.Value,
+                requiredNames) ?? new List<ProcessVariableEntity>();
+            var byName = loaded
+                .Where(e => e != null && !string.IsNullOrEmpty(e.Name))
+                .GroupBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+            foreach (var name in requiredNames)
+            {
+                if (!byName.TryGetValue(name, out var ovDbEntity) || ovDbEntity == null)
                 {
                     isCheckPassed = false;
                     break;
