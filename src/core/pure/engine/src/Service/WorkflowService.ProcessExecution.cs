@@ -29,7 +29,7 @@ namespace saiflow.engine.Service
 
         /// <summary>
         /// 办理动词 Async 共用：开事务 → await 实例锁 → 同步 Core → 成功则提交。
-        /// Core 内勿再 Acquire（SemaphoreSlim 不可重入）。
+        /// 范围收窄：除 Run/RunAuto 外，动词不扩 Factory 预载 async；Core 内勿再 Acquire。
         /// </summary>
         async Task<WfExecutedResult> RunVerbAsync(
             WfAppRunner runner,
@@ -356,7 +356,7 @@ namespace saiflow.engine.Service
                     .ConfigureAwait(false))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    runAppResult = ExecuteRunCore(kit, runner);
+                    runAppResult = await ExecuteRunCoreAsync(kit, runner, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -377,6 +377,23 @@ namespace saiflow.engine.Service
         {
             var runAppResult = WfExecutedResult.Default();
             var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(Sail, runner, kit, ref runAppResult);
+            return FinishRunCore(kit, runner, runtimeInstance, runAppResult);
+        }
+
+        async Task<WfExecutedResult> ExecuteRunCoreAsync(SQLBuilder kit, WfAppRunner runner, CancellationToken cancellationToken)
+        {
+            var (runtimeInstance, runAppResult) = await WfRuntimeManagerFactory
+                .CreateRuntimeInstanceAppRunningAsync(Sail, runner, kit, cancellationToken)
+                .ConfigureAwait(false);
+            return FinishRunCore(kit, runner, runtimeInstance, runAppResult);
+        }
+
+        WfExecutedResult FinishRunCore(
+            SQLBuilder kit,
+            WfAppRunner runner,
+            WfRuntimeManager runtimeInstance,
+            WfExecutedResult runAppResult)
+        {
             if (runAppResult.Status == WfExecutedStatus.Exception)
                 return runAppResult;
 
@@ -439,7 +456,7 @@ namespace saiflow.engine.Service
         /// 异步执行流程
         /// </summary>
         /// <summary>
-        /// Run async：可取消等待实例锁；Mediator 办理仍同步（阶段 2）。
+        /// Run async：可取消等待实例锁；Factory 预载 IO-await；Mediator Execute 仍同步（阶段 3 首刀）。
         /// </summary>
         public async Task<WfExecutedResult> RunProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
@@ -517,7 +534,7 @@ namespace saiflow.engine.Service
                     .ConfigureAwait(false))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    runAppResult = ExecuteRunAutoCore(kit, runner);
+                    runAppResult = await ExecuteRunAutoCoreAsync(kit, runner, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -538,6 +555,23 @@ namespace saiflow.engine.Service
         {
             var runAppResult = WfExecutedResult.Default();
             var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceRunAuto(Sail, runner, kit, ref runAppResult);
+            return FinishRunAutoCore(kit, runner, runtimeInstance, runAppResult);
+        }
+
+        async Task<WfExecutedResult> ExecuteRunAutoCoreAsync(SQLBuilder kit, WfAppRunner runner, CancellationToken cancellationToken)
+        {
+            var (runtimeInstance, runAppResult) = await WfRuntimeManagerFactory
+                .CreateRuntimeInstanceRunAutoAsync(Sail, runner, kit, cancellationToken)
+                .ConfigureAwait(false);
+            return FinishRunAutoCore(kit, runner, runtimeInstance, runAppResult);
+        }
+
+        WfExecutedResult FinishRunAutoCore(
+            SQLBuilder kit,
+            WfAppRunner runner,
+            WfRuntimeManager runtimeInstance,
+            WfExecutedResult runAppResult)
+        {
             if (runAppResult.Status == WfExecutedStatus.Exception)
                 return runAppResult;
 
@@ -571,7 +605,7 @@ namespace saiflow.engine.Service
         }
 
         /// <summary>
-        /// Run process auto async：可取消等待实例锁；Mediator 仍同步（阶段 2）。
+        /// Run process auto async：可取消等待实例锁；Factory 预载 IO-await；Mediator Execute 仍同步（阶段 3 首刀）。
         /// </summary>
         public async Task<WfExecutedResult> RunProcessAutoAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
@@ -1247,17 +1281,12 @@ namespace saiflow.engine.Service
         WfExecutedResult ExecuteCloseCore(SQLBuilder kit, WfAppRunner runner)
         {
             WfExecutedResult closedResult = WfExecutedResult.Default();
-
-            //Close method start to execute
-            WfRuntimeManager runtimeInstance = null;
             try
             {
                 runner.NextActivityPerformers = FillNextActivityPerforms(runner, JumpOptionEnum.End);
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceClose(Sail, runner, ref closedResult);
+                var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceClose(Sail, runner, ref closedResult);
                 if (closedResult.Status == WfExecutedStatus.Exception)
-                {
                     return closedResult;
-                }
 
                 var closeGateCtx = FlowCapabilityPipeline.BuildGateContext(
                     Sail,
@@ -1271,19 +1300,19 @@ namespace saiflow.engine.Service
                     return closedResult;
 
                 runtimeInstance.Execute(kit);
-                    closedResult = runtimeInstance.WfExecutedResult;
-                    if (closedResult.Status == WfExecutedStatus.Success)
-                    {
-                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                            Sail, kit, runner,
-                            runtimeInstance.ProcessInstanceId,
-                            runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.Id,
-                            EventFireTypeEnum.OnProcessClosed,
-                            FlowOperation.Close);
-                        FlowCapabilityPipeline.AfterSuccess(
-                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessClosed);
-                    }
+                closedResult = runtimeInstance.WfExecutedResult;
+                if (closedResult.Status == WfExecutedStatus.Success)
+                {
+                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                        Sail, kit, runner,
+                        runtimeInstance.ProcessInstanceId,
+                        runtimeInstance.RunningActivityInstance,
+                        runtimeInstance.TaskView?.Id,
+                        EventFireTypeEnum.OnProcessClosed,
+                        FlowOperation.Close);
+                    FlowCapabilityPipeline.AfterSuccess(
+                        Sail, kit, hookCtx, EventFireTypeEnum.OnProcessClosed);
+                }
             }
             catch (System.Exception e)
             {
@@ -1308,7 +1337,7 @@ namespace saiflow.engine.Service
         }
 
         /// <summary>
-        /// Process Close Async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
+        /// Process Close Async：可取消等待实例锁；预载/Execute 仍同步（范围收窄）。
         /// </summary>
         public Task<WfExecutedResult> CloseProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
             => RunVerbAsync(runner, cancellationToken, ExecuteCloseCore);
@@ -1350,18 +1379,13 @@ namespace saiflow.engine.Service
         WfExecutedResult ExecuteJumpCore(SQLBuilder kit, WfAppRunner runner, JumpOptionEnum jumpOption)
         {
             WfExecutedResult jumpResult = WfExecutedResult.Default();
-
-            //Jump method start to execute
-            WfRuntimeManager runtimeInstance = null;
             try
             {
                 runner.NextActivityPerformers = FillNextActivityPerforms(runner, jumpOption);
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceJump(Sail, runner, ref jumpResult);
+                var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceJump(Sail, runner, ref jumpResult);
 
                 if (jumpResult.Status == WfExecutedStatus.Exception)
-                {
                     return jumpResult;
-                }
 
                 var jumpGateCtx = FlowCapabilityPipeline.BuildGateContext(
                     Sail,
@@ -1413,7 +1437,7 @@ namespace saiflow.engine.Service
         }
 
         /// <summary>
-        /// Process Jump Async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
+        /// Process Jump Async：可取消等待实例锁；预载/Execute 仍同步（范围收窄）。
         /// </summary>
         public Task<WfExecutedResult> JumpProcessAsync(WfAppRunner runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default, CancellationToken cancellationToken = default)
             => RunVerbAsync(runner, cancellationToken, (kit, r) => ExecuteJumpCore(kit, r, jumpOption));

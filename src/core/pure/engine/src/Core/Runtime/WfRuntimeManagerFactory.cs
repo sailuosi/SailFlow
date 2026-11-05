@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using saiflow.data;
 using mooSQL.data;
 using saiflow.hub.Localize;
@@ -240,6 +242,84 @@ namespace saiflow.engine.Runtime
 
             return rmins;
         }
+
+        /// <summary>
+        /// 异步创建 Run 运行时：预载热点走 Manager *Async(ct)；后续 Execute 仍同步（阶段 3 首刀）。
+        /// </summary>
+        public static async Task<(WfRuntimeManager Manager, WfExecutedResult Result)> CreateRuntimeInstanceAppRunningAsync(
+            SailClient client,
+            WfAppRunner runner,
+            SQLBuilder kit,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var result = new WfExecutedResult();
+            var rmins = new WfRuntimeManagerRun();
+            rmins.WfExecutedResult = result;
+            rmins.Sail = client;
+
+            if (string.IsNullOrEmpty(runner.AppName)
+                || string.IsNullOrEmpty(runner.AppInstanceId)
+                || runner.ProcessId == null)
+            {
+                result.Status = WfExecutedStatus.Exception;
+                result.ExceptionType = WfExceptionType.RunApp_ErrorArguments;
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
+                return (rmins, result);
+            }
+            rmins.AppRunner = runner;
+
+            var aim = new ActivityInstanceManager(client);
+            var (runningNode, taskView) = await aim.GetRunningNodeAsync(kit, runner, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(runningNode.AssignedUserIds)
+                && runningNode.AssignedUserIds.Contains(runner.UserId.ToString()) == false)
+            {
+                result.Status = WfExecutedStatus.Exception;
+                result.ExceptionType = WfExceptionType.RunApp_HasNoTask;
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.nonetask.error");
+                return (rmins, result);
+            }
+
+            var isRunning = (new TaskManager(client)).CheckTaskStateInRunningState(taskView);
+            if (isRunning == false)
+            {
+                result.Status = WfExecutedStatus.Exception;
+                result.ExceptionType = WfExceptionType.RunApp_NotInRunning;
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.notrunning.error");
+                return (rmins, result);
+            }
+
+            // 与同步路径一致：预载 PI（存在性/同事务读）；ProcessId 仍取自 runningNode
+            _ = await (new ProcessInstanceManager(client))
+                .GetByIdAsync(kit, runningNode.ProcessInstanceId.Value, cancellationToken)
+                .ConfigureAwait(false);
+            rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
+            var processModel = ProcessModelFactory.CreateByTask(client, SailSqlAccess.Sibling(kit), taskView);
+
+            var currentNode = processModel.GetActivity(taskView.ActivityId);
+            var pvr = new ProcessVariableResolver(client);
+            var isVariableRequiredChecked = pvr.CheckVariableRequired(kit, taskView, currentNode, runner.Conditions);
+            if (isVariableRequiredChecked == false)
+            {
+                result.Status = WfExecutedStatus.Exception;
+                result.ExceptionType = WfExceptionType.RunApp_VariableRequiredFailed;
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.variable.error");
+                return (rmins, result);
+            }
+
+            var activityResource = ActivityResourceFactory.Create(runner,
+                runner.NextActivityPerformers,
+                runner.Conditions);
+
+            rmins.TaskView = taskView;
+            rmins.RunningActivityInstance = runningNode;
+            rmins.ProcessModel = processModel;
+            rmins.ActivityResource = activityResource;
+
+            return (rmins, result);
+        }
         #endregion
 
         #region WfRuntimeManager Run Automatically
@@ -285,6 +365,51 @@ namespace saiflow.engine.Runtime
             rmins.ActivityResource = activityResource;
 
             return rmins;
+        }
+
+        /// <summary>
+        /// 异步创建 RunAuto 运行时：AI/PI 预载走 Manager *Async(ct)（阶段 3 首刀）。
+        /// </summary>
+        public static async Task<(WfRuntimeManager Manager, WfExecutedResult Result)> CreateRuntimeInstanceRunAutoAsync(
+            SailClient client,
+            WfAppRunner runner,
+            SQLBuilder kit,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var result = new WfExecutedResult();
+            var rmins = new WfRuntimeManagerRun();
+            rmins.WfExecutedResult = result;
+            rmins.Sail = client;
+            if (string.IsNullOrEmpty(runner.AppName)
+                || string.IsNullOrEmpty(runner.AppInstanceId)
+                || runner.ProcessId == null)
+            {
+                result.Status = WfExecutedStatus.Exception;
+                result.ExceptionType = WfExceptionType.RunApp_ErrorArguments;
+                result.Message = client.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
+                return (rmins, result);
+            }
+            rmins.AppRunner = runner;
+
+            var aim = new ActivityInstanceManager(client);
+            var runningNode = await aim.GetByIdAsync(kit, runner.ActivityInstanceId.Value, cancellationToken)
+                .ConfigureAwait(false);
+
+            var processInstance = await (new ProcessInstanceManager(client))
+                .GetByIdAsync(kit, runningNode.ProcessInstanceId.Value, cancellationToken)
+                .ConfigureAwait(false);
+            rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
+            var processModel = ProcessModelFactory.CreateByProcess(client, processInstance.ProcessId, processInstance.Version);
+            var activityResource = ActivityResourceFactory.Create(runner,
+                runner.NextActivityPerformers,
+                runner.Conditions);
+
+            rmins.RunningActivityInstance = runningNode;
+            rmins.ProcessModel = processModel;
+            rmins.ActivityResource = activityResource;
+
+            return (rmins, result);
         }
         #endregion
 
