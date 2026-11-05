@@ -14,6 +14,7 @@
 | [特性设计-回调与事件.md](./特性设计-回调与事件.md) | Gate / Hook / Notifier / Outbox 设计 |
 | [草案-挂起与统一Resume.md](./草案-挂起与统一Resume.md) | **草案引子**：Bookmark 思想 → WaitToken / ResumeWaiting；不改 UserTask |
 | [草案-命令执行管道.md](./草案-命令执行管道.md) | **草案引子**：Elsa Middleware 思想 → Command Pipeline；不替换 Gate/Hook |
+| [草案-引擎异步化.md](./草案-引擎异步化.md) | **草案专题**：真异步 = `CancellationToken` + IO 边界 await；禁 `Task.Run` 假 Async；插件/分期/代价 |
 | [目录-扩展插件.md](./目录-扩展插件.md) | **扩展目录**：pure/ext/biz + sleveen-admin 的 UseXxx / Resolver / Filter / Hook / Handler 与核心代码 |
 | [todo-产品缺口.md](./todo-产品缺口.md) | **活动缺口**：联调 + 余债；已接线见 [progress/2026-11-04-产品缺口接线归档.md](./progress/2026-11-04-产品缺口接线归档.md) |
 | [存疑参考功能点.md](./存疑参考功能点.md) | **存疑对照**：外来引擎功能点（如 AntFlow 承办）；不默认纳入基线 |
