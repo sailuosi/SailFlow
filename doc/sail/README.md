@@ -12,6 +12,7 @@
 | [架构设计-项目依赖与分层.md](./架构设计-项目依赖与分层.md) | 程序集依赖与分层哲学 |
 | [业务管道特性设计.md](./业务管道特性设计.md) | SailClient / Builder / UseXxx |
 | [特性设计-回调与事件.md](./特性设计-回调与事件.md) | Gate / Hook / Notifier / Outbox 设计 |
+| [特性说明-副作用可靠性.md](./特性说明-副作用可靠性.md) | **旁路可靠性**：Outbox / Channel / 对账分档；批量推送削峰 |
 | [草案-挂起与统一Resume.md](./草案-挂起与统一Resume.md) | **草案引子**：Bookmark 思想 → WaitToken / ResumeWaiting；不改 UserTask |
 | [草案-命令执行管道.md](./草案-命令执行管道.md) | **草案引子**：Elsa Middleware 思想 → Command Pipeline；不替换 Gate/Hook |
 | [草案-引擎异步化.md](./草案-引擎异步化.md) | **草案专题（0–2 首包已落地）**：假 Async 禁令 + Clip/`ct` + 锁/Manager async；下一刀 Mediator 深链 |
