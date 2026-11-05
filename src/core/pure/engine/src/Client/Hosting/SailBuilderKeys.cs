@@ -22,4 +22,5 @@ public static class SailBuilderKeys
     public static readonly object LocalizeMessages = new();
     public static readonly object FlowCapabilities = new();
     public static readonly object HookOutboxDrain = new();
+    public static readonly object InstanceLockCleaner = new();
 }

@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using saiflow.data;
 using saiflow.hub.Localize;
@@ -25,15 +23,8 @@ namespace saiflow.engine.Service
     /// </summary>
     public partial class WorkflowService : IWorkflowService
     {
-        /// <summary>
-        /// Per-instance semaphores: keyed by AppInstanceId, allowing parallel
-        /// execution across different process instances while still serializing
-        /// concurrent operations on the same instance.
-        /// </summary>
-        private static readonly ConcurrentDictionary<string, SemaphoreSlim> _instanceSemaphores = new();
-
-        private static SemaphoreSlim GetInstanceSemaphore(string key)
-            => _instanceSemaphores.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
+        static string ResolveInstanceLockKey(WfAppRunner runner)
+            => string.IsNullOrEmpty(runner?.AppInstanceId) ? runner?.ProcessId : runner.AppInstanceId;
 
         #region Process Startup
         /// <summary>
@@ -73,10 +64,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                var startLockKey = string.IsNullOrEmpty(runner.AppInstanceId) ? runner.ProcessId : runner.AppInstanceId;
-                var startSem = GetInstanceSemaphore(startLockKey);
-                startSem.Wait();
-                try
+                using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 {
                     runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(Sail, runner, kit, ref startedResult);
 
@@ -103,8 +91,6 @@ namespace saiflow.engine.Service
                     if (!FlowCapabilityPipeline.TryGate(Sail, kit, gateCtx, startedResult))
                         return startedResult;
 
-                    //���¼�
-
                     runtimeInstance.Execute(kit);
                     startedResult = runtimeInstance.WfExecutedResult;
                     if (startedResult.Status == WfExecutedStatus.Success)
@@ -120,12 +106,6 @@ namespace saiflow.engine.Service
                             Sail, kit, hookCtx, EventFireTypeEnum.OnProcessStarted);
                     }
                 }
-                finally
-                {
-                    startSem.Release();
-                }
-                //do some thing else here...
-                //...
             }
             catch (System.Exception e)
             {
@@ -265,10 +245,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                var runLockKey = string.IsNullOrEmpty(runner.AppInstanceId) ? runner.ProcessId : runner.AppInstanceId;
-                var runSem = GetInstanceSemaphore(runLockKey);
-                runSem.Wait();
-                try
+                using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 {
                     runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(Sail, runner, kit, ref runAppResult);
                     if (runAppResult.Status == WfExecutedStatus.Exception)
@@ -287,7 +264,6 @@ namespace saiflow.engine.Service
                     if (!FlowCapabilityPipeline.TryGate(Sail, kit, gateCtx, runAppResult))
                         return runAppResult;
 
-                    //ע���¼�������
                     runtimeInstance.Execute(kit);
                     runAppResult = runtimeInstance.WfExecutedResult;
                     if (runAppResult.Status == WfExecutedStatus.Success)
@@ -303,12 +279,6 @@ namespace saiflow.engine.Service
                             Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
                     }
                 }
-                finally
-                {
-                    runSem.Release();
-                }
-                //do some thing else here...
-                //...
             }
             catch (System.Exception e)
             {
@@ -395,10 +365,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                var runAutoLockKey = string.IsNullOrEmpty(runner.AppInstanceId) ? runner.ProcessId : runner.AppInstanceId;
-                var runAutoSem = GetInstanceSemaphore(runAutoLockKey);
-                runAutoSem.Wait();
-                try
+                using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 {
                     runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceRunAuto(Sail, runner, kit, ref runAppResult);
                     if (runAppResult.Status == WfExecutedStatus.Exception)
@@ -406,7 +373,6 @@ namespace saiflow.engine.Service
                         return runAppResult;
                     }
 
-                    //ע���¼�������
                     runtimeInstance.Execute(kit);
                     runAppResult = runtimeInstance.WfExecutedResult;
                     if (runAppResult.Status == WfExecutedStatus.Success)
@@ -422,12 +388,6 @@ namespace saiflow.engine.Service
                             Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
                     }
                 }
-                finally
-                {
-                    runAutoSem.Release();
-                }
-                //do some thing else here...
-                //...
             }
             catch (System.Exception e)
             {

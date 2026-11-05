@@ -15,6 +15,7 @@ public static class SailFeatureNames
     public const string TaskNotifier = "task-notifier";
     public const string HookOutboxDrain = "HookOutboxDrain";
     public const string HookOutboxDrainAutoStart = "HookOutboxDrain.AutoStart";
+    public const string InstanceLockCleaner = "InstanceLockCleaner";
     public const string Form = "Form";
     public const string Resource = "Resource";
     public const string Localize = "Localize";
