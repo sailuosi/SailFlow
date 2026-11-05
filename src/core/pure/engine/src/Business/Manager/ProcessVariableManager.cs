@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using mooSQL.data;
 using saiflow.data;
 using saiflow.engine.Entity;
@@ -253,6 +255,37 @@ namespace saiflow.engine.Manager
             });
         }
 
+        /// <summary>
+        /// 异步按活动批量读变量（可取消）；热分表 fallback 语义对齐同步版。
+        /// </summary>
+        internal async Task<IList<ProcessVariableEntity>> GetVariableListByActivityAsync(
+            SQLBuilder kit,
+            int processInstanceId,
+            int activityInstanceId,
+            IList<string> variableNameList,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var processId = ResolveProcessId(kit, processInstanceId);
+            return await QueryWithFallbackAsync(kit, processId, async table =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var clip = Sibling(kit).useClip();
+                clip.from<ProcessVariableEntity>(table, out var v);
+                clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString());
+                clip.where(() => v.ProcessInstanceId, processInstanceId);
+                clip.where(() => v.ActivityInstanceId, activityInstanceId);
+
+                if (variableNameList != null && variableNameList.Count == 1)
+                    clip.where(() => v.Name, variableNameList[0]);
+                else if (variableNameList != null && variableNameList.Count > 1)
+                    clip.whereIn(() => v.Name, variableNameList);
+
+                clip.orderBy(() => v.Name);
+                return (await clip.select(v).queryListAsync(cancellationToken).ConfigureAwait(false)).ToList();
+            }, cancellationToken).ConfigureAwait(false);
+        }
+
         internal int SaveVariable(ProcessVariableEntity entity)
         {
             var kit = Sail.UseRunSQL();
@@ -376,6 +409,54 @@ namespace saiflow.engine.Manager
             try
             {
                 legacy = query(def) ?? new List<ProcessVariableEntity>();
+            }
+            catch
+            {
+                return rows;
+            }
+
+            if (legacy.Count == 0)
+                return rows;
+
+            var seen = new HashSet<int>(rows.Where(x => x.Id.HasValue).Select(x => x.Id.Value));
+            foreach (var row in legacy)
+            {
+                if (row.Id.HasValue && seen.Contains(row.Id.Value))
+                    continue;
+                rows.Add(row);
+            }
+            return rows;
+        }
+
+        private async Task<List<ProcessVariableEntity>> QueryWithFallbackAsync(
+            SQLBuilder kit,
+            string processId,
+            Func<string, Task<List<ProcessVariableEntity>>> query,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var primary = Router.ResolveVariableTable(processId);
+            List<ProcessVariableEntity> rows;
+            try
+            {
+                rows = await query(primary).ConfigureAwait(false) ?? new List<ProcessVariableEntity>();
+            }
+            catch
+            {
+                rows = new List<ProcessVariableEntity>();
+            }
+
+            if (!Router.IsSharded(processId))
+                return rows;
+
+            var def = Router.DefaultVariableTable;
+            if (string.Equals(primary, def, StringComparison.OrdinalIgnoreCase))
+                return rows;
+
+            List<ProcessVariableEntity> legacy;
+            try
+            {
+                legacy = await query(def).ConfigureAwait(false) ?? new List<ProcessVariableEntity>();
             }
             catch
             {

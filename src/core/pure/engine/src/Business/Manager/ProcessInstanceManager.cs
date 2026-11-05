@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using mooSQL.data;
 using saiflow.data;
 using saiflow.engine.Entity;
@@ -49,6 +51,22 @@ namespace saiflow.engine.Manager
 
         internal ProcessInstanceEntity GetById(SQLBuilder kit, int processInstanceId)
             => Sibling(kit).useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
+
+        /// <summary>
+        /// 异步按 Id 取流程实例（Clip take(1)，可取消）。
+        /// </summary>
+        internal async Task<ProcessInstanceEntity> GetByIdAsync(
+            SQLBuilder kit,
+            int processInstanceId,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var clip = Sibling(kit).useClip();
+            clip.from<ProcessInstanceEntity>(out var pi);
+            clip.where(() => pi.Id, processInstanceId);
+            var list = await clip.select(pi).take(1).queryListAsync(cancellationToken).ConfigureAwait(false);
+            return list?.FirstOrDefault();
+        }
 
         private ProcessInstanceEntity GetByVersion(SQLBuilder kit, string processId, string version)
         {

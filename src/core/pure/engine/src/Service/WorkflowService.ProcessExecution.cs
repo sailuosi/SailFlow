@@ -59,54 +59,10 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult startedResult = WfExecutedResult.Default();
-
-            //��������ִ��
-            //Start method execution
-            WfRuntimeManager runtimeInstance = null;
             try
             {
                 using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
-                {
-                    runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(Sail, runner, kit, ref startedResult);
-
-                    if (startedResult.Status == WfExecutedStatus.Exception)
-                    {
-                        return startedResult;
-                    }
-
-                    var gateCtx = FlowCapabilityPipeline.BuildGateContext(
-                        Sail,
-                        kit,
-                        runner,
-                        0,
-                        runtimeInstance.RunningActivityInstance,
-                        null,
-                        FlowOperation.Start);
-                    var startActivity = runtimeInstance.ProcessModel?.GetStartActivity();
-                    if (startActivity != null)
-                    {
-                        gateCtx.ActivityId = startActivity.ActivityId;
-                        gateCtx.ActivityCode = startActivity.ActivityCode;
-                    }
-
-                    if (!FlowCapabilityPipeline.TryGate(Sail, kit, gateCtx, startedResult))
-                        return startedResult;
-
-                    runtimeInstance.Execute(kit);
-                    startedResult = runtimeInstance.WfExecutedResult;
-                    if (startedResult.Status == WfExecutedStatus.Success)
-                    {
-                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                            Sail, kit, runner,
-                            startedResult.ProcessInstanceIdStarted,
-                            runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.Id,
-                            EventFireTypeEnum.OnProcessStarted,
-                            FlowOperation.Start);
-                        FlowCapabilityPipeline.AfterSuccess(
-                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessStarted);
-                    }
-                }
+                    startedResult = ExecuteStartCore(kit, runner);
             }
             catch (System.Exception e)
             {
@@ -114,6 +70,76 @@ namespace saiflow.engine.Service
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 startedResult.Message = Sail.Messages.GetEngineMessage("workflowservice.startprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_START_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+            }
+            return startedResult;
+        }
+
+        async Task<WfExecutedResult> StartAsync(SQLBuilder kit, CancellationToken cancellationToken)
+        {
+            var runner = _wfAppRunner;
+            WfExecutedResult startedResult = WfExecutedResult.Default();
+            try
+            {
+                using (await InstanceExecutionLock.AcquireAsync(ResolveInstanceLockKey(runner), cancellationToken)
+                    .ConfigureAwait(false))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    startedResult = ExecuteStartCore(kit, runner);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (System.Exception e)
+            {
+                startedResult.Status = WfExecutedStatus.Failed;
+                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
+                startedResult.Message = Sail.Messages.GetEngineMessage("workflowservice.startprocess.error", error);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_START_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+            }
+            return startedResult;
+        }
+
+        WfExecutedResult ExecuteStartCore(SQLBuilder kit, WfAppRunner runner)
+        {
+            var startedResult = WfExecutedResult.Default();
+            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(Sail, runner, kit, ref startedResult);
+
+            if (startedResult.Status == WfExecutedStatus.Exception)
+                return startedResult;
+
+            var gateCtx = FlowCapabilityPipeline.BuildGateContext(
+                Sail,
+                kit,
+                runner,
+                0,
+                runtimeInstance.RunningActivityInstance,
+                null,
+                FlowOperation.Start);
+            var startActivity = runtimeInstance.ProcessModel?.GetStartActivity();
+            if (startActivity != null)
+            {
+                gateCtx.ActivityId = startActivity.ActivityId;
+                gateCtx.ActivityCode = startActivity.ActivityCode;
+            }
+
+            if (!FlowCapabilityPipeline.TryGate(Sail, kit, gateCtx, startedResult))
+                return startedResult;
+
+            runtimeInstance.Execute(kit);
+            startedResult = runtimeInstance.WfExecutedResult;
+            if (startedResult.Status == WfExecutedStatus.Success)
+            {
+                var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                    Sail, kit, runner,
+                    startedResult.ProcessInstanceIdStarted,
+                    runtimeInstance.RunningActivityInstance,
+                    runtimeInstance.TaskView?.Id,
+                    EventFireTypeEnum.OnProcessStarted,
+                    FlowOperation.Start);
+                FlowCapabilityPipeline.AfterSuccess(
+                    Sail, kit, hookCtx, EventFireTypeEnum.OnProcessStarted);
             }
             return startedResult;
         }
@@ -130,12 +156,27 @@ namespace saiflow.engine.Service
         }
 
         /// <summary>
-        /// Start process async
+        /// Start process async：可取消等待实例锁；Mediator 办理仍同步（阶段 2）。
         /// </summary>
-        public Task<WfExecutedResult> StartProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public async Task<WfExecutedResult> StartProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return Task.FromResult(StartProcess(runner));
+            _wfAppRunner = runner;
+            using (var kit = Sail.UseRunSQL())
+            {
+                kit.beginTransaction();
+                try
+                {
+                    var result = await StartAsync(kit, cancellationToken).ConfigureAwait(false);
+                    if (result.Status == WfExecutedStatus.Success)
+                        kit.commit();
+                    return result;
+                }
+                catch
+                {
+                    throw;
+                }
+            }
         }
 
         #endregion
@@ -234,46 +275,10 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult runAppResult = WfExecutedResult.Default();
-
-            //���з�����ʼִ��
-            //The running method starts executing
-            WfRuntimeManager runtimeInstance = null;
             try
             {
                 using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
-                {
-                    runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(Sail, runner, kit, ref runAppResult);
-                    if (runAppResult.Status == WfExecutedStatus.Exception)
-                    {
-                        return runAppResult;
-                    }
-
-                    var gateCtx = FlowCapabilityPipeline.BuildGateContext(
-                        Sail,
-                        kit,
-                        runner,
-                        runtimeInstance.ProcessInstanceId,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
-                        FlowOperation.Run);
-                    if (!FlowCapabilityPipeline.TryGate(Sail, kit, gateCtx, runAppResult))
-                        return runAppResult;
-
-                    runtimeInstance.Execute(kit);
-                    runAppResult = runtimeInstance.WfExecutedResult;
-                    if (runAppResult.Status == WfExecutedStatus.Success)
-                    {
-                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                            Sail, kit, runner,
-                            runtimeInstance.ProcessInstanceId,
-                            runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.Id,
-                            EventFireTypeEnum.OnProcessContinued,
-                            FlowOperation.Run);
-                        FlowCapabilityPipeline.AfterSuccess(
-                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
-                    }
-                }
+                    runAppResult = ExecuteRunCore(kit, runner);
             }
             catch (System.Exception e)
             {
@@ -281,6 +286,68 @@ namespace saiflow.engine.Service
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 runAppResult.Message = Sail.Messages.GetEngineMessage("workflowservice.runprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+            }
+            return runAppResult;
+        }
+
+        async Task<WfExecutedResult> RunAsync(SQLBuilder kit, CancellationToken cancellationToken)
+        {
+            var runner = _wfAppRunner;
+            WfExecutedResult runAppResult = WfExecutedResult.Default();
+            try
+            {
+                using (await InstanceExecutionLock.AcquireAsync(ResolveInstanceLockKey(runner), cancellationToken)
+                    .ConfigureAwait(false))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    runAppResult = ExecuteRunCore(kit, runner);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (System.Exception e)
+            {
+                runAppResult.Status = WfExecutedStatus.Failed;
+                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
+                runAppResult.Message = Sail.Messages.GetEngineMessage("workflowservice.runprocess.error", error);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+            }
+            return runAppResult;
+        }
+
+        WfExecutedResult ExecuteRunCore(SQLBuilder kit, WfAppRunner runner)
+        {
+            var runAppResult = WfExecutedResult.Default();
+            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(Sail, runner, kit, ref runAppResult);
+            if (runAppResult.Status == WfExecutedStatus.Exception)
+                return runAppResult;
+
+            var gateCtx = FlowCapabilityPipeline.BuildGateContext(
+                Sail,
+                kit,
+                runner,
+                runtimeInstance.ProcessInstanceId,
+                runtimeInstance.RunningActivityInstance,
+                runtimeInstance.TaskView?.Id,
+                FlowOperation.Run);
+            if (!FlowCapabilityPipeline.TryGate(Sail, kit, gateCtx, runAppResult))
+                return runAppResult;
+
+            runtimeInstance.Execute(kit);
+            runAppResult = runtimeInstance.WfExecutedResult;
+            if (runAppResult.Status == WfExecutedStatus.Success)
+            {
+                var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                    Sail, kit, runner,
+                    runtimeInstance.ProcessInstanceId,
+                    runtimeInstance.RunningActivityInstance,
+                    runtimeInstance.TaskView?.Id,
+                    EventFireTypeEnum.OnProcessContinued,
+                    FlowOperation.Run);
+                FlowCapabilityPipeline.AfterSuccess(
+                    Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
             }
             return runAppResult;
         }
@@ -315,10 +382,28 @@ namespace saiflow.engine.Service
         /// Run Process Async
         /// 异步执行流程
         /// </summary>
-        public Task<WfExecutedResult> RunProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Run async：可取消等待实例锁；Mediator 办理仍同步（阶段 2）。
+        /// </summary>
+        public async Task<WfExecutedResult> RunProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return Task.FromResult(RunProcess(runner));
+            _wfAppRunner = runner;
+            using (var kit = Sail.UseRunSQL())
+            {
+                kit.beginTransaction();
+                try
+                {
+                    var result = await RunAsync(kit, cancellationToken).ConfigureAwait(false);
+                    if (result.Status == WfExecutedStatus.Success)
+                        kit.commit();
+                    return result;
+                }
+                catch
+                {
+                    throw;
+                }
+            }
         }
 
         #endregion
@@ -351,35 +436,10 @@ namespace saiflow.engine.Service
         {
             var runner = _wfAppRunner;
             WfExecutedResult runAppResult = WfExecutedResult.Default();
-
-            //���з�����ʼִ��
-            //The running method starts executing
-            WfRuntimeManager runtimeInstance = null;
             try
             {
                 using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
-                {
-                    runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceRunAuto(Sail, runner, kit, ref runAppResult);
-                    if (runAppResult.Status == WfExecutedStatus.Exception)
-                    {
-                        return runAppResult;
-                    }
-
-                    runtimeInstance.Execute(kit);
-                    runAppResult = runtimeInstance.WfExecutedResult;
-                    if (runAppResult.Status == WfExecutedStatus.Success)
-                    {
-                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                            Sail, kit, runner,
-                            runtimeInstance.ProcessInstanceId,
-                            runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.Id,
-                            EventFireTypeEnum.OnProcessContinued,
-                            FlowOperation.Run);
-                        FlowCapabilityPipeline.AfterSuccess(
-                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
-                    }
-                }
+                    runAppResult = ExecuteRunAutoCore(kit, runner);
             }
             catch (System.Exception e)
             {
@@ -387,6 +447,57 @@ namespace saiflow.engine.Service
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 runAppResult.Message = Sail.Messages.GetEngineMessage("workflowservice.runprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+            }
+            return runAppResult;
+        }
+
+        async Task<WfExecutedResult> RunAutoAsync(SQLBuilder kit, CancellationToken cancellationToken)
+        {
+            var runner = _wfAppRunner;
+            WfExecutedResult runAppResult = WfExecutedResult.Default();
+            try
+            {
+                using (await InstanceExecutionLock.AcquireAsync(ResolveInstanceLockKey(runner), cancellationToken)
+                    .ConfigureAwait(false))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    runAppResult = ExecuteRunAutoCore(kit, runner);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (System.Exception e)
+            {
+                runAppResult.Status = WfExecutedStatus.Failed;
+                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
+                runAppResult.Message = Sail.Messages.GetEngineMessage("workflowservice.runprocess.error", error);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
+            }
+            return runAppResult;
+        }
+
+        WfExecutedResult ExecuteRunAutoCore(SQLBuilder kit, WfAppRunner runner)
+        {
+            var runAppResult = WfExecutedResult.Default();
+            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceRunAuto(Sail, runner, kit, ref runAppResult);
+            if (runAppResult.Status == WfExecutedStatus.Exception)
+                return runAppResult;
+
+            runtimeInstance.Execute(kit);
+            runAppResult = runtimeInstance.WfExecutedResult;
+            if (runAppResult.Status == WfExecutedStatus.Success)
+            {
+                var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                    Sail, kit, runner,
+                    runtimeInstance.ProcessInstanceId,
+                    runtimeInstance.RunningActivityInstance,
+                    runtimeInstance.TaskView?.Id,
+                    EventFireTypeEnum.OnProcessContinued,
+                    FlowOperation.Run);
+                FlowCapabilityPipeline.AfterSuccess(
+                    Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
             }
             return runAppResult;
         }
@@ -404,13 +515,27 @@ namespace saiflow.engine.Service
         }
 
         /// <summary>
-        /// Run process auto async
-        /// 异步执行自动
+        /// Run process auto async：可取消等待实例锁；Mediator 仍同步（阶段 2）。
         /// </summary>
-        public Task<WfExecutedResult> RunProcessAutoAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public async Task<WfExecutedResult> RunProcessAutoAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return Task.FromResult(RunProcessAuto(runner));
+            _wfAppRunner = runner;
+            using (var kit = Sail.UseRunSQL())
+            {
+                kit.beginTransaction();
+                try
+                {
+                    var result = await RunAutoAsync(kit, cancellationToken).ConfigureAwait(false);
+                    if (result.Status == WfExecutedStatus.Success)
+                        kit.commit();
+                    return result;
+                }
+                catch
+                {
+                    throw;
+                }
+            }
         }
 
         #endregion

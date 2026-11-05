@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace saiflow.engine.Runtime
 {
@@ -30,6 +31,20 @@ namespace saiflow.engine.Runtime
 
             var entry = Locks.GetOrAdd(key, _ => new Entry());
             entry.Sem.Wait();
+            return new Lease(entry);
+        }
+
+        /// <summary>
+        /// 异步获取锁（可取消）。取消时不持有锁；Dispose 语义同 <see cref="Acquire"/>。
+        /// </summary>
+        public static async Task<IDisposable> AcquireAsync(string key, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentException("Instance lock key is required.", nameof(key));
+
+            cancellationToken.ThrowIfCancellationRequested();
+            var entry = Locks.GetOrAdd(key, _ => new Entry());
+            await entry.Sem.WaitAsync(cancellationToken).ConfigureAwait(false);
             return new Lease(entry);
         }
 

@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using mooSQL.data;
 using saiflow.data;
 using saiflow.hub.Localize;
@@ -50,6 +52,22 @@ namespace saiflow.engine.Manager
 
         internal TaskViewEntity GetTaskView(SQLBuilder kit, int taskId)
             => Sibling(kit).useRepo<TaskViewEntity, int>().GetById(taskId);
+
+        /// <summary>
+        /// 异步按任务 Id 取任务视图（Clip，可取消）。
+        /// </summary>
+        internal async Task<TaskViewEntity> GetTaskViewAsync(
+            SQLBuilder kit,
+            int taskId,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var clip = Sibling(kit).useClip();
+            clip.from<TaskViewEntity>(out var t);
+            clip.where(() => t.Id, taskId);
+            var list = await clip.select(t).take(1).queryListAsync(cancellationToken).ConfigureAwait(false);
+            return list?.FirstOrDefault();
+        }
 
         /// <summary>
         /// Retrieve task based on task Id
@@ -116,6 +134,24 @@ namespace saiflow.engine.Manager
             return list.Count > 0 ? list[0] : null;
         }
 
+        /// <summary>
+        /// 异步按活动实例取任务视图（可取消）。
+        /// </summary>
+        internal async Task<TaskViewEntity> GetTaskViewByActivityAsync(
+            SQLBuilder kit,
+            int processInstanceId,
+            int activityInstanceId,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var clip = Sibling(kit).useClip();
+            clip.from<TaskViewEntity>(out var t);
+            clip.where(() => t.ActivityInstanceId, activityInstanceId);
+            clip.where(() => t.ProcessInstanceId, processInstanceId);
+            var list = (await clip.select(t).queryListAsync(cancellationToken).ConfigureAwait(false)).ToList();
+            return list.Count > 0 ? list[0] : null;
+        }
+
         #endregion
 
         #region Get the current user's processing tasks 获取当前用户的办理任务
@@ -144,6 +180,29 @@ namespace saiflow.engine.Manager
             clip.top(1);
             var list = clip.select(t).queryList().ToList();
 
+            return ResolveTaskOfMineByActivityInstance(list, activityInstanceId);
+        }
+
+        /// <summary>
+        /// 异步获取当前用户在活动实例上的办理任务（可取消）。
+        /// </summary>
+        internal async Task<TaskViewEntity> GetTaskOfMineByActivityInstanceAsync(
+            SQLBuilder kit,
+            int activityInstanceId,
+            string userId,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var clip = Sibling(kit).useClip();
+            clip.from<TaskViewEntity>(out var t);
+            clip.where(() => t.ActivityInstanceId, activityInstanceId);
+            clip.where(() => t.AssignedUserId, userId);
+            clip.where(() => t.ProcessState, (short)2);
+            clip.where(() => t.ActivityType == 4 || t.ActivityType == 5 || t.ActivityType == 6);
+            clip.whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 });
+            clip.orderByDesc(() => t.Id);
+            clip.top(1);
+            var list = (await clip.select(t).queryListAsync(cancellationToken).ConfigureAwait(false)).ToList();
             return ResolveTaskOfMineByActivityInstance(list, activityInstanceId);
         }
 

@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using mooSQL.data;
 using saiflow.data;
 using saiflow.engine.Assignee;
@@ -54,6 +56,22 @@ namespace saiflow.engine.Manager
 
         internal ActivityInstanceEntity GetById(SQLBuilder kit, int activityInstanceId)
             => Sibling(kit).useRepo<ActivityInstanceEntity, int>().GetById(activityInstanceId);
+
+        /// <summary>
+        /// 异步按 Id 取活动实例（Clip take(1)，可取消）。与同步 Repo.GetById 双轨。
+        /// </summary>
+        internal async Task<ActivityInstanceEntity> GetByIdAsync(
+            SQLBuilder kit,
+            int activityInstanceId,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var clip = Sibling(kit).useClip();
+            clip.from<ActivityInstanceEntity>(out var ai);
+            clip.where(() => ai.Id, activityInstanceId);
+            var list = await clip.select(ai).take(1).queryListAsync(cancellationToken).ConfigureAwait(false);
+            return list?.FirstOrDefault();
+        }
 
         /// <summary>
         /// Obtain the current running node information of the process
@@ -135,6 +153,77 @@ namespace saiflow.engine.Manager
                 }
             }
             return runningNode;
+        }
+
+        /// <summary>
+        /// 异步获取当前运行节点（可取消）。返回 (Node, TaskView)；语义对齐同步 <see cref="GetRunningNode(SQLBuilder, WfAppRunner, out TaskViewEntity)"/>。
+        /// </summary>
+        internal async Task<(ActivityInstanceEntity Node, TaskViewEntity TaskView)> GetRunningNodeAsync(
+            SQLBuilder kit,
+            WfAppRunner runner,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var tm = new TaskManager(Sail);
+            TaskViewEntity taskView = null;
+            ActivityInstanceEntity runningNode = null;
+
+            var taskId = runner.TaskId;
+            if (taskId != null && taskId.Value > 0)
+            {
+                taskView = await tm.GetTaskViewAsync(kit, taskId.Value, cancellationToken).ConfigureAwait(false);
+                runningNode = await GetByIdAsync(kit, taskView.ActivityInstanceId.Value, cancellationToken)
+                    .ConfigureAwait(false);
+                return (runningNode, taskView);
+            }
+
+            var activityInstanceList = (await GetRunningActivityInstanceListAsync(
+                    kit, runner.AppInstanceId, runner.ProcessId, runner.Version, cancellationToken)
+                .ConfigureAwait(false)).ToList();
+
+            if (activityInstanceList == null || activityInstanceList.Count == 0)
+            {
+                var message = Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.error");
+                var e = new WorkflowException(message);
+                LogManager.RecordLog(Sail, message, LogEventType.Exception, LogPriority.Normal, null, e);
+                throw e;
+            }
+
+            if (activityInstanceList.Count == 1)
+            {
+                runningNode = activityInstanceList[0];
+                taskView = await tm.GetTaskOfMineByActivityInstanceAsync(
+                        kit, runningNode.Id.Value, runner.UserId, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                foreach (var ai in activityInstanceList)
+                {
+                    if (ai.AssignedUserIds == runner.UserId)
+                    {
+                        runningNode = ai;
+                        break;
+                    }
+                }
+
+                if (runningNode != null)
+                {
+                    taskView = await tm.GetTaskOfMineByActivityInstanceAsync(
+                            kit, runningNode.Id.Value, runner.UserId, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    var msgException = Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.unique.error");
+                    var e = new WorkflowException(msgException);
+                    LogManager.RecordLog(Sail, Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.error"),
+                        LogEventType.Exception, LogPriority.Normal, null, e);
+                    throw e;
+                }
+            }
+
+            return (runningNode, taskView);
         }
 
         /// <summary>
@@ -457,6 +546,30 @@ namespace saiflow.engine.Manager
             clip.where(() => ai.AppInstanceId, appInstanceId);
             clip.where(() => ai.ProcessId, processId);
             return clip.select(ai).queryList();
+        }
+
+        /// <summary>
+        /// 异步获取运行中活动实例列表（可取消）。
+        /// </summary>
+        internal async Task<IEnumerable<ActivityInstanceEntity>> GetRunningActivityInstanceListAsync(
+            SQLBuilder kit,
+            string appInstanceId,
+            string processId,
+            string version,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (string.IsNullOrEmpty(version)) version = "1";
+            var clip = Sibling(kit).useClip();
+            clip.from<ActivityInstanceEntity>(out var ai);
+            clip.InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.Id);
+            clip.where(() => ai.ActivityState == (short)ActivityStateEnum.Ready
+                || ai.ActivityState == (short)ActivityStateEnum.Running);
+            clip.where(() => pi.ProcessState, (short)ProcessStateEnum.Running);
+            clip.where(() => pi.Version, version);
+            clip.where(() => ai.AppInstanceId, appInstanceId);
+            clip.where(() => ai.ProcessId, processId);
+            return await clip.select(ai).queryListAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
