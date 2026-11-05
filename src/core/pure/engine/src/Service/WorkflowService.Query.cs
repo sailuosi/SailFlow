@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using saiflow.hub.Resource;
 using saiflow.engine.Common;
@@ -142,10 +143,10 @@ namespace saiflow.engine.Service
         /// Obtain the next node list according to the application process
         /// 根据应用获取流程下一步节点列表
         /// </summary>
-        public async Task<IList<NodeView>> GetNextActivityTreeAsync(WfAppRunner runner, 
-            IDictionary<string, string> condition = null)
+        public async Task<IList<NodeView>> GetNextActivityTreeAsync(WfAppRunner runner,
+            IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
-            var info = await GetNextStepInfoAsync(runner, condition);
+            var info = await GetNextStepInfoAsync(runner, condition, cancellationToken).ConfigureAwait(false);
             return info?.NextActivityRoleUserTree ?? new List<NodeView>();
         }
 
@@ -165,11 +166,11 @@ namespace saiflow.engine.Service
         /// Obtain the next node list according to the application process
         /// 获取下一步活动列表树
         /// </summary>
-        public async Task<IList<NodeView>> GetNextActivityTreeAsync(int taskId, 
-            IDictionary<string, string> condition = null)
+        public async Task<IList<NodeView>> GetNextActivityTreeAsync(int taskId,
+            IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
             var runner = new WfAppRunner { TaskId = taskId };
-            var info = await GetNextStepInfoAsync(runner, condition);
+            var info = await GetNextStepInfoAsync(runner, condition, cancellationToken).ConfigureAwait(false);
             return info?.NextActivityRoleUserTree ?? new List<NodeView>();
         }
 
@@ -189,9 +190,9 @@ namespace saiflow.engine.Service
         /// 根据应用获取流程下一步活动列表
         /// </summary>
         public async Task<IList<Activity>> GetNextActivityListAsync(WfAppRunner runner,
-            IDictionary<string, string> condition = null)
+            IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
-            var info = await GetNextStepInfoAsync(runner, condition);
+            var info = await GetNextStepInfoAsync(runner, condition, cancellationToken).ConfigureAwait(false);
             return ConvertNodeViewListToActivityList(info?.NextActivityRoleUserTree, runner.ProcessId, runner.Version);
         }
 
@@ -211,11 +212,11 @@ namespace saiflow.engine.Service
         /// Obtain the next activity list according to the application process
         /// 获取下一步活动列表
         /// </summary>
-        public async Task<IList<Activity>> GetNextActivityListAsync(int taskId, 
-            IDictionary<string, string> condition = null)
+        public async Task<IList<Activity>> GetNextActivityListAsync(int taskId,
+            IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
             var runner = new WfAppRunner { TaskId = taskId };
-            var info = await GetNextStepInfoAsync(runner, condition);
+            var info = await GetNextStepInfoAsync(runner, condition, cancellationToken).ConfigureAwait(false);
             return ConvertNodeViewListToActivityList(info?.NextActivityRoleUserTree, runner.ProcessId, runner.Version);
         }
         
@@ -287,10 +288,10 @@ namespace saiflow.engine.Service
         /// According to the application, obtain the next node list of the process, including role users
         /// 根据应用获取流程下一步节点列表，包含角色用户
         /// </summary>
-        public async Task<IList<NodeView>> GetNextActivityRoleUserTreeAsync(WfAppRunner runner, 
-            IDictionary<string, string> condition = null)
+        public async Task<IList<NodeView>> GetNextActivityRoleUserTreeAsync(WfAppRunner runner,
+            IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
-            var info = await GetNextStepInfoAsync(runner, condition);
+            var info = await GetNextStepInfoAsync(runner, condition, cancellationToken).ConfigureAwait(false);
             return info?.NextActivityRoleUserTree ?? new List<NodeView>();
         }
 
@@ -317,14 +318,11 @@ namespace saiflow.engine.Service
         /// Asynchronous retrieval of next step list
         /// 异步获取下一步列表
         /// </summary>
-        public async Task<NextStepInfo> GetNextStepInfoAsync(WfAppRunner runner, 
-            IDictionary<string, string> condition = null)
+        public Task<NextStepInfo> GetNextStepInfoAsync(WfAppRunner runner,
+            IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<NextStepInfo>(() =>
-            {
-                return GetNextStepInfo(runner, condition);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(GetNextStepInfo(runner, condition));
         }
 
         /// <summary>
@@ -362,14 +360,11 @@ namespace saiflow.engine.Service
         /// 流程启动时获取开始节点下一步的节点角色人员列表
         /// 统一整合到: GetNextActivityRoleUserTree()
         /// </summary>
-        public async Task<IList<NodeView>> GetFirstActivityRoleUserTreeAsync(WfAppRunner runner, 
-            IDictionary<string, string> condition = null)
+        public Task<IList<NodeView>> GetFirstActivityRoleUserTreeAsync(WfAppRunner runner,
+            IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<IList<NodeView>>(() =>
-            {
-                return GetFirstActivityRoleUserTree(runner, condition);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(GetFirstActivityRoleUserTree(runner, condition));
         }
 
         /// <summary>
@@ -411,13 +406,10 @@ namespace saiflow.engine.Service
         /// Get previous activity list
         /// 获取上一步节点信息
         /// </summary>
-        public async Task<IList<NodeView>> GetPreviousActivityTreeAsync(WfAppRunner runner)
+        public Task<IList<NodeView>> GetPreviousActivityTreeAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<IList<NodeView>>(() =>
-            {
-                return GetPreviousActivityTree(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(GetPreviousActivityTree(runner));
         }
 
         /// <summary>
@@ -440,13 +432,10 @@ namespace saiflow.engine.Service
         /// Get previous activity list
         /// 异步获取上一步节点信息
         /// </summary>
-        public async Task<PreviousStepInfo> GetPreviousStepInfoAsync(WfAppRunner runner)
+        public Task<PreviousStepInfo> GetPreviousStepInfoAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<PreviousStepInfo>(() =>
-            {
-                return GetPreviousStepInfo(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(GetPreviousStepInfo(runner));
         }
         #endregion
 

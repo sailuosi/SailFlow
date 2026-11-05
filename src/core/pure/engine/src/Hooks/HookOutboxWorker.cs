@@ -30,6 +30,7 @@ namespace saiflow.engine.Hooks
 
         public async Task<int> ProcessPendingAsync(int? limit = null, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var batchSize = limit ?? Options.BatchSize;
             var om = new HookOutboxManager(Sail);
             IList<HookOutboxEntity> claimed;
@@ -56,6 +57,7 @@ namespace saiflow.engine.Hooks
                 }
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
             var processed = await Dispatcher.DispatchClaimedOutboxAsync(
                 claimed,
                 Options.MaxAttempts,

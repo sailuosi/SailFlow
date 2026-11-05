@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using saiflow.hub.Form;
 using saiflow.hub.Resource;
@@ -30,10 +31,10 @@ namespace saiflow.engine.Service
         IList<NodeView> GetNextActivityTree(string processId, string version, string activityId, IDictionary<string, string> condition);
 
         IList<NodeView> GetNextActivityTree(int taskId, IDictionary<string, string> condition = null);
-        Task<IList<NodeView>> GetNextActivityTreeAsync(int taskId, IDictionary<string, string> condition = null);
+        Task<IList<NodeView>> GetNextActivityTreeAsync(int taskId, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
         IList<NodeView> GetNextActivityTree(WfAppRunner runner, IDictionary<string, string> condition = null);
-        Task<IList<NodeView>> GetNextActivityTreeAsync(WfAppRunner runner, IDictionary<string, string> condition = null);
+        Task<IList<NodeView>> GetNextActivityTreeAsync(WfAppRunner runner, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Obtain the next activity list according to the application process
@@ -47,7 +48,7 @@ namespace saiflow.engine.Service
         /// 获取下一步活动列表
         /// </summary>
         Task<IList<Activity>> GetNextActivityListAsync(int taskId, 
-            IDictionary<string, string> condition = null);
+            IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Obtain the next activity list according to the application process
@@ -61,10 +62,10 @@ namespace saiflow.engine.Service
         /// 根据应用获取流程下一步活动列表
         /// </summary>
         Task<IList<Activity>> GetNextActivityListAsync(WfAppRunner runner,
-            IDictionary<string, string> condition = null);
+            IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
         IList<NodeView> GetNextActivityRoleUserTree(WfAppRunner runner, IDictionary<string, string> condition = null);
-        Task<IList<NodeView>> GetNextActivityRoleUserTreeAsync(WfAppRunner runner, IDictionary<string, string> condition = null);
+        Task<IList<NodeView>> GetNextActivityRoleUserTreeAsync(WfAppRunner runner, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Business-level API for obtaining the next-step information, including structure, roles and users.
@@ -73,16 +74,16 @@ namespace saiflow.engine.Service
         /// 推荐界面层与业务服务统一通过此方法获取下一步，而不要直接依赖 IProcessModel 的结构层方法。
         /// </summary>
         NextStepInfo GetNextStepInfo(WfAppRunner runner, IDictionary<string, string> condition = null);
-        Task<NextStepInfo> GetNextStepInfoAsync(WfAppRunner runner, IDictionary<string, string> condition = null);
+        Task<NextStepInfo> GetNextStepInfoAsync(WfAppRunner runner, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
         IList<NodeView> GetFirstActivityRoleUserTree(WfAppRunner runner, IDictionary<string, string> condition = null);
-        Task<IList<NodeView>> GetFirstActivityRoleUserTreeAsync(WfAppRunner runner, IDictionary<string, string> condition = null);
+        Task<IList<NodeView>> GetFirstActivityRoleUserTreeAsync(WfAppRunner runner, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
         IList<NodeView> GetPreviousActivityTree(WfAppRunner runner);
-        Task<IList<NodeView>> GetPreviousActivityTreeAsync(WfAppRunner runner);
+        Task<IList<NodeView>> GetPreviousActivityTreeAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         PreviousStepInfo GetPreviousStepInfo(WfAppRunner runner);
-        Task<PreviousStepInfo> GetPreviousStepInfoAsync(WfAppRunner runner);
+        Task<PreviousStepInfo> GetPreviousStepInfoAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         SignForwardStepInfo GetSignForwardStepInfo(WfAppRunner runner);
 
@@ -94,74 +95,74 @@ namespace saiflow.engine.Service
         //启动流程
         //Startup Process
         WfExecutedResult StartProcess(WfAppRunner runner);
-        Task<WfExecutedResult> StartProcessAsync(WfAppRunner runner);
+        Task<WfExecutedResult> StartProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         //消息启动流程
         //Message Startup Process
         WfExecutedResult StartProcessByMessage(WfAppRunner runner);
-        Task<WfExecutedResult> StartProcessByMessageAsync(WfAppRunner runner);
+        Task<WfExecutedResult> StartProcessByMessageAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         //运行流程
         //Run Process
         WfExecutedResult RunProcess(WfAppRunner runner);
-        Task<WfExecutedResult> RunProcessAsync(WfAppRunner runner);
+        Task<WfExecutedResult> RunProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         //自动运行流程
         //Run Automatically Process
         WfExecutedResult RunProcessAuto(WfAppRunner runner);
-        Task<WfExecutedResult> RunProcessAutoAsync(WfAppRunner runner);
+        Task<WfExecutedResult> RunProcessAutoAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         //撤销流程
         //Withdraw Process
         WfExecutedResult WithdrawProcess(WfAppRunner runner);
-        Task<WfExecutedResult> WithdrawProcessAsync(WfAppRunner runner);
+        Task<WfExecutedResult> WithdrawProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         //退回流程
         //SendBack Process
         WfExecutedResult SendBackProcess(WfAppRunner runner);
-        Task<WfExecutedResult> SendBackProcessAsync(WfAppRunner runner);
+        Task<WfExecutedResult> SendBackProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         //返送流程
         //Resend Process
         WfExecutedResult ResendProcess(WfAppRunner runner);
-        Task<WfExecutedResult> ResendProcessAsync(WfAppRunner runner);
+        Task<WfExecutedResult> ResendProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         //修订流程
         //Revise Process
         WfExecutedResult ReviseProcess(WfAppRunner runner);
-        Task<WfExecutedResult> ReviseProcessAsync(WfAppRunner runner);
+        Task<WfExecutedResult> ReviseProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         //驳回流程
         //Reject Process
         WfExecutedResult RejectProcess(WfAppRunner runner);
-        Task<WfExecutedResult> RejectProcessAsync(WfAppRunner runner);
+        Task<WfExecutedResult> RejectProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         //关闭流程
         //Close Process
         WfExecutedResult CloseProcess(WfAppRunner runner);
-        Task<WfExecutedResult> CloseProcessAsync(WfAppRunner runner);
+        Task<WfExecutedResult> CloseProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         //返签流程
         //Reverse Process
         WfExecutedResult ReverseProcess(WfAppRunner runner);
-        Task<WfExecutedResult> ReverseProcessAsync(WfAppRunner runner);
+        Task<WfExecutedResult> ReverseProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         //跳转流程
         //Jump Process
         WfExecutedResult JumpProcess(WfAppRunner runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default);
-        Task<WfExecutedResult> JumpProcessAsync(WfAppRunner runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default);
+        Task<WfExecutedResult> JumpProcessAsync(WfAppRunner runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default, CancellationToken cancellationToken = default);
 
         //加签流程
         //Sign Forward Process
         WfExecutedResult SignForwardProcess(WfAppRunner runner);
-        Task<WfExecutedResult> SignForwardProcessAsync(WfAppRunner runner);
+        Task<WfExecutedResult> SignForwardProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 转办：结束本人待办，在本节点为指定人创建待办，不发生节点流转。
         /// 目标人取自 <c>NextActivityPerformers</c>（任意 ActivityId 键下的 Performer 列表）。
         /// </summary>
         WfExecutedResult TransferProcess(WfAppRunner runner);
-        Task<WfExecutedResult> TransferProcessAsync(WfAppRunner runner);
+        Task<WfExecutedResult> TransferProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
 
         //审批决策
         //Approval

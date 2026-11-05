@@ -36,8 +36,9 @@ public sealed class AutoApproveAnchorWorker
     public int ProcessPending(int? limit = null, CancellationToken cancellationToken = default) =>
         ProcessPendingAsync(limit, cancellationToken).GetAwaiter().GetResult();
 
-    public async Task<int> ProcessPendingAsync(int? limit = null, CancellationToken cancellationToken = default)
+    public Task<int> ProcessPendingAsync(int? limit = null, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var batch = limit ?? Options.BatchSize;
         IList<HookOutboxEntity> claimed;
         var om = new HookOutboxManager(Sail);
@@ -69,7 +70,7 @@ public sealed class AutoApproveAnchorWorker
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                await ProcessOneAsync(row, cancellationToken).ConfigureAwait(false);
+                ProcessOne(row, cancellationToken);
                 processed++;
             }
             catch (Exception ex)
@@ -89,10 +90,10 @@ public sealed class AutoApproveAnchorWorker
             }
         }
 
-        return processed;
+        return Task.FromResult(processed);
     }
 
-    async Task ProcessOneAsync(HookOutboxEntity row, CancellationToken ct)
+    void ProcessOne(HookOutboxEntity row, CancellationToken ct)
     {
         var om = new HookOutboxManager(Sail);
         var anchor = Deserialize(row);
@@ -252,7 +253,8 @@ public sealed class AutoApproveAnchorWorker
                 AppInstanceId = task.AppInstanceId,
                 DynamicVariables = dyn
             };
-            exec = await wf.RunProcessAsync(runner).ConfigureAwait(false);
+            // Job 路径走同步 API（草案阶段 0：去掉伪 async 线程池切换）
+            exec = wf.RunProcess(runner);
         }
         else
         {
@@ -267,7 +269,7 @@ public sealed class AutoApproveAnchorWorker
                 AppInstanceId = readyAct.AppInstanceId,
                 DynamicVariables = dyn
             };
-            exec = await wf.RunProcessAutoAsync(runner).ConfigureAwait(false);
+            exec = wf.RunProcessAuto(runner);
         }
 
         ct.ThrowIfCancellationRequested();

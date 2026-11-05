@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using saiflow.data;
 using saiflow.hub.Localize;
@@ -131,13 +132,10 @@ namespace saiflow.engine.Service
         /// <summary>
         /// Start process async
         /// </summary>
-        public async Task<WfExecutedResult> StartProcessAsync(WfAppRunner runner)
+        public Task<WfExecutedResult> StartProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<WfExecutedResult>(() => 
-            {
-                return StartProcess(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(StartProcess(runner));
         }
 
         #endregion
@@ -196,13 +194,10 @@ namespace saiflow.engine.Service
         /// Start by Message Async
         /// 异步消息启动流程
         /// </summary>
-        public async Task<WfExecutedResult> StartProcessByMessageAsync(WfAppRunner runner)
+        public Task<WfExecutedResult> StartProcessByMessageAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<WfExecutedResult>(() =>
-            {
-                return StartProcessByMessage(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(StartProcessByMessage(runner));
         }
 
         #endregion
@@ -320,13 +315,10 @@ namespace saiflow.engine.Service
         /// Run Process Async
         /// 异步执行流程
         /// </summary>
-        public async Task<WfExecutedResult> RunProcessAsync(WfAppRunner runner)
+        public Task<WfExecutedResult> RunProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<WfExecutedResult>(() =>
-            {
-                return RunProcess(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(RunProcess(runner));
         }
 
         #endregion
@@ -415,13 +407,10 @@ namespace saiflow.engine.Service
         /// Run process auto async
         /// 异步执行自动
         /// </summary>
-        public async Task<WfExecutedResult> RunProcessAutoAsync(WfAppRunner runner)
+        public Task<WfExecutedResult> RunProcessAutoAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<WfExecutedResult>(() =>
-            {
-                return RunProcessAuto(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(RunProcessAuto(runner));
         }
 
         #endregion
@@ -522,13 +511,10 @@ namespace saiflow.engine.Service
         /// Process withdraw async
         /// 异步撤回流程
         /// </summary>
-        public async Task<WfExecutedResult> WithdrawProcessAsync(WfAppRunner runner)
+        public Task<WfExecutedResult> WithdrawProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<WfExecutedResult>(() =>
-            {
-                return WithdrawProcess(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(WithdrawProcess(runner));
         }
 
         #endregion
@@ -627,13 +613,10 @@ namespace saiflow.engine.Service
         /// Process sendback async
         /// 异步退回到下一步
         /// </summary>
-        public async Task<WfExecutedResult> SendBackProcessAsync(WfAppRunner runner)
+        public Task<WfExecutedResult> SendBackProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<WfExecutedResult>(() =>
-            {
-                return SendBackProcess(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(SendBackProcess(runner));
         }
 
         #endregion
@@ -732,13 +715,10 @@ namespace saiflow.engine.Service
         /// Process Resend Async
         /// 异步转发流程
         /// </summary>
-        public async Task<WfExecutedResult> ResendProcessAsync(WfAppRunner runner)
+        public Task<WfExecutedResult> ResendProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<WfExecutedResult>(() =>
-            {
-                return ResendProcess(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(ResendProcess(runner));
         }
 
         #endregion
@@ -839,13 +819,10 @@ namespace saiflow.engine.Service
         /// Process revise async
         /// 异步修订流程
         /// </summary>
-        public async Task<WfExecutedResult> ReviseProcessAsync(WfAppRunner runner)
+        public Task<WfExecutedResult> ReviseProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<WfExecutedResult>(() =>
-            {
-                return ReviseProcess(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(ReviseProcess(runner));
         }
 
         #endregion
@@ -946,13 +923,10 @@ namespace saiflow.engine.Service
         /// Process reverse async
         /// 异步反签流程
         /// </summary>
-        public async Task<WfExecutedResult> ReverseProcessAsync(WfAppRunner runner)
+        public Task<WfExecutedResult> ReverseProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<WfExecutedResult>(() =>
-            {
-                return ReverseProcess(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(ReverseProcess(runner));
         }
 
         #endregion
@@ -1054,13 +1028,10 @@ namespace saiflow.engine.Service
         /// Process reject async
         /// 异步驳回流程
         /// </summary>
-        public async Task<WfExecutedResult> RejectProcessAsync(WfAppRunner runner)
+        public Task<WfExecutedResult> RejectProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<WfExecutedResult>(() =>
-            {
-                return RejectProcess(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(RejectProcess(runner));
         }
 
         #endregion
@@ -1159,13 +1130,10 @@ namespace saiflow.engine.Service
         ///  Process Close Async
         /// 异步关闭流程
         /// </summary>
-        public async Task<WfExecutedResult> CloseProcessAsync(WfAppRunner runner)
+        public Task<WfExecutedResult> CloseProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<WfExecutedResult>(() =>
-            {
-                return CloseProcess(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(CloseProcess(runner));
         }
 
         #endregion
@@ -1266,13 +1234,10 @@ namespace saiflow.engine.Service
         /// Process Jump Async
         /// 异步跳转流程
         /// </summary>
-        public async Task<WfExecutedResult> JumpProcessAsync(WfAppRunner runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default)
+        public Task<WfExecutedResult> JumpProcessAsync(WfAppRunner runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<WfExecutedResult>(() =>
-            {
-                return JumpProcess(runner, jumpOption);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(JumpProcess(runner, jumpOption));
         }
 
         /// <summary>
@@ -1407,13 +1372,10 @@ namespace saiflow.engine.Service
         /// Process Signforward Async
         /// 异步流程会签
         /// </summary>
-        public async Task<WfExecutedResult> SignForwardProcessAsync(WfAppRunner runner)
+        public Task<WfExecutedResult> SignForwardProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            var task = await Task.Run<WfExecutedResult>(() =>
-            {
-                return SignForwardProcess(runner);
-            });
-            return task;
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(SignForwardProcess(runner));
         }
 
         #endregion
@@ -1442,9 +1404,10 @@ namespace saiflow.engine.Service
             }
         }
 
-        public async Task<WfExecutedResult> TransferProcessAsync(WfAppRunner runner)
+        public Task<WfExecutedResult> TransferProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
-            return await Task.Run(() => TransferProcess(runner));
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(TransferProcess(runner));
         }
 
         public WfExecutedResult Transfer(SQLBuilder kit)
