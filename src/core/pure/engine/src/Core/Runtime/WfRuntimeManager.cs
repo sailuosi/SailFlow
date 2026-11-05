@@ -96,65 +96,13 @@ namespace saiflow.engine.Runtime
         }
         #endregion
 
-        #region Register Event
-        private event EventHandler<WfEventArgs> _onWfProcessExecuting;
-        internal event EventHandler<WfEventArgs> OnWfProcessExecuting
-        {
-            add
-            {
-                _onWfProcessExecuting += value;
-            }
-            remove
-            {
-                _onWfProcessExecuting -= value;
-            }
-        }
-
+        #region Runtime Executed Callback
+        // 子流程等内部仍用 OnWfProcessExecuted；生命周期对外扩展统一走 Gate/Hook/Notifier
         private event EventHandler<WfEventArgs> _onWfProcessExecuted;
         internal event EventHandler<WfEventArgs> OnWfProcessExecuted
         {
-            add
-            {
-                _onWfProcessExecuted += value;
-            }
-            remove
-            {
-                _onWfProcessExecuted -= value;
-            }
-        }
-
-        /// <summary>
-        /// Register Event
-        /// 注册事件
-        /// </summary>
-        /// <param name="executing"></param>
-        /// <param name="executed"></param>
-        internal WfRuntimeManager RegisterEvent(EventHandler<WfEventArgs> executing, EventHandler<WfEventArgs> executed)
-        {
-            if (executing != null)
-                this.OnWfProcessExecuting += executing;
-
-            if (executed != null)
-                this._onWfProcessExecuted += executed;
-
-            return this;
-        }
-
-        /// <summary>
-        /// Unregister Event
-        /// 解除注册事件
-        /// </summary>
-        /// <param name="executing"></param>
-        /// <param name="executed"></param>
-        internal WfRuntimeManager UnRegiesterEvent(EventHandler<WfEventArgs> executing, EventHandler<WfEventArgs> executed)
-        {
-            if (executing != null)
-                this.OnWfProcessExecuting -= executing;
-
-            if (executed != null)
-                this._onWfProcessExecuted -= executed;
-
-            return this;
+            add { _onWfProcessExecuted += value; }
+            remove { _onWfProcessExecuted -= value; }
         }
         #endregion
     }

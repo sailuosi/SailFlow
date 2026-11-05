@@ -200,7 +200,7 @@ namespace saiflow.engine.Hooks
             }
         }
 
-        /// <summary>待办创建/完成：Sync Hook + Subscribe 事件 + Notifier Outbox。</summary>
+        /// <summary>待办创建/完成：Sync/Async Hook + Notifier Outbox。</summary>
         public void FireTaskLifecycle(
             SQLBuilder kit,
             TaskEntity task,
@@ -210,6 +210,9 @@ namespace saiflow.engine.Hooks
         {
             if (task == null)
                 return;
+
+            // runner 保留签名兼容调用方；上下文由 task/activityInstance 构造
+            _ = runner;
 
             var eventType = kind == TaskNotifyKind.Created
                 ? EventFireTypeEnum.OnTaskCreated
@@ -221,20 +224,6 @@ namespace saiflow.engine.Hooks
 
             var notifyCtx = BuildNotifyContext(task, activityInstance, kind);
             EnqueueTaskNotifiers(kit, notifyCtx);
-
-            if (runner?.EventSubscriptionList != null && runner.EventSubscriptionList.Count > 0)
-            {
-                var eventContext = new EventContext
-                {
-                    AppInstanceId = task.AppInstanceId,
-                    ProcessId = task.ProcessId,
-                    ProcessInstanceId = task.ProcessInstanceId.Value,
-                    ActivityId = task.ActivityId,
-                    ActivityName = task.ActivityName,
-                    ActivityCode = activityInstance?.ActivityCode,
-                };
-                EventExecutor.InvokeExternalEvent(Sail, kit, eventType, runner.EventSubscriptionList, eventContext);
-            }
         }
 
         /// <summary>认领并消费 Pending Outbox（Worker / 测试 drain）。</summary>

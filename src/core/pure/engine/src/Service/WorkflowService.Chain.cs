@@ -224,18 +224,6 @@ namespace saiflow.engine.Service
             return this;
         }
 
-        /// <summary>
-        /// Subscribe
-        /// 活动事件订阅
-        /// </summary>
-        public IWorkflowService Subscribe(EventFireTypeEnum eventType, Func<EventContext, IEventService, Boolean> func)
-        {
-            _wfAppRunner.EventSubscriptionList.Add(
-                new KeyValuePair<EventFireTypeEnum, Func<EventContext, IEventService, bool>>(eventType, func)
-            );
-            return this;
-        }
-        
         #endregion
     }
 }

@@ -104,12 +104,21 @@ namespace saiflow.engine.Service
                         return startedResult;
 
                     //���¼�
-                    //Register event
-                    WfRuntimeManagerFactory.RegisterEvent(runtimeInstance,
-                        runtimeInstance_OnWfProcessStarting,
-                        runtimeInstance_OnWfProcessStarted);
 
-                    bool isStarted = runtimeInstance.Execute(kit);
+                    runtimeInstance.Execute(kit);
+                    startedResult = runtimeInstance.WfExecutedResult;
+                    if (startedResult.Status == WfExecutedStatus.Success)
+                    {
+                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                            Sail, kit, runner,
+                            startedResult.ProcessInstanceIdStarted,
+                            runtimeInstance.RunningActivityInstance,
+                            runtimeInstance.TaskView?.Id,
+                            EventFireTypeEnum.OnProcessStarted,
+                            FlowOperation.Start);
+                        FlowCapabilityPipeline.AfterSuccess(
+                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessStarted);
+                    }
                 }
                 finally
                 {
@@ -125,46 +134,7 @@ namespace saiflow.engine.Service
                 startedResult.Message = Sail.Messages.GetEngineMessage("workflowservice.startprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_START_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
-            finally
-            {
-                //ж���¼�
-                //Unregister event
-                WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessStarting, 
-                   runtimeInstance_OnWfProcessStarted);
-            }
             return startedResult;
-
-            void runtimeInstance_OnWfProcessStarting(object sender, WfEventArgs args)
-            {
-                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessStarting,
-                        runner.EventSubscriptionList,
-                        startedResult.ProcessInstanceIdStarted);
-            }
-
-            void runtimeInstance_OnWfProcessStarted(object sender, WfEventArgs args)
-            {
-                startedResult = args.WfExecutedResult;
-                if (startedResult.Status == WfExecutedStatus.Success)
-                {
-                    Event.EventExecutor.InvokeExternalEvent(Sail, kit, 
-                        EventFireTypeEnum.OnProcessStarted,
-                        runner.EventSubscriptionList,
-                        startedResult.ProcessInstanceIdStarted);
-
-                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                        Sail,
-                        kit,
-                        runner,
-                        startedResult.ProcessInstanceIdStarted,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
-                        EventFireTypeEnum.OnProcessStarted,
-                        FlowOperation.Start);
-                    FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessStarted);
-                }
-            }
         }
 
         /// <summary>
@@ -318,11 +288,20 @@ namespace saiflow.engine.Service
                         return runAppResult;
 
                     //ע���¼�������
-                    //Register event
-                    WfRuntimeManagerFactory.RegisterEvent(runtimeInstance,
-                        runtimeInstance_OnWfProcessRunning,
-                        runtimeInstance_OnWfProcessContinued);
-                    bool isRun = runtimeInstance.Execute(kit);
+                    runtimeInstance.Execute(kit);
+                    runAppResult = runtimeInstance.WfExecutedResult;
+                    if (runAppResult.Status == WfExecutedStatus.Success)
+                    {
+                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                            Sail, kit, runner,
+                            runtimeInstance.ProcessInstanceId,
+                            runtimeInstance.RunningActivityInstance,
+                            runtimeInstance.TaskView?.Id,
+                            EventFireTypeEnum.OnProcessContinued,
+                            FlowOperation.Run);
+                        FlowCapabilityPipeline.AfterSuccess(
+                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
+                    }
                 }
                 finally
                 {
@@ -338,46 +317,7 @@ namespace saiflow.engine.Service
                 runAppResult.Message = Sail.Messages.GetEngineMessage("workflowservice.runprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
-            finally
-            {
-                //ж���¼�
-                //Unregister event
-                WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessRunning,
-                    runtimeInstance_OnWfProcessContinued);
-            }
             return runAppResult;
-
-            void runtimeInstance_OnWfProcessRunning(object sender, WfEventArgs args)
-            {
-                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                    EventFireTypeEnum.OnProcessRunning,
-                    runner.EventSubscriptionList,
-                    runtimeInstance.ProcessInstanceId); 
-            }
-
-            void runtimeInstance_OnWfProcessContinued(object sender, WfEventArgs args)
-            {
-                runAppResult = args.WfExecutedResult;
-                if (runAppResult.Status == WfExecutedStatus.Success)
-                {
-                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessContinued,
-                        runner.EventSubscriptionList,
-                        runtimeInstance.ProcessInstanceId);
-
-                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                        Sail,
-                        kit,
-                        runner,
-                        runtimeInstance.ProcessInstanceId,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
-                        EventFireTypeEnum.OnProcessContinued,
-                        FlowOperation.Run);
-                    FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
-                }
-            }
         }
 
         /// <summary>
@@ -467,11 +407,20 @@ namespace saiflow.engine.Service
                     }
 
                     //ע���¼�������
-                    //Register event
-                    WfRuntimeManagerFactory.RegisterEvent(runtimeInstance,
-                        runtimeInstance_OnWfProcessRunning,
-                        runtimeInstance_OnWfProcessContinued);
-                    bool isRun = runtimeInstance.Execute(kit);
+                    runtimeInstance.Execute(kit);
+                    runAppResult = runtimeInstance.WfExecutedResult;
+                    if (runAppResult.Status == WfExecutedStatus.Success)
+                    {
+                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                            Sail, kit, runner,
+                            runtimeInstance.ProcessInstanceId,
+                            runtimeInstance.RunningActivityInstance,
+                            runtimeInstance.TaskView?.Id,
+                            EventFireTypeEnum.OnProcessContinued,
+                            FlowOperation.Run);
+                        FlowCapabilityPipeline.AfterSuccess(
+                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
+                    }
                 }
                 finally
                 {
@@ -487,35 +436,7 @@ namespace saiflow.engine.Service
                 runAppResult.Message = Sail.Messages.GetEngineMessage("workflowservice.runprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
-            finally
-            {
-                //ж���¼�
-                //Unregister event
-                WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance,
-                    runtimeInstance_OnWfProcessRunning,
-                    runtimeInstance_OnWfProcessContinued);
-            }
             return runAppResult;
-
-            void runtimeInstance_OnWfProcessRunning(object sender, WfEventArgs args)
-            {
-                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                    EventFireTypeEnum.OnProcessRunning,
-                    runner.EventSubscriptionList,
-                    runtimeInstance.ProcessInstanceId);
-            }
-
-            void runtimeInstance_OnWfProcessContinued(object sender, WfEventArgs args)
-            {
-                runAppResult = args.WfExecutedResult;
-                if (runAppResult.Status == WfExecutedStatus.Success)
-                {
-                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessContinued,
-                        runner.EventSubscriptionList,
-                        runtimeInstance.ProcessInstanceId);
-                }
-            }
         }
 
         /// <summary>
@@ -600,11 +521,20 @@ namespace saiflow.engine.Service
                     return withdrawedResult;
 
                 //ע���¼�������
-                //Register event
-                WfRuntimeManagerFactory.RegisterEvent(runtimeInstance,
-                    runtimeInstance_OnWfProcessWithdrawing,
-                    runtimeInstance_OnWfProcessWithdrawn);
-                bool isWithdrawn = runtimeInstance.Execute(kit);
+                runtimeInstance.Execute(kit);
+                    withdrawedResult = runtimeInstance.WfExecutedResult;
+                    if (withdrawedResult.Status == WfExecutedStatus.Success)
+                    {
+                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                            Sail, kit, runner,
+                            runtimeInstance.ProcessInstanceId,
+                            runtimeInstance.RunningActivityInstance,
+                            runtimeInstance.TaskView?.Id,
+                            EventFireTypeEnum.OnProcessWithdrawn,
+                            FlowOperation.Withdraw);
+                        FlowCapabilityPipeline.AfterSuccess(
+                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessWithdrawn);
+                    }
             }
             catch (System.Exception e)
             {
@@ -613,46 +543,7 @@ namespace saiflow.engine.Service
                 withdrawedResult.Message = Sail.Messages.GetEngineMessage("workflowservice.withdrawprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_WITHDRAW_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
-            finally
-            {
-                //ж���¼�
-                //Unregister event
-                WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessWithdrawing,
-                    runtimeInstance_OnWfProcessWithdrawn);
-            }
             return withdrawedResult;
-
-            void runtimeInstance_OnWfProcessWithdrawing(object sender, WfEventArgs args)
-            {
-                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                    EventFireTypeEnum.OnProcessWithdrawing,
-                    runner.EventSubscriptionList,
-                    runtimeInstance.ProcessInstanceId);
-            }
-
-            void runtimeInstance_OnWfProcessWithdrawn(object sender, WfEventArgs args)
-            {
-                withdrawedResult = args.WfExecutedResult;
-                if (withdrawedResult.Status == WfExecutedStatus.Success)
-                {
-                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessWithdrawn,
-                        runner.EventSubscriptionList,
-                        runtimeInstance.ProcessInstanceId);
-
-                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                        Sail,
-                        kit,
-                        runner,
-                        runtimeInstance.ProcessInstanceId,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
-                        EventFireTypeEnum.OnProcessWithdrawn,
-                        FlowOperation.Withdraw);
-                    FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessWithdrawn);
-                }
-            }
         }
 
         /// <summary>
@@ -735,11 +626,20 @@ namespace saiflow.engine.Service
                     return sendbackResult;
 
                 //ע���¼�������
-                //Register event
-                WfRuntimeManagerFactory.RegisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessSendBacking,
-                    runtimeInstance_OnWfProcessSendBacked);
-                bool isSendBacked = runtimeInstance.Execute(kit);
+                runtimeInstance.Execute(kit);
+                    sendbackResult = runtimeInstance.WfExecutedResult;
+                    if (sendbackResult.Status == WfExecutedStatus.Success)
+                    {
+                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                            Sail, kit, runner,
+                            runtimeInstance.ProcessInstanceId,
+                            runtimeInstance.RunningActivityInstance,
+                            runtimeInstance.TaskView?.Id,
+                            EventFireTypeEnum.OnProcessSendBacked,
+                            FlowOperation.SendBack);
+                        FlowCapabilityPipeline.AfterSuccess(
+                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessSendBacked);
+                    }
             }
             catch (System.Exception e)
             {
@@ -748,47 +648,7 @@ namespace saiflow.engine.Service
                 sendbackResult.Message = Sail.Messages.GetEngineMessage("workflowservice.sendbackprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_SENDBACK_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
-            finally
-            {
-                //ж���¼�
-                //Unregister event
-                WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessSendBacking,
-                    runtimeInstance_OnWfProcessSendBacked);
-            }
             return sendbackResult;
-
-
-            void runtimeInstance_OnWfProcessSendBacking(object sender, WfEventArgs args)
-            {
-                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessSendBacking,
-                        runner.EventSubscriptionList,
-                        runtimeInstance.ProcessInstanceId);
-            }
-
-            void runtimeInstance_OnWfProcessSendBacked(object sender, WfEventArgs args)
-            {
-                sendbackResult = args.WfExecutedResult;
-                if (sendbackResult.Status == WfExecutedStatus.Success)
-                {
-                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessSendBacked,
-                        runner.EventSubscriptionList,
-                        runtimeInstance.ProcessInstanceId);
-
-                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                        Sail,
-                        kit,
-                        runner,
-                        runtimeInstance.ProcessInstanceId,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
-                        EventFireTypeEnum.OnProcessSendBacked,
-                        FlowOperation.SendBack);
-                    FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessSendBacked);
-                }
-            }
         }
 
         /// <summary>
@@ -871,11 +731,20 @@ namespace saiflow.engine.Service
                     return resendResult;
 
                 //ע���¼�������
-                //Register event
-                WfRuntimeManagerFactory.RegisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessResending,
-                    runtimeInstance_OnWfProcessResent);
-                bool isResent = runtimeInstance.Execute(kit);
+                runtimeInstance.Execute(kit);
+                    resendResult = runtimeInstance.WfExecutedResult;
+                    if (resendResult.Status == WfExecutedStatus.Success)
+                    {
+                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                            Sail, kit, runner,
+                            runtimeInstance.ProcessInstanceId,
+                            runtimeInstance.RunningActivityInstance,
+                            runtimeInstance.TaskView?.Id,
+                            EventFireTypeEnum.OnProcessResent,
+                            FlowOperation.Resend);
+                        FlowCapabilityPipeline.AfterSuccess(
+                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessResent);
+                    }
             }
             catch (System.Exception e)
             {
@@ -884,46 +753,7 @@ namespace saiflow.engine.Service
                 resendResult.Message = Sail.Messages.GetEngineMessage("workflowservice.resendprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RESEND_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
-            finally
-            {
-                //ж���¼�
-                //Unregister event
-                WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessResending,
-                    runtimeInstance_OnWfProcessResent);
-            }
             return resendResult;
-
-            void runtimeInstance_OnWfProcessResending(object sender, WfEventArgs args)
-            {
-                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                    EventFireTypeEnum.OnProcessResending,
-                    runner.EventSubscriptionList,
-                    runtimeInstance.ProcessInstanceId);
-            }
-
-            void runtimeInstance_OnWfProcessResent(object sender, WfEventArgs args)
-            {
-                resendResult = args.WfExecutedResult;
-                if (resendResult.Status == WfExecutedStatus.Success)
-                {
-                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessResent,
-                        runner.EventSubscriptionList,
-                        runtimeInstance.ProcessInstanceId);
-
-                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                        Sail,
-                        kit,
-                        runner,
-                        runtimeInstance.ProcessInstanceId,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
-                        EventFireTypeEnum.OnProcessResent,
-                        FlowOperation.Resend);
-                    FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessResent);
-                }
-            }
         }
 
         /// <summary>
@@ -1008,11 +838,20 @@ namespace saiflow.engine.Service
                     return reviseResult;
 
                 //ע���¼�������
-                //Register event
-                WfRuntimeManagerFactory.RegisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessRevising,
-                    runtimeInstance_OnWfProcessRevised);
-                bool isRevised = runtimeInstance.Execute(kit);
+                runtimeInstance.Execute(kit);
+                    reviseResult = runtimeInstance.WfExecutedResult;
+                    if (reviseResult.Status == WfExecutedStatus.Success)
+                    {
+                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                            Sail, kit, runner,
+                            runtimeInstance.ProcessInstanceId,
+                            runtimeInstance.RunningActivityInstance,
+                            runtimeInstance.TaskView?.Id,
+                            EventFireTypeEnum.OnProcessRevised,
+                            FlowOperation.Revise);
+                        FlowCapabilityPipeline.AfterSuccess(
+                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessRevised);
+                    }
             }
             catch(System.Exception e)
             {
@@ -1021,46 +860,7 @@ namespace saiflow.engine.Service
                 reviseResult.Message = Sail.Messages.GetEngineMessage("workflowservice.reviseprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_REVISE_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
-            finally
-            {
-                //ע���¼�
-                //Unregister event
-                WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessRevising,
-                    runtimeInstance_OnWfProcessRevised);
-            }
             return reviseResult;
-
-            void runtimeInstance_OnWfProcessRevising(object sender, WfEventArgs args)
-            {
-                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                    EventFireTypeEnum.OnProcessRevising,
-                    runner.EventSubscriptionList,
-                    runtimeInstance.ProcessInstanceId);
-            }
-
-            void runtimeInstance_OnWfProcessRevised(object sendder, WfEventArgs args)
-            {
-                reviseResult = args.WfExecutedResult;
-                if (reviseResult.Status == WfExecutedStatus.Success)
-                {
-                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessRevised,
-                        runner.EventSubscriptionList,
-                        runtimeInstance.ProcessInstanceId);
-
-                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                        Sail,
-                        kit,
-                        runner,
-                        runtimeInstance.ProcessInstanceId,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
-                        EventFireTypeEnum.OnProcessRevised,
-                        FlowOperation.Revise);
-                    FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessRevised);
-                }
-            }
         }
 
         /// <summary>
@@ -1145,11 +945,20 @@ namespace saiflow.engine.Service
                     return reversedResult;
 
                 //ע���¼�������
-                //Register event
-                WfRuntimeManagerFactory.RegisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessReversing,
-                    runtimeInstance_OnWfProcessReversed);
-                bool isReversed = runtimeInstance.Execute(kit);
+                runtimeInstance.Execute(kit);
+                    reversedResult = runtimeInstance.WfExecutedResult;
+                    if (reversedResult.Status == WfExecutedStatus.Success)
+                    {
+                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                            Sail, kit, runner,
+                            runtimeInstance.ProcessInstanceId,
+                            runtimeInstance.RunningActivityInstance,
+                            runtimeInstance.TaskView?.Id,
+                            EventFireTypeEnum.OnProcessReversed,
+                            FlowOperation.Reverse);
+                        FlowCapabilityPipeline.AfterSuccess(
+                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessReversed);
+                    }
             }
             catch (System.Exception e)
             {
@@ -1158,46 +967,7 @@ namespace saiflow.engine.Service
                 reversedResult.Message = Sail.Messages.GetEngineMessage("workflowservice.reverseprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_REVERSE_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
-            finally
-            {
-                //ж���¼�
-                //Unregister event
-                WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessReversing,
-                    runtimeInstance_OnWfProcessReversed);
-            }
             return reversedResult;
-
-            void runtimeInstance_OnWfProcessReversing(object sender, WfEventArgs args)
-            {
-                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                    EventFireTypeEnum.OnProcessReversing,
-                    runner.EventSubscriptionList,
-                    runtimeInstance.ProcessInstanceId);
-            }
-
-            void runtimeInstance_OnWfProcessReversed(object sender, WfEventArgs args)
-            {
-                reversedResult = args.WfExecutedResult;
-                if (reversedResult.Status == WfExecutedStatus.Success)
-                {
-                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessReversed,
-                        runner.EventSubscriptionList,
-                        runtimeInstance.ProcessInstanceId);
-
-                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                        Sail,
-                        kit,
-                        runner,
-                        runtimeInstance.ProcessInstanceId,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
-                        EventFireTypeEnum.OnProcessReversed,
-                        FlowOperation.Reverse);
-                    FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessReversed);
-                }
-            }
         }
 
         /// <summary>
@@ -1282,11 +1052,20 @@ namespace saiflow.engine.Service
                     return rejectedResult;
 
                 //ע���¼�������
-                //Register event
-                WfRuntimeManagerFactory.RegisterEvent(runtimeInstance,
-                    runtimeInstance_OnWfProcessRejecting,
-                    runtimeInstance_OnWfProcessRejected);
-                bool isRejected = runtimeInstance.Execute(kit);
+                runtimeInstance.Execute(kit);
+                    rejectedResult = runtimeInstance.WfExecutedResult;
+                    if (rejectedResult.Status == WfExecutedStatus.Success)
+                    {
+                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                            Sail, kit, runner,
+                            runtimeInstance.ProcessInstanceId,
+                            runtimeInstance.RunningActivityInstance,
+                            runtimeInstance.TaskView?.Id,
+                            EventFireTypeEnum.OnProcessRejected,
+                            FlowOperation.Reject);
+                        FlowCapabilityPipeline.AfterSuccess(
+                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessRejected);
+                    }
             }
             catch (System.Exception e)
             {
@@ -1295,46 +1074,7 @@ namespace saiflow.engine.Service
                 rejectedResult.Message = Sail.Messages.GetEngineMessage("workflowservice.rejectprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_REJECT_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
-            finally
-            {
-                //ж���¼�
-                //Unregister event
-                WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance,
-                    runtimeInstance_OnWfProcessRejecting,
-                    runtimeInstance_OnWfProcessRejected);
-            }
             return rejectedResult;
-
-            void runtimeInstance_OnWfProcessRejecting(object sender, WfEventArgs args)
-            {
-                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                    EventFireTypeEnum.OnProcessRejecting,
-                    runner.EventSubscriptionList,
-                    runtimeInstance.ProcessInstanceId);
-            }
-
-            void runtimeInstance_OnWfProcessRejected(object sender, WfEventArgs args)
-            {
-                rejectedResult = args.WfExecutedResult;
-                if (rejectedResult.Status == WfExecutedStatus.Success)
-                {
-                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessRejected,
-                        runner.EventSubscriptionList,
-                        runtimeInstance.ProcessInstanceId);
-
-                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                        Sail,
-                        kit,
-                        runner,
-                        runtimeInstance.ProcessInstanceId,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
-                        EventFireTypeEnum.OnProcessRejected,
-                        FlowOperation.Reject);
-                    FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessRejected);
-                }
-            }
         }
 
         /// <summary>
@@ -1418,11 +1158,20 @@ namespace saiflow.engine.Service
                     return closedResult;
 
                 //ע���¼�������
-                //Register event
-                WfRuntimeManagerFactory.RegisterEvent(runtimeInstance,
-                    runtimeInstance_OnWfProcessClosing,
-                    runtimeInstance_OnWfProcessClosed);
-                bool isRejected = runtimeInstance.Execute(kit);
+                runtimeInstance.Execute(kit);
+                    closedResult = runtimeInstance.WfExecutedResult;
+                    if (closedResult.Status == WfExecutedStatus.Success)
+                    {
+                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                            Sail, kit, runner,
+                            runtimeInstance.ProcessInstanceId,
+                            runtimeInstance.RunningActivityInstance,
+                            runtimeInstance.TaskView?.Id,
+                            EventFireTypeEnum.OnProcessClosed,
+                            FlowOperation.Close);
+                        FlowCapabilityPipeline.AfterSuccess(
+                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessClosed);
+                    }
             }
             catch (System.Exception e)
             {
@@ -1431,46 +1180,7 @@ namespace saiflow.engine.Service
                 closedResult.Message = Sail.Messages.GetEngineMessage("workflowservice.closeprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_CLOSE_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
-            finally
-            {
-                //ж���¼�
-                //Unregister event
-                WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance,
-                    runtimeInstance_OnWfProcessClosing,
-                    runtimeInstance_OnWfProcessClosed);
-            }
             return closedResult;
-
-            void runtimeInstance_OnWfProcessClosing(object sender, WfEventArgs args)
-            {
-                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                    EventFireTypeEnum.OnProcessClosing,
-                    runner.EventSubscriptionList,
-                    runtimeInstance.ProcessInstanceId);
-            }
-
-            void runtimeInstance_OnWfProcessClosed(object sender, WfEventArgs args)
-            {
-                closedResult = args.WfExecutedResult;
-                if (closedResult.Status == WfExecutedStatus.Success)
-                {
-                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessClosed,
-                        runner.EventSubscriptionList,
-                        runtimeInstance.ProcessInstanceId);
-
-                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                        Sail,
-                        kit,
-                        runner,
-                        runtimeInstance.ProcessInstanceId,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
-                        EventFireTypeEnum.OnProcessClosed,
-                        FlowOperation.Close);
-                    FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessClosed);
-                }
-            }
         }
 
         /// <summary>
@@ -1554,12 +1264,20 @@ namespace saiflow.engine.Service
                 if (!FlowCapabilityPipeline.TryGate(Sail, kit, jumpGateCtx, jumpResult))
                     return jumpResult;
 
-                //ע���¼�������
-                //Register event
-                WfRuntimeManagerFactory.RegisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessJumping,
-                    runtimeInstance_OnWfProcessJumped);          
-                bool isJumped = runtimeInstance.Execute(kit);
+                runtimeInstance.Execute(kit);
+                jumpResult = runtimeInstance.WfExecutedResult;
+                if (jumpResult.Status == WfExecutedStatus.Success)
+                {
+                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                        Sail, kit, runner,
+                        runtimeInstance.ProcessInstanceId,
+                        runtimeInstance.RunningActivityInstance,
+                        runtimeInstance.TaskView?.Id,
+                        EventFireTypeEnum.OnProcessJumped,
+                        FlowOperation.Jump);
+                    FlowCapabilityPipeline.AfterSuccess(
+                        Sail, kit, hookCtx, EventFireTypeEnum.OnProcessJumped);
+                }
             }
             catch (System.Exception e)
             {
@@ -1568,46 +1286,7 @@ namespace saiflow.engine.Service
                 jumpResult.Message = Sail.Messages.GetEngineMessage("workflowservice.jumpprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_JUMP_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
-            finally
-            {
-                //ж���¼�
-                //Unregister event
-                WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessJumping,
-                    runtimeInstance_OnWfProcessJumped);
-            }
             return jumpResult;
-
-            void runtimeInstance_OnWfProcessJumping(object sender, WfEventArgs args)
-            {
-                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                    EventFireTypeEnum.OnProcessJumping,
-                    runner.EventSubscriptionList,
-                    runtimeInstance.ProcessInstanceId);
-            }
-
-            void runtimeInstance_OnWfProcessJumped(object sender, WfEventArgs args)
-            {
-                jumpResult = args.WfExecutedResult;
-                if (jumpResult.Status == WfExecutedStatus.Success)
-                {
-                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessJumped,
-                        runner.EventSubscriptionList,
-                        runtimeInstance.ProcessInstanceId);
-
-                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                        Sail,
-                        kit,
-                        runner,
-                        runtimeInstance.ProcessInstanceId,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
-                        EventFireTypeEnum.OnProcessJumped,
-                        FlowOperation.Jump);
-                    FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessJumped);
-                }
-            }
         }
 
         /// <summary>
@@ -1726,12 +1405,21 @@ namespace saiflow.engine.Service
                     return signforwardResult;
 
                 //ע���¼�������
-                //Register event
-                WfRuntimeManagerFactory.RegisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessSignForwarding,
-                    runtimeInstance_OnWfProcessSignForwarded);
 
-                bool isSignForwarding = runtimeInstance.Execute(kit);
+                runtimeInstance.Execute(kit);
+                    signforwardResult = runtimeInstance.WfExecutedResult;
+                    if (signforwardResult.Status == WfExecutedStatus.Success)
+                    {
+                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                            Sail, kit, runner,
+                            runtimeInstance.ProcessInstanceId,
+                            runtimeInstance.RunningActivityInstance,
+                            runtimeInstance.TaskView?.Id,
+                            EventFireTypeEnum.OnProcessSignForwarded,
+                            FlowOperation.SignForward);
+                        FlowCapabilityPipeline.AfterSuccess(
+                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessSignForwarded);
+                    }
             }
             catch (System.Exception e)
             {
@@ -1740,46 +1428,7 @@ namespace saiflow.engine.Service
                 signforwardResult.Message = Sail.Messages.GetEngineMessage("workflowservice.signforwardprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_SIGN_FORWARD_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
-            finally
-            {
-                //ж���¼�
-                //Unregister event
-                WfRuntimeManagerFactory.UnregisterEvent(runtimeInstance, 
-                    runtimeInstance_OnWfProcessSignForwarding,
-                    runtimeInstance_OnWfProcessSignForwarded);
-            }
             return signforwardResult;
-
-            void runtimeInstance_OnWfProcessSignForwarding(object sender, WfEventArgs args)
-            {
-                Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                    EventFireTypeEnum.OnProcessSignForwarding,
-                    runner.EventSubscriptionList,
-                    runtimeInstance.ProcessInstanceId);
-            }
-
-            void runtimeInstance_OnWfProcessSignForwarded(object sender, WfEventArgs args)
-            {
-                signforwardResult = args.WfExecutedResult;
-                if (signforwardResult.Status == WfExecutedStatus.Success)
-                {
-                    Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessSignForwarded,
-                        runner.EventSubscriptionList,
-                        runtimeInstance.ProcessInstanceId);
-
-                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                        Sail,
-                        kit,
-                        runner,
-                        runtimeInstance.ProcessInstanceId,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
-                        EventFireTypeEnum.OnProcessSignForwarded,
-                        FlowOperation.SignForward);
-                    FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, EventFireTypeEnum.OnProcessSignForwarded);
-                }
-            }
         }
 
         /// <summary>
@@ -1887,12 +1536,6 @@ namespace saiflow.engine.Service
                 if (!FlowCapabilityPipeline.TryGate(Sail, kit, gateCtx, result))
                     return result;
 
-                Event.EventExecutor.InvokeExternalEvent(
-                    Sail, kit,
-                    EventFireTypeEnum.OnProcessTransferring,
-                    runner.EventSubscriptionList,
-                    processInstanceId);
-
                 var managed = tm.Transfer(kit, runner.TaskId.Value, runner, targets);
                 if (managed.Status != WfDataManagedStatusEnum.Success)
                 {
@@ -1904,12 +1547,6 @@ namespace saiflow.engine.Service
 
                 result.Status = WfExecutedStatus.Success;
                 result.Message = "Transfer succeeded.";
-
-                Event.EventExecutor.InvokeExternalEvent(
-                    Sail, kit,
-                    EventFireTypeEnum.OnProcessTransferred,
-                    runner.EventSubscriptionList,
-                    processInstanceId);
 
                 var hookCtx = FlowCapabilityPipeline.BuildHookContext(
                     Sail,

@@ -270,7 +270,6 @@ namespace saiflow.engine.Service
         IWorkflowService OnTask(int taskId);
         IWorkflowService SetVariable(string name, string value);
         IWorkflowService SetVariable(IDictionary<string, string> variables);
-        IWorkflowService Subscribe(EventFireTypeEnum eventType, Func<EventContext, IEventService, Boolean> func);
         IWorkflowService NextStep(string activityId, PerformerList performerList);
         IWorkflowService NextStep(IDictionary<string, PerformerList> nextActivityPerformers);
         IWorkflowService NextStepInt(string userId, string userName);

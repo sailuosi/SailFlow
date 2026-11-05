@@ -1169,39 +1169,5 @@ namespace saiflow.engine.Runtime
         }
         #endregion
 
-        #region WfRuntimeManager Register Event
-        /// <summary>
-        /// Regiester Event
-        /// </summary>
-        /// <param name="runtimeInstance"></param>
-        /// <param name="executing"></param>
-        /// <param name="executed"></param>
-        internal static void RegisterEvent(WfRuntimeManager runtimeInstance,
-            EventHandler<WfEventArgs> executing, 
-            EventHandler<WfEventArgs> executed)
-        {
-            if (runtimeInstance != null)
-            {
-                runtimeInstance.RegisterEvent(executing, executed);
-            }
-        }
-
-        /// <summary>
-        /// Unregister Event
-        /// 事件注销
-        /// </summary>
-        /// <param name="runtimeInstance"></param>
-        /// <param name="executing"></param>
-        /// <param name="executed"></param>
-        internal static void UnregisterEvent(WfRuntimeManager runtimeInstance, 
-            EventHandler<WfEventArgs> executing, 
-            EventHandler<WfEventArgs> executed)
-        {
-            if (runtimeInstance != null)
-            {
-                runtimeInstance.UnRegiesterEvent(executing, executed);
-            }
-        }
-        #endregion
     }
 }

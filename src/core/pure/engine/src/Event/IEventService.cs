@@ -26,14 +26,4 @@ namespace saiflow.engine.Event
         void SetCondition(string name, string value);
         T GetInstance<T>(int id) where T : class;
     }
-
-    /// <summary>
-    /// Event Subscription List
-    /// 事件订阅列表
-    /// </summary>
-    public class EventSubscriptionList
-        : List<KeyValuePair<EventFireTypeEnum, Func<EventContext, IEventService, Boolean>>>
-    {
-
-    }
 }

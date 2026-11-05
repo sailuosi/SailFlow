@@ -9,6 +9,7 @@ using saiflow.engine.Entity;
 
 using saiflow.engine.Client;
 using saiflow.engine.Core;
+using saiflow.engine.Hooks;
 namespace saiflow.engine.Pattern
 {
     /// <summary>
@@ -162,20 +163,21 @@ namespace saiflow.engine.Pattern
                     activityResource.AppRunner,
                     kit);
 
-                //调用外部事件注册方法
-                var EventContext = new EventContext
+                var runner = activityResource?.AppRunner;
+                if (runner != null && processInstance?.Id != null)
                 {
-                    AppInstanceId = processInstance.AppInstanceId,
-                    ProcessId = processInstance.ProcessId,
-                    ProcessInstanceId = processInstance.Id.Value,
-                    ActivityId = toActivity.ActivityId,
-                    ActivityCode = toActivity.ActivityCode,
-                    ActivityResource = activityResource
-                };
-                EventExecutor.InvokeExternalEvent(Sail, kit,
-                    EventFireTypeEnum.OnActivityCreated,
-                    activityResource.AppRunner.EventSubscriptionList,
-                    EventContext);
+                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                        Sail,
+                        kit,
+                        runner,
+                        processInstance.Id.Value,
+                        toActivityInstance,
+                        null,
+                        EventFireTypeEnum.OnActivityCreated,
+                        FlowOperation.Run);
+                    FlowCapabilityPipeline.AfterSuccess(
+                        Sail, kit, hookCtx, EventFireTypeEnum.OnActivityCreated);
+                }
             }
         }
 

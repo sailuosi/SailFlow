@@ -16,6 +16,7 @@ using saiflow.engine.Event;
 using saiflow.engine.Message;
 
 using saiflow.engine.Client;
+using saiflow.engine.Hooks;
 using saiflow.engine.Core;
 namespace saiflow.engine.Pattern
 {
@@ -79,30 +80,19 @@ namespace saiflow.engine.Pattern
                 throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorend.ContinueMainProcessRunning.warn", runAppResult.Message));
             }
 
-            //注册并触发事件
-            WfRuntimeManagerFactory.RegisterEvent(runtimeInstance,
-                runtimeInstance_OnWfProcessRunning,
-                runtimeInstance_OnWfProcessContinued);
-            bool isRun = runtimeInstance.Execute(kit);
-
-            void runtimeInstance_OnWfProcessRunning(object sender, WfEventArgs args)
+            runtimeInstance.Execute(kit);
+            runAppResult = runtimeInstance.WfExecutedResult;
+            if (runAppResult.Status == WfExecutedStatus.Success)
             {
-                saiflow.engine.Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                    EventFireTypeEnum.OnProcessRunning,
-                    runner.EventSubscriptionList,
-                    runtimeInstance.ProcessInstanceId);
-            }
-
-            void runtimeInstance_OnWfProcessContinued(object sender, WfEventArgs args)
-            {
-                runAppResult = args.WfExecutedResult;
-                if (runAppResult.Status == WfExecutedStatus.Success)
-                {
-                    saiflow.engine.Event.EventExecutor.InvokeExternalEvent(Sail, kit,
-                        EventFireTypeEnum.OnProcessContinued,
-                        runner.EventSubscriptionList,
-                        runtimeInstance.ProcessInstanceId);
-                }
+                var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                    Sail, kit, runner,
+                    runtimeInstance.ProcessInstanceId,
+                    runtimeInstance.RunningActivityInstance,
+                    runtimeInstance.TaskView?.Id,
+                    EventFireTypeEnum.OnProcessContinued,
+                    FlowOperation.Run);
+                FlowCapabilityPipeline.AfterSuccess(
+                    Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
             }
         }
 

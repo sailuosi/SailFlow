@@ -17,6 +17,7 @@ using saiflow.engine.Pattern;
 using saiflow.engine.Event;
 using saiflow.engine.Pattern;
 using saiflow.engine.Core;
+using saiflow.engine.Hooks;
 
 namespace saiflow.engine.Pattern
 {
@@ -238,12 +239,7 @@ namespace saiflow.engine.Pattern
             var actionList = LinkContext.FromActivity.ActionList;
             ActionExecutor.ExecuteActionListBefore(actionList, eventService as IEventService);
 
-            // 节点流转前，触发活动执行委托事件
-            var currentActivity = LinkContext.CurrentActivity != null ? LinkContext.CurrentActivity : LinkContext.FromActivity;
-            EventExecutor.InvokeExternalEvent(Sail, this.Kit,
-                EventFireTypeEnum.OnActivityExecuting,
-                currentActivity,
-                ActivityForwardContext);
+            FireActivityHook(EventFireTypeEnum.OnActivityExecuting);
         }
 
         /// <summary>
@@ -255,12 +251,31 @@ namespace saiflow.engine.Pattern
             var actionList = ((this is NodeMediatorEnd) || (this is NodeMediatorIntermediate)) ? LinkContext.CurrentActivity.ActionList : LinkContext.FromActivity.ActionList;
             ActionExecutor.ExecuteActionListAfter(actionList, eventService as IEventService);
 
-            // 节点流转完成后，触发活动执行完成委托事件
-            var currentActivity = LinkContext.CurrentActivity != null ? LinkContext.CurrentActivity : LinkContext.FromActivity;
-            EventExecutor.InvokeExternalEvent(Sail, this.Kit,
-                EventFireTypeEnum.OnActivityExecuted,
-                currentActivity,
-                ActivityForwardContext);
+            FireActivityHook(EventFireTypeEnum.OnActivityExecuted);
+        }
+
+        /// <summary>活动生命周期走 Gate/Hook 三轨（不再走 EventSubscriptionList）。</summary>
+        protected void FireActivityHook(EventFireTypeEnum eventType, ActivityInstanceEntity activityInstance = null)
+        {
+            var runner = ActivityForwardContext?.ActivityResource?.AppRunner;
+            var processInstance = ActivityForwardContext?.ProcessInstance;
+            if (runner == null || processInstance?.Id == null)
+                return;
+
+            var ai = activityInstance
+                ?? ActivityForwardContext.FromActivityInstance
+                ?? LinkContext?.FromActivityInstance;
+
+            var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                Sail,
+                Kit,
+                runner,
+                processInstance.Id.Value,
+                ai,
+                ActivityForwardContext.TaskId,
+                eventType,
+                FlowOperation.Run);
+            FlowCapabilityPipeline.AfterSuccess(Sail, Kit, hookCtx, eventType);
         }
 
         /// <summary>

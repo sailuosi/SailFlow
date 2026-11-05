@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using saiflow.engine.Event;
 
 namespace saiflow.engine.Common
 {
@@ -152,12 +151,6 @@ namespace saiflow.engine.Common
         /// 流程数据：下一步执行类型
         /// </summary>
         public NextPerformerIntTypeEnum NextPerformerType { get; set; }
-
-        /// <summary>
-        /// Event Subscription List
-        /// 事件订阅列表
-        /// </summary>
-        internal EventSubscriptionList EventSubscriptionList = new EventSubscriptionList();
 
         /// <summary>
         /// Topic used for message initiation
