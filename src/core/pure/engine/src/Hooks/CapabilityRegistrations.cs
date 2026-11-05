@@ -40,6 +40,9 @@ namespace saiflow.engine.Hooks
         public TaskNotifyKind[] TaskKinds { get; init; }
         public HookMode Mode { get; init; }
         public ITaskNotifier Handler { get; init; }
+
+        /// <summary>Outbox 消费侧进程内限流；null 则 Drain 直调 Handler。</summary>
+        public NotifyThrottleOptions InProcessThrottle { get; init; }
     }
 
     internal sealed class DelegateFlowGate : IFlowGate

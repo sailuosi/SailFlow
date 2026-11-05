@@ -136,6 +136,12 @@ public partial class SailClient
     /// <summary>Outbox Worker / drain 运行参数（<see cref="Hosting.SailHookOutboxDrainExtensions.UseHookOutboxDrain"/> 可覆盖）。</summary>
     public HookOutboxOptions HookOutboxOptions { get; set; } = new();
 
+    private Hooks.NotifierThrottleHub _notifierThrottleHub;
+
+    /// <summary>Notifier Outbox 消费侧 <see cref="Hooks.NotifyThrottleOptions"/> 枢纽（按 handler 名分车道）。</summary>
+    public Hooks.NotifierThrottleHub NotifierThrottleHub =>
+        _notifierThrottleHub ??= new Hooks.NotifierThrottleHub();
+
     /// <summary>
     /// Build 时登记的已装能力快照（UseXxx / ProvideFeature）。宿主探针可读；手动 new 的 Client 为空。
     /// </summary>

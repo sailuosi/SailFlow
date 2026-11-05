@@ -118,6 +118,7 @@ namespace saiflow.engine.Hooks
                 TaskKinds = o.TaskKinds,
                 Mode = o.Mode == HookMode.Sync ? HookMode.AsyncOutbox : o.Mode,
                 Handler = notifier,
+                InProcessThrottle = o.InProcessThrottle,
             };
 
         private static void TraceWarning(string message) =>

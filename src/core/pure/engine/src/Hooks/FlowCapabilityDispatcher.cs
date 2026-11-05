@@ -255,46 +255,87 @@ namespace saiflow.engine.Hooks
 
             var om = new HookOutboxManager(Sail);
             var processed = 0;
+            // 配置了 InProcessThrottle 的 Notify：并行入车道，由 MaxDegree 限并发；其余仍串行
+            List<Task<bool>> throttledNotifyTasks = null;
 
             foreach (var row in rows)
             {
                 if (cancellationToken.IsCancellationRequested)
                     break;
 
-                try
+                if (row.Kind == HookOutboxKinds.Notify && NotifierHasInProcessThrottle(row.HandlerName))
                 {
-                    await DispatchOutboxRowAsync(row, cancellationToken).ConfigureAwait(false);
-
-                    using (var kit = Sail.UseRunSQL())
-                    {
-                        kit.beginTransaction();
-                        om.MarkSucceeded(kit, row);
-                        kit.commit();
-                    }
-
-                    Sail.CapabilityMetrics?.IncrementOutboxSucceeded();
-                    processed++;
+                    throttledNotifyTasks ??= new List<Task<bool>>();
+                    throttledNotifyTasks.Add(ProcessOneOutboxRowAsync(om, row, maxAttempts, cancellationToken));
+                    continue;
                 }
-                catch (Exception ex)
-                {
-                    using (var kit = Sail.UseRunSQL())
-                    {
-                        kit.beginTransaction();
-                        om.MarkFailed(kit, row, ex.Message, maxAttempts);
-                        kit.commit();
-                    }
 
-                    Sail.CapabilityMetrics?.IncrementOutboxFailed();
-                    if (row.Status == HookOutboxStatus.Dead)
-                    {
-                        Sail.CapabilityMetrics?.IncrementOutboxDead();
-                        Trace.TraceWarning(
-                            $"[saiflow] Hook outbox dead-letter id={row.Id} kind={row.Kind} handler={row.HandlerName}: {ex.Message}");
-                    }
+                if (await ProcessOneOutboxRowAsync(om, row, maxAttempts, cancellationToken).ConfigureAwait(false))
+                    processed++;
+            }
+
+            if (throttledNotifyTasks is { Count: > 0 })
+            {
+                var results = await Task.WhenAll(throttledNotifyTasks).ConfigureAwait(false);
+                foreach (var ok in results)
+                {
+                    if (ok)
+                        processed++;
                 }
             }
 
             return processed;
+        }
+
+        private async Task<bool> ProcessOneOutboxRowAsync(
+            HookOutboxManager om,
+            HookOutboxEntity row,
+            int maxAttempts,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                await DispatchOutboxRowAsync(row, cancellationToken).ConfigureAwait(false);
+
+                using (var kit = Sail.UseRunSQL())
+                {
+                    kit.beginTransaction();
+                    om.MarkSucceeded(kit, row);
+                    kit.commit();
+                }
+
+                Sail.CapabilityMetrics?.IncrementOutboxSucceeded();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                using (var kit = Sail.UseRunSQL())
+                {
+                    kit.beginTransaction();
+                    om.MarkFailed(kit, row, ex.Message, maxAttempts);
+                    kit.commit();
+                }
+
+                Sail.CapabilityMetrics?.IncrementOutboxFailed();
+                if (row.Status == HookOutboxStatus.Dead)
+                {
+                    Sail.CapabilityMetrics?.IncrementOutboxDead();
+                    Trace.TraceWarning(
+                        $"[saiflow] Hook outbox dead-letter id={row.Id} kind={row.Kind} handler={row.HandlerName}: {ex.Message}");
+                }
+
+                return false;
+            }
+        }
+
+        private bool NotifierHasInProcessThrottle(string handlerName)
+        {
+            if (string.IsNullOrEmpty(handlerName))
+                return false;
+
+            var notifier = Registry.Notifiers.FirstOrDefault(n =>
+                string.Equals(n.Name, handlerName, StringComparison.OrdinalIgnoreCase));
+            return notifier?.InProcessThrottle != null;
         }
 
         private async Task DispatchOutboxRowAsync(HookOutboxEntity row, CancellationToken cancellationToken)
@@ -382,7 +423,22 @@ namespace saiflow.engine.Hooks
             if (ctx == null)
                 throw new InvalidOperationException("Notify outbox payload is empty.");
 
-            await notifier.Handler.NotifyAsync(ctx, cancellationToken).ConfigureAwait(false);
+            // InProcessThrottle：认领后入有界 Channel，等真实 NotifyAsync 完成再返回 → 外层才 MarkSucceeded
+            if (notifier.InProcessThrottle != null)
+            {
+                await Sail.NotifierThrottleHub
+                    .RunAsync(
+                        notifier.Name,
+                        notifier.InProcessThrottle,
+                        ct => notifier.Handler.NotifyAsync(ctx, ct),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                await notifier.Handler.NotifyAsync(ctx, cancellationToken).ConfigureAwait(false);
+            }
+
             Sail.CapabilityMetrics?.IncrementNotifierDispatch();
         }
 
