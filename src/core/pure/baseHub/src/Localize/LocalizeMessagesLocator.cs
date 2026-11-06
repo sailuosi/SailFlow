@@ -34,7 +34,7 @@ namespace saiflow.hub.Localize
             if (_service == null)
             {
                 throw new InvalidOperationException(
-                    "ILocalizeMessages is not registered. Reference sailflow.localize and call builder.Services.UseLocalize() when building SailClient.");
+                    "ILocalizeMessages is not registered. Call UseLocalize() (default JSON) or UseLocalize(ILocalizeMessages) with a host implementation.");
             }
 
             return _service;

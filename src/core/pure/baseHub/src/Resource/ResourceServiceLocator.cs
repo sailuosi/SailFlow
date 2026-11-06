@@ -4,7 +4,7 @@ namespace saiflow.hub.Resource
 {
     /// <summary>
     /// Host-side registration point for <see cref="IResourceService"/>.
-    /// Call via sailflow.resource <c>UseResource()</c> at SailClient Build time.
+    /// Register via host UseXxx (e.g. UseSleveenOrgResource) or <c>UseResource(implementation)</c>.
     /// </summary>
     public static class ResourceServiceLocator
     {
@@ -24,7 +24,8 @@ namespace saiflow.hub.Resource
             if (_service == null)
             {
                 throw new InvalidOperationException(
-                    "IResourceService is not registered. Reference sailflow.resource and call builder.Services.UseResource() when building SailClient.");
+                    "IResourceService is not registered. Host must UseXxx-inject an org/personnel implementation " +
+                    "(e.g. UseSleveenOrgResource) or call UseResource(IResourceService). Engine has no org tables.");
             }
 
             return _service;

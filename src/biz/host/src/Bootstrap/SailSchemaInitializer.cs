@@ -10,7 +10,6 @@ using saiflow.engine.Client;
 using saiflow.biz.query;
 using saiflow.hub.Form;
 using saiflow.hub.Logging;
-using saiflow.hub.Resource;
 
 namespace saiflow.biz.Bootstrap
 {
@@ -49,10 +48,7 @@ namespace saiflow.biz.Bootstrap
                 .createTable<RuleSetEntity>()
                 .createTable<JobLogEntity>()
                 .createTable<HookOutboxEntity>()
-                // 组织人员（Dept/Emp/Manager）由宿主主数据提供，引擎不再建表
-                .createTable<UserEntity>()
-                .createTable<RoleEntity>()
-                .createTable<RoleUserEntity>()
+                // 组织人员 / 角色用户由宿主主数据提供，引擎不再建 sys_* 表
                 .createTable<FormEntity>()
                 .createTable<FieldActivityEditEntity>()
                 .createTable<SailProcessCopyEntity>();

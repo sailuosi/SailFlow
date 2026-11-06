@@ -5,28 +5,40 @@ using saiflow.hub.Resource;
 namespace saiflow.hub.Hosting
 {
     /// <summary>
-    /// Registers the built-in demo <see cref="ResourceService"/> (engine resource tables).
-    /// 组织人员主数据场景请由宿主 <c>UseXxx</c> 覆盖注册 <see cref="IResourceService"/> /
-    /// <see cref="IDeptService"/>，勿依赖本默认实现对职级选人。
+    /// Resource 插槽骨架：引擎无组织人员表；须由宿主传入 <see cref="IResourceService"/> 实现。
     /// </summary>
     public static class ResourceSailExtensions
     {
-        public static ISailCollection UseResource(this ISailCollection services)
+        /// <summary>
+        /// 注册宿主（或测试）提供的 <see cref="IResourceService"/>。
+        /// </summary>
+        public static ISailCollection UseResource(this ISailCollection services, IResourceService implementation)
         {
             ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(implementation);
 
             return services.AddFeature(new SailFeatureDescriptor
             {
                 Name = SailFeatureNames.Resource,
                 Phase = SailFeaturePhase.ConfigureClient,
                 Order = 110,
-                ConfigureClient = (client, coll) =>
+                ConfigureClient = (_, coll) =>
                 {
-                    var resourceService = ResourceServiceFactory.Create(client);
-                    coll.Properties[SailBuilderKeys.ResourceService] = resourceService;
-                    ResourceServiceLocator.Register(resourceService);
+                    coll.Properties[SailBuilderKeys.ResourceService] = implementation;
+                    ResourceServiceLocator.Register(implementation);
                 }
             });
+        }
+
+        /// <summary>
+        /// 已废弃：引擎不再提供默认 sys_* 实现。请 <c>UseResource(hostImpl)</c> 或宿主 <c>UseSleveenOrgResource()</c>。
+        /// </summary>
+        [Obsolete("Engine has no org/personnel tables. Use UseResource(IResourceService) or host UseSleveenOrgResource().")]
+        public static ISailCollection UseResource(this ISailCollection services)
+        {
+            throw new InvalidOperationException(
+                "IResourceService has no built-in engine implementation (no sys_user/sys_role tables). " +
+                "Register a host implementation: services.UseResource(impl) or builder.UseSleveenOrgResource().");
         }
     }
 }
