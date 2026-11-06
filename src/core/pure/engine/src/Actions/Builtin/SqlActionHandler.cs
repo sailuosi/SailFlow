@@ -7,7 +7,7 @@ using ActionEntity = saiflow.engine.Xpdl.Action;
 
 namespace saiflow.engine.Actions
 {
-    internal sealed class SqlActionHandler : IActionMethodHandler
+    public class SqlActionHandler : IActionMethodHandler
     {
         public ActionMethodEnum Method => ActionMethodEnum.SQL;
 
