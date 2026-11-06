@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace saiflow.engine.Common
+namespace saiflow.biz.query
 {
     /// <summary>
     /// Task Email Sent Status
-    /// 邮件发送状态类型
+    /// 邮件发送状态类型（业务侧待办邮件标记，非引擎主路径）
     /// </summary>
     public enum TaskEMailSentStatusEnum
     {

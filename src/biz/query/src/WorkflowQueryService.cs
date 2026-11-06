@@ -98,7 +98,7 @@ namespace saiflow.biz.query
             clip.where(() => t.ProcessState, (short)2);
             clip.where(() => t.ActivityType == 4 || t.WorkItemType == 1);
             clip.where(() => t.ActivityState, (short)1);
-            clip.where(() => t.IsEMailSent, (byte?)0);
+            clip.where(() => t.IsEMailSent, (byte?)TaskEMailSentStatusEnum.UnSent);
             clip.where(() => t.TaskState, (short)32, "<>");
             return clip.select(t).queryList().ToList();
         }
