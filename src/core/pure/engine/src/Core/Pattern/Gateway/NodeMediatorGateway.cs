@@ -109,7 +109,7 @@ namespace saiflow.engine.Pattern
             WfAppRunner runner,
             SQLBuilder kit)
         {
-            var tim = new TransitionInstanceManager(Sail);
+            var tim = Sail.ManagerFactory.Transitions;
             var transitionInstanceObject = tim.CreateTransitionInstanceObject(processInstance,
                 transitionId,
                 fromActivityInstance,

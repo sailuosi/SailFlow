@@ -50,7 +50,9 @@ namespace saiflow.engine.Xpdl
         public Activity Convert()
         {
             var activity = new Activity();
-            var convertorBuilder = ConvertorBuilderFactory.Create(XMLNode, XMLNamespaceManager, activity);
+            if (XMLNode == null || XMLNamespaceManager == null || activity == null)
+                throw new ArgumentNullException("Argument can't be null when converting xmlnode to activity entity");
+            var convertorBuilder = new ConvertorBuilder(XMLNode, XMLNamespaceManager, activity);
             convertorBuilder.ConvertGeneral()
                 .ConvertPartakers()
                 .ConvertAssigneeConfig()

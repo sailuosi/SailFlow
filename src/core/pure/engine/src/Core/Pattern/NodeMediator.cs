@@ -197,7 +197,7 @@ namespace saiflow.engine.Pattern
                     ActivityId = fromActivityId,
                     ActivityName = fromActivityName
                 };
-                _eventService = EventServiceFactory.CreateEventService(EventScopeTypeEnum.Activity, this.Kit, eventContext, Sail);
+                _eventService = SailFactoryAccess.Mediator(Sail).CreateEventService(EventScopeTypeEnum.Activity, this.Kit, eventContext);
             }
             return _eventService;
         }
@@ -326,8 +326,8 @@ namespace saiflow.engine.Pattern
 
                 if (isNotParsedByTransition == true)
                 {
-                    var root = NextActivityComponentFactory.CreateNextActivityComponent();
-                    var nextActivityComponent = NextActivityComponentFactory.CreateNextActivityComponent(
+                    var root = NextActivityComponents.CreateNextActivityComponent();
+                    var nextActivityComponent = NextActivityComponents.CreateNextActivityComponent(
                         this.LinkContext.FromActivity,
                         this.LinkContext.CurrentActivity);
 
@@ -698,7 +698,7 @@ namespace saiflow.engine.Pattern
                 var outputVariableNameList = ActivityForwardContext.ProcessModel.GetActivityOutputVarialbeNameList(comp.Activity);
 
                 var kit = SailSqlAccess.Sibling(Kit);
-                var pvm = new ProcessVariableManager(Sail);
+                var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
                 var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id.Value, currentActivityInstance.Id.Value,
                     outputVariableNameList);
 
@@ -715,7 +715,7 @@ namespace saiflow.engine.Pattern
                         "RuleTask/ServiceTask/AI output variables did not match any outgoing transition conditions.");
                 }
 
-                var newActivityResource = ActivityResourceFactory.Create(ActivityForwardContext.ProcessModel,
+                var newActivityResource = SailFactoryAccess.Runtime(Sail).CreateActivityResource(ActivityForwardContext.ProcessModel,
                     aiServiceNextMatchedResult.Root,
                     activityResource.AppRunner,
                     newConditionKeyValuePair);
@@ -776,7 +776,7 @@ namespace saiflow.engine.Pattern
                 var outputVariableNameList = ActivityForwardContext.ProcessModel.GetActivityOutputVarialbeNameList(comp.Activity);
 
                 var kit = SailSqlAccess.Sibling(Kit);
-                var pvm = new ProcessVariableManager(Sail);
+                var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
                 var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id.Value, currentActivityInstance.Id.Value,
                     outputVariableNameList);
                 var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
@@ -792,7 +792,7 @@ namespace saiflow.engine.Pattern
                         "RuleTask/ServiceTask output variables did not match any outgoing transition conditions.");
                 }
 
-                var newActivityResource = ActivityResourceFactory.Create(ActivityForwardContext.ProcessModel,
+                var newActivityResource = SailFactoryAccess.Runtime(Sail).CreateActivityResource(ActivityForwardContext.ProcessModel,
                     serviceNextMatchedResult.Root,
                     activityResource.AppRunner,
                     newConditionKeyValuePair);
@@ -1248,7 +1248,7 @@ namespace saiflow.engine.Pattern
             WfAppRunner runner,
             SQLBuilder kit)
         {
-            var tim = new TransitionInstanceManager(Sail);
+            var tim = Sail.ManagerFactory.Transitions;
             var transitionInstanceObject = tim.CreateTransitionInstanceObject(processInstance,
                 transitionId,
                 fromActivityInstance,
@@ -1398,7 +1398,7 @@ namespace saiflow.engine.Pattern
 
             try
             {
-                new HookOutboxManager(Sail).BindAssigneeAutoApproveActivityInstance(
+                Sail.ManagerFactory.HookOutbox.BindAssigneeAutoApproveActivityInstance(
                     SailSqlAccess.Sibling(kit),
                     activityInstance.ProcessInstanceId.Value,
                     activityInstance.ActivityId,

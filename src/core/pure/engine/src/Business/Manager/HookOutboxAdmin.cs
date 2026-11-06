@@ -11,8 +11,11 @@ namespace saiflow.engine.Manager
     {
         private readonly HookOutboxManager _inner;
 
-        public HookOutboxAdmin(SailClient client) =>
-            _inner = new HookOutboxManager(client ?? throw new System.ArgumentNullException(nameof(client)));
+        public HookOutboxAdmin(SailClient client)
+        {
+            if (client == null) throw new System.ArgumentNullException(nameof(client));
+            _inner = client.ManagerFactory.HookOutbox;
+        }
 
         public int ResetDeadBatch(SQLBuilder kit, IEnumerable<int> ids) =>
             _inner.ResetDeadBatch(kit, ids);

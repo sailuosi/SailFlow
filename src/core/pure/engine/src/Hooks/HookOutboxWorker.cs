@@ -32,7 +32,7 @@ namespace saiflow.engine.Hooks
         {
             cancellationToken.ThrowIfCancellationRequested();
             var batchSize = limit ?? Options.BatchSize;
-            var om = new HookOutboxManager(Sail);
+            var om = Sail.ManagerFactory.HookOutbox;
             IList<HookOutboxEntity> claimed;
 
             using (var claimKit = Sail.UseRunSQL())
@@ -75,7 +75,7 @@ namespace saiflow.engine.Hooks
                 kit.beginTransaction();
                 try
                 {
-                    var n = new HookOutboxManager(Sail).PurgeExpiredTerminal(
+                    var n = Sail.ManagerFactory.HookOutbox.PurgeExpiredTerminal(
                         kit,
                         Options.SucceededRetentionDays,
                         Options.DeadRetentionDays,
@@ -98,7 +98,7 @@ namespace saiflow.engine.Hooks
 
         public int ProcessPending(SQLBuilder kit, int limit, int maxAttempts)
         {
-            var om = new HookOutboxManager(Sail);
+            var om = Sail.ManagerFactory.HookOutbox;
             var now = DateTime.UtcNow;
             om.ReclaimStaleProcessing(kit, now.AddSeconds(-Options.ProcessingStaleSeconds), now);
             var claimed = om.TryClaimPending(kit, limit, maxAttempts, Options.LeaseSeconds);

@@ -6,10 +6,9 @@ using saiflow.engine.Xpdl;
 namespace saiflow.engine.Xpdl
 {
     /// <summary>
-    /// Next Activity Component Factory
-    /// 下一步节点的工厂类
+    /// C · 下一步活动组件纯构造（无 Client 策略）
     /// </summary>
-    public class NextActivityComponentFactory
+    internal static class NextActivityComponents
     {
         /// <summary>
         /// Create Next Activity Component

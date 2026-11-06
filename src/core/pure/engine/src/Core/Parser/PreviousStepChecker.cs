@@ -303,7 +303,7 @@ namespace saiflow.engine.Runtime
             out bool hasPassedGatewayNode)
         {
             hasPassedGatewayNode = false;
-            var tim = new TransitionInstanceManager(Sail);
+            var tim = Sail.ManagerFactory.Transitions;
             var transitionList = tim.GetTransitionInstanceList(runningNode.AppInstanceId,
                 runningNode.ProcessId,
                 runningNode.ProcessInstanceId.Value).ToList();

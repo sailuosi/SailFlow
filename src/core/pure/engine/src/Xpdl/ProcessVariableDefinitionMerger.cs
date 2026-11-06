@@ -28,7 +28,7 @@ namespace saiflow.engine.Xpdl
             if (activities == null)
                 return;
 
-            var vm = new VariableManager(client);
+            var vm = client.ManagerFactory.Variables;
 
             foreach (var activity in activities)
             {

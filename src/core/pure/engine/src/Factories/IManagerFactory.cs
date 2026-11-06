@@ -13,4 +13,18 @@ public interface IManagerFactory
     TaskManager Tasks { get; }
 
     ProcessManager Processes { get; }
+
+    TransitionInstanceManager Transitions { get; }
+
+    VariableManager Variables { get; }
+
+    HookOutboxManager HookOutbox { get; }
+
+    RuleSetManager RuleSets { get; }
+
+    RuleSetExecutionManager RuleSetExecutions { get; }
+
+    JobInfoManager JobInfos { get; }
+
+    LogManager Logs { get; }
 }

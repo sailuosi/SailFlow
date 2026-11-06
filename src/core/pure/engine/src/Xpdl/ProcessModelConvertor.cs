@@ -88,7 +88,7 @@ namespace saiflow.engine.Xpdl
             else if (node.Name == XPDLDefinition.BPMN_ElementName_SubProcess)
             {
                 ActivityTypeEnum subProcessActivityType = ActivityTypeEnum.Unknown;
-                var subConvertor = ConvertorFactory.CreateConvertor(node, XPDLHelper.GetSailflowXmlNamespaceManager(node.OwnerDocument), out subProcessActivityType);
+                var subConvertor = ConvertHelper.CreateConvertor(node, XPDLHelper.GetSailflowXmlNamespaceManager(node.OwnerDocument), out subProcessActivityType);
                 var subProcessActivity = subConvertor.Convert();
                 subProcessActivity.ActivityType = subProcessActivityType;
                 subProcessActivity.ProcessId = process.ProcessId;
@@ -112,7 +112,7 @@ namespace saiflow.engine.Xpdl
                 //不同节点类型的处理
                 //Processing of different node types
                 ActivityTypeEnum activityType = ActivityTypeEnum.Unknown;
-                var convertor = ConvertorFactory.CreateConvertor(node, XPDLHelper.GetSailflowXmlNamespaceManager(node.OwnerDocument), out activityType);
+                var convertor = ConvertHelper.CreateConvertor(node, XPDLHelper.GetSailflowXmlNamespaceManager(node.OwnerDocument), out activityType);
                 var activity = convertor.Convert();
                 activity.ActivityType = activityType;
                 activity.WorkItemType = GetWorkItemType(activityType);

@@ -6,6 +6,8 @@ using saiflow.hub.Localize;
 using saiflow.engine.Common;
 using saiflow.engine.Xpdl;
 
+using saiflow.engine.Factories;
+
 namespace saiflow.engine.Xpdl
 {
     /// <summary>
@@ -53,7 +55,7 @@ namespace saiflow.engine.Xpdl
             NextActivityComponent child = null;
             if (XPDLHelper.IsSimpleComponentNode(forwardTransition.ToActivity.ActivityType) == true)       //可流转简单类型节点
             {
-                child = NextActivityComponentFactory.CreateNextActivityComponent(forwardTransition, forwardTransition.ToActivity);
+                child = NextActivityComponents.CreateNextActivityComponent(forwardTransition, forwardTransition.ToActivity);
                 resultType = NextActivityMatchedType.Successed;
             }
             else if (forwardTransition.ToActivity.ActivityType == ActivityTypeEnum.GatewayNode)
@@ -68,12 +70,12 @@ namespace saiflow.engine.Xpdl
             {
                 if (forwardTransition.ToActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Timer)
                 {
-                    child = NextActivityComponentFactory.CreateNextActivityComponent(forwardTransition, forwardTransition.ToActivity);
+                    child = NextActivityComponents.CreateNextActivityComponent(forwardTransition, forwardTransition.ToActivity);
                     resultType = NextActivityMatchedType.Successed;
                 }
                 else
                 {
-                    NextActivityScheduleBase activitySchedule = NextActivityScheduleFactory.CreateActivityScheduleIntermediate(this.ProcessModel);
+                    NextActivityScheduleBase activitySchedule = DefaultProcessModelFactory.CreateActivityScheduleIntermediate(this.ProcessModel);
                     child = activitySchedule.GetNextActivityListFromGateway(forwardTransition,
                         forwardTransition.ToActivity,
                         conditionKeyValuePair,
@@ -83,7 +85,7 @@ namespace saiflow.engine.Xpdl
             }
             else if (forwardTransition.ToActivity.ActivityType == ActivityTypeEnum.ServiceNode)
             {
-                NextActivityScheduleBase activitySchedule = NextActivityScheduleFactory.CreateActivityScheduleIntermediate(this.ProcessModel);
+                NextActivityScheduleBase activitySchedule = DefaultProcessModelFactory.CreateActivityScheduleIntermediate(this.ProcessModel);
                 child = activitySchedule.GetNextActivityListFromGateway(forwardTransition,
                     forwardTransition.ToActivity,
                     conditionKeyValuePair,
@@ -110,7 +112,7 @@ namespace saiflow.engine.Xpdl
             NextActivityComponent child)
         {
             if ((gatewayComponent == null) && (child != null))
-                gatewayComponent = NextActivityComponentFactory.CreateNextActivityComponent(fromTransition, currentGatewayActivity);
+                gatewayComponent = NextActivityComponents.CreateNextActivityComponent(fromTransition, currentGatewayActivity);
 
             if ((gatewayComponent != null) && (child != null))
                 gatewayComponent.Add(child);

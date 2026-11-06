@@ -6,6 +6,8 @@ using saiflow.engine.Entity;
 using saiflow.engine.Client;
 using saiflow.engine.Xpdl;
 
+using saiflow.engine.Factories;
+
 namespace saiflow.engine.Manager
 {
     internal class ProcessVariableResolver
@@ -38,7 +40,7 @@ namespace saiflow.engine.Manager
             if (requiredNames.Count == 0)
                 return isCheckPassed;
 
-            var pvm = new ProcessVariableManager(Sail);
+            var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
             var loaded = pvm.GetVariableListByActivity(
                 kit,
                 taskView.ProcessInstanceId.Value,

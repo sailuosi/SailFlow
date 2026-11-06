@@ -2,7 +2,7 @@
 
 > 状态：**现行实现对齐说明**（2026-11-06）  
 > 用途：从宿主调度入口追到 DB 读写，固化主要办理动词的**类·方法**链路，方便排障与改命令。  
-> **读法**：下文 `WfRuntimeManagerFactory.Create*` / `new XxxManager` 描述的是**现行静态与散落创建**。寿命与工厂的**拟定位**（每 Client 的 A 工厂、Manager 唯一门面、Builder 可覆写）见 [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md)；定型落地前两套叙事并存，排障以现行代码为准。  
+> **读法（D3 已落地）**：装配经 `SailClient` 四槽（`RuntimeFactory` / `MediatorFactory` / `ProcessModelFactory` / `ManagerFactory`）；Runtime/Mediator 内部为 `RuntimeInstanceCreator` / `MediatorInstanceCreator`。寿命立法见 [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md)。  
 > 关联：[特性说明-中国式OA审批要素.md](../特性说明-中国式OA审批要素.md) · [特性说明-引擎能力基线.md](../特性说明-引擎能力基线.md) · [特性设计-回调与事件.md](../特性设计-回调与事件.md) · [草案-命令执行管道.md](../草案-命令执行管道.md) · [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) · [架构设计-项目依赖与分层.md](../架构设计-项目依赖与分层.md)
 
 ---
@@ -13,7 +13,7 @@
 Host API / ButtonsOperation
   → IWorkflowService.*Process[Async]
     → UseRunSQL + beginTransaction + InstanceExecutionLock
-      → WfRuntimeManagerFactory.Create*
+      → SailFactoryAccess.Runtime(Sail).Create* / Runtimes.Create*
         → FlowCapabilityPipeline.TryGate
           → WfRuntimeManager.Execute → ExecuteInstanceImp
             → NodeMediator* / NodeSendBack* / TaskManager.*
@@ -30,9 +30,9 @@ Host API / ButtonsOperation
 |----|------|------|
 | **Host 调度** | `sleveen-admin/backend/saiflow` | HTTP、码表按钮 → Handler、鉴权绑 Runner |
 | **命令入口** | `WorkflowService`（`Service/WorkflowService.ProcessExecution.cs`） | 事务、实例锁、Gate/Hook、调 Factory |
-| **运行时装配** | `WfRuntimeManagerFactory` | 查当前节点/任务/模型，构造具体 `WfRuntimeManager`* |
+| **运行时装配** | `DefaultRuntimeFactory` → `RuntimeInstanceCreator` | 查当前节点/任务/模型，构造具体 `WfRuntimeManager`* |
 | **运行时执行** | `WfRuntimeManager`* | `Execute` → `ExecuteInstanceImp` |
-| **节点调度** | `NodeMediatorFactory` / `NodeMediator`* | 办结当前项、继续下一跳、写 AI/Task/Transition |
+| **节点调度** | `DefaultMediatorFactory` → `MediatorInstanceCreator` / `NodeMediator`* | 办结当前项、继续下一跳、写 AI/Task/Transition |
 | **业务 Manager** | `Business/Manager/`* | 实体 CRUD；经 `SQLBuilder` → mooSQL |
 | **数据访问** | `SailClient.UseRunSQL()` · `SailSqlAccess.Sibling(kit)` · `useRepo` / `useClip` | 同一事务 kit 贯穿 |
 
@@ -62,7 +62,7 @@ Gate / 成功后 Hook：
 | `kit.useRepo<TEntity, TKey>()` | 主键 CRUD（`GetById` / `InsertReturnId` / `Update`…） |
 | `kit.useClip()` | 条件查询 / 批量更新 |
 
-Manager 构造：`new XxxManager(Sail)`；读模型定义还经 `ProcessModelFactory.CreateBy*`（内部读流程定义表）。
+Manager 经 `Sail.ManagerFactory` / `SailFactoryAccess.Managers`；模型经 `Sail.client.ProcessModelFactory.CreateBy*`。
 
 ---
 
@@ -106,7 +106,7 @@ Manager 构造：`new XxxManager(Sail)`；读模型定义还经 `ProcessModelFac
 ```text
 WfRuntimeManagerRun.ExecuteInstanceImp
   → ActivityForwardContext.CreateRunningContextByTask|ByActivity
-  → NodeMediatorFactory.CreateNodeMediator(...)
+  → SailFactoryAccess.Mediator(Sail).CreateNodeMediator(...)
   → NodeMediator.ExecuteWorkItem
        （任务节点 → NodeMediatorTask）
          → OnBeforeExecuteWorkItem
@@ -141,12 +141,12 @@ WfRuntimeManagerRun.ExecuteInstanceImp
 | 步骤 | 类·方法 |
 |------|---------|
 | API | `WorkflowService.StartProcess` → `Start()` → `Start(kit)` → `ExecuteStartCore` |
-| Factory | `WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(Sail, runner, kit, ref result)` |
-| Factory 读库 | `ProcessInstanceManager.GetProcessInstanceCurrent`（查重 Running）· `ProcessModelFactory.CreateByProcess` |
+| Factory | `RuntimeFactory.CreateRuntimeInstanceStartup(Sail, runner, kit, ref result)` |
+| Factory 读库 | `ProcessInstanceManager.GetProcessInstanceCurrent`（查重 Running）· `client.ProcessModelFactory.CreateByProcess` |
 | Gate | `FlowOperation.Start` |
 | Runtime | `WfRuntimeManagerStartup.ExecuteInstanceImp` |
 | 建实例对象 | `ProcessInstanceManager.CreateNewProcessInstanceObject`（内存实体，尚未 Insert） |
-| Mediator | `ActivityForwardContext.CreateStartupContext` → `NodeMediatorFactory.CreateNodeMediator` → 通常 `NodeMediatorStart.ExecuteWorkItem` |
+| Mediator | `ActivityForwardContext.CreateStartupContext` → `MediatorFactory.CreateNodeMediator` → 通常 `NodeMediatorStart.ExecuteWorkItem` |
 | Start 写库 | `ProcessInstanceManager.Insert` · `ActivityInstanceManager.Insert` + `Complete`（开始节点自动完）· `ContinueForwardCurrentNode` → 首任务 AI/Task/Transition |
 | Hook | `OnProcessStarted` |
 
@@ -158,7 +158,7 @@ WfRuntimeManagerRun.ExecuteInstanceImp
 |------|---------|
 | API | `RunProcess` → `Run()` → `Run(kit)` → `ExecuteRunCore` → `FinishRunCore` |
 | Factory | `CreateRuntimeInstanceAppRunning` |
-| Factory 读库 | `ActivityInstanceManager.GetRunningNode` · `TaskManager.CheckTaskStateInRunningState` · `ProcessInstanceManager.GetById` · `ProcessModelFactory.CreateByTask` · `ProcessVariableResolver.CheckVariableRequired` |
+| Factory 读库 | `ActivityInstanceManager.GetRunningNode` · `TaskManager.CheckTaskStateInRunningState` · `ProcessInstanceManager.GetById` · `client.ProcessModelFactory.CreateByTask` · `ProcessVariableResolver.CheckVariableRequired` |
 | Gate | `FlowOperation.Run` |
 | Runtime | `WfRuntimeManagerRun.ExecuteInstanceImp` → §4 深链；含代码说明见 **§6** |
 | Hook | `OnProcessContinued`；若实例 Completed 另 `OnProcessCompleted` |
@@ -171,7 +171,7 @@ WfRuntimeManagerRun.ExecuteInstanceImp
 |------|---------|
 | API | `SendBackProcess` → `SendBack` → `ExecuteSendBackCore` |
 | Factory | `CreateRuntimeInstanceSendBack` |
-| Factory 读库 | `ActivityInstanceManager.GetRunningNode` · `IsMineTask` · `ProcessInstanceManager.GetById` · `ProcessModelFactory.CreateByProcessInstance` · `PreviousStepChecker.GetPreviousActivityList` |
+| Factory 读库 | `ActivityInstanceManager.GetRunningNode` · `IsMineTask` · `ProcessInstanceManager.GetById` · `client.ProcessModelFactory.CreateByProcessInstance` · `PreviousStepChecker.GetPreviousActivityList` |
 | Gate | `FlowOperation.SendBack` |
 | Runtime | `WfRuntimeManagerSendBack.ExecuteInstanceImp` |
 | 退回执行 | `DistributeEachPerformerTask` → `NodeSendBackFactory.CreateNodeReverter` → `NodeSendBack*.Execute`（按普通/会签组合生成回退 AI+Task+Transition） |
@@ -210,10 +210,10 @@ Host `RejectOperationHandler` 可能按节点策略改走 `SendBackProcessAsync`
 |------|---------|
 | API | `ResendProcess` → `Resend` → `ExecuteResendCore` |
 | Factory | `CreateRuntimeInstanceResend` |
-| Factory 读库 | `TaskManager.GetTaskView` · `ActivityInstanceManager.GetById`（当前 + `BackSrcActivityInstanceId`）· `ProcessModelFactory.CreateByTask` |
+| Factory 读库 | `TaskManager.GetTaskView` · `ActivityInstanceManager.GetById`（当前 + `BackSrcActivityInstanceId`）· `client.ProcessModelFactory.CreateByTask` |
 | Gate | `FlowOperation.Resend` |
 | Runtime | `WfRuntimeManagerResend.ExecuteInstanceImp` |
-| Mediator | `CreateRunningContextByTask(..., isNotParsedByTransition: true)` → `NodeMediatorFactory` → `ExecuteWorkItem`（强制指向退回源活动） |
+| Mediator | `CreateRunningContextByTask(..., isNotParsedByTransition: true)` → `MediatorInstanceCreator` → `ExecuteWorkItem`（强制指向退回源活动） |
 | Hook | `OnProcessResent` |
 
 ### 5.7 ReviseProcess（修订）
@@ -244,10 +244,10 @@ Host `RejectOperationHandler` 可能按节点策略改走 `SendBackProcessAsync`
 |------|---------|
 | API | `JumpProcess` → `ExecuteJumpCore` |
 | Factory | `CreateRuntimeInstanceJump`（`NextActivityPerformers` 只能一步） |
-| Factory 读库 | `GetRunningNode` · `ProcessModelFactory.CreateByTask` |
+| Factory 读库 | `GetRunningNode` · `client.ProcessModelFactory.CreateByTask` |
 | Gate | `FlowOperation.Jump` |
 | Runtime | `WfRuntimeManagerJump.ExecuteInstanceImp` |
-| 写库 / Mediator | `ActivityInstanceManager.Complete`（当前）· `CreateJumpforwardContext` / `CreateRunningContextByTask` → `NodeMediatorFactory` → 若 `NodeMediatorEnd` 先 `CreateActivityTaskTransitionInstance` → `ExecuteWorkItem` |
+| 写库 / Mediator | `ActivityInstanceManager.Complete`（当前）· `CreateJumpforwardContext` / `CreateRunningContextByTask` → `MediatorInstanceCreator` → 若 `NodeMediatorEnd` 先 `CreateActivityTaskTransitionInstance` → `ExecuteWorkItem` |
 | Hook | `OnProcessJumped` |
 
 ### 5.10 CloseProcess（关闭）
@@ -266,10 +266,10 @@ Host `RejectOperationHandler` 可能按节点策略改走 `SendBackProcessAsync`
 |------|---------|
 | API | `SignForwardProcess` → `ExecuteSignForwardCore` |
 | Factory | `CreateRuntimeInstanceSignForward` |
-| Factory 读库 | `GetRunningNode`（校验 AssignedUserIds）· `ProcessModelFactory.CreateByTask` |
+| Factory 读库 | `GetRunningNode`（校验 AssignedUserIds）· `client.ProcessModelFactory.CreateByTask` |
 | Gate | `FlowOperation.SignForward` |
 | Runtime | `WfRuntimeManagerSignForward.ExecuteInstanceImp` |
-| Mediator | `CreateRunningContextByTask` → `NodeMediatorFactory`（加签类型节点 Mediator）→ `ExecuteWorkItem`（生成前/后/并加签 AI+Task） |
+| Mediator | `CreateRunningContextByTask` → `MediatorInstanceCreator`（加签类型节点 Mediator）→ `ExecuteWorkItem`（生成前/后/并加签 AI+Task） |
 | Hook | `OnProcessSignForwarded` |
 
 ### 5.12 TransferProcess（转办，不推进）
@@ -394,12 +394,12 @@ WfExecutedResult FinishRunCore(SQLBuilder kit, WfAppRunner runner,
 ### 6.4 Factory：预载当前任务与运行节点（读库）
 
 ```csharp
-// WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning
+// RuntimeFactory.CreateRuntimeInstanceAppRunning
 var aim = new ActivityInstanceManager(client);
 var runningNode = aim.GetRunningNode(SailSqlAccess.Sibling(kit), runner, out taskView);
 // 校验 AssignedUserIds 含当前用户、Task 处于 Running
 var processInstance = (new ProcessInstanceManager(client)).GetById(kitForPi, runningNode.ProcessInstanceId.Value);
-var processModel = ProcessModelFactory.CreateByTask(client, SailSqlAccess.Sibling(kit), taskView);
+var processModel = client.ProcessModelFactory.CreateByTask(SailSqlAccess.Sibling(kit), taskView);
 // ProcessVariableResolver.CheckVariableRequired …
 rmins.TaskView = taskView;
 rmins.RunningActivityInstance = runningNode;
@@ -425,7 +425,7 @@ if (taskId != null && taskId.Value > 0)
 // WfRuntimeManagerRun.ExecuteInstanceImp
 var runningExecutionContext = ActivityForwardContext.CreateRunningContextByTask(
     TaskView, ProcessModel, ActivityResource, false, kit, Sail);
-NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(runningExecutionContext, kit, Sail);
+NodeMediator mediator = MediatorFactory.CreateNodeMediator(runningExecutionContext, kit, Sail);
 mediator.LinkContext.FromActivityInstance = RunningActivityInstance;
 mediator.ExecuteWorkItem(null);
 ```
@@ -543,9 +543,9 @@ FlowCapabilityPipeline.AfterSuccess(/* OnActivityCreated */);
 | 区域 | 路径 |
 |------|------|
 | 命令入口 | `src/Service/WorkflowService.ProcessExecution.cs` · `IWorkflowService.cs` |
-| Factory | `src/Core/Runtime/WfRuntimeManagerFactory.cs` |
+| Factory | `src/Core/Runtime/RuntimeInstanceCreator.cs` |
 | Runtime 基类 / 各动词 | `src/Core/Runtime/WfRuntimeManager*.cs` |
-| Mediator | `src/Core/Pattern/NodeMediator*.cs` · `NodeMediatorFactory` |
+| Mediator | `src/Core/Pattern/NodeMediator*.cs` · `MediatorInstanceCreator` |
 | Manager | `src/Business/Manager/*.cs` |
 | Gate/Hook | `src/Hooks/FlowCapabilityPipeline` / `FlowCapabilityDispatcher` |
 | Host | `sleveen-admin/backend/saiflow/src/Controller/Wf2XmlController.Runtime.cs` · `Operations/` |

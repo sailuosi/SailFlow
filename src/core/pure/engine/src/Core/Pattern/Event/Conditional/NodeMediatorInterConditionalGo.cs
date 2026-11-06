@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 
 using saiflow.engine.Client;
 using saiflow.engine.Core;
+using saiflow.engine.Factories;
+
 namespace saiflow.engine.Pattern
 {
     /// <summary>
@@ -70,7 +72,7 @@ namespace saiflow.engine.Pattern
         private void CheckBeingExecutedInfo(SQLBuilder kit)
         {
             var expression = ActivityForwardContext.CurrentActivity.TriggerDetail.Expression;
-            var pvm = new ProcessVariableManager(Sail);
+            var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
             var isConditionPassed = pvm.ValidateProcessVariable(kit, LinkContext.FromActivityInstance.ProcessInstanceId.Value,
                 expression);
             if (isConditionPassed == false)

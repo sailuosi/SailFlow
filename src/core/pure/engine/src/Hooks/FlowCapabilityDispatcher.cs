@@ -134,7 +134,7 @@ namespace saiflow.engine.Hooks
             ctx.EventType = eventType;
             EnsureProcessCode(kit, ctx);
 
-            var om = new HookOutboxManager(Sail);
+            var om = Sail.ManagerFactory.HookOutbox;
             foreach (var hook in Registry.Hooks.Where(h => h.Mode == HookMode.AsyncOutbox))
             {
                 if (!MatchesHook(hook, ctx, eventType))
@@ -171,7 +171,7 @@ namespace saiflow.engine.Hooks
 
             EnsureProcessCode(kit, ctx);
 
-            var om = new HookOutboxManager(Sail);
+            var om = Sail.ManagerFactory.HookOutbox;
             foreach (var notifier in Registry.Notifiers)
             {
                 if (!MatchesNotifier(notifier, ctx))
@@ -233,7 +233,7 @@ namespace saiflow.engine.Hooks
             int maxAttempts = HookOutboxOptions.DefaultMaxAttempts,
             CancellationToken cancellationToken = default)
         {
-            var om = new HookOutboxManager(Sail);
+            var om = Sail.ManagerFactory.HookOutbox;
             var claimed = om.TryClaimPending(kit, limit, maxAttempts);
             return DispatchClaimedOutbox(claimed, maxAttempts, cancellationToken);
         }
@@ -253,7 +253,7 @@ namespace saiflow.engine.Hooks
             if (rows == null || rows.Count == 0)
                 return 0;
 
-            var om = new HookOutboxManager(Sail);
+            var om = Sail.ManagerFactory.HookOutbox;
             var processed = 0;
             // 配置了 InProcessThrottle 的 Notify：并行入车道，由 MaxDegree 限并发；其余仍串行
             List<Task<bool>> throttledNotifyTasks = null;

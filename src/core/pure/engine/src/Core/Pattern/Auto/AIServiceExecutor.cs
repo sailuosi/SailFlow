@@ -14,6 +14,8 @@ using saiflow.WebUtility;
 
 using saiflow.engine.Client;
 using saiflow.engine.Core;
+using saiflow.engine.Factories;
+
 namespace saiflow.engine.Pattern
 {
     internal class AiServiceExecutor
@@ -70,7 +72,7 @@ namespace saiflow.engine.Pattern
             {
                 var kit = eventService.GetKit();
                 var processInstanceId = eventService.GetProcessInstanceId();
-                var pvm = new ProcessVariableManager(client);
+                var pvm = SailFactoryAccess.Managers(client).ProcessVariables;
 
                 var variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 

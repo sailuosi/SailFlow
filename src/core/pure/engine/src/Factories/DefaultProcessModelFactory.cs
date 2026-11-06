@@ -5,6 +5,8 @@ using mooSQL.data;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
 using saiflow.engine.Entity;
+using saiflow.engine.Manager;
+using saiflow.engine.Storage;
 using saiflow.engine.Utility;
 using saiflow.engine.Xpdl;
 using saiflow.WebUtility;
@@ -12,7 +14,7 @@ using saiflow.WebUtility;
 namespace saiflow.engine.Factories;
 
 /// <summary>
-/// A · 默认 ProcessModel 工厂：缓存挂本实例（每 SailClient 一套）。
+/// A · 默认 ProcessModel 工厂：缓存挂本实例；并入原 XPDLStorage / NextActivitySchedule。
 /// </summary>
 public sealed class DefaultProcessModelFactory : IProcessModelFactory
 {
@@ -23,6 +25,37 @@ public sealed class DefaultProcessModelFactory : IProcessModelFactory
     {
         _sail = sail ?? throw new ArgumentNullException(nameof(sail));
     }
+
+    public IXPDLStorage CreateXpdlStorage()
+    {
+        var config = _sail.Config;
+        if (config == null)
+            return null;
+
+        var storageType = config.WorkflowFileStorageType;
+        if (!string.IsNullOrEmpty(storageType)
+            && string.Equals(storageType, "localfile", StringComparison.OrdinalIgnoreCase))
+        {
+            return new XPDLLocalStorage(config.WorkflowFileServer);
+        }
+
+        return null;
+    }
+
+    internal NextActivityScheduleBase CreateActivityScheduleGateway(
+        IProcessModel processModel,
+        GatewaySplitJoinTypeEnum splitJoinType,
+        int? activityInstanceId = null)
+    {
+        if (splitJoinType == GatewaySplitJoinTypeEnum.Split)
+            return new NextActivityScheduleSplit(processModel, activityInstanceId, _sail);
+        if (splitJoinType == GatewaySplitJoinTypeEnum.Join)
+            return new NextActivityScheduleJoin(processModel);
+        throw new Exception(_sail.Messages.GetEngineMessage("nextactivityschedulefactory.unknownnodetype"));
+    }
+
+    internal static NextActivityScheduleBase CreateActivityScheduleIntermediate(IProcessModel processModel)
+        => new NextActivityScheduleIntermediate(processModel);
 
     public IProcessModel CreateByProcess(ProcessEntity entity)
         => new ProcessModelBPMN(_sail, entity);

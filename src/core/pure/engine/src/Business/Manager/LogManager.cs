@@ -84,7 +84,7 @@ namespace saiflow.engine.Manager
             object extraObject,
             Exception e)
         {
-            new LogManager(client).Record(title, eventType, priority, extraObject, e);
+            client.ManagerFactory.Logs.Record(title, eventType, priority, extraObject, e);
         }
     }
 }

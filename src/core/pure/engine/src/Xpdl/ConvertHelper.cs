@@ -29,7 +29,7 @@ namespace saiflow.engine.Xpdl
             }
 
             ActivityTypeEnum activityType = ActivityTypeEnum.Unknown;
-            var convert = ConvertorFactory.CreateConvertor(xmlNode, xnpmgr, out activityType);
+            var convert = CreateConvertor(xmlNode, xnpmgr, out activityType);
             Activity entity = convert.Convert();
             entity.ProcessId = processId;
             entity.ActivityType = activityType;
@@ -59,5 +59,98 @@ namespace saiflow.engine.Xpdl
 
         }
         #endregion
+        internal static IConvert CreateConvertor(XmlNode xmlNode, XmlNamespaceManager xnpmgr, out ActivityTypeEnum activityType)
+        {
+            IConvert convert = null;
+            activityType = GetActivityTypeByNodeName(xmlNode);
+            if (activityType == ActivityTypeEnum.Unknown)
+            {
+                throw new ApplicationException(String.Format("ConvertHelper:Not suppported convertor as of node type:{0}",
+                    activityType.ToString()));
+            }
+            else if (activityType == ActivityTypeEnum.GatewayNode)
+            {
+                convert = new GatewayConvertor(xmlNode, xnpmgr);
+            }
+            else if(activityType == ActivityTypeEnum.SubProcessNode)
+            {
+                convert = new SubProcessConvertor(xmlNode, xnpmgr);
+            }
+            else if(activityType == ActivityTypeEnum.MultiSignNode)
+            {
+                convert = new MultiSignConvertor(xmlNode, xnpmgr);
+            }
+            else if(activityType == ActivityTypeEnum.StartNode
+                || activityType == ActivityTypeEnum.IntermediateNode
+                || activityType == ActivityTypeEnum.EndNode)
+            {
+                convert = new EventConvertor(xmlNode, xnpmgr);
+            }
+            else
+            {
+                convert = new DefaultlConvertor(xmlNode, xnpmgr);
+            }
+            return convert;
+        }
+
+        static ActivityTypeEnum GetActivityTypeByNodeName(XmlNode node)
+        {
+            ActivityTypeEnum activityType = ActivityTypeEnum.Unknown;
+            if (node.Name == XPDLDefinition.BPMN_ElementName_StartEvent)
+            {
+                activityType = ActivityTypeEnum.StartNode;
+            }
+            else if (node.Name == XPDLDefinition.BPMN_ElementName_EndEvent)
+            {
+                activityType = ActivityTypeEnum.EndNode;
+            }
+            else if (node.Name == XPDLDefinition.BPMN_ElementName_IntermediateEvent_Catch
+                || node.Name == XPDLDefinition.BPMN_ElementName_IntermediateEvent_Throw)
+            {
+                activityType = ActivityTypeEnum.IntermediateNode;
+            }
+            else if (node.Name == XPDLDefinition.BPMN_ElementName_SubProcess)
+            {
+                activityType = ActivityTypeEnum.SubProcessNode;
+            }
+            else if (node.Name == XPDLDefinition.BPMN_ElementName_Task
+                || node.Name == XPDLDefinition.BPMNElementNameUserTask
+                || node.Name == XPDLDefinition.BPMN_ElementName_ManualTask)
+            {
+                var multipleDetailNode = node.SelectSingleNode(XPDLDefinition.Sf_StrXmlPath_MultiSignDetail, 
+                    XPDLHelper.GetSailflowXmlNamespaceManager(node.OwnerDocument));
+                if (multipleDetailNode != null) activityType = ActivityTypeEnum.MultiSignNode;
+                else activityType = ActivityTypeEnum.TaskNode;
+            }
+            else if(node.Name == XPDLDefinition.BPMN_ElementName_ServiceTask
+                || node.Name == XPDLDefinition.BPMN_ElementName_BusinessRuleTask)
+            {
+                var nsmgr = XPDLHelper.GetSailflowXmlNamespaceManager(node.OwnerDocument);
+                var aiServicesNode = node.SelectSingleNode(XPDLDefinition.Sf_StrXmlPath_AiServices, nsmgr);
+                if (aiServicesNode != null)
+                {
+                    activityType = ActivityTypeEnum.AIServiceNode;
+                }
+                else
+                {
+                    activityType = ActivityTypeEnum.ServiceNode;
+                }
+            }
+            else if(node.Name == XPDLDefinition.BPMN_ElementName_ScriptTask)
+            {
+                activityType = ActivityTypeEnum.ScriptNode;
+            }
+            else if (node.Name == XPDLDefinition.BPMN_ElementName_ExclusiveGateway
+                || node.Name == XPDLDefinition.BPMN_ElementName_InclusiveGateway
+                || node.Name == XPDLDefinition.BPMN_ElementName_ParallelGateway)
+            {
+                activityType = ActivityTypeEnum.GatewayNode;
+            }
+            else
+            {
+                throw new ApplicationException(string.Format("ConvertHelper:Not supported node name:{0}", node.Name));
+            }
+            return activityType;
+        }
     }
 }

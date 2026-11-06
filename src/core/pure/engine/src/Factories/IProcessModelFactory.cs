@@ -1,5 +1,6 @@
 using mooSQL.data;
 using saiflow.engine.Entity;
+using saiflow.engine.Manager;
 using saiflow.engine.Xpdl;
 
 namespace saiflow.engine.Factories;
@@ -10,6 +11,9 @@ namespace saiflow.engine.Factories;
 /// </summary>
 public interface IProcessModelFactory
 {
+    /// <summary>按 Client.Config 创建外部 XPDL 存储（无配置则 null）。</summary>
+    IXPDLStorage CreateXpdlStorage();
+
     IProcessModel CreateByProcess(ProcessEntity entity);
 
     IProcessModel CreateByProcess(string processId, string version);

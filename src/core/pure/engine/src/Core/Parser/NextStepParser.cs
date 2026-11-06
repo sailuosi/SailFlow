@@ -12,6 +12,8 @@ using saiflow.WebUtility;
 
 using saiflow.engine.Client;
 using saiflow.engine.Core;
+using saiflow.engine.Factories;
+
 namespace saiflow.engine.Runtime
 {
     /// <summary>
@@ -185,7 +187,7 @@ namespace saiflow.engine.Runtime
 
                     //读取流程变量表，合并条件参数
                     //Read the process variable table and merge condition parameters
-                    var processVariableManager = new ProcessVariableManager(Sail);
+                    var processVariableManager = SailFactoryAccess.Managers(Sail).ProcessVariables;
                     condition = processVariableManager.GetVariableByTask(kit, taskView, condition);
 
                     //获取下一步列表

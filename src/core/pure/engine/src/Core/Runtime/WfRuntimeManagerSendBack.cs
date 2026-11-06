@@ -9,6 +9,8 @@ using saiflow.engine.Result;
 using saiflow.engine.Runtime;
 using saiflow.engine.Core;
 
+using saiflow.engine.Factories;
+
 namespace saiflow.engine.Runtime
 {
     /// <summary>
@@ -156,7 +158,7 @@ namespace saiflow.engine.Runtime
         {
             foreach (var performer in performerList)
             {
-                var nodeSendBack = NodeSendBackFactory.CreateNodeReverter(sendbackOperation, kit, Sail);
+                var nodeSendBack = SailFactoryAccess.Mediator(Sail).CreateNodeSendBack(sendbackOperation, kit);
                 sendbackOperation.BackwardToTaskPerformer = performer;
                 nodeSendBack.Execute();
             }

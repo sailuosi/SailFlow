@@ -34,4 +34,13 @@ internal static class SailFactoryAccess
         throw new InvalidOperationException(
             "SailClient.ManagerFactory must be DefaultManagerFactory (or subclass) for ProcessInstances access.");
     }
+
+    public static DefaultProcessModelFactory ProcessModels(SailClient sail)
+    {
+        ArgumentNullException.ThrowIfNull(sail);
+        if (sail.ProcessModelFactory is DefaultProcessModelFactory d)
+            return d;
+        throw new InvalidOperationException(
+            "SailClient.ProcessModelFactory must be DefaultProcessModelFactory (or subclass) in D2/D3. Use builder.UseProcessModelFactory(...).");
+    }
 }

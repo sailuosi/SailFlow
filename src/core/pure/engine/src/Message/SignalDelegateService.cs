@@ -73,7 +73,7 @@ namespace saiflow.engine.Message
             var appRunner = signalRunnerView.WfAppRunner;
             var topic = appRunner.MessageTopic;
 
-            var jim = new JobInfoManager(Sail);
+            var jim = Sail.ManagerFactory.JobInfos;
             var jobInfoList = jim.GetJobSubscribedByTopic(topic);
             foreach (var jobInfo in jobInfoList)
             {

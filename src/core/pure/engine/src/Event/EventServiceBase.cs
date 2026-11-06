@@ -6,6 +6,8 @@ using saiflow.engine.Entity;
 using saiflow.engine.Manager;
 using saiflow.engine.Client;
 
+using saiflow.engine.Factories;
+
 namespace saiflow.engine.Event
 {
     /// <summary>
@@ -124,7 +126,7 @@ namespace saiflow.engine.Event
                 };
             }
             var kit = SailSqlAccess.Sibling(Kit);
-            var pvm = new ProcessVariableManager(Sail);
+            var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
             pvm.SaveVariable(kit, processVariable);
         }
 
@@ -138,7 +140,7 @@ namespace saiflow.engine.Event
         public string GetVariable(ProcessVariableScopeEnum variableType, string name)
         {
             var kit = SailSqlAccess.Sibling(Kit);
-            var pvm = new ProcessVariableManager(Sail);
+            var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
             var variable = pvm.GetVariable(kit, variableType, name, this.EventContext);
             return variable;
         }
@@ -152,7 +154,7 @@ namespace saiflow.engine.Event
         public string GetVariableByScopePriority(string name)
         {
             var kit = SailSqlAccess.Sibling(Kit);
-            var pvm = new ProcessVariableManager(Sail);
+            var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
             var variable = pvm.GetVariableByScopePriority(kit, name, this.EventContext);
             return variable;
         }

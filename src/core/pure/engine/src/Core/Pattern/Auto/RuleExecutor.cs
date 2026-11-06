@@ -14,6 +14,8 @@ using saiflow.engine.Client;
 using saiflow.WebUtility;
 using saiflow.engine.Core;
 
+using saiflow.engine.Factories;
+
 namespace saiflow.engine.Pattern
 {
     internal static class RuleExecutor
@@ -27,9 +29,9 @@ namespace saiflow.engine.Pattern
             if (ruleConfig == null || string.IsNullOrWhiteSpace(ruleConfig.RuleSetCode))
                 return;
 
-            var ruleSet = new RuleSetManager(client).GetByCode(ruleConfig.RuleSetCode);
+            var ruleSet = client.ManagerFactory.RuleSets.GetByCode(ruleConfig.RuleSetCode);
             var inputs = BuildRuleInputs(client, eventService, currentActivityInstance, currentActivity);
-            var result = new RuleSetExecutionManager(client).Execute(ruleSet, inputs);
+            var result = client.ManagerFactory.RuleSetExecutions.Execute(ruleSet, inputs);
 
             if (result.IsSuccess != true)
                 throw new WorkflowException($"RuleTask execution failed: {result.Message}");
@@ -40,7 +42,7 @@ namespace saiflow.engine.Pattern
             var processInstanceId = eventService.GetProcessInstanceId();
             var kit = eventService.GetKit();
             var processInstance = client.ProcessInstances.GetById(kit, processInstanceId);
-            var pvm = new ProcessVariableManager(client);
+            var pvm = SailFactoryAccess.Managers(client).ProcessVariables;
 
             foreach (var item in result.OutputVariables)
             {
@@ -91,7 +93,7 @@ namespace saiflow.engine.Pattern
             var kit = eventService.GetKit();
             if (kit == null || activityInstance == null || currentActivity == null)
                 return dict;
-            var pvm = new ProcessVariableManager(client);
+            var pvm = SailFactoryAccess.Managers(client).ProcessVariables;
             var processInstanceId = eventService.GetProcessInstanceId();
             var activityInstanceId = activityInstance.Id;
             var processScope = ProcessVariableScopeEnum.Process.ToString();
@@ -115,7 +117,7 @@ namespace saiflow.engine.Pattern
                 && !string.IsNullOrWhiteSpace(processInstance.Version)
                 && !string.IsNullOrWhiteSpace(currentActivity.ActivityId))
             {
-                var vm = new VariableManager(client);
+                var vm = client.ManagerFactory.Variables;
                 var defs = vm.GetList(processInstance.ProcessId, processInstance.Version, currentActivity.ActivityId);
                 var inputDefs = defs?.Where(IsWfVariableInput).ToList() ?? new List<VariableEntity>();
                 if (inputDefs.Count > 0)

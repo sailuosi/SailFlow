@@ -308,7 +308,7 @@ namespace saiflow.engine.Service
         public NextStepInfo GetNextStepInfo(WfAppRunner runner, 
             IDictionary<string, string> condition = null)
         {
-            var nsp = new NextStepParser(Sail);
+            var nsp = Managers.NextSteps;
             var nextStepInfo = nsp.GetNextStepInfo(ResourceService, runner, condition);
 
             return nextStepInfo;
@@ -395,7 +395,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<NodeView> GetPreviousActivityTree(WfAppRunner runner)
         {
-            var psc = new PreviousStepChecker(Sail);
+            var psc = Managers.PreviousSteps;
             var hasGatewayPassed = false;
             var nodeList = psc.GetPreviousActivityTree(runner, out hasGatewayPassed);
 
@@ -419,7 +419,7 @@ namespace saiflow.engine.Service
         public PreviousStepInfo GetPreviousStepInfo(WfAppRunner runner)
         {             
             var hasGatewayPassed = false;
-            var psc = new PreviousStepChecker(Sail);
+            var psc = Managers.PreviousSteps;
             var nodeList = psc.GetPreviousActivityTree(runner, out hasGatewayPassed);
             var psi = new PreviousStepInfo();
             psi.PreviousActivityRoleUserTree = nodeList;
@@ -446,7 +446,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public SignForwardStepInfo GetSignForwardStepInfo(WfAppRunner runner)
         {
-            var ssp = new SignForwardStepMaker(Sail);
+            var ssp = Managers.SignForwardSteps;
             var stepInfo = ssp.GetSignForwardStepInfo(runner);
 
             return stepInfo;
@@ -546,7 +546,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<ActivityInstanceEntity> GetTargetActivityInstanceList(int fromActivityInstanceId)
         {
-            var tim = new TransitionInstanceManager(Sail);
+            var tim = Managers.Transitions;
             return tim.GetTargetActivityInstanceList(fromActivityInstanceId);
         }
 
@@ -645,7 +645,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ProcessVariableEntity GetProcessVariable(int variableId)
         {
-            var pvm = new ProcessVariableManager(Sail);
+            var pvm = Managers.ProcessVariables;
             var entity = pvm.GetVariableById(variableId);
 
             return entity;
@@ -657,7 +657,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ProcessVariableEntity GetProcessVariable(ProcessVariableQuery query)
         {
-            var pvm = new ProcessVariableManager(Sail);
+            var pvm = Managers.ProcessVariables;
             var entity = pvm.GetVariableEntity(query);
             return entity;
         }
@@ -668,7 +668,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<ProcessVariableEntity> GetProcessVariableList(ProcessVariableQuery query)
         {
-            var pvm = new ProcessVariableManager(Sail);
+            var pvm = Managers.ProcessVariables;
             var list = pvm.GetVariableList(query.ProcessInstanceId);
             return list;
         }
@@ -679,7 +679,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void DeleteProcessVariable(int variableId)
         {
-            var pvm = new ProcessVariableManager(Sail);
+            var pvm = Managers.ProcessVariables;
             pvm.DeleteVariable(variableId);
         }
 
@@ -689,7 +689,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public Boolean ValidateProcessVariable(int processInstanceId, string expression)
         {
-            var pvm = new ProcessVariableManager(Sail);
+            var pvm = Managers.ProcessVariables;
             return pvm.ValidateProcessVariable(processInstanceId, expression);
         }
 
@@ -709,7 +709,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public int SaveProcessVariable(ProcessVariableEntity entity)
         {
-            var pvm = new ProcessVariableManager(Sail);
+            var pvm = Managers.ProcessVariables;
             var entityId = pvm.SaveVariable(entity);
             return entityId;
         }
@@ -719,7 +719,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<VariableEntity> GetVariableDefinitionList(string processId, string version, string activityId)
         {
-            var vm = new VariableManager(Sail);
+            var vm = Managers.Variables;
             return vm.GetList(processId, version, activityId);
         }
 
@@ -728,7 +728,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public VariableEntity GetVariableDefinition(int id)
         {
-            var vm = new VariableManager(Sail);
+            var vm = Managers.Variables;
             return vm.GetById(id);
         }
 
@@ -737,7 +737,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public int SaveVariableDefinition(VariableEntity entity)
         {
-            var vm = new VariableManager(Sail);
+            var vm = Managers.Variables;
             if (entity.Id != 0)
             {
                 vm.Update(entity);
@@ -751,7 +751,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void DeleteVariableDefinition(int id)
         {
-            var vm = new VariableManager(Sail);
+            var vm = Managers.Variables;
             vm.Delete(id);
         }
 
@@ -760,7 +760,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void SaveVariableDefinitionList(string processId, string version, string activityId, IList<VariableEntity> list)
         {
-            var vm = new VariableManager(Sail);
+            var vm = Managers.Variables;
             vm.SaveList(processId, version, activityId, list);
         }
 
@@ -769,7 +769,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<RuleSetEntity> GetRuleSetList()
         {
-            var rm = new RuleSetManager(Sail);
+            var rm = Managers.RuleSets;
             return rm.GetAll();
         }
 
@@ -778,7 +778,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public RuleSetEntity GetRuleSet(string ruleSetCode)
         {
-            var rm = new RuleSetManager(Sail);
+            var rm = Managers.RuleSets;
             return rm.GetByCode(ruleSetCode);
         }
 
@@ -787,7 +787,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public int SaveRuleSet(RuleSetEntity entity)
         {
-            var rm = new RuleSetManager(Sail);
+            var rm = Managers.RuleSets;
             var exist = rm.GetByCode(entity?.RuleSetCode ?? "");
             if (exist != null)
             {
@@ -803,7 +803,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void DeleteRuleSet(string ruleSetCode)
         {
-            var rm = new RuleSetManager(Sail);
+            var rm = Managers.RuleSets;
             rm.DeleteByCode(ruleSetCode);
         }
         #endregion

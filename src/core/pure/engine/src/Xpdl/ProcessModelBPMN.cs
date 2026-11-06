@@ -169,7 +169,7 @@ namespace saiflow.engine.Xpdl
 
             if (ProcessEntity != null && activity != null && !string.IsNullOrEmpty(activity.ActivityId))
             {
-                var vm = new VariableManager(Sail);
+                var vm = Sail.ManagerFactory.Variables;
                 var defs = vm.GetList(ProcessEntity.ProcessId, ProcessEntity.Version, activity.ActivityId);
                 if (defs != null)
                 {
@@ -637,7 +637,7 @@ namespace saiflow.engine.Xpdl
             #region AndSplit Multiple Instance
             Boolean isNotConditionCheck = false;
             NextActivityMatchedResult newResult = null;
-            NextActivityComponent newRoot = NextActivityComponentFactory.CreateNextActivityComponent();
+            NextActivityComponent newRoot = NextActivityComponents.CreateNextActivityComponent();
 
             //First, obtain the next node list without runtime expression added (to filter the steps selected by front-end users)
             //The condition variables during definition need to be passed in,
@@ -750,7 +750,7 @@ namespace saiflow.engine.Xpdl
         {
             //创建新父节点
             //Create a new parent node
-            NextActivityComponent r1 = NextActivityComponentFactory.CreateNextActivityComponent(parent);
+            NextActivityComponent r1 = NextActivityComponents.CreateNextActivityComponent(parent);
 
             //递归遍历
             //Traverse

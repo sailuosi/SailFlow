@@ -29,7 +29,7 @@ namespace saiflow.engine.Runtime
             _kit = kit;
             _activityInstanceManager = Sail.ManagerFactory.Activities;
             _taskManager = Sail.ManagerFactory.Tasks;
-            _transitionInstanceManager = new TransitionInstanceManager(Sail);
+            _transitionInstanceManager = Sail.ManagerFactory.Transitions;
         }
 
         private SQLBuilder _kit;

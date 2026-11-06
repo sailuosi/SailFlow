@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using mooSQL.data;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
 using saiflow.engine.Entity;
+using saiflow.engine.Pattern;
 using saiflow.engine.Result;
 using saiflow.engine.Runtime;
 using saiflow.engine.Xpdl;
@@ -12,20 +14,77 @@ using saiflow.engine.Xpdl;
 namespace saiflow.engine.Factories;
 
 /// <summary>
-/// A · 默认 Runtime 工厂：D2 转发现行 static <see cref="WfRuntimeManagerFactory"/>。
+/// A · 默认 Runtime 工厂：Create Runtime 实例；并入原 <c>ActivityResourceFactory</c>。
 /// </summary>
 public class DefaultRuntimeFactory : IRuntimeFactory
 {
     private readonly SailClient _sail;
+    private readonly RuntimeInstanceCreator _instances;
 
     public DefaultRuntimeFactory(SailClient sail)
     {
         _sail = sail ?? throw new ArgumentNullException(nameof(sail));
+        _instances = new RuntimeInstanceCreator(_sail);
+    }
+
+    internal virtual ActivityResource CreateActivityResource(
+        WfAppRunner runner,
+        IDictionary<string, PerformerList> nextActivityPerformers,
+        IDictionary<string, string> conditionValuePair = null)
+        => new ActivityResource(runner, nextActivityPerformers, conditionValuePair);
+
+    internal virtual ActivityResource CreateActivityResource(
+        IProcessModel processModel,
+        NextActivityComponent root,
+        WfAppRunner runner,
+        IDictionary<string, string> conditionValuePair)
+    {
+        var nextActivityPerformers = GetActivityPerformerList(processModel, root, runner, conditionValuePair);
+        return new ActivityResource(runner, nextActivityPerformers, conditionValuePair);
+    }
+
+    private static IDictionary<string, PerformerList> GetActivityPerformerList(
+        IProcessModel processModel,
+        NextActivityComponent root,
+        WfAppRunner runner,
+        IDictionary<string, string> conditionValuePair)
+    {
+        IDictionary<string, PerformerList> nextActivityPerformers = new Dictionary<string, PerformerList>();
+        foreach (NextActivityComponent comp in root)
+        {
+            IDictionary<string, PerformerList> itemActivityPerformers;
+            if (comp.HasChildren)
+            {
+                itemActivityPerformers = GetActivityPerformerList(processModel, comp, runner, conditionValuePair);
+            }
+            else
+            {
+                itemActivityPerformers = processModel.GetActivityPerformers(comp.Activity.ActivityId);
+                foreach (var item in itemActivityPerformers)
+                {
+                    if (item.Value.Count == 0)
+                        item.Value.Add(new Performer(runner.UserId, runner.UserName));
+                }
+            }
+            Append(nextActivityPerformers, itemActivityPerformers);
+        }
+        return nextActivityPerformers;
+    }
+
+    private static void Append(
+        IDictionary<string, PerformerList> orginalPerformerList,
+        IDictionary<string, PerformerList> newPerformerList)
+    {
+        foreach (var item in newPerformerList)
+        {
+            if (!orginalPerformerList.ContainsKey(item.Key))
+                orginalPerformerList[item.Key] = item.Value;
+        }
     }
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceStartup(
         WfAppRunner runner, SQLBuilder kit, ref WfExecutedResult result)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(_sail, runner, kit, ref result);
+        => _instances.CreateRuntimeInstanceStartup(runner, kit, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceStartupSub(
         WfAppRunner runner,
@@ -34,62 +93,60 @@ public class DefaultRuntimeFactory : IRuntimeFactory
         PerformerList performerList,
         SQLBuilder kit,
         ref WfExecutedResult result)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceStartupSub(
-            _sail, runner, processInstance, subProcessNode, performerList, kit, ref result);
+        => _instances.CreateRuntimeInstanceStartupSub(
+            runner, processInstance, subProcessNode, performerList, kit, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceAppRunning(
         WfAppRunner runner, SQLBuilder kit, ref WfExecutedResult result)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(_sail, runner, kit, ref result);
+        => _instances.CreateRuntimeInstanceAppRunning(runner, kit, ref result);
 
     internal virtual Task<(WfRuntimeManager Manager, WfExecutedResult Result)>
         CreateRuntimeInstanceAppRunningAsync(
             WfAppRunner runner, SQLBuilder kit, CancellationToken cancellationToken)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunningAsync(
-            _sail, runner, kit, cancellationToken);
+        => _instances.CreateRuntimeInstanceAppRunningAsync(runner, kit, cancellationToken);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceRunAuto(
         WfAppRunner runner, SQLBuilder kit, ref WfExecutedResult result)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceRunAuto(_sail, runner, kit, ref result);
+        => _instances.CreateRuntimeInstanceRunAuto(runner, kit, ref result);
 
     internal virtual Task<(WfRuntimeManager Manager, WfExecutedResult Result)>
         CreateRuntimeInstanceRunAutoAsync(
             WfAppRunner runner, SQLBuilder kit, CancellationToken cancellationToken)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceRunAutoAsync(
-            _sail, runner, kit, cancellationToken);
+        => _instances.CreateRuntimeInstanceRunAutoAsync(runner, kit, cancellationToken);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceWithdraw(
         WfAppRunner runner, ref WfExecutedResult result)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceWithdraw(_sail, runner, ref result);
+        => _instances.CreateRuntimeInstanceWithdraw(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceSendBack(
         WfAppRunner runner, ref WfExecutedResult result)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceSendBack(_sail, runner, ref result);
+        => _instances.CreateRuntimeInstanceSendBack(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceResend(
         WfAppRunner runner, ref WfExecutedResult result)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceResend(_sail, runner, ref result);
+        => _instances.CreateRuntimeInstanceResend(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceRevise(
         WfAppRunner runner, ref WfExecutedResult result)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceRevise(_sail, runner, ref result);
+        => _instances.CreateRuntimeInstanceRevise(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceReverse(
         WfAppRunner runner, ref WfExecutedResult result)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceReverse(_sail, runner, ref result);
+        => _instances.CreateRuntimeInstanceReverse(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceReject(
         WfAppRunner runner, ref WfExecutedResult result)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceReject(_sail, runner, ref result);
+        => _instances.CreateRuntimeInstanceReject(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceClose(
         WfAppRunner runner, ref WfExecutedResult result)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceClose(_sail, runner, ref result);
+        => _instances.CreateRuntimeInstanceClose(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceJump(
         WfAppRunner runner, ref WfExecutedResult result)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceJump(_sail, runner, ref result);
+        => _instances.CreateRuntimeInstanceJump(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceSignForward(
         WfAppRunner runner, ref WfExecutedResult result)
-        => WfRuntimeManagerFactory.CreateRuntimeInstanceSignForward(_sail, runner, ref result);
+        => _instances.CreateRuntimeInstanceSignForward(runner, ref result);
 }

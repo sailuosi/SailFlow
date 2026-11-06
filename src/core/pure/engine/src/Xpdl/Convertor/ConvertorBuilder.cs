@@ -402,7 +402,7 @@ namespace saiflow.engine.Xpdl
                 };
                 if (!string.IsNullOrWhiteSpace(code))
                 {
-                    var ruleSet = new RuleSetManager(Sail).GetByCode(code.Trim());
+                    var ruleSet = Sail.ManagerFactory.RuleSets.GetByCode(code.Trim());
                     if (ruleSet != null)
                         detail.MergeFrom(ruleSet);
                 }

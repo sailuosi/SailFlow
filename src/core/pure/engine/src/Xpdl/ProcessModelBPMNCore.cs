@@ -11,6 +11,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using saiflow.engine.Factories;
+
 namespace saiflow.engine.Xpdl
 {
     internal class ProcessModelBPMNCore
@@ -32,7 +34,7 @@ namespace saiflow.engine.Xpdl
 
                 //创建“下一步节点”的根节点
                 //Create the root node for the 'next step node'
-                NextActivityComponent root = NextActivityComponentFactory.CreateNextActivityComponent();
+                NextActivityComponent root = NextActivityComponents.CreateNextActivityComponent();
 
                 //开始正常情况下的路径查找
                 //Start normal path search
@@ -49,11 +51,11 @@ namespace saiflow.engine.Xpdl
                     {
                         if (XPDLHelper.IsSimpleComponentNode(transition.ToActivity.ActivityType) == true)
                         {
-                            child = NextActivityComponentFactory.CreateNextActivityComponent(transition, transition.ToActivity);
+                            child = NextActivityComponents.CreateNextActivityComponent(transition, transition.ToActivity);
                         }
                         else if (XPDLHelper.IsGatewayComponentNode(transition.ToActivity.ActivityType) == true)
                         {
-                            NextActivityScheduleBase activitySchedule = NextActivityScheduleFactory.CreateActivityScheduleGateway(client, processModel,
+                            NextActivityScheduleBase activitySchedule = SailFactoryAccess.ProcessModels(client).CreateActivityScheduleGateway(processModel,
                                 transition.ToActivity.GatewayDetail.SplitJoinType,
                                 activityInstanceId);
 
@@ -69,7 +71,7 @@ namespace saiflow.engine.Xpdl
                         {
                             //事件类型的特殊节点处理，跟网关类似
                             //Special node handling for event types, similar to gateways
-                            NextActivityScheduleBase activitySchedule = NextActivityScheduleFactory.CreateActivityScheduleIntermediate(processModel);
+                            NextActivityScheduleBase activitySchedule = DefaultProcessModelFactory.CreateActivityScheduleIntermediate(processModel);
                             child = activitySchedule.GetNextActivityListFromGateway(transition,
                                 transition.ToActivity,
                                 conditionKeyValuePair,

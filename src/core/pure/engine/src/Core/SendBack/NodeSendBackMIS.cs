@@ -11,6 +11,8 @@ using saiflow.engine.Common;
 using saiflow.engine.Runtime;
 using saiflow.engine.Core;
 
+using saiflow.engine.Factories;
+
 namespace saiflow.engine.Runtime
 {
     /// <summary>
@@ -33,7 +35,7 @@ namespace saiflow.engine.Runtime
             var runningNode = base.SendBackOperation.BackwardFromActivityInstance;
             //创建撤销到上一步的节点记录
             //Create a node record to undo to the previous step
-            var psc = new PreviousStepChecker(Sail);
+            var psc = SailFactoryAccess.Managers(Sail).PreviousSteps;
             var previousAdjacentBrotherNode = psc.GetPreviousOfMultipleInstanceNode(
                 runningNode.MainActivityInstanceId.Value,
                 runningNode.Id.Value,

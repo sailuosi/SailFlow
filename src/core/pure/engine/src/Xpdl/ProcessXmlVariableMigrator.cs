@@ -101,7 +101,7 @@ namespace saiflow.engine.Xpdl
                 return;
             }
 
-            var vm = new VariableManager(client);
+            var vm = client.ManagerFactory.Variables;
             var processIdForRow = entity.ProcessId;
 
             for (var pi = 0; pi < processNodes.Count; pi++)
