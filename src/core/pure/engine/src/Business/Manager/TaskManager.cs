@@ -399,6 +399,7 @@ namespace saiflow.engine.Manager
                 UnitCode = !string.IsNullOrEmpty(performer?.UnitCode) ? performer.UnitCode : activityInstance.UnitCode,
                 UnitName = !string.IsNullOrEmpty(performer?.UnitName) ? performer.UnitName : activityInstance.UnitName,
                 TaskState = 1,
+                // 业务邮件标记：未发送（saiflow.biz.query.TaskEMailSentStatusEnum.UnSent）
                 IsEMailSent = 0,
                 CreatedUserId = runnerId,
                 CreatedUserName = runnerName,

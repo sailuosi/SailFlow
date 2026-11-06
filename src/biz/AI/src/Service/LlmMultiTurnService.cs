@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using saiflow.AI.Common;
 using saiflow.AI.Configuration;
 using saiflow.AI.Entity;
 using saiflow.AI.Implementation;

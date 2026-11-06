@@ -99,6 +99,9 @@ namespace saiflow.engine.Entity
         [SooColumn(Name = "unit_name")]
         public string UnitName { get; set; }
 
+        /// <summary>
+        /// 业务侧待办邮件发送标记（非引擎主路径语义；见 TaskEntity.IsEMailSent）。
+        /// </summary>
         [SooColumn(Name = "is_email_sent")]
         public byte? IsEMailSent { get; set; }
 

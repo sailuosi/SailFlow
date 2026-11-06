@@ -8,8 +8,8 @@ namespace saiflow.AI.Utility
 {
     public class LangHelper
     {
-        private static readonly Dictionary<LangTypeEnum, string> SystemPromptionOverallDict = new Dictionary<LangTypeEnum, string>();
-        private static readonly Dictionary<LangTypeEnum, string> JsonBPMNFileContentSampleDict = new Dictionary<LangTypeEnum, string>();
+        private static readonly Dictionary<AiPromptLangTypeEnum, string> SystemPromptionOverallDict = new Dictionary<AiPromptLangTypeEnum, string>();
+        private static readonly Dictionary<AiPromptLangTypeEnum, string> JsonBPMNFileContentSampleDict = new Dictionary<AiPromptLangTypeEnum, string>();
         
         static LangHelper()
         {
@@ -22,7 +22,7 @@ namespace saiflow.AI.Utility
 
         private static void InitSystemPromptionOverallDict()
         {
-            SystemPromptionOverallDict[LangTypeEnum.Chinese] = """  
+            SystemPromptionOverallDict[AiPromptLangTypeEnum.Chinese] = """  
                 # 系统角色设定（BPMN 2.0 建模助手）
 
                 你是一个 BPMN 2.0 建模助手，请根据用户的描述生成 BPMN 2.0 模型。输出必须是一个 JSON 对象，格式需符合以下示例，并严格遵循 BPMN 2.0 的基本结构。
@@ -50,7 +50,7 @@ namespace saiflow.AI.Utility
                 5. 参考 JSON 结构示例：
                 """;
 
-            SystemPromptionOverallDict[LangTypeEnum.English] = """
+            SystemPromptionOverallDict[AiPromptLangTypeEnum.English] = """
                 #System Role Setting (BPMN 2.0 Modeling Assistant)
 
                 You are a BPMN 2.0 modeling assistant, please generate a BPMN 2.0 model based on the user's description. The output must be a JSON object, formatted according to the following example, and strictly following the basic structure of BPMN 2.0.
@@ -78,7 +78,7 @@ namespace saiflow.AI.Utility
                 5. Reference JSON structure example:
                 """;
 
-            SystemPromptionOverallDict[LangTypeEnum.Spanish] = """
+            SystemPromptionOverallDict[AiPromptLangTypeEnum.Spanish] = """
                 Configuración del papel del sistema (asistente de modelado bpmn 2.0)
 
                 Usted es un asistente de modelado bpmn2.0, por favor genere el modelo bpmn2.0 de acuerdo con la descripción del usuario. La salida debe ser un objeto json, el formato debe ajustarse al siguiente ejemplo y seguir estrictamente la estructura básica de bpmn2.0.
@@ -106,7 +106,7 @@ namespace saiflow.AI.Utility
                 5. consulte el ejemplo de la estructura de json:
                 """;
 
-            SystemPromptionOverallDict[LangTypeEnum.French] = """
+            SystemPromptionOverallDict[AiPromptLangTypeEnum.French] = """
                 Configuration des rôles système (assistant de modélisation bpmn 2.0)
 
                 Vous êtes un assistant de modélisation bpmn 2.0, générez un modèle bpmn 2.0 basé sur la description de l'utilisateur. La sortie doit être un objet json, le format doit être conforme à l'exemple suivant et suivre strictement la structure de base de bpmn 2.0.
@@ -134,7 +134,7 @@ namespace saiflow.AI.Utility
                 5. Référez - vous à un exemple de structure json:
                 """;
 
-            SystemPromptionOverallDict[LangTypeEnum.Russian] = """
+            SystemPromptionOverallDict[AiPromptLangTypeEnum.Russian] = """
                 # Настройка системных ролей (помощник моделирования BPMN 2.0)
 
                 Вы являетесь помощником моделирования BPMN 2.0, создавая модель BPMN 2.0 на основе описания пользователя. Выход должен быть объектом JSON, формат должен соответствовать приведенным ниже примерам и строго соответствовать базовой структуре BPMN 2.0.
@@ -162,7 +162,7 @@ namespace saiflow.AI.Utility
                 Примеры структуры JSON:
                 """;
 
-            SystemPromptionOverallDict[LangTypeEnum.Arab] = """
+            SystemPromptionOverallDict[AiPromptLangTypeEnum.Arab] = """
                 نظام تحديد الأدوار ( bpmn 2.0 النمذجة مساعد )
 
                 كنت BPMN 2.0 النمذجة مساعد ، يرجى بناء نموذج BPMN 2.0 حسب وصف المستخدم . الناتج يجب أن يكون جسون الكائن ، الشكل الذي يتوافق مع المثال التالي و يتبع بدقة الهيكل الأساسي bpmn 2.0 .
@@ -193,7 +193,7 @@ namespace saiflow.AI.Utility
 
         private static void InitJsonBPMNFileContentSampleDict()
         {
-            JsonBPMNFileContentSampleDict[LangTypeEnum.Chinese] = """
+            JsonBPMNFileContentSampleDict[AiPromptLangTypeEnum.Chinese] = """
                 {
                   "Process": {
                     "id": "Process_TelecomEquipmentRepair",
@@ -252,7 +252,7 @@ namespace saiflow.AI.Utility
                 }
                 """;
 
-            JsonBPMNFileContentSampleDict[LangTypeEnum.English] = """
+            JsonBPMNFileContentSampleDict[AiPromptLangTypeEnum.English] = """
                 {
                   "Process": {
                     "id": "Process_TelecomEquipmentRepair",
@@ -311,7 +311,7 @@ namespace saiflow.AI.Utility
                 }
                 """;
 
-            JsonBPMNFileContentSampleDict[LangTypeEnum.Spanish] = """
+            JsonBPMNFileContentSampleDict[AiPromptLangTypeEnum.Spanish] = """
                 {
                   "Process": {
                     "id": "Process_TelecomEquipmentRepair",
@@ -370,7 +370,7 @@ namespace saiflow.AI.Utility
                 }
                 """;
 
-            JsonBPMNFileContentSampleDict[LangTypeEnum.French] = """
+            JsonBPMNFileContentSampleDict[AiPromptLangTypeEnum.French] = """
                 {
                   "Process": {
                     "id": "Process_TelecomEquipmentRepair",
@@ -429,7 +429,7 @@ namespace saiflow.AI.Utility
                 }
                 """;
 
-            JsonBPMNFileContentSampleDict[LangTypeEnum.Russian] = """
+            JsonBPMNFileContentSampleDict[AiPromptLangTypeEnum.Russian] = """
                 {
                   "Process": {
                     "id": "Process_TelecomEquipmentRepair",
@@ -488,7 +488,7 @@ namespace saiflow.AI.Utility
                 }
                 """;
 
-            JsonBPMNFileContentSampleDict[LangTypeEnum.Arab] = """
+            JsonBPMNFileContentSampleDict[AiPromptLangTypeEnum.Arab] = """
                 {
                   "Process": {
                     "id": "Process_TelecomEquipmentRepair",
@@ -548,7 +548,7 @@ namespace saiflow.AI.Utility
                 """;
         }
 
-        public static string GetSystemPromptionOverall(LangTypeEnum langType)
+        public static string GetSystemPromptionOverall(AiPromptLangTypeEnum langType)
         {
             var strSystemPromptionOverall = SystemPromptionOverallDict[langType];
             var strJsonBPMNFileContentSample = JsonBPMNFileContentSampleDict[langType];
@@ -557,13 +557,13 @@ namespace saiflow.AI.Utility
             return strMerge;
         }
 
-        public static LangTypeEnum DetectLanguage(string input)
+        public static AiPromptLangTypeEnum DetectLanguage(string input)
         {
             if (string.IsNullOrWhiteSpace(input))
-                return LangTypeEnum.Unknown;
+                return AiPromptLangTypeEnum.Unknown;
 
             // 统计各语言字符出现的次数
-            var languageScores = new Dictionary<LangTypeEnum, int>();
+            var languageScores = new Dictionary<AiPromptLangTypeEnum, int>();
             foreach (var lang in LanguageRanges.Keys)
             {
                 languageScores[lang] = 0;
@@ -587,7 +587,7 @@ namespace saiflow.AI.Utility
             // 找出得分最高的语言
             var maxScore = languageScores.Values.Max();
             if (maxScore == 0)
-                return LangTypeEnum.Unknown;
+                return AiPromptLangTypeEnum.Unknown;
 
             return languageScores.FirstOrDefault(x => x.Value == maxScore).Key;
         }
@@ -605,25 +605,25 @@ namespace saiflow.AI.Utility
             return false;
         }
 
-        private static readonly Dictionary<LangTypeEnum, Tuple<int, int>[]> LanguageRanges = new Dictionary<LangTypeEnum, Tuple<int, int>[]>
+        private static readonly Dictionary<AiPromptLangTypeEnum, Tuple<int, int>[]> LanguageRanges = new Dictionary<AiPromptLangTypeEnum, Tuple<int, int>[]>
         {
             // 中文：基本汉字和扩展汉字
-            { LangTypeEnum.Chinese, new[] { Tuple.Create(0x4E00, 0x9FFF), Tuple.Create(0x3400, 0x4DBF) } },
+            { AiPromptLangTypeEnum.Chinese, new[] { Tuple.Create(0x4E00, 0x9FFF), Tuple.Create(0x3400, 0x4DBF) } },
         
             // 英文：基本拉丁字母
-            { LangTypeEnum.English, new[] { Tuple.Create(0x0041, 0x007A) } },
+            { AiPromptLangTypeEnum.English, new[] { Tuple.Create(0x0041, 0x007A) } },
         
             // 西班牙文：使用拉丁字母，与英文相同范围，但需要额外考虑特殊字符
-            { LangTypeEnum.Spanish, new[] { Tuple.Create(0x0041, 0x007A), Tuple.Create(0x00C0, 0x00FF) } },
+            { AiPromptLangTypeEnum.Spanish, new[] { Tuple.Create(0x0041, 0x007A), Tuple.Create(0x00C0, 0x00FF) } },
         
             // 法文：使用拉丁字母，与英文相同范围，但需要额外考虑特殊字符
-            { LangTypeEnum.French, new[] { Tuple.Create(0x0041, 0x007A), Tuple.Create(0x00C0, 0x00FF) } },
+            { AiPromptLangTypeEnum.French, new[] { Tuple.Create(0x0041, 0x007A), Tuple.Create(0x00C0, 0x00FF) } },
         
             // 俄文：西里尔字母
-            { LangTypeEnum.Russian, new[] { Tuple.Create(0x0400, 0x04FF) } },
+            { AiPromptLangTypeEnum.Russian, new[] { Tuple.Create(0x0400, 0x04FF) } },
         
             // 阿拉伯文：阿拉伯字母
-            { LangTypeEnum.Arab, new[] { Tuple.Create(0x0600, 0x06FF), Tuple.Create(0x0750, 0x077F) } }
+            { AiPromptLangTypeEnum.Arab, new[] { Tuple.Create(0x0600, 0x06FF), Tuple.Create(0x0750, 0x077F) } }
         };
     }
 }

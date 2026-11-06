@@ -120,7 +120,7 @@ namespace saiflow.biz.query
                 catch (Exception e)
                 {
                     throw new WorkflowException(
-                        Sail.Messages.GetEngineMessage("taskmanager.settaskemailsent.error", e.Message), e);
+                        "更新任务邮件发送状态发生错误: " + e.Message, e);
                 }
             }
         }

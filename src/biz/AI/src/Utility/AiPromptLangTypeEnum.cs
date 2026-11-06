@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace saiflow.AI.Utility
 {
-    public enum LangTypeEnum
+    /// <summary>
+    /// AI 提示词/语种检测用语言类型（与 <c>saiflow.hub.Localize.LangTypeEnum</c> 无关）。
+    /// </summary>
+    public enum AiPromptLangTypeEnum
     {
         Unknown = 0,
 

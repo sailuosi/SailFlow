@@ -8,7 +8,7 @@ using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using saiflow.AI.Common;
+using saiflow.AI.Abstractions;
 using saiflow.engine.Client;
 
 namespace saiflow.AI.Implementation

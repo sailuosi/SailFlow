@@ -31,9 +31,8 @@ namespace saiflow.msg.Notify
             if (user == null || string.IsNullOrEmpty(user.EMail))
                 return;
 
-            var title = _client.Messages.GetEngineMessage("taskmanager.emailtemplate.title");
-            var body = _client.Messages.GetEngineMessage("taskmanager.emailtemplate.body");
-            body = string.Format(body, _options.AppBaseUrl, ctx.AppName, ctx.AppInstanceId);
+            var title = _options.Subject;
+            var body = string.Format(_options.BodyTemplate, _options.AppBaseUrl, ctx.AppName, ctx.AppInstanceId);
 
             var emailSendUtility = new EMailSendUtility(_client, _options, ctx.TaskId);
             await emailSendUtility.SendEMailAsync(title, body, user.EMail).ConfigureAwait(false);

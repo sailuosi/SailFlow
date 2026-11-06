@@ -54,6 +54,10 @@ namespace saiflow.engine.Entity
         public string UnitCode { get; set; }
         [SooColumn(Name = "unit_name")]
         public string UnitName { get; set; }
+        /// <summary>
+        /// 业务侧待办邮件发送标记（非引擎主路径语义）。
+        /// 取值见 <c>saiflow.biz.query.TaskEMailSentStatusEnum</c>；创建时写 0=未发送，由查询/补发路径回写。
+        /// </summary>
         [SooColumn(Name = "is_email_sent")]
         public byte? IsEMailSent { get; set; }
         [SooColumn(Name = "created_user_id")]

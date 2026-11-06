@@ -18,7 +18,7 @@ namespace saiflow.AI.Abstractions
     /// </summary>
     public sealed class AiNodeExecutionRequest
     {
-        /// <summary>Logical type: LLM / RAG / Agent (matches AiServiceTypeEnum names).</summary>
+        /// <summary>Logical type: LLM / RAG / Agent（见 <see cref="AiServiceTypeEnum"/> 名称）。</summary>
         public string ServiceType { get; set; } = string.Empty;
 
         public string ProcessId { get; set; } = string.Empty;

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using saiflow.AI.Common;
+using saiflow.AI.Abstractions;
 using saiflow.AI.Configuration;
 using saiflow.AI.Entity;
 using saiflow.AI.Manager;
