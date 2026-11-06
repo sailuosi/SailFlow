@@ -29,7 +29,7 @@ public static class NextActivityPickProbe
 
         try
         {
-            var model = ProcessModelFactory.CreateByProcess(sail, processId, version);
+            var model = sail.ProcessModelFactory.CreateByProcess(processId, version);
             var next = model?.GetNextActivityListWithoutCondition(fromActivityId);
             if (next == null || next.Count == 0)
                 return false;

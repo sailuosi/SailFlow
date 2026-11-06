@@ -9,6 +9,7 @@ using saiflow.engine.Manager;
 using saiflow.engine.Core;
 using saiflow.engine.Hooks;
 
+using saiflow.engine.Factories;
 namespace saiflow.engine.Runtime
 {
     /// <summary>
@@ -49,7 +50,7 @@ namespace saiflow.engine.Runtime
 
                 // 推进前校验已由 WorkflowService.TryGate 完成；不再触发 EventSubscription OnProcessRunning
 
-                NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(runningExecutionContext, kit, Sail);
+                NodeMediator mediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediator(runningExecutionContext, kit);
                 mediator.LinkContext.FromActivityInstance = RunningActivityInstance;
                 mediator.ExecuteWorkItem(null);
 

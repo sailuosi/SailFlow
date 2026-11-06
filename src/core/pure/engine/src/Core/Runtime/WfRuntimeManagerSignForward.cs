@@ -3,6 +3,7 @@ using mooSQL.data;
 using saiflow.engine.Result;
 using saiflow.engine.Pattern;
 using saiflow.engine.Core;
+using saiflow.engine.Factories;
 
 namespace saiflow.engine.Runtime
 {
@@ -31,7 +32,7 @@ namespace saiflow.engine.Runtime
                     false,
                     kit, Sail);
 
-                NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(signforwardExecutionContext, kit, Sail);
+                NodeMediator mediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediator(signforwardExecutionContext, kit);
                 mediator.ExecuteWorkItem(null);
 
                 var result = base.WfExecutedResult;

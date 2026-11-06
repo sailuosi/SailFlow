@@ -7,6 +7,7 @@ using saiflow.engine.Result;
 using saiflow.engine.Pattern;
 using saiflow.engine.Core;
 
+using saiflow.engine.Factories;
 namespace saiflow.engine.Runtime
 {
     /// <summary>
@@ -36,7 +37,7 @@ namespace saiflow.engine.Runtime
                 base.ProcessModel, processInstance, base.ActivityResource);
             jumpforwardExecutionContext.FromActivityInstance = base.RunningActivityInstance;
 
-            NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(jumpforwardExecutionContext, kit, Sail);
+            NodeMediator mediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediator(jumpforwardExecutionContext, kit);
             mediator.LinkContext.FromActivityInstance = base.RunningActivityInstance;
             mediator.LinkContext.CurrentActivity = jumpforwardActivity;
 

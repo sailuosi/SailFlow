@@ -67,7 +67,7 @@ namespace saiflow.engine.Runtime
             //获取前置节点列表
             //Get the list of previous nodes
             var processInstance = Sail.ProcessInstances.GetById(runningNode.ProcessInstanceId.Value);
-            var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, processInstance);
+            var processModel = Sail.ProcessModelFactory.CreateByProcessInstance( processInstance);
             var previousActivityList = GetPreviousActivityList(runningNode, processModel, out hasGatewayPassed);
 
             //封装返回结果集合

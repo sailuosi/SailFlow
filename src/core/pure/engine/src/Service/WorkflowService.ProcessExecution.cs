@@ -285,8 +285,8 @@ namespace saiflow.engine.Service
 
         async Task<WfExecutedResult> ExecuteRunCoreAsync(SQLBuilder kit, WfAppRunner runner, CancellationToken cancellationToken)
         {
-            var (runtimeInstance, runAppResult) = await WfRuntimeManagerFactory
-                .CreateRuntimeInstanceAppRunningAsync(Sail, runner, kit, cancellationToken)
+            var (runtimeInstance, runAppResult) = await Runtimes
+                .CreateRuntimeInstanceAppRunningAsync(runner, kit, cancellationToken)
                 .ConfigureAwait(false);
             return FinishRunCore(kit, runner, runtimeInstance, runAppResult);
         }
@@ -418,8 +418,8 @@ namespace saiflow.engine.Service
 
         async Task<WfExecutedResult> ExecuteRunAutoCoreAsync(SQLBuilder kit, WfAppRunner runner, CancellationToken cancellationToken)
         {
-            var (runtimeInstance, runAppResult) = await WfRuntimeManagerFactory
-                .CreateRuntimeInstanceRunAutoAsync(Sail, runner, kit, cancellationToken)
+            var (runtimeInstance, runAppResult) = await Runtimes
+                .CreateRuntimeInstanceRunAutoAsync(runner, kit, cancellationToken)
                 .ConfigureAwait(false);
             return FinishRunAutoCore(kit, runner, runtimeInstance, runAppResult);
         }

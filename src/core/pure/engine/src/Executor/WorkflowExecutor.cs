@@ -1,137 +1,50 @@
-using saiflow.engine.Entity;
-using saiflow.engine.Manager;
-using saiflow.engine.Common;
-using saiflow.engine.Result;
-using saiflow.engine.Xpdl;
 using System;
 using System.Threading.Tasks;
-
 using saiflow.engine.Client;
+using saiflow.engine.Common;
+using saiflow.engine.Manager;
+using saiflow.engine.Result;
+using saiflow.engine.Xpdl;
+
 namespace saiflow.engine.Executor
 {
     /// <summary>
-    /// Workflow executor with chain-style API. Delegates graph run to WorkflowNodeRunner and activity execution to WorkflowActivityExecutor.
-    /// 链式工作流执行器：图遍历委托给 WorkflowNodeRunner，节点执行委托给 WorkflowActivityExecutor。
+    /// H · 无状态自动编排执行器：图遍历委托 <see cref="WorkflowNodeRunner"/>，节点执行委托 <see cref="WorkflowActivityExecutor"/>。
+    /// 不持 Runner / ProcessModel / 变量袋；建造见 <c>Sail.CreateAutoRunBuilder</c>。
     /// </summary>
     public class WorkflowExecutor : IWorkflowExecutor
     {
         public WorkflowExecutor(SailClient client)
         {
-            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
         }
 
         protected SailClient Sail { get; }
 
-        #region Property
-        private WfAppRunner _wfAppRunner = new WfAppRunner();
-        private IProcessModel _processModel;
-        private AutoExecutionContext _autoExecutionContext = new AutoExecutionContext();
-        private string _notifyClientSessionId;
-        private Action<string, object> _notifyClientCallback;
-        #endregion
-
-        public WorkflowExecutor()
+        public Task<WfExecutedResult> Run(
+            WfAppRunner runner,
+            IProcessModel processModel,
+            AutoExecutionContext executionContext = null,
+            string notifyClientSessionId = null,
+            Action<string, object> notifyClientCallback = null)
         {
-            _wfAppRunner.NextPerformerType = NextPerformerIntTypeEnum.Unattented;
-        }
+            ArgumentNullException.ThrowIfNull(runner);
+            ArgumentNullException.ThrowIfNull(processModel);
 
-        /// <summary>
-        /// User application / 绑定业务票据
-        /// </summary>
-        public IWorkflowExecutor UseApp(string appInstanceId, string appName, string appCode = null)
-        {
-            _wfAppRunner.AppInstanceId = appInstanceId;
-            _wfAppRunner.AppName = appName;
-            _wfAppRunner.AppInstanceCode = appCode;
-            return this;
-        }
-
-        /// <summary>
-        /// Use Process Definition / 使用流程定义
-        /// </summary>
-        public IWorkflowExecutor UseProcess(string processId, string version = null)
-        {
-            if (string.IsNullOrEmpty(version)) version = "1";
-
-            Guid newGUID = Guid.Empty;
-            bool isProcessId = Guid.TryParse(processId, out newGUID);
-            if (isProcessId == true)
-            {
-                _wfAppRunner.ProcessId = processId;
-                _wfAppRunner.Version = version;
-            }
-            else
-            {
-                var pm = Sail.ManagerFactory.Processes;
-                var entity = pm.GetByVersion(processId, version);
-                _wfAppRunner.ProcessId = entity.ProcessId;
-                _wfAppRunner.Version = entity.Version;
-            }
-
-            _processModel = ProcessModelFactory.CreateByProcess(Sail, processId, version);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Use Process Definition from an in-memory ProcessEntity (no database lookup).
-        /// </summary>
-        public IWorkflowExecutor UseProcess(ProcessEntity processEntity)
-        {
-            if (processEntity == null)
-                throw new ArgumentNullException(nameof(processEntity));
-
-            _wfAppRunner.ProcessId = processEntity.ProcessId;
-            _wfAppRunner.Version = processEntity.Version;
-
-            _processModel = ProcessModelFactory.CreateByProcess(Sail, processEntity);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Add process variable / 添加流程变量
-        /// </summary>
-        public IWorkflowExecutor AddVariable(string name, string value)
-        {
-            _autoExecutionContext.Variables.Add(name, value);
-            return this;
-        }
-
-        /// <summary>
-        /// Set callback to push RAG node response to client when isNotifyClient is true.
-        /// 当节点扩展属性 isNotifyClient 为 true 时，将 RAG 节点结果推送到前端。
-        /// </summary>
-        public IWorkflowExecutor SetNotifyClient(string sessionId, Action<string, object> callback)
-        {
-            _notifyClientSessionId = sessionId;
-            _notifyClientCallback = callback;
-            return this;
-        }
-
-        /// <summary>
-        /// Inject delegate registry for LocalMethod ServiceTask. When null, ServiceTaskDelegateRegistry.Global is used.
-        /// 注入委托注册表，用于 LocalMethod 类型的 ServiceTask。为空时使用全局注册表。
-        /// </summary>
-        public IWorkflowExecutor WithDelegateRegistry(IServiceTaskDelegateRegistry registry)
-        {
-            _autoExecutionContext.DelegateRegistry = registry;
-            return this;
-        }
-
-        /// <summary>
-        /// Execute workflow automatically from start to end / 自动执行流程从开始到结束
-        /// </summary>
-        public Task<WfExecutedResult> Run()
-        {
             var result = new WfExecutedResult
             {
                 Status = WfExecutedStatus.Success
             };
 
+            var ctx = executionContext ?? new AutoExecutionContext();
+            ctx.Sail = Sail;
+            ctx.ProcessModel = processModel;
+            ctx.Runner = runner;
+            ctx.Variables ??= new System.Collections.Generic.Dictionary<string, string>();
+
             try
             {
-                var startActivity = _processModel.GetStartActivity();
+                var startActivity = processModel.GetStartActivity();
                 if (startActivity == null)
                 {
                     result.Status = WfExecutedStatus.Failed;
@@ -139,18 +52,17 @@ namespace saiflow.engine.Executor
                     return Task.FromResult(result);
                 }
 
-                _autoExecutionContext.ProcessModel = _processModel;
-                _autoExecutionContext.Runner = _wfAppRunner;
-                _autoExecutionContext.Sail = Sail;
-
-                var activityExecutor = new WorkflowActivityExecutor(Sail, _notifyClientSessionId, _notifyClientCallback);
-                var nodeRunner = new WorkflowNodeRunner(_processModel, activityExecutor);
-                nodeRunner.Run(startActivity, _autoExecutionContext, result);
+                var activityExecutor = new WorkflowActivityExecutor(Sail, notifyClientSessionId, notifyClientCallback);
+                var nodeRunner = new WorkflowNodeRunner(processModel, activityExecutor);
+                nodeRunner.Run(startActivity, ctx, result);
 
                 if (result.Status == WfExecutedStatus.Success)
                 {
                     result.Message = "Workflow executed successfully";
-                    if (_autoExecutionContext.Variables != null && _autoExecutionContext.Variables.TryGetValue("ai_response", out var aiResp) && aiResp != null && !string.IsNullOrWhiteSpace(aiResp.ToString()))
+                    if (ctx.Variables != null
+                        && ctx.Variables.TryGetValue("ai_response", out var aiResp)
+                        && aiResp != null
+                        && !string.IsNullOrWhiteSpace(aiResp.ToString()))
                         result.AiResponse = aiResp.ToString();
                 }
             }
@@ -158,7 +70,7 @@ namespace saiflow.engine.Executor
             {
                 result.Status = WfExecutedStatus.Failed;
                 result.Message = $"Auto orchestration execution failed: {ex.Message}";
-                LogManager.RecordLog(Sail, WfDefine.WF_WORKFLOW_EXECUTOR_RUN_ERROR, LogEventType.Error, LogPriority.High, _wfAppRunner, ex);
+                LogManager.RecordLog(Sail, WfDefine.WF_WORKFLOW_EXECUTOR_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, ex);
             }
 
             return Task.FromResult(result);

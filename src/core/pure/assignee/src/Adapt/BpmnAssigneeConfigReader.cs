@@ -78,7 +78,7 @@ public static class BpmnAssigneeConfigReader
             if (string.IsNullOrEmpty(processId) || string.IsNullOrEmpty(version))
                 return null;
 
-            var model = ProcessModelFactory.CreateByProcess(sail, processId, version);
+            var model = sail.ProcessModelFactory.CreateByProcess(processId, version);
             return model?.GetActivity(activityId);
         }
         catch

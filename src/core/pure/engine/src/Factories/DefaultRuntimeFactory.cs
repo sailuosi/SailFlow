@@ -1,9 +1,13 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using mooSQL.data;
 using saiflow.engine.Client;
 using saiflow.engine.Common;
+using saiflow.engine.Entity;
 using saiflow.engine.Result;
 using saiflow.engine.Runtime;
+using saiflow.engine.Xpdl;
 
 namespace saiflow.engine.Factories;
 
@@ -23,13 +27,35 @@ public class DefaultRuntimeFactory : IRuntimeFactory
         WfAppRunner runner, SQLBuilder kit, ref WfExecutedResult result)
         => WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(_sail, runner, kit, ref result);
 
+    internal virtual WfRuntimeManager CreateRuntimeInstanceStartupSub(
+        WfAppRunner runner,
+        ProcessInstanceEntity processInstance,
+        SubProcessNode subProcessNode,
+        PerformerList performerList,
+        SQLBuilder kit,
+        ref WfExecutedResult result)
+        => WfRuntimeManagerFactory.CreateRuntimeInstanceStartupSub(
+            _sail, runner, processInstance, subProcessNode, performerList, kit, ref result);
+
     internal virtual WfRuntimeManager CreateRuntimeInstanceAppRunning(
         WfAppRunner runner, SQLBuilder kit, ref WfExecutedResult result)
         => WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(_sail, runner, kit, ref result);
 
+    internal virtual Task<(WfRuntimeManager Manager, WfExecutedResult Result)>
+        CreateRuntimeInstanceAppRunningAsync(
+            WfAppRunner runner, SQLBuilder kit, CancellationToken cancellationToken)
+        => WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunningAsync(
+            _sail, runner, kit, cancellationToken);
+
     internal virtual WfRuntimeManager CreateRuntimeInstanceRunAuto(
         WfAppRunner runner, SQLBuilder kit, ref WfExecutedResult result)
         => WfRuntimeManagerFactory.CreateRuntimeInstanceRunAuto(_sail, runner, kit, ref result);
+
+    internal virtual Task<(WfRuntimeManager Manager, WfExecutedResult Result)>
+        CreateRuntimeInstanceRunAutoAsync(
+            WfAppRunner runner, SQLBuilder kit, CancellationToken cancellationToken)
+        => WfRuntimeManagerFactory.CreateRuntimeInstanceRunAutoAsync(
+            _sail, runner, kit, cancellationToken);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceWithdraw(
         WfAppRunner runner, ref WfExecutedResult result)

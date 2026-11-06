@@ -361,7 +361,7 @@ namespace saiflow.engine.Manager
                     }
                     Sibling(kit).useRepo<ProcessEntity, int>().Update(entity);
                     kit.commit();
-                    ProcessModelFactory.Invalidate(Sail, entity.ProcessId, entity.Version);
+                    Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);
                 }
                 catch
                 {
@@ -377,7 +377,7 @@ namespace saiflow.engine.Manager
         public void Update(SQLBuilder kit, ProcessEntity entity)
         {
             Sibling(kit).useRepo<ProcessEntity, int>().Update(entity);
-            ProcessModelFactory.Invalidate(Sail, entity.ProcessId, entity.Version);
+            Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);
         }
 
         /// <summary>
@@ -474,7 +474,7 @@ namespace saiflow.engine.Manager
             var entity = Sail.UseRunSQL().useRepo<ProcessEntity, int>().GetById(id);
             Sail.UseRunSQL().useRepo<ProcessEntity, int>().DeleteById(id);
             if (entity != null)
-                ProcessModelFactory.Invalidate(Sail, entity.ProcessId, entity.Version);
+                Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);
         }
 
         /// <summary>
@@ -492,7 +492,7 @@ namespace saiflow.engine.Manager
                 {
                     Sibling(kit).useRepo<ProcessEntity, int>().Delete(entity);
                     kit.commit();
-                    ProcessModelFactory.Invalidate(Sail, processId, version);
+                    Sail.ProcessModelFactory.Invalidate( processId, version);
                 }
                 catch
                 {
@@ -512,7 +512,7 @@ namespace saiflow.engine.Manager
             clip.where(() => p.ProcessId, processId);
             clip.doDelete();
             // 无 version：清空全部进程内模型缓存，避免残留
-            ProcessModelFactory.ClearAllCache();
+            Sail.ProcessModelFactory.ClearAllCache();
         }
 
         /// <summary>
@@ -546,7 +546,7 @@ namespace saiflow.engine.Manager
                     clip.doDelete();
 
                     kit.commit();
-                    ProcessModelFactory.Invalidate(Sail, processId, version);
+                    Sail.ProcessModelFactory.Invalidate( processId, version);
                 }
                 catch
                 {
@@ -733,7 +733,7 @@ namespace saiflow.engine.Manager
                         Sibling(kit).useRepo<ProcessEntity, int>().Insert(processEntity);
                     }
                     kit.commit();
-                    ProcessModelFactory.Invalidate(Sail, processEntity.ProcessId, processEntity.Version);
+                    Sail.ProcessModelFactory.Invalidate( processEntity.ProcessId, processEntity.Version);
                 }
                 catch (System.Exception ex)
                 {
@@ -917,7 +917,7 @@ namespace saiflow.engine.Manager
                 try
                 {
                     var entity = GetByVersion(kit, processId, version, true);
-                    var processModel = ProcessModelFactory.CreateByProcess(Sail, entity);
+                    var processModel = Sail.ProcessModelFactory.CreateByProcess( entity);
 
                     //StartNode
                     var startNode = processModel.GetStartActivity();

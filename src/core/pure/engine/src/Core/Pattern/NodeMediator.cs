@@ -19,6 +19,7 @@ using saiflow.engine.Pattern;
 using saiflow.engine.Core;
 using saiflow.engine.Hooks;
 
+using saiflow.engine.Factories;
 namespace saiflow.engine.Pattern
 {
     /// <summary>
@@ -488,7 +489,7 @@ namespace saiflow.engine.Pattern
             if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
             {
                 // 分支/合并网关：先实例化当前节点（自动完成）
-                NodeMediatorGateway gatewayNodeMediator = NodeMediatorFactory.CreateNodeMediatorGateway(comp.Activity, this.ActivityForwardContext.ProcessModel, Kit, Sail);
+                NodeMediatorGateway gatewayNodeMediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediatorGateway(comp.Activity, this.ActivityForwardContext.ProcessModel, Kit);
 
                 ICompleteGatewayAutomaticlly autoGateway = (ICompleteGatewayAutomaticlly)gatewayNodeMediator;
                 NodeAutoExecutedResult nodeExecutedResult = autoGateway.CompleteAutomaticlly(ActivityForwardContext.ProcessInstance,
@@ -561,7 +562,7 @@ namespace saiflow.engine.Pattern
             ActivityResource activityResource,
             ref List<WfNodeMediatedResult> mediatorResult)
         {
-            NodeMediator eventNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
+            NodeMediator eventNodeMediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit);
             eventNodeMediator.LinkContext.FromActivity = fromActivity;
             eventNodeMediator.LinkContext.CurrentActivity = comp.Activity;
 
@@ -672,7 +673,7 @@ namespace saiflow.engine.Pattern
             ref List<WfNodeMediatedResult> mediatorResult)
         {
             NodeAutoExecutedResult aiServiceExecutedResult = null;
-            NodeMediator aiServiceNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
+            NodeMediator aiServiceNodeMediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit);
 
             ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)aiServiceNodeMediator;
             var currentActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity,
@@ -750,7 +751,7 @@ namespace saiflow.engine.Pattern
             ref List<WfNodeMediatedResult> mediatorResult)
         {
             NodeAutoExecutedResult serviceExecutedResult = null;
-            NodeMediator serviceNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
+            NodeMediator serviceNodeMediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit);
 
             ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)serviceNodeMediator;
             var currentActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity,
@@ -829,7 +830,7 @@ namespace saiflow.engine.Pattern
             ref List<WfNodeMediatedResult> mediatorResult)
         {
             NodeAutoExecutedResult scriptExecutedResult = null;
-            NodeMediator scriptNodeMediator = NodeMediatorFactory.CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit, Sail);
+            NodeMediator scriptNodeMediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediatorEvent(ActivityForwardContext, comp.Activity, ActivityForwardContext.ProcessModel, Kit);
 
             ICreatedAutomaticlly autoCreatedEvent = (ICreatedAutomaticlly)scriptNodeMediator;
             var toActivityInstance = autoCreatedEvent.CreatedAutomaticlly(comp.Activity,
@@ -930,7 +931,7 @@ namespace saiflow.engine.Pattern
         {
             if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
             {
-                var subNodeMediator = NodeMediatorFactory.CreateNodeMediatorSubProcess(comp.Activity, this.Kit, Sail);
+                var subNodeMediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediatorSubProcess(comp.Activity, this.Kit);
                 subNodeMediator.CreateActivityTaskTransitionInstance(comp.Activity,
                     ActivityForwardContext.ProcessInstance,
                     fromActivityInstance,
@@ -954,7 +955,7 @@ namespace saiflow.engine.Pattern
         {
             if (fromActivityInstance.ActivityState == (short)ActivityStateEnum.Completed)
             {
-                var endMediator = NodeMediatorFactory.CreateNodeMediatorEnd(ActivityForwardContext, comp.Activity, Kit, Sail);
+                var endMediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediatorEnd(ActivityForwardContext, comp.Activity, Kit);
                 endMediator.LinkContext.CurrentActivity = comp.Activity;
 
                 // 创建结束节点实例与转移数据

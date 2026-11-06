@@ -52,7 +52,7 @@ public class RoleGroupAssigneeResolver : IAssigneeResolver, IAssigneeResolverWir
             || string.IsNullOrEmpty(activityId))
             return Array.Empty<string>();
 
-        var model = ProcessModelFactory.CreateByProcess(sail, processId, version);
+        var model = sail.ProcessModelFactory.CreateByProcess(processId, version);
         var roles = model.GetActivityRoles(activityId);
         if (roles == null || roles.Count == 0)
             return Array.Empty<string>();

@@ -17,6 +17,7 @@ using saiflow.engine.Runtime;
 using saiflow.engine.Client;
 using saiflow.engine.Hooks;
 using saiflow.engine.Core;
+using saiflow.engine.Factories;
 namespace saiflow.engine.Pattern
 {
     /// <summary>
@@ -68,7 +69,7 @@ namespace saiflow.engine.Pattern
 
             //开始执行下一步
             var runAppResult = WfExecutedResult.Default();
-            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(Sail, runner, kit, ref runAppResult);
+            var runtimeInstance = SailFactoryAccess.Runtime(Sail).CreateRuntimeInstanceAppRunning(runner, kit, ref runAppResult);
             if (runAppResult.Status == WfExecutedStatus.Exception)
             {
                 throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorend.ContinueMainProcessRunning.warn", runAppResult.Message));
@@ -99,7 +100,7 @@ namespace saiflow.engine.Pattern
         {
             var pm = Sail.ProcessInstances;
             var mainProcessInstance = pm.GetByActivity(kit, mainActivityInstanceId);
-            var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, SailSqlAccess.Sibling(kit), mainProcessInstance);
+            var processModel = Sail.ProcessModelFactory.CreateByProcessInstance(SailSqlAccess.Sibling(kit), mainProcessInstance);
             var nextSteps = processModel.GetNextActivityTreeView(mainActivityId);
 
             //获取主流程任务

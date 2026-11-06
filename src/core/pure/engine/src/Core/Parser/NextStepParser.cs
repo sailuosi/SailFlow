@@ -83,7 +83,7 @@ namespace saiflow.engine.Runtime
 
             //获取下一步信息
             //Obtain the next step information
-            var processModel = ProcessModelFactory.CreateByTask(Sail, taskView);
+            var processModel = Sail.ProcessModelFactory.CreateByTask( taskView);
             var nextActivity = processModel.GetNextActivity(taskView.ActivityId);
             if (nextActivity != null)
             {
@@ -190,7 +190,7 @@ namespace saiflow.engine.Runtime
 
                     //获取下一步列表
                     //Get the next step list
-                    processModel = ProcessModelFactory.CreateByTask(Sail, SailSqlAccess.Sibling(kit), taskView);
+                    processModel = Sail.ProcessModelFactory.CreateByTask(SailSqlAccess.Sibling(kit), taskView);
                     nextTreeResult = processModel.GetNextActivityListView(taskView.ActivityId, taskView.ActivityInstanceId, condition, kit);
                     
                     foreach (var ns in nextTreeResult.StepList)
@@ -215,7 +215,7 @@ namespace saiflow.engine.Runtime
                 else
                 {
                     // 流程准备启动：从「开始事件」取下一步（首个办理节点），勿从 GetFirstActivity 再往后跳一跳
-                    processModel = ProcessModelFactory.CreateByProcess(Sail, runner.ProcessId, runner.Version);
+                    processModel = Sail.ProcessModelFactory.CreateByProcess( runner.ProcessId, runner.Version);
                     var startActivity = processModel.GetStartActivity();
                     nextTreeResult = processModel.GetNextActivityListView(startActivity.ActivityId,
                         null,

@@ -5,7 +5,7 @@ using saiflow.engine.Xpdl;
 namespace saiflow.engine.Factories;
 
 /// <summary>
-/// A · ProcessModel 工厂槽：每 Client 一套；缓存属本实例（D3 从 static 迁入）。
+/// A · ProcessModel 工厂槽：每 Client 一套；缓存属本实例。
 /// 在途 B 沿用创建时模型引用；失效只影响之后的 Create。
 /// </summary>
 public interface IProcessModelFactory
@@ -23,6 +23,8 @@ public interface IProcessModelFactory
     IProcessModel CreateByTask(TaskViewEntity taskView);
 
     IProcessModel CreateByTask(SQLBuilder kit, TaskViewEntity taskView);
+
+    IProcessModel CreateSubByNode(SQLBuilder kit, SubProcessNode subProcessNode);
 
     void ClearCache(string processId, string version);
 

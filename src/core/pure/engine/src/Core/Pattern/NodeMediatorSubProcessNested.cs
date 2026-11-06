@@ -17,6 +17,7 @@ using saiflow.engine.Assignee;
 
 using saiflow.engine.Client;
 using saiflow.engine.Core;
+using saiflow.engine.Factories;
 namespace saiflow.engine.Pattern
 {
     /// <summary>
@@ -190,7 +191,7 @@ namespace saiflow.engine.Pattern
             Boolean isParallel = false;
             if (fromActivityInstance.ActivityType == (short)ActivityTypeEnum.GatewayNode)
             {
-                var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, SailSqlAccess.Sibling(kit), processInstance);
+                var processModel = Sail.ProcessModelFactory.CreateByProcessInstance(SailSqlAccess.Sibling(kit), processInstance);
                 var activityNode = processModel.GetActivity(fromActivityInstance.ActivityId);
                 isParallel = processModel.IsAndSplitMI(activityNode);
             }
@@ -291,7 +292,7 @@ namespace saiflow.engine.Pattern
                 performerList = activityResource.NextActivityPerformers[toActivity.ActivityId];
             }
 
-            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartupSub(Sail, subRunner,
+            var runtimeInstance = SailFactoryAccess.Runtime(Sail).CreateRuntimeInstanceStartupSub(subRunner,
                 processInstance,
                 subProcessNode,
                 performerList,
@@ -396,7 +397,7 @@ namespace saiflow.engine.Pattern
                     kit);
 
                 WfExecutedResult startedResult = WfExecutedResult.Default();
-                var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartupSub(Sail, subRunner,
+                var runtimeInstance = SailFactoryAccess.Runtime(Sail).CreateRuntimeInstanceStartupSub(subRunner,
                     processInstance,
                     subProcessNode,
                     plist,

@@ -117,7 +117,7 @@ namespace saiflow.engine.Pattern
             if (fromActivityInstance.ActivityType == (short)ActivityTypeEnum.GatewayNode)
             {
                 //并发多实例分支判定（AndSplit Multiple）
-                var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, SailSqlAccess.Sibling(kit),
+                var processModel = Sail.ProcessModelFactory.CreateByProcessInstance(SailSqlAccess.Sibling(kit),
                     processInstance);
                 var activityNode = processModel.GetActivity(fromActivityInstance.ActivityId);
                 isParallel = processModel.IsAndSplitMI(activityNode);

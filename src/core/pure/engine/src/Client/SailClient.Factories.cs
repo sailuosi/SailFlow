@@ -64,4 +64,23 @@ public partial class SailClient
         ArgumentNullException.ThrowIfNull(runner);
         return new RunBuilder(this, runner);
     }
+
+    /// <summary>B · 自动编排建造会话（每次 new；默认 NextPerformer=Unattended）。</summary>
+    public AutoRunBuilder CreateAutoRunBuilder(string userId = null, string userName = null)
+    {
+        var runner = new WfAppRunner
+        {
+            UserId = userId,
+            UserName = userName,
+            NextPerformerType = NextPerformerIntTypeEnum.Unattented,
+        };
+        return new AutoRunBuilder(this, runner);
+    }
+
+    /// <summary>B · 以已有袋开自动编排建造会话。</summary>
+    public AutoRunBuilder CreateAutoRunBuilder(WfAppRunner runner)
+    {
+        ArgumentNullException.ThrowIfNull(runner);
+        return new AutoRunBuilder(this, runner);
+    }
 }

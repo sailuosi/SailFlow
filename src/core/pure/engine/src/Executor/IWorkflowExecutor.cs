@@ -1,20 +1,22 @@
-using saiflow.engine.Result;
-using saiflow.engine.Entity;
-using System.Threading.Tasks;
-using System.Linq;
 using System;
-
+using System.Threading.Tasks;
+using saiflow.engine.Common;
+using saiflow.engine.Result;
+using saiflow.engine.Xpdl;
 
 namespace saiflow.engine.Executor
 {
+    /// <summary>
+    /// H · 无状态自动编排执行器：不持 Runner / 建造态；入口只吃参数。
+    /// 链式建造见 <c>SailClient.CreateAutoRunBuilder</c>。
+    /// </summary>
     public interface IWorkflowExecutor
     {
-        IWorkflowExecutor UseApp(string appInstanceId, string appName, string appCode = null);
-        IWorkflowExecutor UseProcess(string processId, string version = null);
-        IWorkflowExecutor UseProcess(ProcessEntity processEntity);
-        IWorkflowExecutor AddVariable(string name, string value);
-        IWorkflowExecutor SetNotifyClient(string sessionId, Action<string, object> callback);
-        IWorkflowExecutor WithDelegateRegistry(IServiceTaskDelegateRegistry registry);
-        Task<WfExecutedResult> Run();
+        Task<WfExecutedResult> Run(
+            WfAppRunner runner,
+            IProcessModel processModel,
+            AutoExecutionContext executionContext = null,
+            string notifyClientSessionId = null,
+            Action<string, object> notifyClientCallback = null);
     }
 }

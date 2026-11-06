@@ -74,7 +74,7 @@ namespace saiflow.engine.Runtime
                 }
 
                 var treeNodeList = new List<NodeView>();
-                var processModel = ProcessModelFactory.CreateByTask(Sail, SailSqlAccess.Sibling(kit), taskView);
+                var processModel = Sail.ProcessModelFactory.CreateByTask(SailSqlAccess.Sibling(kit), taskView);
                 var currentActivity = processModel.GetActivity(taskView.ActivityId);
                 treeNodeList.Add(new NodeView
                 {
