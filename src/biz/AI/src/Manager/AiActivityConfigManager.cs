@@ -163,7 +163,8 @@ namespace saiflow.AI.Manager
             foreach (var entity in list)
             {
                 entity.Version = newVersion;
-                entity.Id = 0;
+                // 自增主键新建须 null，勿写 0
+                entity.Id = null;
                 Insert(kit, entity);
             }
         }

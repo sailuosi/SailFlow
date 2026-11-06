@@ -325,6 +325,7 @@ namespace saiflow.engine.Manager
                 throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.insert.error"));
             }
 
+            entity.Id = null;
             return kit.useSQL().useRepo<ProcessEntity, int>().InsertReturnId(entity);
         }
 
@@ -419,6 +420,8 @@ namespace saiflow.engine.Manager
 
                     entity.Version = newVersion;
                     entity.CreatedDateTime = System.DateTime.UtcNow;
+                    // 自增主键新建须 null，勿沿用旧版 Id（会进 INSERT 撞 UNIQUE）
+                    entity.Id = null;
                     //升级主流程版本
                     //Upgrade package process version
                     newProcessId = kit.useSQL().useRepo<ProcessEntity, int>().InsertReturnId(entity);
