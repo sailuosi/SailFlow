@@ -6,6 +6,7 @@ namespace saiflow.engine.Client;
 /// <summary>
 /// 引擎运行参数形状（类比 mooSQL <c>DBPosition</c>）。
 /// 仅定义字段与默认值；不负责从 IConfiguration / AppSettings 等加载——由业务侧注册填入。
+/// 邮件 SMTP 不在此形状；见 <c>saiflow.msg.TaskMailOptions</c> + <c>UseDefaultTaskMail</c>。
 /// </summary>
 public class SailConfig
 {
@@ -29,24 +30,6 @@ public class SailConfig
 
     /// <summary>本地外部服务 DLL 路径。</summary>
     public string ExternalServiceFilePath { get; set; }
-
-    /// <summary>SMTP 主机。</summary>
-    public string SmtpHost { get; set; } = JobAdminConfig.DefaultSmtpHost;
-
-    /// <summary>SMTP 端口。</summary>
-    public int SmtpPort { get; set; } = JobAdminConfig.DefaultSmtpPort;
-
-    /// <summary>SMTP 账号。</summary>
-    public string SmtpAccount { get; set; } = JobAdminConfig.DefaultSmtpAccount;
-
-    /// <summary>SMTP 密码。</summary>
-    public string SmtpPassword { get; set; } = JobAdminConfig.DefaultSmtpPassword;
-
-    /// <summary>SMTP 是否 SSL。</summary>
-    public bool SmtpSsl { get; set; }
-
-    /// <summary>邮件正文中的业务站点基址。</summary>
-    public string LocalHostWebApp { get; set; } = JobAdminConfig.DefaultLocalHostWebApp;
 
     /// <summary>
     /// 流程定义文件存储类型；为 <c>localfile</c> 时使用本地文件存储。
@@ -74,16 +57,6 @@ public class SailConfig
         ExpiredDaysEnabled = source.ExpiredDaysEnabled;
         if (source.ExternalServiceFilePath != null)
             ExternalServiceFilePath = source.ExternalServiceFilePath;
-        if (source.SmtpHost != null)
-            SmtpHost = source.SmtpHost;
-        SmtpPort = source.SmtpPort;
-        if (source.SmtpAccount != null)
-            SmtpAccount = source.SmtpAccount;
-        if (source.SmtpPassword != null)
-            SmtpPassword = source.SmtpPassword;
-        SmtpSsl = source.SmtpSsl;
-        if (source.LocalHostWebApp != null)
-            LocalHostWebApp = source.LocalHostWebApp;
         if (source.WorkflowFileStorageType != null)
             WorkflowFileStorageType = source.WorkflowFileStorageType;
         if (source.WorkflowFileServer != null)

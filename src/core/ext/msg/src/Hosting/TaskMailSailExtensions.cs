@@ -6,12 +6,17 @@ using saiflow.msg.Notify;
 
 namespace saiflow.msg.Hosting
 {
-    /// <summary>默认待办邮件 Notifier 注册。</summary>
+    /// <summary>默认待办邮件 Notifier 注册；SMTP 选项在 Use 时刻传入。</summary>
     public static class TaskMailSailExtensions
     {
-        public static ISailCollection UseDefaultTaskMail(this ISailCollection services)
+        public static ISailCollection UseDefaultTaskMail(
+            this ISailCollection services,
+            Action<TaskMailOptions> configure = null)
         {
             ArgumentNullException.ThrowIfNull(services);
+            var options = new TaskMailOptions();
+            configure?.Invoke(options);
+
             return services.AddFeature(new SailFeatureDescriptor
             {
                 Name = SailFeatureNames.DefaultTaskMail,
@@ -20,7 +25,7 @@ namespace saiflow.msg.Hosting
                 DependsOn = new[] { SailFeatureNames.Json },
                 ConfigureClient = (client, _) =>
                 {
-                    client.useTaskNotifier(new DefaultMailTaskNotifier(client), new HookRegistrationOptions
+                    client.useTaskNotifier(new DefaultMailTaskNotifier(client, options), new HookRegistrationOptions
                     {
                         Match = HookMatch.All,
                         TaskKinds = new[] { TaskNotifyKind.Created, TaskNotifyKind.Completed },
@@ -30,17 +35,23 @@ namespace saiflow.msg.Hosting
             });
         }
 
-        public static SailClientBuilder UseDefaultTaskMail(this SailClientBuilder builder)
+        public static SailClientBuilder UseDefaultTaskMail(
+            this SailClientBuilder builder,
+            Action<TaskMailOptions> configure = null)
         {
             ArgumentNullException.ThrowIfNull(builder);
-            builder.Services.UseDefaultTaskMail();
+            builder.Services.UseDefaultTaskMail(configure);
             return builder;
         }
 
-        public static SailClient UseDefaultTaskMail(this SailClient client)
+        public static SailClient UseDefaultTaskMail(
+            this SailClient client,
+            Action<TaskMailOptions> configure = null)
         {
             ArgumentNullException.ThrowIfNull(client);
-            client.useTaskNotifier(new DefaultMailTaskNotifier(client), new HookRegistrationOptions
+            var options = new TaskMailOptions();
+            configure?.Invoke(options);
+            client.useTaskNotifier(new DefaultMailTaskNotifier(client, options), new HookRegistrationOptions
             {
                 Match = HookMatch.All,
                 TaskKinds = new[] { TaskNotifyKind.Created, TaskNotifyKind.Completed },

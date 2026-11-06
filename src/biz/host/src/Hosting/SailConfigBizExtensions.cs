@@ -8,12 +8,12 @@ namespace saiflow.biz.Hosting;
 
 /// <summary>
 /// 业务侧配置装载：把 IConfiguration / AppSettings 填入引擎 <see cref="SailConfig"/> 形状后注册。
-/// 引擎本身不依赖具体配置源。
+/// 引擎本身不依赖具体配置源。邮件 SMTP 见 <see cref="BizMsgSailExtensions.UseBizTaskMail"/>。
 /// </summary>
 public static class SailConfigBizExtensions
 {
     /// <summary>
-    /// 从宿主 <see cref="IConfiguration"/> 装载 Email / Sailflow 段并 <c>UseConfig</c>。
+    /// 从宿主 <see cref="IConfiguration"/> 装载 Sailflow 段并 <c>UseConfig</c>。
     /// </summary>
     public static SailClientBuilder UseConfigFrom(
         this SailClientBuilder builder,
@@ -56,24 +56,12 @@ public static class SailConfigBizExtensions
         return SailClient.CreateBuilder().UseConfigFrom(configuration);
     }
 
-    /// <summary>把 IConfiguration 键写入已有形状。</summary>
+    /// <summary>把 IConfiguration 键写入已有形状（不含 Email SMTP）。</summary>
     public static void ApplyFromConfiguration(SailConfig config, IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(config);
         if (configuration == null)
             return;
-
-        config.SmtpHost = configuration["Email:SmtpHost"] ?? config.SmtpHost;
-        config.SmtpAccount = configuration["Email:Username"] ?? config.SmtpAccount;
-        config.SmtpPassword = configuration["Email:Password"] ?? config.SmtpPassword;
-        if (bool.TryParse(configuration["Email:EnableSsl"], out var ssl))
-            config.SmtpSsl = ssl;
-        if (int.TryParse(configuration["Email:SmtpPort"], out var port) && port > 0)
-            config.SmtpPort = port;
-
-        config.LocalHostWebApp = configuration["Sailflow:LocalHostWebApp"]
-                                 ?? configuration["Email:LocalHostWebApp"]
-                                 ?? config.LocalHostWebApp;
 
         if (int.TryParse(configuration["Sailflow:ExpiredDays"], out var days) && days > 0)
             config.ExpiredDays = days;
@@ -116,13 +104,5 @@ public static class SailConfigBizExtensions
         var expiredEnabled = Get("Sailflow:ExpiredDaysEnabled") ?? Get("ExpiredDaysEnabled");
         if (bool.TryParse(expiredEnabled, out var enabled))
             config.ExpiredDaysEnabled = enabled;
-
-        var webApp = Get("LocalHostWebApp");
-        if (!string.IsNullOrEmpty(webApp))
-            config.LocalHostWebApp = webApp;
-
-        var smtpHost = Get("SmtpHost") ?? Get("Email:SmtpHost");
-        if (!string.IsNullOrEmpty(smtpHost))
-            config.SmtpHost = smtpHost;
     }
 }

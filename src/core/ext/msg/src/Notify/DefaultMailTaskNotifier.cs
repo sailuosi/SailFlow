@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using saiflow.engine.Client;
@@ -10,10 +11,12 @@ namespace saiflow.msg.Notify
     public sealed class DefaultMailTaskNotifier : TaskNotifyChannelBase
     {
         private readonly SailClient _client;
+        private readonly TaskMailOptions _options;
 
-        public DefaultMailTaskNotifier(SailClient client)
+        public DefaultMailTaskNotifier(SailClient client, TaskMailOptions options)
         {
-            _client = client ?? throw new System.ArgumentNullException(nameof(client));
+            _client = client ?? throw new ArgumentNullException(nameof(client));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         public override string Name => "default.mail";
@@ -30,9 +33,9 @@ namespace saiflow.msg.Notify
 
             var title = _client.Messages.GetEngineMessage("taskmanager.emailtemplate.title");
             var body = _client.Messages.GetEngineMessage("taskmanager.emailtemplate.body");
-            body = string.Format(body, _client.Config.LocalHostWebApp, ctx.AppName, ctx.AppInstanceId);
+            body = string.Format(body, _options.AppBaseUrl, ctx.AppName, ctx.AppInstanceId);
 
-            var emailSendUtility = new EMailSendUtility(_client, ctx.TaskId);
+            var emailSendUtility = new EMailSendUtility(_client, _options, ctx.TaskId);
             await emailSendUtility.SendEMailAsync(title, body, user.EMail).ConfigureAwait(false);
         }
     }
