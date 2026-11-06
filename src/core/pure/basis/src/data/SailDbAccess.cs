@@ -24,7 +24,6 @@ namespace saiflow.data
             _getDb = () => db;
         }
 
-        public static void Clear() => _getDb = null;
 
         public static DBInstance TryGetDb() => _getDb?.Invoke();
 
@@ -37,12 +36,5 @@ namespace saiflow.data
             return db;
         }
 
-        /// <summary>无会话：纯净实体仓储（任务 1 · SooRepository）。</summary>
-        public static SooRepository<T> UseRepo<T>() where T : class, new()
-            => GetRequired().useRepo<T>();
-
-        /// <summary>无会话：带主键类型的纯净实体仓储。</summary>
-        public static SooRepository<T, K> UseRepo<T, K>() where T : class, new()
-            => GetRequired().useRepo<T, K>();
     }
 }

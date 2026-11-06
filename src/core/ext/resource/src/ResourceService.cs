@@ -137,8 +137,9 @@ namespace saiflow.hub.Resource
             }
             else
             {
-                IDeptService deptService = DeptServiceFactory.CreateDeptService(Sail);
-                userList = deptService.GetUserListByDeptRank(roleIDs, curUserId, receiverType);
+                // 职级查询契约：由宿主 UseXxx 注册 IDeptService（引擎无组织人员表）
+                userList = DeptServiceLocator.Resolve()
+                    .GetUserListByDeptRank(roleIDs, curUserId, receiverType);
             }
             return userList;
         }

@@ -49,12 +49,10 @@ namespace saiflow.biz.Bootstrap
                 .createTable<RuleSetEntity>()
                 .createTable<JobLogEntity>()
                 .createTable<HookOutboxEntity>()
+                // 组织人员（Dept/Emp/Manager）由宿主主数据提供，引擎不再建表
                 .createTable<UserEntity>()
                 .createTable<RoleEntity>()
                 .createTable<RoleUserEntity>()
-                .createTable<DeptEntity>()
-                .createTable<EmpEntity>()
-                .createTable<EmpManagerEntity>()
                 .createTable<FormEntity>()
                 .createTable<FieldActivityEditEntity>()
                 .createTable<SailProcessCopyEntity>();

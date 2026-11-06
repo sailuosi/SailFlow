@@ -8,7 +8,7 @@ namespace saiflow.hub.Resource
 {
     /// <summary>
     /// Resource Service Interface
-    /// 资源服务接口
+    /// 资源/组织人员契约：引擎不绑定宿主组织表；由宿主 UseXxx 具化后经 <see cref="ResourceServiceLocator"/> 注册。
     /// </summary>
     public interface IResourceService
     {

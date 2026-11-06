@@ -32,9 +32,6 @@ namespace saiflow.data
             return kit.DBLive.ExeNonQuery(Build(procName, param, CommandType.StoredProcedure), kit.Executor);
         }
 
-        /// <summary>无外部会话：用默认 DBInstance 执行。</summary>
-        public static int Execute(string sql, object param = null, CommandType? cmdType = null)
-            => SailDbAccess.GetRequired().ExeNonQuery(Build(sql, param, cmdType));
 
         public static DataTable Query(string sql, object param = null, CommandType? cmdType = null)
             => SailDbAccess.GetRequired().ExeQuery(Build(sql, param, cmdType));
@@ -42,56 +39,7 @@ namespace saiflow.data
         public static IList<T> QueryEntities<T>(string sql, object param = null, CommandType? cmdType = null) where T : class
             => MapRows<T>(Query(sql, param, cmdType));
 
-        /// <summary>
-        /// 仅有外部 <see cref="IDbConnection"/> 时的过渡执行。
-        /// </summary>
-        public static int ExecuteOnConn(IDbConnection conn, string sql, object param = null,
-            IDbTransaction transaction = null, CommandType cmdType = CommandType.Text)
-        {
-            if (conn == null)
-                throw new ArgumentNullException(nameof(conn));
-            using var cmd = conn.CreateCommand();
-            cmd.CommandText = sql;
-            cmd.CommandType = cmdType;
-            if (transaction != null)
-                cmd.Transaction = transaction;
-            Bind(cmd, SailParamConverter.ToParas(param));
-            return cmd.ExecuteNonQuery();
-        }
 
-        public static DataTable QueryOnConn(IDbConnection conn, string sql, object param = null,
-            IDbTransaction transaction = null, CommandType cmdType = CommandType.Text)
-        {
-            if (conn == null)
-                throw new ArgumentNullException(nameof(conn));
-            using var cmd = conn.CreateCommand();
-            cmd.CommandText = sql;
-            cmd.CommandType = cmdType;
-            if (transaction != null)
-                cmd.Transaction = transaction;
-            Bind(cmd, SailParamConverter.ToParas(param));
-            using var reader = cmd.ExecuteReader();
-            var table = new DataTable();
-            table.Load(reader);
-            return table;
-        }
-
-        public static IList<T> QueryEntitiesOnConn<T>(IDbConnection conn, string sql, object param = null,
-            IDbTransaction transaction = null, CommandType cmdType = CommandType.Text) where T : class
-            => MapRows<T>(QueryOnConn(conn, sql, param, transaction, cmdType));
-
-        public static void Bind(IDbCommand cmd, Paras paras)
-        {
-            if (cmd == null || paras?.value == null)
-                return;
-            foreach (var kv in paras.value)
-            {
-                var p = cmd.CreateParameter();
-                p.ParameterName = kv.Key.StartsWith("@", StringComparison.Ordinal) ? kv.Key : "@" + kv.Key;
-                p.Value = kv.Value?.val ?? DBNull.Value;
-                cmd.Parameters.Add(p);
-            }
-        }
 
         public static IList<T> MapRows<T>(DataTable table) where T : class
         {
