@@ -681,11 +681,34 @@ namespace saiflow.engine.Service
             catch (System.Exception e)
             {
                 resendResult.Status = WfExecutedStatus.Failed;
-                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
+                // 优先带 saiflow 栈帧，避免只剩 InnerException 的 NRE 原文
+                var frame = FlattenExceptionFrames(e);
+                var error = string.IsNullOrEmpty(frame) ? (e.InnerException?.Message ?? e.Message) : frame;
                 resendResult.Message = Sail.Messages.GetEngineMessage("workflowservice.resendprocess.error", error);
                 LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RESEND_ERROR, LogEventType.Error, LogPriority.High, runner, e);
             }
             return resendResult;
+        }
+
+        static string FlattenExceptionFrames(Exception e)
+        {
+            if (e == null) return null;
+            var parts = new System.Collections.Generic.List<string>();
+            for (var cur = e; cur != null; cur = cur.InnerException)
+            {
+                parts.Add(cur.GetType().Name + ": " + cur.Message);
+                if (cur.StackTrace == null) continue;
+                foreach (var line in cur.StackTrace.Split('\n'))
+                {
+                    var t = line.Trim();
+                    if (t.Contains("saiflow", StringComparison.OrdinalIgnoreCase))
+                    {
+                        parts.Add(t);
+                        break;
+                    }
+                }
+            }
+            return string.Join(" | ", parts);
         }
 
         /// <summary>

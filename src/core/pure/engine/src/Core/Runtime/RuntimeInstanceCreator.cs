@@ -1047,6 +1047,7 @@ namespace saiflow.engine.Runtime
         {
             WfRuntimeManager rmins = new WfRuntimeManagerResend();
             rmins.WfExecutedResult = result = new WfExecutedResult();
+            rmins.Sail = _sail;
 
             if (runner.TaskId == null)
             {
@@ -1116,6 +1117,7 @@ namespace saiflow.engine.Runtime
         {
             WfRuntimeManager rmins = new WfRuntimeManagerRevise();
             rmins.WfExecutedResult = result = new WfExecutedResult();
+            rmins.Sail = _sail;
 
             if (runner.TaskId == null)
             {
