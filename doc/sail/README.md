@@ -21,7 +21,7 @@
 | [存疑参考功能点.md](./存疑参考功能点.md) | **存疑对照**：外来引擎功能点（如 AntFlow 承办）；不默认纳入基线 |
 | [特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md) | **OA 动词**：场景/名称、Sail 编码、执行含义；含候选未入码表项 |
 | [dev/开发手册-OA命令执行链路.md](./dev/开发手册-OA命令执行链路.md) | **开发手册**：Host → WorkflowService → Factory → Runtime → Mediator/Manager → DB（类·方法） |
-| [dev/专题-对象生命周期与复用边界.md](./dev/专题-对象生命周期与复用边界.md) | **讨论草案**：A/B/C 三分法 + 寿命；引擎工厂降至 A（Builder 可覆写）；Manager 由工厂创建；定型后再改代码 |
+| [dev/专题-对象生命周期与复用边界.md](./dev/专题-对象生命周期与复用边界.md) | **讨论草案**：A/B/C + 壳 H；工厂=每 Client 的 A（Builder 可覆写）；Manager 门面创建；定型后再改代码 |
 | [progress/](./progress/) | 分期落地记录（Hook、Feature DependsOn 等） |
 
 产品壳（菜单、Host API、办理 UX）见宿主仓 `sleveen-admin/doc/sailflow-features.md`。
