@@ -1,25 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using mooSQL.data;
 
 namespace saiflow.data
 {
     /// <summary>
-    /// 任务 1 Phase C：基于 mooSQL 的仓储。
-    /// 实体 CRUD / 动态 SQL / Proc 均不经 Dapper <see cref="Repository"/> 实例（F2-g1）。
+    /// 基于 mooSQL 的实体仓储（过渡面；新代码优先 <c>kit.useRepo</c>）。
     /// </summary>
     public class MooSqlRepository : IRepository
     {
-        private static DBInstance Db => SailDbAccess.GetRequired();
-
-        #region helpers
-
-        private static Paras ToParas(object param) => SailParamConverter.ToParas(param);
-
-        #endregion
-
         #region select
 
         public T GetById<T>(dynamic primaryId) where T : class
@@ -30,14 +19,6 @@ namespace saiflow.data
 
         public T GetDefaultByName<T>(string colName, string value) where T : class
             => SailEntityKit.PrepareSelectByName<T>(colName, value).queryUnique<T>();
-
-        [Obsolete(SailRepoObsolete.RawSql)]
-        public T GetFirst<T>(string sql, dynamic param = null, bool buffered = true) where T : class
-            => SailCmdRunner.QueryEntities<T>(sql, param as object).FirstOrDefault();
-
-        [Obsolete(SailRepoObsolete.RawSql)]
-        public T GetFirst<T>(IDbConnection conn, string sql, dynamic param = null, IDbTransaction trans = null, bool buffered = true) where T : class
-            => SailCmdRunner.QueryEntitiesOnConn<T>(conn, sql, param as object, trans).FirstOrDefault();
 
         public IEnumerable<T> GetByIds<T>(IList<dynamic> ids) where T : class
         {
@@ -58,79 +39,6 @@ namespace saiflow.data
 
         public IEnumerable<T> GetAll<T>(IDbConnection conn, IDbTransaction trans) where T : class
             => SailEntityKit.Query<T>(conn, SailEntityKit.PrepareSelectAll<T>().toSelect(), trans);
-
-        [Obsolete(SailRepoObsolete.RawSql)]
-        public IEnumerable<T> Query<T>(string sql, dynamic param = null, bool buffered = true) where T : class
-            => SailCmdRunner.QueryEntities<T>(sql, param as object);
-
-        [Obsolete(SailRepoObsolete.RawSql)]
-        public IEnumerable<T> Query<T>(IDbConnection conn, string sql, dynamic param = null, IDbTransaction trans = null, bool buffered = true) where T : class
-            => SailCmdRunner.QueryEntitiesOnConn<T>(conn, sql, param as object, trans);
-
-        [Obsolete(SailRepoObsolete.RawSql)]
-        public IEnumerable<dynamic> Query(IDbConnection conn, string sql, dynamic param = null, IDbTransaction trans = null, bool buffered = true)
-        {
-            var table = SailCmdRunner.QueryOnConn(conn, sql, param as object, trans);
-            return table.AsEnumerable().Select(row =>
-            {
-                IDictionary<string, object> bag = new System.Dynamic.ExpandoObject();
-                foreach (DataColumn col in table.Columns)
-                    bag[col.ColumnName] = row[col] == DBNull.Value ? null : row[col];
-                return (dynamic)bag;
-            });
-        }
-
-        #endregion
-
-        #region count / page
-
-        [Obsolete(SailRepoObsolete.RawSql)]
-        public int Count<T>(IDbConnection conn, string sql, bool buffered = false) where T : class
-        {
-            var table = SailCmdRunner.QueryOnConn(conn, sql);
-            if (table == null || table.Rows.Count == 0)
-                return 0;
-            return Convert.ToInt32(table.Rows[0][0]);
-        }
-
-        [Obsolete(SailRepoObsolete.RawSql)]
-        public int Count(string sql, object parameters = null)
-        {
-            var dt = Db.ExeQuery(sql, ToParas(parameters));
-            if (dt == null || dt.Rows.Count == 0)
-                return 0;
-            return Convert.ToInt32(dt.Rows[0][0]);
-        }
-
-        [Obsolete("Use SQLBuilder setPage instead of pr_sys_QueryPaged.")]
-        public IEnumerable<T> GetPaged<T>(IDbConnection conn, Pager pager, bool buffered = false) where T : class
-        {
-            throw new NotSupportedException(
-                "GetPaged(Pager) via pr_sys_QueryPaged is retired. Use SQLBuilder setPage / SailCmdRunner instead.");
-        }
-
-        #endregion
-
-        #region execute
-
-        [Obsolete(SailRepoObsolete.RawSql)]
-        public Int32 Execute(IDbConnection conn, string sql, dynamic param = null, IDbTransaction transaction = null)
-            => SailCmdRunner.ExecuteOnConn(conn, sql, param as object, transaction);
-
-        public Int32 ExecuteProc(string procName, object param = null)
-            => SailCmdRunner.Execute(procName, param, CommandType.StoredProcedure);
-
-        public Int32 ExecuteProc(IDbConnection conn, string procName, object param = null)
-            => SailCmdRunner.ExecuteOnConn(conn, procName, param, null, CommandType.StoredProcedure);
-
-        public Int32 ExecuteProc(IDbConnection conn, string procName, object param = null, IDbTransaction transaction = null)
-            => SailCmdRunner.ExecuteOnConn(conn, procName, param, transaction, CommandType.StoredProcedure);
-
-        public IList<T> ExecProcQuery<T>(IDbConnection conn, string procName, object param) where T : class
-            => SailCmdRunner.QueryEntitiesOnConn<T>(conn, procName, param, null, CommandType.StoredProcedure);
-
-        public IList<T> ExecProcQuery<T>(string procName, object param) where T : class
-            => SailCmdRunner.QueryEntities<T>(procName, param, CommandType.StoredProcedure);
 
         #endregion
 

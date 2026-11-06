@@ -1,9 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Reflection;
 using mooSQL.data;
 
 namespace saiflow.data
@@ -42,19 +37,6 @@ namespace saiflow.data
             return db;
         }
 
-        /// <summary>经 mooSQL 方言创建并打开 ADO 连接（仅遗留 <c>Repository.OpenConnection</c>）。</summary>
-        public static IDbConnection CreateOpenConnection()
-        {
-            var db = GetRequired();
-            if (db.dialect == null)
-                throw new InvalidOperationException("DBInstance.dialect is null; ensure mooSQL.Ext DialectFactory is used (DBClientBuilder).");
-
-            DbConnection conn = db.dialect.getConnection();
-            if (conn.State == ConnectionState.Closed)
-                conn.Open();
-            return conn;
-        }
-
         /// <summary>无会话：纯净实体仓储（任务 1 · SooRepository）。</summary>
         public static SooRepository<T> UseRepo<T>() where T : class, new()
             => GetRequired().useRepo<T>();
@@ -65,7 +47,7 @@ namespace saiflow.data
     }
 
     /// <summary>
-    /// <see cref="IRepository"/> 工厂。默认 <see cref="MooSqlRepository"/>；宿主可显式切换。
+    /// <see cref="IRepository"/> 工厂。默认 <see cref="MooSqlRepository"/>。
     /// </summary>
     public static class RepositoryProvider
     {
@@ -77,9 +59,6 @@ namespace saiflow.data
         }
 
         public static void UseMooSql() => Use(() => new MooSqlRepository());
-
-        [Obsolete("Dapper Repository 已去 Dapper 依赖；请用 UseMooSql()。")]
-        public static void UseDapper() => Use(() => new Repository());
 
         public static IRepository Create() => _factory();
     }

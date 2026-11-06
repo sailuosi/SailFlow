@@ -132,7 +132,7 @@ namespace saiflow.hub.Resource
 
     /// <summary>
     /// Implementing user level queries through stored procedures
-    /// 存储过程实现用户级别查询（F2-f 保留 Proc；无 CreateConnection / 无 ManagerBase）
+    /// 存储过程实现用户级别查询（经 SailCmdRunner；无 ManagerBase）
     /// </summary>
     public class DeptServiceSP : IDeptService
     {
