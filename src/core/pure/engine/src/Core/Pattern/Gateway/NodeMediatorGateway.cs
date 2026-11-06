@@ -14,7 +14,7 @@ using saiflow.engine.Core;
 namespace saiflow.engine.Pattern
 {
     /// <summary>
-    /// 网关控制节点执行器
+    /// B · 网关节点执行编排袋（L-Cmd）。对 A Managers 只读转发，不缓存字段。
     /// </summary>
     internal class NodeMediatorGateway
     {
@@ -43,18 +43,8 @@ namespace saiflow.engine.Pattern
             set;
         }
 
-        private ActivityInstanceManager activityInstanceManager;
-        internal ActivityInstanceManager ActivityInstanceManager
-        {
-            get
-            {
-                if (activityInstanceManager == null)
-                {
-                    activityInstanceManager = Sail.ManagerFactory.Activities;
-                }
-                return activityInstanceManager;
-            }
-        }
+        /// <summary>A · 经 ManagerFactory；不缓存字段。</summary>
+        internal ActivityInstanceManager ActivityInstanceManager => Sail.ManagerFactory.Activities;
         
         protected SailClient Sail { get; }
 

@@ -23,7 +23,9 @@ using saiflow.engine.Factories;
 namespace saiflow.engine.Pattern
 {
     /// <summary>
-    /// 节点执行器抽象基类
+    /// B · 节点执行编排袋（L-Cmd）。由 MediatorFactory 按次 Create；字段遵守专题 B.0。
+    /// 对 A 仅只读引用（<see cref="Sail"/> / ManagerFactory）；不在袋内缓存 Manager 实例字段。
+    /// 入参袋见 <see cref="FlowCommandContext"/> / <see cref="WfAppRunner"/>——本类不是命令入参 Context。
     /// </summary>
     internal abstract class NodeMediator
     {
@@ -68,42 +70,14 @@ namespace saiflow.engine.Pattern
             }
         }
 
-        private ActivityInstanceManager activityInstanceManager;
-        internal ActivityInstanceManager ActivityInstanceManager
-        {
-            get
-            {
-                if (activityInstanceManager == null)
-                {
-                    activityInstanceManager = Sail.ManagerFactory.Activities;
-                }
-                return activityInstanceManager;
-            }
-        }
+        /// <summary>A · 经 ManagerFactory；不缓存字段。</summary>
+        internal ActivityInstanceManager ActivityInstanceManager => Sail.ManagerFactory.Activities;
 
-        private TaskManager taskManager;
-        internal TaskManager TaskManager
-        {
-            get
-            {
-                if (taskManager == null)
-                {
-                    taskManager = Sail.ManagerFactory.Tasks;
-                }
-                return taskManager;
-            }
-        }
+        /// <summary>A · 经 ManagerFactory；不缓存字段。</summary>
+        internal TaskManager TaskManager => Sail.ManagerFactory.Tasks;
 
-        private ProcessInstanceManager processInstanceManager;
-        internal ProcessInstanceManager ProcessInstanceManager
-        {
-            get
-            {
-                if (processInstanceManager == null)
-                    processInstanceManager = Sail.ProcessInstances;
-                return processInstanceManager;
-            }
-        }
+        /// <summary>A · 经 ManagerFactory；不缓存字段。</summary>
+        internal ProcessInstanceManager ProcessInstanceManager => Sail.ProcessInstances;
 
         private WfNodeMediatedResult _wfNodeMediatedResult;
         internal WfNodeMediatedResult WfNodeMediatedResult

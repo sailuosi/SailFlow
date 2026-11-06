@@ -6,7 +6,7 @@ using saiflow.engine.Manager;
 namespace saiflow.engine.Client;
 
 /// <summary>
-/// A · 四工厂槽 + RunBuilder 入口（D2 契约显现；默认实现转发旧 static）。
+/// A · 四工厂槽 + RunBuilder 入口（D3 已落地）。
 /// </summary>
 public partial class SailClient
 {
@@ -46,10 +46,10 @@ public partial class SailClient
         set => _managerFactory = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    /// <summary>B · 每次 new <see cref="RunBuilder"/>；禁止做成属性缓存。</summary>
+    /// <summary>B · 每次 new <see cref="RunBuilder"/>；入参袋为 <see cref="FlowCommandContext"/>；禁止做成属性缓存。</summary>
     public RunBuilder CreateRunBuilder(string userId, string userName)
     {
-        var runner = new WfAppRunner
+        var runner = new FlowCommandContext
         {
             UserId = userId,
             UserName = userName,
@@ -58,17 +58,17 @@ public partial class SailClient
         return new RunBuilder(this, runner);
     }
 
-    /// <summary>B · 以已有袋开建造会话（仍每次 new Builder，不写回 Client 字段）。</summary>
+    /// <summary>B · 以已有入参袋开建造会话（仍每次 new Builder，不写回 Client 字段）。</summary>
     public RunBuilder CreateRunBuilder(WfAppRunner runner)
     {
         ArgumentNullException.ThrowIfNull(runner);
         return new RunBuilder(this, runner);
     }
 
-    /// <summary>B · 自动编排建造会话（每次 new；默认 NextPerformer=Unattended）。</summary>
+    /// <summary>B · 自动编排建造会话（每次 new；默认 NextPerformer=Unattended；袋为 <see cref="FlowCommandContext"/>）。</summary>
     public AutoRunBuilder CreateAutoRunBuilder(string userId = null, string userName = null)
     {
-        var runner = new WfAppRunner
+        var runner = new FlowCommandContext
         {
             UserId = userId,
             UserName = userName,

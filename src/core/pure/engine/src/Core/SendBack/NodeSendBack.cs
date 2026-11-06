@@ -16,8 +16,7 @@ using saiflow.engine.Core;
 namespace saiflow.engine.Runtime
 {
     /// <summary>
-    /// Node Send Back
-    /// 节点退回器
+    /// B · 退回节点执行编排袋（L-Cmd）。对 A Managers 只读转发，不缓存字段。
     /// </summary>
     internal abstract class NodeSendBack
     {
@@ -27,9 +26,6 @@ namespace saiflow.engine.Runtime
             Sail = client ?? throw new ArgumentNullException(nameof(client));
             _sendBackOperation = sendbackOperation;
             _kit = kit;
-            _activityInstanceManager = Sail.ManagerFactory.Activities;
-            _taskManager = Sail.ManagerFactory.Tasks;
-            _transitionInstanceManager = Sail.ManagerFactory.Transitions;
         }
 
         private SQLBuilder _kit;
@@ -40,14 +36,11 @@ namespace saiflow.engine.Runtime
 
         protected SailClient Sail { get; }
 
-        private ActivityInstanceManager _activityInstanceManager;
-        protected ActivityInstanceManager ActivityInstanceManager { get { return _activityInstanceManager; } }
+        protected ActivityInstanceManager ActivityInstanceManager => Sail.ManagerFactory.Activities;
 
-        private TaskManager _taskManager;
-        protected TaskManager TaskManager { get { return _taskManager; } }
+        protected TaskManager TaskManager => Sail.ManagerFactory.Tasks;
 
-        private TransitionInstanceManager _transitionInstanceManager;
-        protected TransitionInstanceManager TransitionInstanceManager {  get { return _transitionInstanceManager; } }
+        protected TransitionInstanceManager TransitionInstanceManager => Sail.ManagerFactory.Transitions;
         #endregion
 
         #region Abstract Method

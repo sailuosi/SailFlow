@@ -7,10 +7,12 @@ using System.Text;
 namespace saiflow.engine.Common
 {
     /// <summary>
-    /// B · 命令入参袋（请求级）。可由 <c>SailClient.CreateRunBuilder(...).Build()</c> 产出；勿挂在 Client/Service 字段。
-    /// Process executor (operator of business applications)
-    /// Explanation: WfAppRunner is the object for transmitting process flow parameters, 
-    /// including business data, resource data, and process definition data required for engine execution.
+    /// B · 命令入参袋（请求级 / L-Cmd）。规范类型名见 <see cref="FlowCommandContext"/>（本类为其实现基型）。
+    /// 可由 <c>SailClient.CreateRunBuilder(...).Build()</c> 产出；勿挂在 Client/Service 字段。
+    /// <para>
+    /// 边界：本袋是入参；<c>WfRuntimeManager*</c> / <c>NodeMediator*</c> 是另一次工厂 Create 的执行编排袋。
+    /// </para>
+    /// Process executor (operator of business applications).
     /// WfAppRunner Json Format：
     /// {
     ///     "UserId":"10",
@@ -19,8 +21,6 @@ namespace saiflow.engine.Common
     ///     "AppInstanceId":"100",
     ///     "ProcessId":"072af8c3-482a-4b1c-890b-685ce2fcc75d"
     /// }
-    /// 流程执行人(业务应用的办理者)
-    /// 说明：WfAppRunner是流程流转参数的传递对象，传递引擎执行需要的业务数据、资源数据和流程定义数据等。
     /// </summary>
     public class WfAppRunner
     {
