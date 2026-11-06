@@ -35,7 +35,8 @@ namespace saiflow.biz.Bootstrap
                 throw new ArgumentNullException(nameof(kit));
 
             var wk = kit.useDBInit();
-            wk.autoMode()
+            // upsert：缺表建表，已有表补齐实体新增列（替代手工 Ensure*Column）
+            wk.upsertMode()
                 .createTable<ProcessEntity>()
                 .createTable<ProcessInstanceEntity>()
                 .createTable<ActivityInstanceEntity>()
@@ -53,137 +54,99 @@ namespace saiflow.biz.Bootstrap
                 .createTable<FieldActivityEditEntity>()
                 .createTable<SailProcessCopyEntity>();
 
-            EnsureAssigneeGroupColumns(kit);
-            EnsureAssigneeUnitColumns(kit);
-            EnsureTaskTimeoutColumns(kit);
             HotPathIndexEnsurer.Ensure(kit);
             EnsureTaskDetailsView(kit);
             return wk.WorkingProgress?.ToString() ?? string.Empty;
         }
 
-        /// <summary>S2：办理人组别/组内身份列（已有库用 ALTER 增量）。</summary>
-        public static void EnsureAssigneeGroupColumns(SQLBuilder kit)
-        {
-            if (kit == null)
-                throw new ArgumentNullException(nameof(kit));
-
-            EnsureSqliteColumn(kit, "wf_task", "group_id", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_task", "group_name", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_task", "group_role", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_activity_instance", "group_id", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_activity_instance", "group_name", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_activity_instance", "group_role", "TEXT NULL");
-        }
-
-        /// <summary>R1：企业单位 Unit* / 发起单位 StartUnit*（已有库 ALTER 增量）。</summary>
-        public static void EnsureAssigneeUnitColumns(SQLBuilder kit)
-        {
-            if (kit == null)
-                throw new ArgumentNullException(nameof(kit));
-
-            EnsureSqliteColumn(kit, "wf_task", "unit_id", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_task", "unit_code", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_task", "unit_name", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_activity_instance", "unit_id", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_activity_instance", "unit_code", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_activity_instance", "unit_name", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_process_instance", "start_unit_id", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_process_instance", "start_unit_code", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_process_instance", "start_unit_name", "TEXT NULL");
-        }
-
-        /// <summary>待办激活/应完成时间（串行同节点按人 SLA；已有库 ALTER 增量）。</summary>
-        public static void EnsureTaskTimeoutColumns(SQLBuilder kit)
-        {
-            if (kit == null)
-                throw new ArgumentNullException(nameof(kit));
-
-            EnsureSqliteColumn(kit, "wf_task", "activated_datetime", "TEXT NULL");
-            EnsureSqliteColumn(kit, "wf_task", "overdue_datetime", "TEXT NULL");
-        }
-
-        static void EnsureSqliteColumn(SQLBuilder kit, string tableName, string columnName, string columnType)
-        {
-            try
-            {
-                var info = kit.exeQuery("PRAGMA table_info(" + tableName + ")");
-                for (var i = 0; i < info.Rows.Count; i++)
-                {
-                    var name = Convert.ToString(info.Rows[i]["name"]);
-                    if (string.Equals(name, columnName, StringComparison.OrdinalIgnoreCase))
-                        return;
-                }
-
-                kit.exeNonQuery("ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + columnType);
-            }
-            catch
-            {
-                // 非 SQLite 或缺表时忽略；createTable 会建齐
-            }
-        }
-
         /// <summary>
         /// 待办/已办依赖的任务明细视图（任务 ⊕ 活动实例 ⊕ 流程实例）。
         /// Clip 按 View 名查询；库中无此视图时会报 no such table。
+        /// 每次 drop+create，保证增量列变更后视图定义同步。
         /// </summary>
         public static void EnsureTaskDetailsView(SQLBuilder kit)
         {
             if (kit == null)
                 throw new ArgumentNullException(nameof(kit));
 
-            try { kit.exeNonQuery("DROP VIEW IF EXISTS vw_wf_task_details"); } catch { /* ignore */ }
+            const string viewName = "vw_wf_task_details";
+            var ddl = kit.useDDL();
+            try
+            {
+                if (ddl.hasView(viewName))
+                    ddl.doDropView(viewName);
+            }
+            catch
+            {
+                // 方言/缺视图时忽略
+            }
 
-            const string sql = @"
-CREATE VIEW IF NOT EXISTS vw_wf_task_details AS
-SELECT
-  t.id AS id,
-  t.app_name AS app_name,
-  t.app_instance_id AS app_instance_id,
-  ai.app_instance_code AS app_instance_code,
-  t.process_instance_id AS process_instance_id,
-  t.process_id AS process_id,
-  pi.version AS version,
-  t.activity_id AS activity_id,
-  t.activity_instance_id AS activity_instance_id,
-  t.activity_name AS activity_name,
-  ai.activity_code AS activity_code,
-  ai.activity_type AS activity_type,
-  ai.work_item_type AS work_item_type,
-  t.task_type AS task_type,
-  pi.sub_process_type AS sub_process_type,
-  pi.sub_process_def_id AS sub_process_def_id,
-  pi.""sub_process_Id"" AS sub_process_id,
-  t.entrusted_task_id AS entrusted_task_id,
-  ai.main_activity_instance_id AS main_activity_instance_id,
-  ai.complete_order AS complete_order,
-  t.assigned_user_id AS assigned_user_id,
-  t.assigned_user_name AS assigned_user_name,
-  t.group_id AS group_id,
-  t.group_name AS group_name,
-  t.group_role AS group_role,
-  t.unit_id AS unit_id,
-  t.unit_code AS unit_code,
-  t.unit_name AS unit_name,
-  t.is_email_sent AS is_email_sent,
-  ai.approval_status AS approval_status,
-  t.created_datetime AS created_datetime,
-  t.activated_datetime AS activated_datetime,
-  t.overdue_datetime AS overdue_datetime,
-  t.updated_datetime AS updated_datetime,
-  t.ended_datetime AS ended_datetime,
-  t.ended_user_id AS ended_user_id,
-  t.ended_user_name AS ended_user_name,
-  t.task_state AS task_state,
-  ai.activity_state AS activity_state,
-  mai.activity_state AS main_activity_state,
-  t.record_status_invalid AS record_status_invalid,
-  pi.process_state AS process_state
-FROM wf_task t
-INNER JOIN wf_activity_instance ai ON t.activity_instance_id = ai.id
-INNER JOIN wf_process_instance pi ON t.process_instance_id = pi.id
-LEFT JOIN wf_activity_instance mai ON ai.main_activity_instance_id = mai.id";
+            ddl.clear()
+                .createViewFromClip(BuildTaskDetailsViewSelect, viewName)
+                .doCreateView();
+        }
 
-            kit.exeNonQuery(sql);
+        /// <summary>
+        /// 用 SQLClip 定义 <c>vw_wf_task_details</c> 的 SELECT（JOIN 与列来自实体映射）。
+        /// <paramref name="mai"/> 的 activity_state 须显式 AS <c>main_activity_state</c>，
+        /// 以匹配 <see cref="TaskViewEntity"/> 列名（Clip 匿名投影不会把 rename 落到 SQL AS）。
+        /// </summary>
+        static void BuildTaskDetailsViewSelect(SQLClip clip)
+        {
+            clip.from<TaskEntity>(out var t);
+            clip.InnerJoin<ActivityInstanceEntity>(out var ai)
+                .on(() => t.ActivityInstanceId == ai.Id);
+            clip.InnerJoin<ProcessInstanceEntity>(out var pi)
+                .on(() => t.ProcessInstanceId == pi.Id);
+            clip.LeftJoin<ActivityInstanceEntity>(out var mai)
+                .on(() => ai.MainActivityInstanceId == mai.Id);
+
+            clip.select(() => new
+            {
+                t.Id,
+                t.AppName,
+                t.AppInstanceId,
+                ai.AppInstanceCode,
+                t.ProcessInstanceId,
+                t.ProcessId,
+                pi.Version,
+                t.ActivityId,
+                t.ActivityInstanceId,
+                t.ActivityName,
+                ai.ActivityCode,
+                ai.ActivityType,
+                ai.WorkItemType,
+                t.TaskType,
+                pi.SubProcessType,
+                pi.SubProcessDefId,
+                pi.SubProcessId,
+                t.EntrustedTaskId,
+                ai.MainActivityInstanceId,
+                ai.CompleteOrder,
+                t.AssignedUserId,
+                t.AssignedUserName,
+                t.GroupId,
+                t.GroupName,
+                t.GroupRole,
+                t.UnitId,
+                t.UnitCode,
+                t.UnitName,
+                t.IsEMailSent,
+                ai.ApprovalStatus,
+                t.CreatedDateTime,
+                t.ActivatedDateTime,
+                t.OverdueDateTime,
+                t.UpdatedDateTime,
+                t.EndedDateTime,
+                t.EndedUserId,
+                t.EndedUserName,
+                t.TaskState,
+                ai.ActivityState,
+                t.RecordStatusInvalid,
+                pi.ProcessState
+            });
+            // out var mai → 表别名 mai；须与 TaskViewEntity.MainActivityState 的 SooColumn 一致
+            clip.select("mai.activity_state AS main_activity_state");
         }
 
         /// <summary>Core + AI tables.</summary>
