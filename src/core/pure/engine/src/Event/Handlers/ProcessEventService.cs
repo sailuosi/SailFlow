@@ -35,7 +35,7 @@ namespace saiflow.engine.Event
         public override T GetInstance<T>(int id)
         {
             var pim = Sail.ProcessInstances;
-            var kit = SailSqlAccess.Sibling(Kit);
+            var kit = Kit.useSQL();
             var entity = pim.GetById(kit, id);
             return entity as T;
         }

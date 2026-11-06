@@ -68,7 +68,7 @@ namespace saiflow.engine.Pattern
             WfAppRunner runner,
             SQLBuilder kit)
         {
-            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), toActivityInstance, runner);
+            base.ActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance, runner);
 
             LinkContext.CurrentActivity = toActivity;
             LinkContext.CurrentActivityInstance = toActivityInstance;

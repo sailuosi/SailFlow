@@ -144,7 +144,7 @@ namespace saiflow.engine.Xpdl
             {
                 var fromActivity = fromTransition.FromActivity;
                 var aim = Sail.ManagerFactory.Activities;
-                var nodePassedResult = aim.CheckActivityInstancePassedResult(SailSqlAccess.Sibling(kit), this.ActivityInstanceId);
+                var nodePassedResult = aim.CheckActivityInstancePassedResult(kit.useSQL(), this.ActivityInstanceId);
 
                 //根据节点通过类型连线类型
                 //Connection type based on node connection type

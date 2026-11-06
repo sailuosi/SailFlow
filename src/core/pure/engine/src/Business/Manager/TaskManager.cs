@@ -31,14 +31,6 @@ namespace saiflow.engine.Manager
         }
 
         protected SailClient Sail { get; }
-        private static SQLBuilder Sibling(SQLBuilder kit)
-        {
-            var next = kit.DBLive.useSQL();
-            if (kit.Executor != null)
-                next.useTransaction(kit.Executor);
-            return next;
-        }
-
         
         #region TaskView 任务视图
         /// <summary>
@@ -51,7 +43,7 @@ namespace saiflow.engine.Manager
         }
 
         internal TaskViewEntity GetTaskView(SQLBuilder kit, int taskId)
-            => Sibling(kit).useRepo<TaskViewEntity, int>().GetById(taskId);
+            => kit.useSQL().useRepo<TaskViewEntity, int>().GetById(taskId);
 
         /// <summary>
         /// 异步按任务 Id 取任务视图（Clip，可取消）。
@@ -62,7 +54,7 @@ namespace saiflow.engine.Manager
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<TaskViewEntity>(out var t);
             clip.where(() => t.Id, taskId);
             var list = await clip.select(t).take(1).queryListAsync(cancellationToken).ConfigureAwait(false);
@@ -77,7 +69,7 @@ namespace saiflow.engine.Manager
             => Sail.UseRunSQL().useRepo<TaskEntity, int>().GetById(taskId);
 
         public TaskEntity GetTask(SQLBuilder kit, int taskId)
-            => Sibling(kit).useRepo<TaskEntity, int>().GetById(taskId);
+            => kit.useSQL().useRepo<TaskEntity, int>().GetById(taskId);
 
         /// <summary>
         /// Obtain tasks based on process information
@@ -91,7 +83,7 @@ namespace saiflow.engine.Manager
 
         internal List<TaskEntity> GetTaskListByActivity(SQLBuilder kit, int processInstanceId, int activityInstanceId)
         {
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<TaskEntity>(out var t);
             clip.where(() => t.ActivityInstanceId, activityInstanceId);
             clip.where(() => t.ProcessInstanceId, processInstanceId);
@@ -126,7 +118,7 @@ namespace saiflow.engine.Manager
 
         internal TaskViewEntity GetTaskViewByActivity(SQLBuilder kit, int processInstanceId, int activityInstanceId)
         {
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<TaskViewEntity>(out var t);
             clip.where(() => t.ActivityInstanceId, activityInstanceId);
             clip.where(() => t.ProcessInstanceId, processInstanceId);
@@ -144,7 +136,7 @@ namespace saiflow.engine.Manager
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<TaskViewEntity>(out var t);
             clip.where(() => t.ActivityInstanceId, activityInstanceId);
             clip.where(() => t.ProcessInstanceId, processInstanceId);
@@ -169,7 +161,7 @@ namespace saiflow.engine.Manager
             int activityInstanceId,
             string userId)
         {
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<TaskViewEntity>(out var t);
             clip.where(() => t.ActivityInstanceId, activityInstanceId);
             clip.where(() => t.AssignedUserId, userId);
@@ -193,7 +185,7 @@ namespace saiflow.engine.Manager
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<TaskViewEntity>(out var t);
             clip.where(() => t.ActivityInstanceId, activityInstanceId);
             clip.where(() => t.AssignedUserId, userId);
@@ -238,7 +230,7 @@ namespace saiflow.engine.Manager
             string processId,
             string userId)
         {
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<TaskViewEntity>(out var t);
             clip.where(() => t.AppInstanceId, appInstanceId);
             clip.where(() => t.ProcessId, processId);
@@ -332,7 +324,7 @@ namespace saiflow.engine.Manager
         #region TaskManager 任务数据基本操作
         private int Insert(SQLBuilder kit, TaskEntity entity)
         {
-            int newTaskId = Sibling(kit).useRepo<TaskEntity, int>().InsertReturnId(entity);
+            int newTaskId = kit.useSQL().useRepo<TaskEntity, int>().InsertReturnId(entity);
             entity.Id = newTaskId;
             return newTaskId;
         }
@@ -443,7 +435,7 @@ namespace saiflow.engine.Manager
         }
 
         public void Update(SQLBuilder kit, TaskEntity entity)
-            => Sibling(kit).useRepo<TaskEntity>().Update(entity);
+            => kit.useSQL().useRepo<TaskEntity>().Update(entity);
 
         internal void SetTaskType(SQLBuilder kit, int taskId, TaskTypeEnum taskType)
         {
@@ -692,7 +684,7 @@ namespace saiflow.engine.Manager
 
         internal void CancelEntrustedTask(SQLBuilder kit, int taskId)
         {
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<TaskEntity>(out var t);
             clip.where(() => t.EntrustedTaskId, taskId);
             var entrustedTaskEntity = clip.select(t).queryList().FirstOrDefault();
@@ -786,7 +778,7 @@ namespace saiflow.engine.Manager
 
         private void CancelTask(SQLBuilder kit, int activityInstanceId)
         {
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.setTable<TaskEntity>(out var t);
             clip.set(() => t.TaskState, (short)48);
             clip.set(() => t.RecordStatusInvalid, (byte)1);
@@ -802,7 +794,7 @@ namespace saiflow.engine.Manager
 
         internal bool Delete(SQLBuilder kit, long taskId)
         {
-            Sibling(kit).useRepo<TaskEntity, int>().DeleteById((int)taskId);
+            kit.useSQL().useRepo<TaskEntity, int>().DeleteById((int)taskId);
             return true;
         }
         #endregion

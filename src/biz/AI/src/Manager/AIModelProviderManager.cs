@@ -21,9 +21,6 @@ namespace saiflow.AI.Manager
         protected SailClient Sail { get; }
 
         private SQLBuilder Kit() => Sail.UseRunSQL();
-
-        private static SQLBuilder Sibling(SQLBuilder kit) => SailSqlAccess.Sibling(kit);
-
         #region get
 
         public AiModelProviderEntity GetById(int id)
@@ -74,7 +71,7 @@ namespace saiflow.AI.Manager
         }
 
         public int Insert(SQLBuilder kit, AiModelProviderEntity entity)
-            => Sibling(kit).useRepo<AiModelProviderEntity, int>().InsertReturnId(entity);
+            => kit.useSQL().useRepo<AiModelProviderEntity, int>().InsertReturnId(entity);
 
         public void Update(AiModelProviderEntity entity)
         {
@@ -96,7 +93,7 @@ namespace saiflow.AI.Manager
         public void Update(SQLBuilder kit, AiModelProviderEntity entity)
         {
             entity.UpdatedDateTime = DateTime.UtcNow;
-            Sibling(kit).useRepo<AiModelProviderEntity, int>().Update(entity);
+            kit.useSQL().useRepo<AiModelProviderEntity, int>().Update(entity);
         }
 
         public void DeleteAgent(int modelId)

@@ -72,12 +72,12 @@ namespace saiflow.engine.Pattern
             {
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
-                base.TaskManager.Complete(SailSqlAccess.Sibling(kit), taskId.Value, activityResource.AppRunner);
+                base.TaskManager.Complete(kit.useSQL(), taskId.Value, activityResource.AppRunner);
             }
 
             //设置活动节点的状态为完成状态
             //将活动节点状态设为完成
-            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
 
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 
@@ -104,7 +104,7 @@ namespace saiflow.engine.Pattern
                     {
                         //取出处于挂起状态多实例节点列表
                         //获取挂起状态的多实例节点列表
-                        var childList = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(SailSqlAccess.Sibling(kit), mainActivityInstance.Id.Value, mainActivityInstance.ProcessInstanceId.Value);
+                        var childList = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(kit.useSQL(), mainActivityInstance.Id.Value, mainActivityInstance.ProcessInstanceId.Value);
                         var sqList = childList.Where(a => a.ActivityState == (short)ActivityStateEnum.Suspended).ToList();
                         short maxOrder = 0;
                         if (sqList != null && sqList.Count > 0)
@@ -129,30 +129,30 @@ namespace saiflow.engine.Pattern
                                 //将下一任务设为就绪
                                 var nextActivityInstance = sqList[0];     //Always take the first suspended instance
                                 nextActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
-                                base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), nextActivityInstance);
+                                base.ActivityInstanceManager.Update(kit.useSQL(), nextActivityInstance);
 
                                 //更新主节点执行人员列表
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
                                     base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
                                     Sail.JsonSerializer);
-                                base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
+                                base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                 canContinueForwardCurrentNode = false;
                                 base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.ForwardToNextSequenceTask;
                             }
                             else if (base.LinkContext.FromActivityInstance.CompleteOrder == maxOrder)
                             {
-                                var passed = base.ActivityInstanceManager.GetMiApprovalThresholdStatus(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance, 
+                                var passed = base.ActivityInstanceManager.GetMiApprovalThresholdStatus(kit.useSQL(), base.LinkContext.FromActivityInstance, 
                                     mainActivityInstance);
                                 if (passed)
                                 {
                                     //完成最后一个会签任务，会签主节点状态由挂起设置为完成状态
                                     //完成最后一会签任务，并将会签主节点从挂起改为完成
                                     mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-                                    base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
+                                    base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                     //将未完成节点状态更新为取消
-                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(SailSqlAccess.Sibling(kit), mainActivityInstance.Id.Value, runner);
+                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id.Value, runner);
                                 }
                                 else
                                 {
@@ -169,17 +169,17 @@ namespace saiflow.engine.Pattern
 
                             if ((base.LinkContext.FromActivityInstance.CompleteOrder * 0.01) / (maxOrder * 0.01) >= mainActivityInstance.CompleteOrder)
                             {
-                                var passed = base.ActivityInstanceManager.GetMiApprovalThresholdStatus(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance,
+                                var passed = base.ActivityInstanceManager.GetMiApprovalThresholdStatus(kit.useSQL(), base.LinkContext.FromActivityInstance,
                                     mainActivityInstance);
                                 if (passed)
                                 {
                                     //完成最后一个会签任务，会签主节点状态由挂起设置为完成状态
                                     //完成最后一会签任务，并将会签主节点从挂起改为完成
                                     mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-                                    base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
+                                    base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                     //将未完成节点状态更新为取消
-                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(SailSqlAccess.Sibling(kit), mainActivityInstance.Id.Value, runner);
+                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id.Value, runner);
                                 }
                                 else
                                 {
@@ -193,13 +193,13 @@ namespace saiflow.engine.Pattern
                                 //将下一任务设为就绪
                                 var nextActivityInstance = sqList[0];     //Always take the first suspended instance
                                 nextActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
-                                base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), nextActivityInstance);
+                                base.ActivityInstanceManager.Update(kit.useSQL(), nextActivityInstance);
 
                                 //更新主节点执行人员列表
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
                                     base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
                                     Sail.JsonSerializer);
-                                base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
+                                base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                 canContinueForwardCurrentNode = false;
                                 base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.ForwardToNextSequenceTask;
@@ -209,7 +209,7 @@ namespace saiflow.engine.Pattern
                     else if (base.LinkContext.FromActivity.MultiSignDetail.MergeType == MergeTypeEnum.Parallel)   
                     {
                         //获取多实例节点列表
-                        var sqList = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithStateBatch(SailSqlAccess.Sibling(kit), mainActivityInstance.ProcessInstanceId.Value, 
+                        var sqList = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithStateBatch(kit.useSQL(), mainActivityInstance.ProcessInstanceId.Value, 
                             mainActivityInstance.Id.Value, null);
                         var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed
                              && x.ActivityState != (short)ActivityStateEnum.Sendbacked).ToList().Count();
@@ -226,16 +226,16 @@ namespace saiflow.engine.Pattern
 
                             if ((completedCount * 0.01) / (allCount * 0.01) >= mainActivityInstance.CompleteOrder)
                             {
-                                var passed = base.ActivityInstanceManager.GetMiApprovalThresholdStatus(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance,
+                                var passed = base.ActivityInstanceManager.GetMiApprovalThresholdStatus(kit.useSQL(), base.LinkContext.FromActivityInstance,
                                     mainActivityInstance);
                                 if (passed)
                                 {
                                     //如果超过约定的比例数，则执行下一步节点
                                     //超过约定通过比例则进入下一节点
                                     mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-                                    base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
+                                    base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
                                     //将未完成节点状态更新为取消
-                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(SailSqlAccess.Sibling(kit), mainActivityInstance.Id.Value, runner);
+                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id.Value, runner);
                                 }
                                 else
                                 {
@@ -249,7 +249,7 @@ namespace saiflow.engine.Pattern
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
                                     base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
                                     Sail.JsonSerializer);
-                                base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
+                                base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                 canContinueForwardCurrentNode = false;
                                 base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.WaitingForCompletedMore;
@@ -269,23 +269,23 @@ namespace saiflow.engine.Pattern
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
                                     base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
                                     Sail.JsonSerializer);
-                                base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
+                                base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                 canContinueForwardCurrentNode = false;
                                 base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.WaitingForCompletedMore;
                             }
                             else if (mainActivityInstance.CompleteOrder == completedCount)
                             {
-                                var passed = base.ActivityInstanceManager.GetMiApprovalThresholdStatus(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance, 
+                                var passed = base.ActivityInstanceManager.GetMiApprovalThresholdStatus(kit.useSQL(), base.LinkContext.FromActivityInstance, 
                                     mainActivityInstance);
                                 if (passed)
                                 {
                                     //如果超过约定的比例数，则执行下一步节点
                                     //超过约定通过比例则进入下一节点
                                     mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-                                    base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
+                                    base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
                                     //将未完成节点状态更新为取消
-                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(SailSqlAccess.Sibling(kit), mainActivityInstance.Id.Value, runner);
+                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id.Value, runner);
                                 }
                                 else
                                 {

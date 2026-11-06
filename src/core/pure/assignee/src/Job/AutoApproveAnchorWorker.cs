@@ -115,7 +115,7 @@ public sealed class AutoApproveAnchorWorker
 
         using (var probeKit = Sail.UseRunSQL())
         {
-            var sibling = SailSqlAccess.Sibling(probeKit);
+            var sibling = probeKit.useSQL();
 
             if (!IsProcessInstanceRunnable(sibling, anchor.ProcessInstanceId!.Value))
             {
@@ -286,7 +286,7 @@ public sealed class AutoApproveAnchorWorker
                 else
                 {
                     // Run「业务失败」但目标已离开 → 按已成功幂等收口，避免二次 Run
-                    if (IsAnchorTargetAlreadyLeft(SailSqlAccess.Sibling(kit), anchor))
+                    if (IsAnchorTargetAlreadyLeft(kit.useSQL(), anchor))
                     {
                         om.MarkSucceeded(kit, row);
                     }

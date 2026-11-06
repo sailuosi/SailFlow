@@ -89,7 +89,7 @@ namespace saiflow.engine.Runtime
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("nodesendback.ExecuteInstanceImp.error"));
             }
 
-            TaskManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance, activityResource.NextActivityPerformers[toActivityInstance.ActivityId], activityResource.AppRunner);
+            TaskManager.Insert(kit.useSQL(), toActivityInstance, activityResource.NextActivityPerformers[toActivityInstance.ActivityId], activityResource.AppRunner);
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace saiflow.engine.Runtime
                 flyingType,
                 runner,
                 (byte)ConditionParseResultEnum.Passed);
-            var newId = this.TransitionInstanceManager.Insert(SailSqlAccess.Sibling(kit), transitionInstanceObject);
+            var newId = this.TransitionInstanceManager.Insert(kit.useSQL(), transitionInstanceObject);
 
             return newId;
         }
@@ -133,7 +133,7 @@ namespace saiflow.engine.Runtime
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            var previousActivityInstance = this.ActivityInstanceManager.GetPreviousActivityInstanceSimple(SailSqlAccess.Sibling(kit), fromActivityInstance, backwardToTaskActivity.ActivityId);
+            var previousActivityInstance = this.ActivityInstanceManager.GetPreviousActivityInstanceSimple(kit.useSQL(), fromActivityInstance, backwardToTaskActivity.ActivityId);
 
             if (previousActivityInstance == null)
             {
@@ -158,9 +158,9 @@ namespace saiflow.engine.Runtime
             toActivityInstance.AssignedUserIds = SendBackOperation.BackwardToTaskPerformer.UserId;
             toActivityInstance.AssignedUserNames = SendBackOperation.BackwardToTaskPerformer.UserName;
 
-            this.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
+            this.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
-            this.TaskManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance, SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
+            this.TaskManager.Insert(kit.useSQL(), toActivityInstance, SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
 
             InsertTransitionInstance(processInstance,
                 fromActivityInstance,

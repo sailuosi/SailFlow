@@ -26,14 +26,6 @@ namespace saiflow.engine.Manager
         }
 
         protected SailClient Sail { get; }
-        private static SQLBuilder Sibling(SQLBuilder kit)
-        {
-            var next = kit.DBLive.useSQL();
-            if (kit.Executor != null)
-                next.useTransaction(kit.Executor);
-            return next;
-        }
-
         #region Obtain process data 获取流程数据
         /// <summary>
         /// Obtain process entity based on Id
@@ -50,7 +42,7 @@ namespace saiflow.engine.Manager
         /// </summary>
         public ProcessEntity GetById(SQLBuilder kit, int id)
         {
-            return Sibling(kit).useRepo<ProcessEntity, int>().GetById(id);
+            return kit.useSQL().useRepo<ProcessEntity, int>().GetById(id);
         }
 
         /// <summary>
@@ -77,7 +69,7 @@ namespace saiflow.engine.Manager
             bool throwException = true)
         {
             ProcessEntity entity = null;
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<ProcessEntity>(out var p);
             clip.where(() => p.ProcessId, processId);
             clip.where(() => p.Version, version);
@@ -118,7 +110,7 @@ namespace saiflow.engine.Manager
             bool isNotThrownException)
         {
             ProcessEntity entity = null;
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<ProcessEntity>(out var p);
             clip.where(() => p.ProcessId, processId);
             clip.where(() => p.Status, (byte)1);
@@ -209,7 +201,7 @@ namespace saiflow.engine.Manager
             string version)
         {
             ProcessEntity entity = null;
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<ProcessEntity>(out var p);
             clip.where(() => p.ProcessId, processId);
             clip.where(() => p.Version, version);
@@ -269,7 +261,7 @@ namespace saiflow.engine.Manager
         public ProcessEntity GetSingleByAppType(SQLBuilder kit, string appType)
         {
             ProcessEntity entity = null;
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<ProcessEntity>(out var p);
             clip.where(() => p.AppType, appType);
             var list = clip.select(p).queryList().ToList();
@@ -333,7 +325,7 @@ namespace saiflow.engine.Manager
                 throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.insert.error"));
             }
 
-            return Sibling(kit).useRepo<ProcessEntity, int>().InsertReturnId(entity);
+            return kit.useSQL().useRepo<ProcessEntity, int>().InsertReturnId(entity);
         }
 
         /// <summary>
@@ -353,13 +345,13 @@ namespace saiflow.engine.Manager
                     {
                         //更新主流程泳道流程的使用状态信息
                         //Update the usage status information of the main flow lane process
-                        var clip = Sibling(kit).useClip();
+                        var clip = kit.useSQL().useClip();
                         clip.setTable<ProcessEntity>(out var p);
                         clip.set(() => p.Status, entity.Status);
                         clip.where(() => p.PackageId, entity.Id);
                         clip.doUpdate();
                     }
-                    Sibling(kit).useRepo<ProcessEntity, int>().Update(entity);
+                    kit.useSQL().useRepo<ProcessEntity, int>().Update(entity);
                     kit.commit();
                     Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);
                 }
@@ -376,7 +368,7 @@ namespace saiflow.engine.Manager
         /// </summary>
         public void Update(SQLBuilder kit, ProcessEntity entity)
         {
-            Sibling(kit).useRepo<ProcessEntity, int>().Update(entity);
+            kit.useSQL().useRepo<ProcessEntity, int>().Update(entity);
             Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);
         }
 
@@ -395,7 +387,7 @@ namespace saiflow.engine.Manager
                 {
                     var entity = GetByVersion(kit, processId, version, true);
                     entity.Status = usingState;
-                    Sibling(kit).useRepo<ProcessEntity, int>().Update(entity);
+                    kit.useSQL().useRepo<ProcessEntity, int>().Update(entity);
                     kit.commit();
                 }
                 catch
@@ -429,7 +421,7 @@ namespace saiflow.engine.Manager
                     entity.CreatedDateTime = System.DateTime.UtcNow;
                     //升级主流程版本
                     //Upgrade package process version
-                    newProcessId = Sibling(kit).useRepo<ProcessEntity, int>().InsertReturnId(entity);
+                    newProcessId = kit.useSQL().useRepo<ProcessEntity, int>().InsertReturnId(entity);
 
                     if (entity.PackageType == (short)PackageTypeEnum.Package)
                     {
@@ -458,7 +450,7 @@ namespace saiflow.engine.Manager
         {
             //升级泳道流程的使用状态信息
             //Upgrade the usage status information of the lane process
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<ProcessEntity>(out var p);
             clip.where(() => p.PackageType, (byte)PackageTypeEnum.Pool);
             clip.where(() => p.PackageId, originProcessId);
@@ -490,7 +482,7 @@ namespace saiflow.engine.Manager
                 kit.beginTransaction();
                 try
                 {
-                    Sibling(kit).useRepo<ProcessEntity, int>().Delete(entity);
+                    kit.useSQL().useRepo<ProcessEntity, int>().Delete(entity);
                     kit.commit();
                     Sail.ProcessModelFactory.Invalidate( processId, version);
                 }
@@ -507,7 +499,7 @@ namespace saiflow.engine.Manager
         /// </summary>
         public void Delete(SQLBuilder kit, string processId)
         {
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.setTable<ProcessEntity>(out var p);
             clip.where(() => p.ProcessId, processId);
             clip.doDelete();
@@ -531,7 +523,7 @@ namespace saiflow.engine.Manager
                     {
                         //删除泳道流程
                         //Delete pool process
-                        var poolClip = Sibling(kit).useClip();
+                        var poolClip = kit.useSQL().useClip();
                         poolClip.setTable<ProcessEntity>(out var pool);
                         poolClip.where(() => pool.PackageId, entity.Id);
                         poolClip.doDelete();
@@ -539,7 +531,7 @@ namespace saiflow.engine.Manager
 
                     //删除主流程
                     //Delete package process
-                    var clip = Sibling(kit).useClip();
+                    var clip = kit.useSQL().useClip();
                     clip.setTable<ProcessEntity>(out var p);
                     clip.where(() => p.ProcessId, processId);
                     clip.where(() => p.Version, version);
@@ -714,7 +706,7 @@ namespace saiflow.engine.Manager
                         //数据库存储
                         //Update to database
                         processEntity.UpdatedDateTime = DateTime.UtcNow;
-                        Sibling(kit).useRepo<ProcessEntity, int>().Update(processEntity);
+                        kit.useSQL().useRepo<ProcessEntity, int>().Update(processEntity);
                     }
                     else
                     {
@@ -730,7 +722,7 @@ namespace saiflow.engine.Manager
 
                         //数据库存储
                         //Insert into database
-                        Sibling(kit).useRepo<ProcessEntity, int>().Insert(processEntity);
+                        kit.useSQL().useRepo<ProcessEntity, int>().Insert(processEntity);
                     }
                     kit.commit();
                     Sail.ProcessModelFactory.Invalidate( processEntity.ProcessId, processEntity.Version);
@@ -975,7 +967,7 @@ namespace saiflow.engine.Manager
         /// </summary>
         private List<ProcessEntity> GetPoolProcessList(SQLBuilder kit, int packageId)
         {
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<ProcessEntity>(out var p);
             clip.where(() => p.PackageId, packageId);
             return clip.select(p).queryList().ToList();
@@ -1047,7 +1039,7 @@ namespace saiflow.engine.Manager
             int packageId,
             List<int> poolProcessIds)
         {
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.setTable<ProcessEntity>(out var p);
             clip.where(() => p.PackageId, packageId);
             clip.whereIn(() => p.Id, poolProcessIds.Cast<int?>().ToList());
@@ -1060,7 +1052,7 @@ namespace saiflow.engine.Manager
         /// </summary>
         private void DeletePoolProcess(SQLBuilder kit, int packageId)
         {
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.setTable<ProcessEntity>(out var p);
             clip.where(() => p.PackageId, packageId);
             clip.where(() => p.PackageType, (byte)PackageTypeEnum.Pool);

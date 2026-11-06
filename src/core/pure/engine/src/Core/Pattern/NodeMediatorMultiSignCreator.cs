@@ -60,7 +60,7 @@ namespace saiflow.engine.Pattern
                     toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
                     toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
 
-                    base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
+                    base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
                     base.CreateNewTask(toActivityInstance, activityResource, kit);
 

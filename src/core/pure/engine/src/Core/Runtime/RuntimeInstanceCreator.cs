@@ -138,7 +138,7 @@ namespace saiflow.engine.Runtime
             rmins.AppRunner = runner;
             rmins.ProcessInstance = subProcessInstance;
             rmins.InvokedSubProcessNode = subProcessNode;
-            rmins.ProcessModel = _sail.ProcessModelFactory.CreateSubByNode(SailSqlAccess.Sibling(kit), subProcessNode);
+            rmins.ProcessModel = _sail.ProcessModelFactory.CreateSubByNode(kit.useSQL(), subProcessNode);
 
             //获取流程第一个可办理节点
             //Obtain the first available processing node in the process
@@ -182,7 +182,7 @@ namespace saiflow.engine.Runtime
 
             var aim = _sail.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
-            var runningNode = aim.GetRunningNode(SailSqlAccess.Sibling(kit), runner, out taskView);
+            var runningNode = aim.GetRunningNode(kit.useSQL(), runner, out taskView);
 
             //判断是否是当前登录用户的任务 
             //Determine whether it is the task of the currently logged in user
@@ -206,10 +206,10 @@ namespace saiflow.engine.Runtime
 
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
-            var kitForPi = SailSqlAccess.Sibling(kit);
+            var kitForPi = kit.useSQL();
             var processInstance = _sail.ProcessInstances.GetById(kitForPi, runningNode.ProcessInstanceId.Value);
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
-            var processModel = _sail.ProcessModelFactory.CreateByTask(SailSqlAccess.Sibling(kit), taskView);
+            var processModel = _sail.ProcessModelFactory.CreateByTask(kit.useSQL(), taskView);
 
 
             //判断当前节点上的必填输出变量是否存在
@@ -291,7 +291,7 @@ namespace saiflow.engine.Runtime
                 .GetByIdAsync(kit, runningNode.ProcessInstanceId.Value, cancellationToken)
                 .ConfigureAwait(false);
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
-            var processModel = _sail.ProcessModelFactory.CreateByTask(SailSqlAccess.Sibling(kit), taskView);
+            var processModel = _sail.ProcessModelFactory.CreateByTask(kit.useSQL(), taskView);
 
             var currentNode = processModel.GetActivity(taskView.ActivityId);
             var pvr = SailFactoryAccess.Managers(_sail).ProcessVariableResolver;
@@ -347,7 +347,7 @@ namespace saiflow.engine.Runtime
 
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
-            var kitForPi = SailSqlAccess.Sibling(kit);
+            var kitForPi = kit.useSQL();
             var processInstance = _sail.ProcessInstances.GetById(kitForPi, runningNode.ProcessInstanceId.Value);
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
             var processModel = _sail.ProcessModelFactory.CreateByProcess( processInstance.ProcessId, processInstance.Version);
@@ -930,7 +930,7 @@ namespace saiflow.engine.Runtime
                 using (var kit = _sail.UseRunSQL())
                 {
                     var aim = _sail.ManagerFactory.Activities;
-                    var childList = aim.GetActivityMulitipleInstanceWithStateBatch(SailSqlAccess.Sibling(kit), runningNode.ProcessInstanceId.Value, runningNode.Id.Value, (short)ActivityStateEnum.Ready);
+                    var childList = aim.GetActivityMulitipleInstanceWithStateBatch(kit.useSQL(), runningNode.ProcessInstanceId.Value, runningNode.Id.Value, (short)ActivityStateEnum.Ready);
                     runningNode = childList.FirstOrDefault();
                 }
             }

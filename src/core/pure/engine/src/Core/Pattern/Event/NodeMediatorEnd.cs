@@ -39,7 +39,7 @@ namespace saiflow.engine.Pattern
             OnBeforeExecuteWorkItem();
 
             var pim = Sail.ProcessInstances;
-            var kit = SailSqlAccess.Sibling(Kit);
+            var kit = Kit.useSQL();
             var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id.Value,
                 ActivityForwardContext.ActivityResource.AppRunner);
 
@@ -103,7 +103,7 @@ namespace saiflow.engine.Pattern
             var nextSteps = processModel.GetNextActivityTreeView(mainActivityId);
 
             //获取主流程任务
-            var task = Sail.ManagerFactory.Tasks.GetTaskByActivity(SailSqlAccess.Sibling(kit), mainProcessInstance.Id.Value, mainActivityInstanceId);
+            var task = Sail.ManagerFactory.Tasks.GetTaskByActivity(kit.useSQL(), mainProcessInstance.Id.Value, mainActivityInstanceId);
             var runner = new WfAppRunner
             {
                 AppName = mainProcessInstance.AppName,
@@ -147,9 +147,9 @@ namespace saiflow.engine.Pattern
             var toActivityInstance = base.CreateActivityInstanceObject(toActivity,
                 processInstance, activityResource.AppRunner);
 
-            base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
+            base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
-            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), toActivityInstance.Id.Value, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance.Id.Value, activityResource.AppRunner);
 
             base.InsertTransitionInstance(processInstance,
                 transitionId,

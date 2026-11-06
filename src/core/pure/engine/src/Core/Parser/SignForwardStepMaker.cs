@@ -65,7 +65,7 @@ namespace saiflow.engine.Runtime
                 //运行状态的流程实例
                 //Process instance of running status
                 var tm = Sail.ManagerFactory.Tasks;
-                TaskViewEntity taskView = tm.GetTaskOfMine(SailSqlAccess.Sibling(kit), runner);
+                TaskViewEntity taskView = tm.GetTaskOfMine(kit.useSQL(), runner);
 
                 var isRunningTask = tm.CheckTaskStateInRunningState(taskView);
                 if (isRunningTask == false)
@@ -74,7 +74,7 @@ namespace saiflow.engine.Runtime
                 }
 
                 var treeNodeList = new List<NodeView>();
-                var processModel = Sail.ProcessModelFactory.CreateByTask(SailSqlAccess.Sibling(kit), taskView);
+                var processModel = Sail.ProcessModelFactory.CreateByTask(kit.useSQL(), taskView);
                 var currentActivity = processModel.GetActivity(taskView.ActivityId);
                 treeNodeList.Add(new NodeView
                 {

@@ -80,7 +80,7 @@ namespace saiflow.engine.Pattern
                                 if (gatewayNode.GatewayDetail.DirectionType == GatewayDirectionEnum.AndSplitMI)
                                 {
                                     //复制并行多实例分支
-                                    var gatewayActivityInstance = base.ActivityInstanceManager.GetActivityInstanceLatest(SailSqlAccess.Sibling(Kit), 
+                                    var gatewayActivityInstance = base.ActivityInstanceManager.GetActivityInstanceLatest(Kit.useSQL(), 
                                         backSrcActivityInstance.ProcessInstanceId.Value, gatewayNode.ActivityId);
                                     CloneChildNodeOfAndSplitMI(performerList, transition.TransitionId, gatewayActivityInstance, backSrcActivityInstance, base.Kit);
                                 }
@@ -131,12 +131,12 @@ namespace saiflow.engine.Pattern
             {
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
-                base.TaskManager.Complete(SailSqlAccess.Sibling(kit), taskId.Value, activityResource.AppRunner);
+                base.TaskManager.Complete(kit.useSQL(), taskId.Value, activityResource.AppRunner);
 
                 //设置活动节点的状态为完成状态
                 //将活动节点状态设为完成
                 var activityInstanceId = base.ActivityInstanceManager.GetByTask(taskId.Value).Id;
-                base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), activityInstanceId.Value, activityResource.AppRunner);
+                base.ActivityInstanceManager.Complete(kit.useSQL(), activityInstanceId.Value, activityResource.AppRunner);
             }
             return canContinueForwardCurrentNode;
         }
@@ -151,7 +151,7 @@ namespace saiflow.engine.Pattern
             ActivityInstanceEntity mainActivityInstance, 
             SQLBuilder kit)
         {
-            var childNodeListOfMI = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(SailSqlAccess.Sibling(kit), mainActivityInstance.Id.Value, mainActivityInstance.ProcessInstanceId.Value);
+            var childNodeListOfMI = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(kit.useSQL(), mainActivityInstance.Id.Value, mainActivityInstance.ProcessInstanceId.Value);
 
             ActivityInstanceEntity entity = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)
@@ -188,9 +188,9 @@ namespace saiflow.engine.Pattern
                     entity.ActivityState = (short)ActivityStateEnum.Suspended;
                 }
 
-                entity.Id = ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), entity);
+                entity.Id = ActivityInstanceManager.Insert(kit.useSQL(), entity);
 
-                base.TaskManager.Insert(SailSqlAccess.Sibling(kit), entity, plist[i], base.ActivityForwardContext.ActivityResource.AppRunner);
+                base.TaskManager.Insert(kit.useSQL(), entity, plist[i], base.ActivityForwardContext.ActivityResource.AppRunner);
             }
         }
 
@@ -221,7 +221,7 @@ namespace saiflow.engine.Pattern
             ActivityInstanceEntity toActivityInstance, 
             SQLBuilder kit)
         {
-            var childNodeListOfAndSplitMI = base.ActivityInstanceManager.GetValidSplitedActivityInstanceList(SailSqlAccess.Sibling(kit), gatewayActivityInstance.ProcessInstanceId.Value, gatewayActivityInstance.Id.Value);
+            var childNodeListOfAndSplitMI = base.ActivityInstanceManager.GetValidSplitedActivityInstanceList(kit.useSQL(), gatewayActivityInstance.ProcessInstanceId.Value, gatewayActivityInstance.Id.Value);
 
             ActivityInstanceEntity newChildInstance = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)
@@ -239,7 +239,7 @@ namespace saiflow.engine.Pattern
                 newChildInstance.AssignedUserIds = userId;
                 newChildInstance.AssignedUserNames = userName;
 
-                newChildInstance.Id = ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), newChildInstance);
+                newChildInstance.Id = ActivityInstanceManager.Insert(kit.useSQL(), newChildInstance);
 
                 base.InsertTransitionInstance(base.ActivityForwardContext.ProcessInstance,
                     transitionId,
@@ -250,7 +250,7 @@ namespace saiflow.engine.Pattern
                     base.ActivityForwardContext.ActivityResource.AppRunner,
                     kit);
 
-                base.TaskManager.Insert(SailSqlAccess.Sibling(kit), newChildInstance, plist[i], base.ActivityForwardContext.ActivityResource.AppRunner);
+                base.TaskManager.Insert(kit.useSQL(), newChildInstance, plist[i], base.ActivityForwardContext.ActivityResource.AppRunner);
             }
         }
     }

@@ -121,7 +121,7 @@ namespace saiflow.engine.Manager
         {
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = Sibling(kit).useClip();
+                var clip = kit.useSQL().useClip();
                 clip.from<TransitionInstanceEntity>(table, out var t);
                 clip.InnerJoin<ActivityInstanceEntity>(out var a).on(() => t.ToActivityInstanceId == a.Id);
                 clip.where(() => t.AppInstanceId, appInstanceId);
@@ -152,7 +152,7 @@ namespace saiflow.engine.Manager
         {
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = Sibling(kit).useClip();
+                var clip = kit.useSQL().useClip();
                 clip.from<TransitionInstanceEntity>(table, out var t);
                 clip.where(() => t.AppInstanceId, appInstanceId);
                 clip.where(() => t.ProcessId, processId);
@@ -185,7 +185,7 @@ namespace saiflow.engine.Manager
         {
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = Sibling(kit).useClip();
+                var clip = kit.useSQL().useClip();
                 clip.from<TransitionInstanceEntity>(table, out var t);
                 clip.where(() => t.AppInstanceId, appInstanceId);
                 clip.where(() => t.ProcessId, processId);
@@ -204,26 +204,18 @@ namespace saiflow.engine.Manager
         internal IList<ActivityInstanceEntity> GetTargetActivityInstanceList(SQLBuilder kit, int fromActivityInstanceId)
         {
             var targetIDs = GetTargetActivityInstanceIDs(kit, fromActivityInstanceId);
-            return Sibling(kit).useRepo<ActivityInstanceEntity>()
+            return kit.useSQL().useRepo<ActivityInstanceEntity>()
                 .GetByIds(targetIDs)
                 .ToList();
         }
 
         /// <summary>同库同事务的新 kit，避免链式 select 状态互相污染。</summary>
-        private static SQLBuilder Sibling(SQLBuilder kit)
-        {
-            var next = kit.DBLive.useSQL();
-            if (kit.Executor != null)
-                next.useTransaction(kit.Executor);
-            return next;
-        }
-
         private IList<dynamic> GetTargetActivityInstanceIDs(SQLBuilder kit, int fromActivityInstanceId)
         {
             var processId = ResolveProcessIdFromActivity(kit, fromActivityInstanceId);
             var transitions = QueryWithFallback(kit, processId, table =>
             {
-                var clip = Sibling(kit).useClip();
+                var clip = kit.useSQL().useClip();
                 clip.from<TransitionInstanceEntity>(table, out var t);
                 clip.where(() => t.FromActivityInstanceId, fromActivityInstanceId);
                 return clip.select(t).queryList().ToList();
@@ -244,7 +236,7 @@ namespace saiflow.engine.Manager
         {
             try
             {
-                var ai = Sibling(kit).useRepo<ActivityInstanceEntity, int>().GetById(activityInstanceId);
+                var ai = kit.useSQL().useRepo<ActivityInstanceEntity, int>().GetById(activityInstanceId);
                 return ai?.ProcessId;
             }
             catch

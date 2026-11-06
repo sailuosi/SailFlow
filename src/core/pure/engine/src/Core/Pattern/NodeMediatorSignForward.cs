@@ -87,7 +87,7 @@ namespace saiflow.engine.Pattern
             }
             currentActivityInstance.ActivityState = (short)ActivityStateEnum.Suspended;
             
-            base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(Kit), currentActivityInstance);
+            base.ActivityInstanceManager.Update(Kit.useSQL(), currentActivityInstance);
         }
 
         /// <summary>
@@ -144,10 +144,10 @@ namespace saiflow.engine.Pattern
 
             //主节点挂起后，插入当前人的加签记录信息, 并插入任务记录
             //主节点挂起后，插入当前人加签记录与任务记录
-            base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(Kit), newActivityInstance);
+            base.ActivityInstanceManager.Insert(Kit.useSQL(), newActivityInstance);
             var signer = new Performer(base.ActivityForwardContext.ActivityResource.AppRunner.UserId,
                 base.ActivityForwardContext.ActivityResource.AppRunner.UserName);
-            base.TaskManager.Insert(SailSqlAccess.Sibling(Kit), newActivityInstance, signer, base.ActivityForwardContext.ActivityResource.AppRunner);
+            base.TaskManager.Insert(Kit.useSQL(), newActivityInstance, signer, base.ActivityForwardContext.ActivityResource.AppRunner);
 
             //创建新加签节点记录
             //创建新的加签节点记录
@@ -188,8 +188,8 @@ namespace saiflow.engine.Pattern
                 
                 signforwardActivityInstance.SignForwardType = (short)signForwardType;
 
-                base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(Kit), signforwardActivityInstance);
-                base.TaskManager.Insert(SailSqlAccess.Sibling(Kit), signforwardActivityInstance, plist[i], activityResource.AppRunner);
+                base.ActivityInstanceManager.Insert(Kit.useSQL(), signforwardActivityInstance);
+                base.TaskManager.Insert(Kit.useSQL(), signforwardActivityInstance, plist[i], activityResource.AppRunner);
             }
         }
     }

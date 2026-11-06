@@ -77,7 +77,7 @@ namespace saiflow.data.Lifecycle
             {
                 using (var kit = Cold.UseColdSQL())
                 {
-                    var clip = SailSqlAccess.Sibling(kit).useClip();
+                    var clip = kit.useSQL().useClip();
                     clip.from<T>(table, out var row);
                     clip.where("id", id);
                     return clip.select(row).queryList().FirstOrDefault();
@@ -95,7 +95,7 @@ namespace saiflow.data.Lifecycle
             {
                 using (var kit = Cold.UseColdSQL())
                 {
-                    var clip = SailSqlAccess.Sibling(kit).useClip();
+                    var clip = kit.useSQL().useClip();
                     clip.from<T>(table, out var row);
                     clip.where("process_instance_id", processInstanceId);
                     return clip.select(row).queryList().ToList();

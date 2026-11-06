@@ -84,7 +84,7 @@ namespace saiflow.engine.Pattern
         internal virtual void InsertActivityInstance(ActivityInstanceEntity activityInstance,
             SQLBuilder kit)
         {
-            ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), activityInstance);
+            ActivityInstanceManager.Insert(kit.useSQL(), activityInstance);
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace saiflow.engine.Pattern
                 flyingType,
                 runner,
                 (byte)ConditionParseResultEnum.Passed);
-            var newId = tim.Insert(SailSqlAccess.Sibling(kit), transitionInstanceObject);
+            var newId = tim.Insert(kit.useSQL(), transitionInstanceObject);
 
             return newId;
         }
@@ -120,7 +120,7 @@ namespace saiflow.engine.Pattern
             WfAppRunner runner,
             SQLBuilder kit)
         {
-            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), ActivityInstanceId, runner);
+            ActivityInstanceManager.Complete(kit.useSQL(), ActivityInstanceId, runner);
         }
     }
 }

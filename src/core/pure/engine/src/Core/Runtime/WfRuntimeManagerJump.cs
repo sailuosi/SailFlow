@@ -26,7 +26,7 @@ namespace saiflow.engine.Runtime
             WfExecutedResult result = base.WfExecutedResult;
 
             var aim = Sail.ManagerFactory.Activities;
-            aim.Complete(SailSqlAccess.Sibling(kit), base.RunningActivityInstance.Id.Value, this.AppRunner);
+            aim.Complete(kit.useSQL(), base.RunningActivityInstance.Id.Value, this.AppRunner);
 
             //构建跳转上下文
             //Build jump context

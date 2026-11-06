@@ -125,7 +125,7 @@ namespace saiflow.engine.Event
                     UpdatedDateTime = System.DateTime.UtcNow
                 };
             }
-            var kit = SailSqlAccess.Sibling(Kit);
+            var kit = Kit.useSQL();
             var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
             pvm.SaveVariable(kit, processVariable);
         }
@@ -139,7 +139,7 @@ namespace saiflow.engine.Event
         /// <returns></returns>
         public string GetVariable(ProcessVariableScopeEnum variableType, string name)
         {
-            var kit = SailSqlAccess.Sibling(Kit);
+            var kit = Kit.useSQL();
             var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
             var variable = pvm.GetVariable(kit, variableType, name, this.EventContext);
             return variable;
@@ -153,7 +153,7 @@ namespace saiflow.engine.Event
         /// <returns></returns>
         public string GetVariableByScopePriority(string name)
         {
-            var kit = SailSqlAccess.Sibling(Kit);
+            var kit = Kit.useSQL();
             var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
             var variable = pvm.GetVariableByScopePriority(kit, name, this.EventContext);
             return variable;

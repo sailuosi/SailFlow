@@ -189,10 +189,10 @@ namespace saiflow.engine.Pattern
             SQLBuilder kit,
             ActivityInstanceManager aim)
         {
-            var prev = aim.GetPreviousActivityInstanceSimple(SailSqlAccess.Sibling(kit), currentInstance, sourceActivityId);
+            var prev = aim.GetPreviousActivityInstanceSimple(kit.useSQL(), currentInstance, sourceActivityId);
             if (prev != null) return prev;
 
-            var completed = aim.GetActivityInstanceListCompletedSimple(SailSqlAccess.Sibling(kit), currentInstance.ProcessInstanceId.Value, sourceActivityId);
+            var completed = aim.GetActivityInstanceListCompletedSimple(kit.useSQL(), currentInstance.ProcessInstanceId.Value, sourceActivityId);
             return completed != null && completed.Count > 0 ? completed[0] : null;
         }
 

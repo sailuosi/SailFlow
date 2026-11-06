@@ -12,24 +12,24 @@ namespace saiflow.engine.HotShard
     {
         public static int InsertReturnId<T>(SQLBuilder kit, string physicalTable, T entity) where T : class
         {
-            var prepared = SailEntityKit.PrepareInsertOnTable(entity, physicalTable, kit);
-            var idObj = prepared.Kit.doInsertReturnId(SailEntityKit.KeyColumn<T>());
-            if (idObj == null || idObj == DBNull.Value)
-                return 0;
+            var idObj = kit.insertReturnId(entity);
             return Convert.ToInt32(idObj);
         }
 
         public static void Update<T>(SQLBuilder kit, string physicalTable, T entity) where T : class
         {
-            SailEntityKit.PrepareUpdateOnTable(entity, physicalTable, kit).doUpdate();
+            kit.update(entity, physicalTable);
         }
 
         public static T GetById<T>(SQLBuilder kit, string physicalTable, int id) where T : class
-            => SailEntityKit.PrepareSelectByIdOnTable<T>(id, physicalTable, kit).queryUnique<T>();
+        {
+            return kit.findRowById<T>(id, physicalTable);
+        }
+        //=> SailEntityKit.PrepareSelectByIdOnTable<T>(id, physicalTable, kit).queryUnique<T>();
 
         public static void DeleteById<T>(SQLBuilder kit, string physicalTable, int id) where T : class
         {
-            SailEntityKit.PrepareDeleteByIdOnTable<T>(id, physicalTable, kit).doDelete();
+            kit.deleteById<T>(id, physicalTable);
         }
 
         /// <summary>按 LookupTables 顺序探测主键；命中即返回。</summary>
@@ -84,10 +84,7 @@ namespace saiflow.engine.HotShard
                 return null;
             try
             {
-                var next = kit.DBLive.useSQL();
-                if (kit.Executor != null)
-                    next.useTransaction(kit.Executor);
-                var pi = next.useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
+                var pi = kit.useSQL().useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
                 return pi?.ProcessId;
             }
             catch

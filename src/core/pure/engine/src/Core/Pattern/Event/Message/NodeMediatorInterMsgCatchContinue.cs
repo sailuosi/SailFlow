@@ -68,7 +68,7 @@ namespace saiflow.engine.Pattern
 
             //设置活动节点的状态为完成状态
             //将活动节点状态设为完成
-            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(kit.useSQL(), LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
 
             LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             ActivityForwardContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;

@@ -52,7 +52,7 @@ namespace saiflow.engine.Pattern
             toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
             toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
 
-            base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
+            base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
             base.ReturnDataContext.ActivityInstanceId = toActivityInstance.Id.Value;
             base.ReturnDataContext.ProcessInstanceId = toActivityInstance.ProcessInstanceId.Value;
@@ -125,7 +125,7 @@ namespace saiflow.engine.Pattern
             rollbackPreviousActivityInstance.AssignedUserIds = originalBackwardToActivityInstance.AssignedUserIds;      //多实例节点为单一用户任务
             rollbackPreviousActivityInstance.AssignedUserNames = originalBackwardToActivityInstance.AssignedUserNames;
 
-            base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), rollbackPreviousActivityInstance);
+            base.ActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
 
             base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.Id.Value;
             base.ReturnDataContext.ProcessInstanceId = rollbackPreviousActivityInstance.ProcessInstanceId.Value;
@@ -161,7 +161,7 @@ namespace saiflow.engine.Pattern
             rollbackPreviousActivityInstance.AssignedUserIds = originalBackwardToActivityInstance.AssignedUserIds;      //多实例节点为单一用户任务
             rollbackPreviousActivityInstance.AssignedUserNames = originalBackwardToActivityInstance.AssignedUserNames;
 
-            base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), rollbackPreviousActivityInstance);
+            base.ActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
             base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.Id.Value;
             base.ReturnDataContext.ProcessInstanceId = rollbackPreviousActivityInstance.ProcessInstanceId.Value;
             base.CreateNewTask(rollbackPreviousActivityInstance, activityResource, kit);

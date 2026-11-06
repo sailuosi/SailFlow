@@ -35,7 +35,7 @@ namespace saiflow.engine.Pattern
             try
             {
                 var pim = Sail.ProcessInstances;
-                var kit = SailSqlAccess.Sibling(Kit);
+                var kit = Kit.useSQL();
                 var newId = pim.Insert(kit, ActivityForwardContext.ProcessInstance);
                 ActivityForwardContext.ProcessInstance.Id = newId;
 
@@ -69,9 +69,9 @@ namespace saiflow.engine.Pattern
         {
             var fromActivityInstance = CreateActivityInstanceObject(LinkContext.FromActivity, processInstance, activityResource.AppRunner);
 
-            ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), fromActivityInstance);
+            ActivityInstanceManager.Insert(kit.useSQL(), fromActivityInstance);
 
-            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), fromActivityInstance.Id.Value, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(kit.useSQL(), fromActivityInstance.Id.Value, activityResource.AppRunner);
 
             fromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             LinkContext.FromActivityInstance = fromActivityInstance;

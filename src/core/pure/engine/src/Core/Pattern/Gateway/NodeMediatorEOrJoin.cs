@@ -120,7 +120,7 @@ namespace saiflow.engine.Pattern
             //当前执行的分支就是强制分支
             //检查是否有运行中的合并节点实例
             //当前为强制分支；检查是否已有运行中的合并节点实例
-            ActivityInstanceEntity joinNode = base.ActivityInstanceManager.GetActivityRunning(SailSqlAccess.Sibling(kit), 
+            ActivityInstanceEntity joinNode = base.ActivityInstanceManager.GetActivityRunning(kit.useSQL(), 
                     processInstance.Id.Value, base.GatewayActivity.ActivityId); ;
 
             if (joinNode == null)
@@ -156,7 +156,7 @@ namespace saiflow.engine.Pattern
                 base.GatewayActivityInstance = joinNode;
 
                 //增加令牌计数
-                base.ActivityInstanceManager.IncreaseTokensHad(SailSqlAccess.Sibling(kit), base.GatewayActivityInstance.Id.Value, runner);
+                base.ActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.Id.Value, runner);
                 base.InsertTransitionInstance(processInstance,
                     transitionId,
                     fromActivityInstance,
@@ -177,7 +177,7 @@ namespace saiflow.engine.Pattern
                 base.GatewayActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 
                 //将其余分支待办节点置为阻断（CanRenewInstance = 0）
-                base.ActivityInstanceManager.UpdateActivityInstanceBlockedBetweenSplitJoin(SailSqlAccess.Sibling(kit), base.GatewayActivity, base.GatewayActivityInstance, base.ProcessModel);
+                base.ActivityInstanceManager.UpdateActivityInstanceBlockedBetweenSplitJoin(kit.useSQL(), base.GatewayActivity, base.GatewayActivityInstance, base.ProcessModel);
 
                 result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Successed);
             }

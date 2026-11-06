@@ -158,7 +158,7 @@ namespace saiflow.engine.Runtime
                 }
                 else if (!string.IsNullOrEmpty(runner.AppInstanceId))
                 {
-                    var kitForPi = SailSqlAccess.Sibling(kit);
+                    var kitForPi = kit.useSQL();
                     var processInstanceList = pim.GetProcessInstance(kitForPi,
                         runner.AppInstanceId,
                         runner.ProcessId,
@@ -176,7 +176,7 @@ namespace saiflow.engine.Runtime
                     //Process instance of running status
                     if (taskView == null)
                     {
-                        taskView = tm.GetTaskOfMine(SailSqlAccess.Sibling(kit), runner);
+                        taskView = tm.GetTaskOfMine(kit.useSQL(), runner);
                     }
 
                     var isRunningTask = tm.CheckTaskStateInRunningState(taskView);
@@ -192,7 +192,7 @@ namespace saiflow.engine.Runtime
 
                     //获取下一步列表
                     //Get the next step list
-                    processModel = Sail.ProcessModelFactory.CreateByTask(SailSqlAccess.Sibling(kit), taskView);
+                    processModel = Sail.ProcessModelFactory.CreateByTask(kit.useSQL(), taskView);
                     nextTreeResult = processModel.GetNextActivityListView(taskView.ActivityId, taskView.ActivityInstanceId, condition, kit);
                     
                     foreach (var ns in nextTreeResult.StepList)

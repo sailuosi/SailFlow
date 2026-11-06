@@ -32,20 +32,12 @@ namespace saiflow.engine.Manager
         ISailHotShardRouter Router => Sail.HotShard;
 
         /// <summary>同库同事务的新 kit，避免链式 select 状态互相污染。</summary>
-        private static SQLBuilder Sibling(SQLBuilder kit)
-        {
-            var next = kit.DBLive.useSQL();
-            if (kit.Executor != null)
-                next.useTransaction(kit.Executor);
-            return next;
-        }
-
         internal ProcessVariableEntity GetVariableById(int variableId)
             => GetVariableById(Sail.UseRunSQL(), variableId);
 
         internal ProcessVariableEntity GetVariableById(SQLBuilder kit, int variableId)
             => HotShardEntityAccess.GetByIdProbing<ProcessVariableEntity>(
-                Sibling(kit), Router.VariableLookupTables, variableId);
+                kit.useSQL(), Router.VariableLookupTables, variableId);
 
         internal string GetVariable(
             ProcessVariableScopeEnum variableType,
@@ -126,7 +118,7 @@ namespace saiflow.engine.Manager
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = Sibling(kit).useClip();
+                var clip = kit.useSQL().useClip();
                 clip.from<ProcessVariableEntity>(table, out var v);
                 clip.where(() => v.ProcessInstanceId, processInstanceId);
                 clip.orderBy(() => v.ActivityId);
@@ -140,7 +132,7 @@ namespace saiflow.engine.Manager
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = Sibling(kit).useClip();
+                var clip = kit.useSQL().useClip();
                 clip.from<ProcessVariableEntity>(table, out var v);
                 clip.where(() => v.ProcessInstanceId, processInstanceId);
                 clip.where(() => v.ActivityInstanceId, activityInstanceId);
@@ -187,7 +179,7 @@ namespace saiflow.engine.Manager
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = Sibling(kit).useClip();
+                var clip = kit.useSQL().useClip();
                 clip.from<ProcessVariableEntity>(table, out var v);
                 clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Process.ToString());
                 clip.where(() => v.ProcessInstanceId, processInstanceId);
@@ -210,7 +202,7 @@ namespace saiflow.engine.Manager
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = Sibling(kit).useClip();
+                var clip = kit.useSQL().useClip();
                 clip.from<ProcessVariableEntity>(table, out var v);
                 clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString());
                 clip.where(() => v.ProcessInstanceId, processInstanceId);
@@ -239,7 +231,7 @@ namespace saiflow.engine.Manager
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = Sibling(kit).useClip();
+                var clip = kit.useSQL().useClip();
                 clip.from<ProcessVariableEntity>(table, out var v);
                 clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString());
                 clip.where(() => v.ProcessInstanceId, processInstanceId);
@@ -270,7 +262,7 @@ namespace saiflow.engine.Manager
             return await QueryWithFallbackAsync(kit, processId, async table =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var clip = Sibling(kit).useClip();
+                var clip = kit.useSQL().useClip();
                 clip.from<ProcessVariableEntity>(table, out var v);
                 clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString());
                 clip.where(() => v.ProcessInstanceId, processInstanceId);
@@ -351,7 +343,7 @@ namespace saiflow.engine.Manager
         private int Insert(SQLBuilder kit, ProcessVariableEntity entity)
         {
             var table = Router.ResolveVariableTable(entity?.ProcessId);
-            var newId = HotShardEntityAccess.InsertReturnId(Sibling(kit), table, entity);
+            var newId = HotShardEntityAccess.InsertReturnId(kit.useSQL(), table, entity);
             entity.Id = newId;
             return newId;
         }
@@ -362,13 +354,13 @@ namespace saiflow.engine.Manager
             // 旧行可能仍在默认表：先试解析表，失败再探测
             try
             {
-                HotShardEntityAccess.Update(Sibling(kit), table, entity);
+                HotShardEntityAccess.Update(kit.useSQL(), table, entity);
             }
             catch
             {
                 if (!Router.IsSharded(entity?.ProcessId))
                     throw;
-                HotShardEntityAccess.Update(Sibling(kit), Router.DefaultVariableTable, entity);
+                HotShardEntityAccess.Update(kit.useSQL(), Router.DefaultVariableTable, entity);
             }
         }
 
@@ -377,7 +369,7 @@ namespace saiflow.engine.Manager
 
         internal void DeleteVariable(SQLBuilder kit, int variableId)
             => HotShardEntityAccess.DeleteByIdProbing<ProcessVariableEntity>(
-                Sibling(kit), Router.VariableLookupTables, variableId);
+                kit.useSQL(), Router.VariableLookupTables, variableId);
 
         private string ResolveProcessId(SQLBuilder kit, int processInstanceId)
             => HotShardEntityAccess.ResolveProcessId(kit, processInstanceId);

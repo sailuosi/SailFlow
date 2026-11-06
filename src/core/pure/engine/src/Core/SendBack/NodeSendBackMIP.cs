@@ -26,7 +26,7 @@ namespace saiflow.engine.Runtime
         {
             var runner = base.SendBackOperation.ActivityResource.AppRunner;
             var runningNode = base.SendBackOperation.BackwardFromActivityInstance;
-            var previousActivityInstance = base.ActivityInstanceManager.GetPreviousActivityInstanceSimple(SailSqlAccess.Sibling(Kit), runningNode, base.SendBackOperation.BackwardToTaskActivity.ActivityId);
+            var previousActivityInstance = base.ActivityInstanceManager.GetPreviousActivityInstanceSimple(Kit.useSQL(), runningNode, base.SendBackOperation.BackwardToTaskActivity.ActivityId);
 
             //只退回到最后一个实例子节点的办理位置
             //Only return to the processing location of the last example node
@@ -74,9 +74,9 @@ namespace saiflow.engine.Runtime
             rollbackPreviousActivityInstance.AssignedUserIds = base.SendBackOperation.BackwardToTaskPerformer.UserId;      
             rollbackPreviousActivityInstance.AssignedUserNames = base.SendBackOperation.BackwardToTaskPerformer.UserName;
 
-            base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), rollbackPreviousActivityInstance);
+            base.ActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
 
-            base.TaskManager.Insert(SailSqlAccess.Sibling(kit), rollbackPreviousActivityInstance, base.SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
+            base.TaskManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance, base.SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
 
             base.InsertTransitionInstance(processInstance,
                 fromActivityInstance,

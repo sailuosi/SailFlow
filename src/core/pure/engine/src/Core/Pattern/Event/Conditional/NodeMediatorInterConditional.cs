@@ -77,7 +77,7 @@ namespace saiflow.engine.Pattern
             WfAppRunner runner,
             SQLBuilder kit)
         {
-            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), toActivityInstance, runner);
+            base.ActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance, runner);
             LinkContext.CurrentActivityInstance = toActivityInstance;
 
             //写入转移实例数据
@@ -92,10 +92,10 @@ namespace saiflow.engine.Pattern
 
             //插入任务数据
             var tm = Sail.ManagerFactory.Tasks;
-            var newTaskId = tm.Insert(SailSqlAccess.Sibling(kit), toActivityInstance,
+            var newTaskId = tm.Insert(kit.useSQL(), toActivityInstance,
                 new Performer(WfDefine.SYSTEM_JOBTIMER_USER_ID, WfDefine.SYSTEM_JOBTIMER_USER_NAME),
                 runner);
-            tm.SetTaskType(SailSqlAccess.Sibling(kit), newTaskId, TaskTypeEnum.Automantic);
+            tm.SetTaskType(kit.useSQL(), newTaskId, TaskTypeEnum.Automantic);
 
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Successed);
             return result;

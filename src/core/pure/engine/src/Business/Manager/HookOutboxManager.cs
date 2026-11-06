@@ -23,7 +23,7 @@ namespace saiflow.engine.Manager
             entity.Status = HookOutboxStatus.Pending;
             entity.Attempt = 0;
             entity.CreatedAt = DateTime.UtcNow;
-            Sibling(kit).useRepo<HookOutboxEntity>().Insert(entity);
+            kit.useSQL().useRepo<HookOutboxEntity>().Insert(entity);
         }
 
         public IList<HookOutboxEntity> GetPending(SQLBuilder kit, int limit = 50) =>
@@ -37,7 +37,7 @@ namespace saiflow.engine.Manager
         {
             var now = DateTime.UtcNow;
             var take = Math.Max(1, limit);
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Status, HookOutboxStatus.Pending);
             clip.where(() => o.NextRetryAt == null || o.NextRetryAt <= now);
@@ -96,7 +96,7 @@ namespace saiflow.engine.Manager
         public int ReclaimStaleProcessing(SQLBuilder kit, DateTime staleBeforeUtc, DateTime? nowUtc = null)
         {
             var now = nowUtc ?? DateTime.UtcNow;
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Status, HookOutboxStatus.Processing);
             clip.where(() =>
@@ -112,7 +112,7 @@ namespace saiflow.engine.Manager
                 if (row.Id is not > 0)
                     continue;
 
-                var update = Sibling(kit).useClip();
+                var update = kit.useSQL().useClip();
                 update.setTable<HookOutboxEntity>(out var u);
                 update.set(() => u.Status, HookOutboxStatus.Pending);
                 update.setToNull(() => u.LeasedUntil);
@@ -128,7 +128,7 @@ namespace saiflow.engine.Manager
 
         public void ResetProcessing(SQLBuilder kit, int id)
         {
-            var repo = Sibling(kit).useRepo<HookOutboxEntity>();
+            var repo = kit.useSQL().useRepo<HookOutboxEntity>();
             var row = repo.GetById(id);
             if (row == null || row.Status != HookOutboxStatus.Processing)
                 return;
@@ -144,7 +144,7 @@ namespace saiflow.engine.Manager
             row.Status = HookOutboxStatus.Succeeded;
             row.UpdatedAt = DateTime.UtcNow;
             row.LeasedUntil = null;
-            Sibling(kit).useRepo<HookOutboxEntity>().Update(row);
+            kit.useSQL().useRepo<HookOutboxEntity>().Update(row);
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace saiflow.engine.Manager
             row.UpdatedAt = DateTime.UtcNow;
             if (!string.IsNullOrEmpty(note))
                 row.LastError = Truncate(note, 2000);
-            Sibling(kit).useRepo<HookOutboxEntity>().Update(row);
+            kit.useSQL().useRepo<HookOutboxEntity>().Update(row);
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace saiflow.engine.Manager
             if (processInstanceId <= 0 || activityInstanceId <= 0 || string.IsNullOrWhiteSpace(activityId))
                 return 0;
 
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Kind, HookOutboxKinds.AssigneeAutoApprove);
             clip.where(() => o.ProcessInstanceId, processInstanceId);
@@ -183,7 +183,7 @@ namespace saiflow.engine.Manager
             clip.orderBy(() => o.Id);
             var candidates = clip.select(o).take(50).queryList() ?? new List<HookOutboxEntity>();
             var n = 0;
-            var repo = Sibling(kit).useRepo<HookOutboxEntity>();
+            var repo = kit.useSQL().useRepo<HookOutboxEntity>();
             foreach (var row in candidates)
             {
                 if (!PayloadActivityIdMatches(row.PayloadJson, activityId))
@@ -207,7 +207,7 @@ namespace saiflow.engine.Manager
             row.UpdatedAt = DateTime.UtcNow;
             if (!string.IsNullOrEmpty(note))
                 row.LastError = Truncate(note, 2000);
-            Sibling(kit).useRepo<HookOutboxEntity>().Update(row);
+            kit.useSQL().useRepo<HookOutboxEntity>().Update(row);
         }
 
         public void MarkFailed(SQLBuilder kit, HookOutboxEntity row, string error, int maxAttempts = HookOutboxOptions.DefaultMaxAttempts)
@@ -225,12 +225,12 @@ namespace saiflow.engine.Manager
                 row.NextRetryAt = DateTime.UtcNow.AddMinutes(Math.Pow(2, Math.Min(row.Attempt.Value, 6)));
             }
 
-            Sibling(kit).useRepo<HookOutboxEntity>().Update(row);
+            kit.useSQL().useRepo<HookOutboxEntity>().Update(row);
         }
 
         public void ResetDead(SQLBuilder kit, int id)
         {
-            var repo = Sibling(kit).useRepo<HookOutboxEntity>();
+            var repo = kit.useSQL().useRepo<HookOutboxEntity>();
             var row = repo.GetById(id);
             if (row == null || row.Status != HookOutboxStatus.Dead)
                 return;
@@ -246,7 +246,7 @@ namespace saiflow.engine.Manager
         public IList<HookOutboxEntity> QueryByStatus(SQLBuilder kit, string status, int limit = 100)
         {
             var take = Math.Max(1, limit);
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Status, status);
             clip.orderBy(() => o.Id);
@@ -264,7 +264,7 @@ namespace saiflow.engine.Manager
             string handlerName)
         {
             var take = Math.Max(1, limit);
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Status, HookOutboxStatus.Dead);
             if (!string.IsNullOrEmpty(processCode))
@@ -278,7 +278,7 @@ namespace saiflow.engine.Manager
 
         public int CountByStatus(SQLBuilder kit, string status)
         {
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Status, status);
             return clip.select(o).count();
@@ -360,7 +360,7 @@ namespace saiflow.engine.Manager
             if (limit <= 0)
                 return 0;
 
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Status, status);
             // UpdatedAt 优先；空则用 CreatedAt
@@ -372,7 +372,7 @@ namespace saiflow.engine.Manager
                              ?? new List<HookOutboxEntity>();
 
             var n = 0;
-            var repo = Sibling(kit).useRepo<HookOutboxEntity, int>();
+            var repo = kit.useSQL().useRepo<HookOutboxEntity, int>();
             foreach (var row in candidates)
             {
                 if (!row.Id.HasValue)
@@ -386,7 +386,7 @@ namespace saiflow.engine.Manager
 
         private bool ResetDeadIfDead(SQLBuilder kit, int id)
         {
-            var repo = Sibling(kit).useRepo<HookOutboxEntity>();
+            var repo = kit.useSQL().useRepo<HookOutboxEntity>();
             var row = repo.GetById(id);
             if (row == null || row.Status != HookOutboxStatus.Dead)
                 return false;
@@ -405,7 +405,7 @@ namespace saiflow.engine.Manager
             row = null;
             var now = DateTime.UtcNow;
             var leasedUntil = now.AddSeconds(Math.Max(1, leaseSeconds));
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.setTable<HookOutboxEntity>(out var o);
             clip.set(() => o.Status, HookOutboxStatus.Processing);
             clip.set(() => o.UpdatedAt, now);
@@ -415,12 +415,9 @@ namespace saiflow.engine.Manager
             if (clip.doUpdate() <= 0)
                 return false;
 
-            row = Sibling(kit).useRepo<HookOutboxEntity>().GetById(id);
+            row = kit.useSQL().useRepo<HookOutboxEntity>().GetById(id);
             return row != null && row.Status == HookOutboxStatus.Processing;
         }
-
-        private static SQLBuilder Sibling(SQLBuilder kit) => SailSqlAccess.Sibling(kit);
-
         private static string Truncate(string value, int max)
         {
             if (string.IsNullOrEmpty(value) || value.Length <= max)

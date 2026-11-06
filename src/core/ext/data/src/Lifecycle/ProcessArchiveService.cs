@@ -142,7 +142,7 @@ namespace saiflow.data.Lifecycle
 
         private static List<ProcessInstanceEntity> LoadCandidates(SQLBuilder hot, DateTime cutoff, int limit)
         {
-            var clip = SailSqlAccess.Sibling(hot).useClip();
+            var clip = hot.useSQL().useClip();
             clip.from<ProcessInstanceEntity>(out var pi);
             clip.whereIn(() => pi.ProcessState, new short?[]
             {
@@ -212,7 +212,7 @@ namespace saiflow.data.Lifecycle
 
         private static List<ActivityInstanceEntity> LoadActivities(SQLBuilder kit, int processInstanceId)
         {
-            var clip = SailSqlAccess.Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<ActivityInstanceEntity>(out var a);
             clip.where(() => a.ProcessInstanceId, processInstanceId);
             return clip.select(a).queryList().ToList();
@@ -220,7 +220,7 @@ namespace saiflow.data.Lifecycle
 
         private static List<TaskEntity> LoadTasks(SQLBuilder kit, int processInstanceId)
         {
-            var clip = SailSqlAccess.Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<TaskEntity>(out var t);
             clip.where(() => t.ProcessInstanceId, processInstanceId);
             return clip.select(t).queryList().ToList();
@@ -252,7 +252,7 @@ namespace saiflow.data.Lifecycle
         {
             var processId = ResolveProcessId(kit, processInstanceId);
 
-            var clip = SailSqlAccess.Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.setTable<TaskEntity>(out var t);
             clip.where(() => t.ProcessInstanceId, processInstanceId);
             clip.doDelete();
@@ -261,7 +261,7 @@ namespace saiflow.data.Lifecycle
             if (Sail.HotShard.IsSharded(processId))
                 DeleteByProcessInstance(kit, Sail.HotShard.DefaultTransitionTable, processInstanceId);
 
-            clip = SailSqlAccess.Sibling(kit).useClip();
+            clip = kit.useSQL().useClip();
             clip.setTable<ActivityInstanceEntity>(out var ai);
             clip.where(() => ai.ProcessInstanceId, processInstanceId);
             clip.doDelete();
@@ -277,7 +277,7 @@ namespace saiflow.data.Lifecycle
         {
             try
             {
-                var pi = SailSqlAccess.Sibling(kit).useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
+                var pi = kit.useSQL().useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
                 return pi?.ProcessId;
             }
             catch
@@ -322,7 +322,7 @@ namespace saiflow.data.Lifecycle
         {
             try
             {
-                var clip = SailSqlAccess.Sibling(kit).useClip();
+                var clip = kit.useSQL().useClip();
                 clip.from<T>(table, out var row);
                 clip.where("process_instance_id", processInstanceId);
                 return clip.select(row).queryList().ToList();
@@ -337,7 +337,7 @@ namespace saiflow.data.Lifecycle
         {
             try
             {
-                SailSqlAccess.Sibling(kit).setTable(physicalTable)
+                kit.useSQL().setTable(physicalTable)
                     .where("process_instance_id", processInstanceId)
                     .doDelete();
             }

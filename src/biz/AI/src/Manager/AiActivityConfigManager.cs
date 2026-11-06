@@ -21,9 +21,6 @@ namespace saiflow.AI.Manager
         protected SailClient Sail { get; }
 
         private SQLBuilder Kit() => Sail.UseRunSQL();
-
-        private static SQLBuilder Sibling(SQLBuilder kit) => SailSqlAccess.Sibling(kit);
-
         #region get
 
         public AiActivityConfigEntity GetById(int id)
@@ -34,7 +31,7 @@ namespace saiflow.AI.Manager
 
         public AiActivityConfigEntity GetByProcessVersionActivity(SQLBuilder kit, string processId, string version, string activityId)
         {
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<AiActivityConfigEntity>(out var p);
             clip.where(() => p.ProcessId, processId);
             clip.where(() => p.Version, version);
@@ -91,7 +88,7 @@ namespace saiflow.AI.Manager
             }
 
             entity.CreatedDateTime = DateTime.UtcNow;
-            return Sibling(kit).useRepo<AiActivityConfigEntity, int>().InsertReturnId(entity);
+            return kit.useSQL().useRepo<AiActivityConfigEntity, int>().InsertReturnId(entity);
         }
 
         public void Update(AiActivityConfigEntity entity)
@@ -124,7 +121,7 @@ namespace saiflow.AI.Manager
             }
 
             entity.UpdatedDateTime = DateTime.UtcNow;
-            Sibling(kit).useRepo<AiActivityConfigEntity, int>().Update(entity);
+            kit.useSQL().useRepo<AiActivityConfigEntity, int>().Update(entity);
         }
 
         public void Delete(string processId, string version, string activityId)
@@ -156,7 +153,7 @@ namespace saiflow.AI.Manager
             string originVersion,
             string newVersion)
         {
-            var clip = Sibling(kit).useClip();
+            var clip = kit.useSQL().useClip();
             clip.from<AiActivityConfigEntity>(out var p);
             clip.where(() => p.ProcessId, processId);
             clip.where(() => p.Version, originVersion);

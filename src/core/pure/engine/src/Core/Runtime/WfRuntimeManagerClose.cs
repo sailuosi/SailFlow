@@ -28,7 +28,7 @@ namespace saiflow.engine.Runtime
             //设置当前活动实例为完成状态
             //Set the current activity instance to completion status
             var aim = Sail.ManagerFactory.Activities;
-            aim.Complete(SailSqlAccess.Sibling(kit), base.RunningActivityInstance.Id.Value, this.AppRunner);
+            aim.Complete(kit.useSQL(), base.RunningActivityInstance.Id.Value, this.AppRunner);
 
             var jumpActivityId = base.AppRunner.NextActivityPerformers.First().Key;
             var jumpforwardActivity = base.ProcessModel.GetActivity(jumpActivityId);

@@ -3,6 +3,7 @@ using saiflow.engine.Assignee;
 using saiflow.engine.Entity;
 using saiflow.engine.Client;
 using saiflow.engine.Xpdl;
+using mooSQL.data;
 
 namespace saiflow.assignee.Adapt;
 

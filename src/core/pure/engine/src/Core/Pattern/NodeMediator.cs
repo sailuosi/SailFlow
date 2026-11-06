@@ -671,7 +671,7 @@ namespace saiflow.engine.Pattern
             {
                 var outputVariableNameList = ActivityForwardContext.ProcessModel.GetActivityOutputVarialbeNameList(comp.Activity);
 
-                var kit = SailSqlAccess.Sibling(Kit);
+                var kit = Kit.useSQL();
                 var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
                 var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id.Value, currentActivityInstance.Id.Value,
                     outputVariableNameList);
@@ -749,7 +749,7 @@ namespace saiflow.engine.Pattern
             {
                 var outputVariableNameList = ActivityForwardContext.ProcessModel.GetActivityOutputVarialbeNameList(comp.Activity);
 
-                var kit = SailSqlAccess.Sibling(Kit);
+                var kit = Kit.useSQL();
                 var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
                 var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id.Value, currentActivityInstance.Id.Value,
                     outputVariableNameList);
@@ -1048,7 +1048,7 @@ namespace saiflow.engine.Pattern
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("nodemediator.createnewtask.warn"));
             }
 
-            TaskManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance, performers, activityResource.AppRunner);
+            TaskManager.Insert(kit.useSQL(), toActivityInstance, performers, activityResource.AppRunner);
         }
 
         /// <summary>
@@ -1075,7 +1075,7 @@ namespace saiflow.engine.Pattern
         protected virtual int InsertActivityInstance(ActivityInstanceEntity activityInstance,
             SQLBuilder kit)
         {
-            return ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), activityInstance);
+            return ActivityInstanceManager.Insert(kit.useSQL(), activityInstance);
         }
 
         /// <summary>
@@ -1085,7 +1085,7 @@ namespace saiflow.engine.Pattern
             WfAppRunner runner,
             SQLBuilder kit)
         {
-            ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), ActivityInstanceId, runner);
+            ActivityInstanceManager.Complete(kit.useSQL(), ActivityInstanceId, runner);
         }
 
         /// <summary>
@@ -1139,7 +1139,7 @@ namespace saiflow.engine.Pattern
             toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(plist);
             toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(plist);
 
-            ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
+            ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
             InsertTransitionInstance(processInstance,
                 transitionId,
                 fromActivityInstance,
@@ -1181,8 +1181,8 @@ namespace saiflow.engine.Pattern
                     entity.ActivityState = (short)ActivityStateEnum.Suspended;
                 }
 
-                entity.Id = ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), entity);
-                TaskManager.Insert(SailSqlAccess.Sibling(kit), entity, plist[i], activityResource.AppRunner);
+                entity.Id = ActivityInstanceManager.Insert(kit.useSQL(), entity);
+                TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
             }
         }
 
@@ -1231,7 +1231,7 @@ namespace saiflow.engine.Pattern
                 flyingType,
                 runner,
                 (byte)ConditionParseResultEnum.Passed);
-            var newId = tim.Insert(SailSqlAccess.Sibling(kit), transitionInstanceObject);
+            var newId = tim.Insert(kit.useSQL(), transitionInstanceObject);
 
             return newId;
         }
@@ -1373,7 +1373,7 @@ namespace saiflow.engine.Pattern
             try
             {
                 Sail.ManagerFactory.HookOutbox.BindAssigneeAutoApproveActivityInstance(
-                    SailSqlAccess.Sibling(kit),
+                    kit.useSQL(),
                     activityInstance.ProcessInstanceId.Value,
                     activityInstance.ActivityId,
                     activityInstance.Id.Value);

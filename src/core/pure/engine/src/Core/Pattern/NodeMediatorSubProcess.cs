@@ -48,7 +48,7 @@ namespace saiflow.engine.Pattern
                     //检查子流程是否结束
                     //检查子流程是否已结束
                     var pim = Sail.ProcessInstances;
-                    var kit = SailSqlAccess.Sibling(Kit);
+                    var kit = Kit.useSQL();
                     bool isCompleted = pim.CheckSubProcessInstanceCompleted(kit,
                         base.LinkContext.FromActivityInstance.Id.Value,
                         base.LinkContext.FromActivityInstance.ActivityId);
@@ -91,12 +91,12 @@ namespace saiflow.engine.Pattern
             {
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
-                base.TaskManager.Complete(SailSqlAccess.Sibling(kit), taskId.Value, activityResource.AppRunner);
+                base.TaskManager.Complete(kit.useSQL(), taskId.Value, activityResource.AppRunner);
             }
 
             //设置活动节点的状态为完成状态
             //将活动节点状态设为完成
-            base.ActivityInstanceManager.Complete(SailSqlAccess.Sibling(kit), base.LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 
             //先判断是否是多实例类型的任务
@@ -112,7 +112,7 @@ namespace saiflow.engine.Pattern
                 //取出多实例节点列表
                 //获取多实例节点列表
                 var sqList = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithState(
-                    SailSqlAccess.Sibling(kit),mainNodeIndex,base.LinkContext.FromActivityInstance.ProcessInstanceId.Value,(short)ActivityStateEnum.Suspended).ToList<ActivityInstanceEntity>();
+                    kit.useSQL(),mainNodeIndex,base.LinkContext.FromActivityInstance.ProcessInstanceId.Value,(short)ActivityStateEnum.Suspended).ToList<ActivityInstanceEntity>();
 
                 if (base.LinkContext.FromActivity.MultiSignDetail.MergeType == MergeTypeEnum.Sequence)
                 {
@@ -127,11 +127,11 @@ namespace saiflow.engine.Pattern
                         var currentNodeIndex = (short)base.LinkContext.FromActivityInstance.CompleteOrder.Value;
                         var nextActivityInstance = sqList[currentNodeIndex];
                         nextActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
-                        base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), nextActivityInstance);
+                        base.ActivityInstanceManager.Update(kit.useSQL(), nextActivityInstance);
 
                         //设置下一个任务对应的子流程进入运行状态
                         //将下一任务对应子流程设为运行
-                        base.ProcessInstanceManager.RecallSubProcess(SailSqlAccess.Sibling(Kit),
+                        base.ProcessInstanceManager.RecallSubProcess(Kit.useSQL(),
                             nextActivityInstance.Id.Value,
                             activityResource.AppRunner);
 
@@ -143,7 +143,7 @@ namespace saiflow.engine.Pattern
                         //完成最后一个会签任务，会签主节点状态由挂起设置为准备状态
                         //完成最后一会签任务，并将会签主节点从挂起改为就绪
                         mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-                        base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
+                        base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
                         //将执行权责交由会签主节点
                         //将执行权移交会签主节点
                         base.LinkContext.FromActivityInstance = mainActivityInstance;
@@ -161,7 +161,7 @@ namespace saiflow.engine.Pattern
                         //如果超过约定的比例数，则执行下一步节点
                         //超过约定通过比例则进入下一节点
                         mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-                        base.ActivityInstanceManager.Update(SailSqlAccess.Sibling(kit), mainActivityInstance);
+                        base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
                         //将执行权责交由会签主节点
                         //将执行权移交会签主节点
                         base.LinkContext.FromActivityInstance = mainActivityInstance;
@@ -191,7 +191,7 @@ namespace saiflow.engine.Pattern
             Boolean isParallel = false;
             if (fromActivityInstance.ActivityType == (short)ActivityTypeEnum.GatewayNode)
             {
-                var processModel = Sail.ProcessModelFactory.CreateByProcessInstance(SailSqlAccess.Sibling(kit), processInstance);
+                var processModel = Sail.ProcessModelFactory.CreateByProcessInstance(kit.useSQL(), processInstance);
                 var activityNode = processModel.GetActivity(fromActivityInstance.ActivityId);
                 isParallel = processModel.IsAndSplitMI(activityNode);
             }
@@ -247,13 +247,13 @@ namespace saiflow.engine.Pattern
                 //并行容器中的子流程节点，每个办理人发起一个子流程
                 toActivityInstance.AssignedUserIds = performer.UserId;
                 toActivityInstance.AssignedUserNames = performer.UserName;
-                base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
-                this.TaskManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance, performer, activityResource.AppRunner);
+                base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
+                this.TaskManager.Insert(kit.useSQL(), toActivityInstance, performer, activityResource.AppRunner);
             }
             else
             {
                 toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
-                base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
+                base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
                 base.CreateNewTask(toActivityInstance, activityResource, kit);
             }
 
@@ -345,7 +345,7 @@ namespace saiflow.engine.Pattern
                     "SignTogether requires performers. ReasonCode=" + AssigneeReasonCodes.AssigneeEmpty);
             }
 
-            base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), toActivityInstance);
+            base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
             InsertTransitionInstance(processInstance,
                 transitionId,
@@ -379,9 +379,9 @@ namespace saiflow.engine.Pattern
                     entity.ActivityState = (short)ActivityStateEnum.Suspended;
                 }
 
-                entity.Id = base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), entity);
+                entity.Id = base.ActivityInstanceManager.Insert(kit.useSQL(), entity);
 
-                base.TaskManager.Insert(SailSqlAccess.Sibling(kit), entity, plist[i], activityResource.AppRunner);
+                base.TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
 
                 //启动子流程
                 var subKit = Sail.UseRunSQL();
@@ -443,7 +443,7 @@ namespace saiflow.engine.Pattern
             //        if (processId > 0)
             //        {
             //            var pm = Sail.ManagerFactory.Processes;
-            //            var process = pm.GetById(SailSqlAccess.Sibling(kit), processId);
+            //            var process = pm.GetById(kit.useSQL(), processId);
             //            if (process != null)
             //            {
             //                subProcessNode.SubProcessId = process.ProcessId;

@@ -59,11 +59,11 @@ namespace saiflow.engine.Runtime
             newSuspendNode.AssignedUserIds = runningNode.AssignedUserIds;
             newSuspendNode.AssignedUserNames = runningNode.AssignedUserNames;
 
-            base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(Kit), newSuspendNode);
+            base.ActivityInstanceManager.Insert(Kit.useSQL(), newSuspendNode);
 
             //同时为此活动实例，创建新的任务
             //At the same time, create a new task for this activity instance
-            base.TaskManager.Renew(SailSqlAccess.Sibling(Kit), runningNode, newSuspendNode, base.SendBackOperation.ActivityResource.AppRunner);
+            base.TaskManager.Renew(Kit.useSQL(), runningNode, newSuspendNode, base.SendBackOperation.ActivityResource.AppRunner);
         }
 
         /// <summary>
@@ -93,9 +93,9 @@ namespace saiflow.engine.Runtime
             rollbackPreviousActivityInstance.AssignedUserIds = base.SendBackOperation.BackwardToTaskPerformer.UserId;      
             rollbackPreviousActivityInstance.AssignedUserNames = base.SendBackOperation.BackwardToTaskPerformer.UserName;
 
-            base.ActivityInstanceManager.Insert(SailSqlAccess.Sibling(kit), rollbackPreviousActivityInstance);
+            base.ActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
 
-            base.TaskManager.Insert(SailSqlAccess.Sibling(Kit), rollbackPreviousActivityInstance, base.SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
+            base.TaskManager.Insert(Kit.useSQL(), rollbackPreviousActivityInstance, base.SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
         }
     }
 }
