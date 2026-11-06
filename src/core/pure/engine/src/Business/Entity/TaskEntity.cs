@@ -66,6 +66,12 @@ namespace saiflow.engine.Entity
         public string CreatedUserName { get; set; }
         [SooColumn(Name = "created_datetime")]
         public DateTime? CreatedDateTime { get; set; }
+        /// <summary>待办激活（可办）时间；串行未轮到为 null。</summary>
+        [SooColumn(Name = "activated_datetime")]
+        public DateTime? ActivatedDateTime { get; set; }
+        /// <summary>个人应完成时间；未激活为 null。</summary>
+        [SooColumn(Name = "overdue_datetime")]
+        public DateTime? OverdueDateTime { get; set; }
         [SooColumn(Name = "updated_datetime")]
         public DateTime? UpdatedDateTime { get; set; }
         [SooColumn(Name = "updated_user_id")]

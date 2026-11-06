@@ -72,25 +72,6 @@ namespace saiflow.engine.Runtime
             return entity;
         }
 
-        /// <summary>
-        /// Virtual method for creating tasks
-        /// 1.  For automatically executed work items, there is no need to rewrite this method
-        /// 2.  For manually executed work items, the method needs to be rewritten to insert pending task data
-        /// 创建任务的虚方法
-        /// 1. 对于自动执行的工作项，无需重写该方法
-        /// 2. 对于人工执行的工作项，需要重写该方法，插入待办的任务数据
-        /// </summary>
-        internal virtual void CreateNewTask(ActivityInstanceEntity toActivityInstance,
-            ActivityResource activityResource,
-            SQLBuilder kit)
-        {
-            if (activityResource.NextActivityPerformers == null)
-            {
-                throw new WorkflowException(Sail.Messages.GetEngineMessage("nodesendback.ExecuteInstanceImp.error"));
-            }
-
-            TaskManager.Insert(kit.useSQL(), toActivityInstance, activityResource.NextActivityPerformers[toActivityInstance.ActivityId], activityResource.AppRunner);
-        }
 
         /// <summary>
         /// Insert transition instance

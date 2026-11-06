@@ -55,6 +55,7 @@ namespace saiflow.biz.Bootstrap
 
             EnsureAssigneeGroupColumns(kit);
             EnsureAssigneeUnitColumns(kit);
+            EnsureTaskTimeoutColumns(kit);
             HotPathIndexEnsurer.Ensure(kit);
             EnsureTaskDetailsView(kit);
             return wk.WorkingProgress?.ToString() ?? string.Empty;
@@ -89,6 +90,16 @@ namespace saiflow.biz.Bootstrap
             EnsureSqliteColumn(kit, "wf_process_instance", "start_unit_id", "TEXT NULL");
             EnsureSqliteColumn(kit, "wf_process_instance", "start_unit_code", "TEXT NULL");
             EnsureSqliteColumn(kit, "wf_process_instance", "start_unit_name", "TEXT NULL");
+        }
+
+        /// <summary>待办激活/应完成时间（串行同节点按人 SLA；已有库 ALTER 增量）。</summary>
+        public static void EnsureTaskTimeoutColumns(SQLBuilder kit)
+        {
+            if (kit == null)
+                throw new ArgumentNullException(nameof(kit));
+
+            EnsureSqliteColumn(kit, "wf_task", "activated_datetime", "TEXT NULL");
+            EnsureSqliteColumn(kit, "wf_task", "overdue_datetime", "TEXT NULL");
         }
 
         static void EnsureSqliteColumn(SQLBuilder kit, string tableName, string columnName, string columnType)
@@ -156,6 +167,8 @@ SELECT
   t.is_email_sent AS is_email_sent,
   ai.approval_status AS approval_status,
   t.created_datetime AS created_datetime,
+  t.activated_datetime AS activated_datetime,
+  t.overdue_datetime AS overdue_datetime,
   t.updated_datetime AS updated_datetime,
   t.ended_datetime AS ended_datetime,
   t.ended_user_id AS ended_user_id,

@@ -130,6 +130,7 @@ namespace saiflow.engine.Pattern
                                 var nextActivityInstance = sqList[0];     //Always take the first suspended instance
                                 nextActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
                                 base.ActivityInstanceManager.Update(kit.useSQL(), nextActivityInstance);
+                                base.FireActivityReady(kit, nextActivityInstance, runner);
 
                                 //更新主节点执行人员列表
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
@@ -194,6 +195,7 @@ namespace saiflow.engine.Pattern
                                 var nextActivityInstance = sqList[0];     //Always take the first suspended instance
                                 nextActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
                                 base.ActivityInstanceManager.Update(kit.useSQL(), nextActivityInstance);
+                                base.FireActivityReady(kit, nextActivityInstance, runner);
 
                                 //更新主节点执行人员列表
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(

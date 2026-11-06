@@ -19,6 +19,8 @@ namespace saiflow.data.Schema
                 "CREATE INDEX IF NOT EXISTS IX_wf_task_assignee_state ON wf_task(assigned_user_id, task_state, process_instance_id)");
             TryCreateIndex(kit, "IX_wf_task_state_created",
                 "CREATE INDEX IF NOT EXISTS IX_wf_task_state_created ON wf_task(task_state, created_datetime)");
+            TryCreateIndex(kit, "IX_wf_task_state_overdue",
+                "CREATE INDEX IF NOT EXISTS IX_wf_task_state_overdue ON wf_task(task_state, overdue_datetime)");
             TryCreateIndex(kit, "IX_wf_ai_pi_state",
                 "CREATE INDEX IF NOT EXISTS IX_wf_ai_pi_state ON wf_activity_instance(process_instance_id, activity_state)");
             TryCreateIndex(kit, "IX_wf_pi_state_created",

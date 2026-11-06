@@ -84,6 +84,9 @@ namespace saiflow.engine.Event
 
         OnActivityCompleted = 43,
 
+        /// <summary>活动变为 Ready（可办）；串行会签下一人就绪时触发。</summary>
+        OnActivityReady = 44,
+
         /// <summary>发送/Run 等推进落库前；仅 Gate。</summary>
         OnValidating = 50,
 

@@ -1148,6 +1148,8 @@ namespace saiflow.engine.Pattern
                 flyingType,
                 activityResource.AppRunner,
                 kit);
+            FireActivityLifecycle(kit, processInstance, toActivityInstance, activityResource.AppRunner,
+                EventFireTypeEnum.OnActivityCreated);
 
             // 插入会签子节点实例
             ActivityInstanceEntity entity = new ActivityInstanceEntity();
@@ -1183,7 +1185,47 @@ namespace saiflow.engine.Pattern
 
                 entity.Id = ActivityInstanceManager.Insert(kit.useSQL(), entity);
                 TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
+                FireActivityLifecycle(kit, processInstance, entity, activityResource.AppRunner,
+                    EventFireTypeEnum.OnActivityCreated);
             }
+        }
+
+        /// <summary>
+        /// 活动生命周期 Hook（创建 / Ready 等）。Host 可据此写待办激活与应完成时间。
+        /// </summary>
+        protected void FireActivityLifecycle(
+            SQLBuilder kit,
+            ProcessInstanceEntity processInstance,
+            ActivityInstanceEntity activityInstance,
+            WfAppRunner runner,
+            EventFireTypeEnum eventType)
+        {
+            if (runner == null || processInstance?.Id == null || activityInstance == null)
+                return;
+
+            var hookCtx = FlowCapabilityPipeline.BuildHookContext(
+                Sail,
+                kit,
+                runner,
+                processInstance.Id.Value,
+                activityInstance,
+                null,
+                eventType,
+                FlowOperation.Run);
+            FlowCapabilityPipeline.AfterSuccess(Sail, kit, hookCtx, eventType);
+        }
+
+        /// <summary>串行会签：子活动 Suspended→Ready 后点火。</summary>
+        protected void FireActivityReady(
+            SQLBuilder kit,
+            ActivityInstanceEntity activityInstance,
+            WfAppRunner runner)
+        {
+            if (runner == null || activityInstance?.ProcessInstanceId == null)
+                return;
+
+            var processInstance = ProcessInstanceManager.GetById(kit, activityInstance.ProcessInstanceId.Value);
+            FireActivityLifecycle(kit, processInstance, activityInstance, runner, EventFireTypeEnum.OnActivityReady);
         }
 
         /// <summary>

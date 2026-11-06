@@ -52,6 +52,7 @@
 
 - 空人默认 `=2` → R4 拒绝推进（**不是**整单 `RejectProcess`）。
 - 自动通过主路径：锚点 → Job 苛刻复核；零 Performer + `RunProcessAuto`；会签零人自动过禁止。
+- **待办级 SLA（串行同节点）：** `wf_task.activated_datetime` / `overdue_datetime`；时钟起点=可办（Ready），勿用 `created_datetime` 当响应耗时；算式在 Host `SailNodePolicyTimeout.ComputeOverdue`；Job 扫 `task.overdue_datetime`。
 - 细则与实现索引见归档文档 §A 与 [特性说明-待办人管道.md](./特性说明-待办人管道.md) §11.6。
 
 ---
