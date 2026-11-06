@@ -23,7 +23,7 @@ namespace saiflow.engine.Runtime
         internal override void ExecuteInstanceImp(SQLBuilder kit)
         {
             var subProcessNode = (SubProcessNode)base.InvokedSubProcessNode;
-            var pim = new ProcessInstanceManager(Sail);
+            var pim = Sail.ProcessInstances;
             var processInstance = pim.CreateNewProcessInstanceObject(base.AppRunner,
                 base.ProcessModel.ProcessEntity,
                 subProcessNode);

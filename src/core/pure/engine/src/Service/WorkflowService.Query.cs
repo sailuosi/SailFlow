@@ -29,7 +29,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public Activity GetFirstActivity(string processId, string version)
         {
-            var processModel = ProcessModelFactory.CreateByProcess(Sail, processId, version);
+            var processModel = Sail.ProcessModelFactory.CreateByProcess(processId, version);
             var firstActivity = processModel.GetFirstActivity();
             return firstActivity;
         }
@@ -40,7 +40,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<Activity> GetTaskActivityList(string processId, string version)
         {
-            var processModel = ProcessModelFactory.CreateByProcess(Sail, processId, version);
+            var processModel = Sail.ProcessModelFactory.CreateByProcess(processId, version);
             var activityList = processModel.GetTaskActivityList();
 
             return activityList;
@@ -52,9 +52,9 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<Activity> GetTaskActivityList(int processId)
         {
-            var pm = new ProcessManager(Sail);
+            var pm = Sail.ManagerFactory.Processes;
             var entity = pm.GetById(processId);
-            var processModel = ProcessModelFactory.CreateByProcess(Sail, entity);
+            var processModel = Sail.ProcessModelFactory.CreateByProcess(entity);
             var activityList = processModel.GetTaskActivityList();
 
             return activityList;
@@ -66,7 +66,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<Activity> GetAllTaskActivityList(string processId, string version)
         {
-            var processModel = ProcessModelFactory.CreateByProcess(Sail, processId, version);
+            var processModel = Sail.ProcessModelFactory.CreateByProcess(processId, version);
             var activityList = processModel.GetAllTaskActivityList();
 
             return activityList;
@@ -80,7 +80,7 @@ namespace saiflow.engine.Service
             string version, 
             string activityId)
         {
-            var processModel = ProcessModelFactory.CreateByProcess(Sail, processId, version);
+            var processModel = Sail.ProcessModelFactory.CreateByProcess(processId, version);
             var nextActivity = processModel.GetNextActivity(activityId);
             return nextActivity;
         }
@@ -94,7 +94,7 @@ namespace saiflow.engine.Service
             String activityId,
             IDictionary<string, string> condition)
         {
-            var processModel = ProcessModelFactory.CreateByProcess(Sail, processId, version);
+            var processModel = Sail.ProcessModelFactory.CreateByProcess(processId, version);
             using (var kit = Sail.UseRunSQL())
             {
                 var nextResult = processModel.GetNextActivityListView(activityId, null, condition, kit);
@@ -240,7 +240,7 @@ namespace saiflow.engine.Service
             
             try
             {
-                var processModel = ProcessModelFactory.CreateByProcess(Sail, processId, version);
+                var processModel = Sail.ProcessModelFactory.CreateByProcess(processId, version);
                 
                 // Extract unique ActivityId from NodeView list
                 var activityIds = nodeViewList.Select(nv => nv.ActivityId)
@@ -336,7 +336,7 @@ namespace saiflow.engine.Service
         {
             using (var kit = Sail.UseRunSQL())
             {
-                var processModel = ProcessModelFactory.CreateByProcess(Sail, runner.ProcessId, runner.Version);
+                var processModel = Sail.ProcessModelFactory.CreateByProcess(runner.ProcessId, runner.Version);
                 // 与启动运行时一致：从开始事件取下一步（首个办理节点）
                 var startActivity = processModel.GetStartActivity();
                 var nextResult = processModel.GetNextActivityListView(startActivity.ActivityId,
@@ -373,7 +373,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public Activity GetActivityEntity(string processId, string version, string activityId)
         {
-            var processModel = ProcessModelFactory.CreateByProcess(Sail, processId, version);
+            var processModel = Sail.ProcessModelFactory.CreateByProcess(processId, version);
             return processModel.GetActivity(activityId);
         }
 
@@ -383,7 +383,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<Role> GetActivityRoles(string processId, string version, string activityId)
         {
-            var processModel = ProcessModelFactory.CreateByProcess(Sail, processId, version);
+            var processModel = Sail.ProcessModelFactory.CreateByProcess(processId, version);
             return processModel.GetActivityRoles(activityId);
         }
         #endregion
@@ -460,7 +460,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ProcessInstanceEntity GetProcessInstance(int processInstanceId)
         {
-            var pim = new ProcessInstanceManager(Sail);
+            var pim = Managers.ProcessInstances;
             var instance = pim.GetById(processInstanceId);
             return instance;
         }
@@ -471,7 +471,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<ProcessInstanceEntity> GetProcessInstance(string appInstanceId)
         {
-            var pim = new ProcessInstanceManager(Sail);
+            var pim = Managers.ProcessInstances;
             var list = pim.GetProcessInstance(appInstanceId).ToList();
             return list;
         }
@@ -482,7 +482,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ProcessInstanceEntity GetProcessInstanceByActivity(int activityInstanceId)
         {
-            var pim = new ProcessInstanceManager(Sail);
+            var pim = Managers.ProcessInstances;
             return pim.GetByActivity(activityInstanceId);
         }
 
@@ -492,7 +492,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ProcessInstanceEntity GetRunningProcessInstance(WfAppRunner runner)
         {
-            var pim = new ProcessInstanceManager(Sail);
+            var pim = Managers.ProcessInstances;
             var entity = pim.GetRunningProcessInstance(runner.AppInstanceId, runner.ProcessId);
             return entity;
         }
@@ -506,7 +506,7 @@ namespace saiflow.engine.Service
             User initiator = null;
             try
             {
-                var pim = new ProcessInstanceManager(Sail);
+                var pim = Managers.ProcessInstances;
                 initiator = pim.GetProcessInitiator(processInstanceId);
             }
             catch
@@ -522,7 +522,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ActivityInstanceEntity GetActivityInstance(int activityInstanceId)
         {
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             var instance = aim.GetById(activityInstanceId);
             return instance;
         }
@@ -533,7 +533,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<ActivityInstanceEntity> GetActivityInstanceList(int processInstanceId)
         {
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             using (var kit = Sail.UseRunSQL())
             {
                 return aim.GetActivityInstanceList(kit, processInstanceId);
@@ -556,13 +556,13 @@ namespace saiflow.engine.Service
         /// </summary>
         public WfDataManagedResult EntrustTask(TaskEntrustedEntity entrusted, bool cancalOriginalTask = true)
         {
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             return tm.Entrust(entrusted, cancalOriginalTask);
         }
 
         public void CancelEntrustedTask(int id)
         {
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             tm.CancelEntrustedTask(id);
         }
 
@@ -572,7 +572,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public Boolean ReplaceTask(int taskId, List<TaskReplacedEntity> replaced, WfAppRunner runner)
         {
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             return tm.Replace(taskId, replaced, runner);
         }
 
@@ -582,7 +582,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public Boolean SetProcessOverdue(int processInstanceId, DateTime overdueDateTime, WfAppRunner runner)
         {
-            var pim = new ProcessInstanceManager(Sail);
+            var pim = Managers.ProcessInstances;
             return pim.SetOverdue(processInstanceId, overdueDateTime, runner);
         }
 
@@ -594,7 +594,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void SetProcessJobTimerCompleted(int processInstanceId)
         {
-            var pim = new ProcessInstanceManager(Sail);
+            var pim = Managers.ProcessInstances;
             var processInstance = pim.GetById(processInstanceId);
             processInstance.JobTimerStatus = (short)JobTimerStatusEnum.Completed;
             processInstance.JobTimerTreatedDateTime = System.DateTime.UtcNow;
@@ -609,7 +609,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void SetActivityJobTimerCompleted(int activityInstanceId)
         {
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             var activityInstance = aim.GetById(activityInstanceId);
             activityInstance.JobTimerStatus = (short)JobTimerStatusEnum.Completed;
             activityInstance.JobTimerTreatedDateTime = System.DateTime.UtcNow;
@@ -622,7 +622,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public ActivityInstanceEntity GetRunningNode(WfAppRunner runner)
         {
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             var entity = aim.GetRunningNode(runner);
 
             return entity;
@@ -634,7 +634,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public bool IsMineTask(ActivityInstanceEntity entity, string userId)
         {
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             bool isMine = aim.IsMineTask(entity, userId);
             return isMine;
         }
@@ -699,7 +699,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void UpdateProcessInstance(ProcessInstanceEntity entity)
         {
-            var pim = new ProcessInstanceManager(Sail);
+            var pim = Managers.ProcessInstances;
             pim.Update(entity);
         }
 
@@ -818,7 +818,7 @@ namespace saiflow.engine.Service
             bool isRead = false;
             try
             {
-                var taskManager = new TaskManager(Sail);
+                var taskManager = Sail.ManagerFactory.Tasks;
                 taskManager.SetTaskRead(runner);
                 isRead = true;
             }
@@ -836,7 +836,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public TaskViewEntity GetTaskView(int taskId)
         {
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             var entity = tm.GetTaskView(taskId);
             return entity;
         }
@@ -847,7 +847,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public TaskViewEntity GetTaskView(int processInstanceId, int activityInstanceId)
         {
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             var entity = tm.GetTaskViewByActivity(processInstanceId, activityInstanceId);
             return entity;
         }
@@ -858,7 +858,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public TaskViewEntity GetTaskView(string appInstanceId, string processId, string userId)
         {
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             return tm.GetTaskOfMine(appInstanceId, processId, userId);
         }
         #endregion

@@ -51,7 +51,7 @@ namespace saiflow.engine.Pattern
 
                     if (canContinueForwardCurrentNode == true)
                     {
-                        var aim = new ActivityInstanceManager(Sail);
+                        var aim = Sail.ManagerFactory.Activities;
                         var backSrcActivityInstance = aim.GetById(backSrcActivityInstanceId.Value);
 
                         //获取下一步办理人信息

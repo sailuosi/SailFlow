@@ -614,7 +614,7 @@ namespace saiflow.engine.Manager
                 process.XmlContent = xmlContent;
                 process.Version = "1";
 
-                var processManager = new ProcessManager(Sail);
+                var processManager = Sail.ManagerFactory.Processes;
                 var processDB = processManager.GetByVersion(process.ProcessId, process.Version, false);
                 if (processDB != null)
                 {

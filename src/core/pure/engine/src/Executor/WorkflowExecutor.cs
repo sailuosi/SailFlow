@@ -62,7 +62,7 @@ namespace saiflow.engine.Executor
             }
             else
             {
-                var pm = new ProcessManager(Sail);
+                var pm = Sail.ManagerFactory.Processes;
                 var entity = pm.GetByVersion(processId, version);
                 _wfAppRunner.ProcessId = entity.ProcessId;
                 _wfAppRunner.Version = entity.Version;

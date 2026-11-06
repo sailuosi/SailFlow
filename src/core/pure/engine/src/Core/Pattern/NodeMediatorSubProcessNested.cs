@@ -46,7 +46,7 @@ namespace saiflow.engine.Pattern
                 {
                     //检查子流程是否结束
                     //检查子流程是否已结束
-                    var pim = new ProcessInstanceManager(Sail);
+                    var pim = Sail.ProcessInstances;
                     var kit = SailSqlAccess.Sibling(Kit);
                     bool isCompleted = pim.CheckSubProcessInstanceCompleted(kit,
                         base.LinkContext.FromActivityInstance.Id.Value,
@@ -446,7 +446,7 @@ namespace saiflow.engine.Pattern
             //        int.TryParse(subProcessId, out processId);
             //        if (processId > 0)
             //        {
-            //            var pm = new ProcessManager(Sail);
+            //            var pm = Sail.ManagerFactory.Processes;
             //            var process = pm.GetById(SailSqlAccess.Sibling(kit), processId);
             //            if (process != null)
             //            {

@@ -26,7 +26,7 @@ namespace saiflow.engine.Pattern
         {
             OnBeforeExecuteWorkItem();
 
-            ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
+            var pim = Sail.ProcessInstances;
             var kit = SailSqlAccess.Sibling(Kit);
             var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id.Value,
                 ActivityForwardContext.ActivityResource.AppRunner);

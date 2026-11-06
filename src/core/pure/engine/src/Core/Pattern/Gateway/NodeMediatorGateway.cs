@@ -50,7 +50,7 @@ namespace saiflow.engine.Pattern
             {
                 if (activityInstanceManager == null)
                 {
-                    activityInstanceManager = new ActivityInstanceManager(Sail);
+                    activityInstanceManager = Sail.ManagerFactory.Activities;
                 }
                 return activityInstanceManager;
             }
@@ -74,7 +74,7 @@ namespace saiflow.engine.Pattern
             ProcessInstanceEntity processInstance,
             WfAppRunner runner)
         {
-            ActivityInstanceManager aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             this.GatewayActivityInstance = aim.CreateActivityInstanceObject(processInstance.AppName,
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,

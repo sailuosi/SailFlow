@@ -23,4 +23,10 @@ public static class SailBuilderKeys
     public static readonly object FlowCapabilities = new();
     public static readonly object HookOutboxDrain = new();
     public static readonly object InstanceLockCleaner = new();
+
+    /// <summary>A · 引擎四工厂（D2）。</summary>
+    public static readonly object RuntimeFactory = new();
+    public static readonly object MediatorFactory = new();
+    public static readonly object ProcessModelFactory = new();
+    public static readonly object ManagerFactory = new();
 }

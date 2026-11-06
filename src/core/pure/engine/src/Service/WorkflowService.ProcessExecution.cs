@@ -24,6 +24,26 @@ namespace saiflow.engine.Service
     /// </summary>
     public partial class WorkflowService : IWorkflowService
     {
+        /// <summary>无状态：开事务执行，成功才 commit。</summary>
+        private WfExecutedResult CommitOnSuccess(Func<SQLBuilder, WfExecutedResult> action)
+        {
+            using var kit = Sail.UseRunSQL();
+            kit.beginTransaction();
+            var result = action(kit);
+            if (result.Status == WfExecutedStatus.Success)
+                kit.commit();
+            return result;
+        }
+
+        private async Task<WfExecutedResult> CommitOnSuccessAsync(Func<SQLBuilder, Task<WfExecutedResult>> action)
+        {
+            using var kit = Sail.UseRunSQL();
+            kit.beginTransaction();
+            var result = await action(kit).ConfigureAwait(false);
+            if (result.Status == WfExecutedStatus.Success)
+                kit.commit();
+            return result;
+        }
         static string ResolveInstanceLockKey(WfAppRunner runner)
             => string.IsNullOrEmpty(runner?.AppInstanceId) ? runner?.ProcessId : runner.AppInstanceId;
 
@@ -37,61 +57,25 @@ namespace saiflow.engine.Service
             Func<SQLBuilder, WfAppRunner, WfExecutedResult> core)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _wfAppRunner = runner;
-            using (var kit = Sail.UseRunSQL())
+            return await CommitOnSuccessAsync(async kit =>
             {
-                kit.beginTransaction();
-                try
+                WfExecutedResult result;
+                using (await InstanceExecutionLock.AcquireAsync(ResolveInstanceLockKey(runner), cancellationToken)
+                    .ConfigureAwait(false))
                 {
-                    WfExecutedResult result;
-                    using (await InstanceExecutionLock.AcquireAsync(ResolveInstanceLockKey(runner), cancellationToken)
-                        .ConfigureAwait(false))
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        result = core(kit, runner);
-                    }
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
+                    cancellationToken.ThrowIfCancellationRequested();
+                    result = core(kit, runner);
                 }
-                catch
-                {
-                    throw;
-                }
-            }
+                return result;
+            }).ConfigureAwait(false);
         }
 
         #region Process Startup
         /// <summary>
-        /// Process Startup
-        /// Coding Example:
-        /// var wfResult = wfService.CreateRunner(runner.UserId, runner.UserName)
-        ///                 .UseApp(runner.AppInstanceId, runner.AppName, runner.AppInstanceCode)
-        ///                 .UseProcess(runner.ProcessId, runner.Version)
-        ///                 .Start();
+        /// 在已有事务 kit 上启动。入口请用 <see cref="StartProcess"/> 或 <c>Sail.CreateRunBuilder(...).Start()</c>。
         /// </summary>
-        public WfExecutedResult Start()
+        public WfExecutedResult Start(SQLBuilder kit, WfAppRunner runner)
         {
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = Start(kit);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
-
-        public WfExecutedResult Start(SQLBuilder kit)
-        {
-            var runner = _wfAppRunner;
             WfExecutedResult startedResult = WfExecutedResult.Default();
             try
             {
@@ -108,9 +92,8 @@ namespace saiflow.engine.Service
             return startedResult;
         }
 
-        async Task<WfExecutedResult> StartAsync(SQLBuilder kit, CancellationToken cancellationToken)
+        async Task<WfExecutedResult> StartAsync(SQLBuilder kit, WfAppRunner runner, CancellationToken cancellationToken)
         {
-            var runner = _wfAppRunner;
             WfExecutedResult startedResult = WfExecutedResult.Default();
             try
             {
@@ -138,7 +121,7 @@ namespace saiflow.engine.Service
         WfExecutedResult ExecuteStartCore(SQLBuilder kit, WfAppRunner runner)
         {
             var startedResult = WfExecutedResult.Default();
-            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(Sail, runner, kit, ref startedResult);
+            var runtimeInstance = Runtimes.CreateRuntimeInstanceStartup(runner, kit, ref startedResult);
 
             if (startedResult.Status == WfExecutedStatus.Exception)
                 return startedResult;
@@ -182,12 +165,7 @@ namespace saiflow.engine.Service
         /// Start process
         /// </summary>
         public WfExecutedResult StartProcess(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            var result = Start();
-
-            return result;
-        }
+            => CommitOnSuccess(kit => Start(kit, runner));
 
         /// <summary>
         /// Start process async：可取消等待实例锁；Mediator 办理仍同步（阶段 2）。
@@ -195,22 +173,7 @@ namespace saiflow.engine.Service
         public async Task<WfExecutedResult> StartProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _wfAppRunner = runner;
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = await StartAsync(kit, cancellationToken).ConfigureAwait(false);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
+            return await CommitOnSuccessAsync(kit => StartAsync(kit, runner, cancellationToken)).ConfigureAwait(false);
         }
 
         #endregion
@@ -220,38 +183,17 @@ namespace saiflow.engine.Service
         /// Start by Message
         /// 消息启动流程
         /// </summary>
-        public WfExecutedResult StartByMessage()
+
+        public WfExecutedResult StartByMessage(SQLBuilder kit, WfAppRunner runner)
         {
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = StartByMessage(kit);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
-
-        public WfExecutedResult StartByMessage(SQLBuilder kit)
-        {
-            var pm = new ProcessManager(Sail);
-            var entity = pm.GetByMessage(_wfAppRunner.MessageTopic);
-            _wfAppRunner.ProcessId = entity.ProcessId;
-            _wfAppRunner.ProcessCode = entity.ProcessCode;
-            _wfAppRunner.Version = entity.Version;
-
-            _wfAppRunner.UserId = WfDefine.SYSTEM_INTERNAL_USER_ID;
-            _wfAppRunner.UserName = WfDefine.SYSTEM_INTERNAL_USER_NAME;
-
-            var result = Start(kit);
-            return result;
+            var pm = Sail.ManagerFactory.Processes;
+            var entity = pm.GetByMessage(runner.MessageTopic);
+            runner.ProcessId = entity.ProcessId;
+            runner.ProcessCode = entity.ProcessCode;
+            runner.Version = entity.Version;
+            runner.UserId = WfDefine.SYSTEM_INTERNAL_USER_ID;
+            runner.UserName = WfDefine.SYSTEM_INTERNAL_USER_NAME;
+            return Start(kit, runner);
         }
 
         /// <summary>
@@ -259,11 +201,7 @@ namespace saiflow.engine.Service
         /// 流程流转
         /// </summary>
         public WfExecutedResult StartProcessByMessage(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            var result = StartByMessage();
-            return result;
-        }
+            => CommitOnSuccess(kit => StartByMessage(kit, runner));
 
         /// <summary>
         /// Start by Message Async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
@@ -271,30 +209,17 @@ namespace saiflow.engine.Service
         public async Task<WfExecutedResult> StartProcessByMessageAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _wfAppRunner = runner;
-            using (var kit = Sail.UseRunSQL())
+            return await CommitOnSuccessAsync(async kit =>
             {
-                kit.beginTransaction();
-                try
-                {
-                    var pm = new ProcessManager(Sail);
-                    var entity = pm.GetByMessage(_wfAppRunner.MessageTopic);
-                    _wfAppRunner.ProcessId = entity.ProcessId;
-                    _wfAppRunner.ProcessCode = entity.ProcessCode;
-                    _wfAppRunner.Version = entity.Version;
-                    _wfAppRunner.UserId = WfDefine.SYSTEM_INTERNAL_USER_ID;
-                    _wfAppRunner.UserName = WfDefine.SYSTEM_INTERNAL_USER_NAME;
-
-                    var result = await StartAsync(kit, cancellationToken).ConfigureAwait(false);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
+                var pm = Sail.ManagerFactory.Processes;
+                var entity = pm.GetByMessage(runner.MessageTopic);
+                runner.ProcessId = entity.ProcessId;
+                runner.ProcessCode = entity.ProcessCode;
+                runner.Version = entity.Version;
+                runner.UserId = WfDefine.SYSTEM_INTERNAL_USER_ID;
+                runner.UserName = WfDefine.SYSTEM_INTERNAL_USER_NAME;
+                return await StartAsync(kit, runner, cancellationToken).ConfigureAwait(false);
+            }).ConfigureAwait(false);
         }
 
         #endregion
@@ -303,33 +228,12 @@ namespace saiflow.engine.Service
         /// <summary>
         /// Running process
         /// Coding example:
-        /// var wfResult = wfService.CreateRunner(runner.UserId, runner.UserName)
-        ///                 .UseApp(runner.AppInstanceId, runner.AppName, runner.AppInstanceCode)
-        ///                 .UseProcess(runner.ProcessId, runner.Version)
-        ///                 .Run();
+        /// var wfResult = sail.CreateRunBuilder(...).UseApp(...).UseProcess(...).Run();
+        /// 或 workflow.RunProcess(runner);
         /// </summary>
-        public WfExecutedResult Run()
-        {
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = Run(kit);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
 
-        public WfExecutedResult Run(SQLBuilder kit)
+        public WfExecutedResult Run(SQLBuilder kit, WfAppRunner runner)
         {
-            var runner = _wfAppRunner;
             WfExecutedResult runAppResult = WfExecutedResult.Default();
             try
             {
@@ -346,9 +250,8 @@ namespace saiflow.engine.Service
             return runAppResult;
         }
 
-        async Task<WfExecutedResult> RunAsync(SQLBuilder kit, CancellationToken cancellationToken)
+        async Task<WfExecutedResult> RunAsync(SQLBuilder kit, WfAppRunner runner, CancellationToken cancellationToken)
         {
-            var runner = _wfAppRunner;
             WfExecutedResult runAppResult = WfExecutedResult.Default();
             try
             {
@@ -376,7 +279,7 @@ namespace saiflow.engine.Service
         WfExecutedResult ExecuteRunCore(SQLBuilder kit, WfAppRunner runner)
         {
             var runAppResult = WfExecutedResult.Default();
-            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(Sail, runner, kit, ref runAppResult);
+            var runtimeInstance = Runtimes.CreateRuntimeInstanceAppRunning(runner, kit, ref runAppResult);
             return FinishRunCore(kit, runner, runtimeInstance, runAppResult);
         }
 
@@ -432,24 +335,14 @@ namespace saiflow.engine.Service
         /// 说明：新方法统一调用 RunProcess()
         /// </summary>
         public WfExecutedResult RunProcessApp(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            var result = Run();
-
-            return result;
-        }
+            => CommitOnSuccess(kit => Run(kit, runner));
 
         /// <summary>
         /// Run Process
         /// 流程流转
         /// </summary>
         public WfExecutedResult RunProcess(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            var result = Run();
-
-            return result;
-        }
+            => CommitOnSuccess(kit => Run(kit, runner));
 
         /// <summary>
         /// Run Process Async
@@ -461,22 +354,7 @@ namespace saiflow.engine.Service
         public async Task<WfExecutedResult> RunProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _wfAppRunner = runner;
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = await RunAsync(kit, cancellationToken).ConfigureAwait(false);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
+            return await CommitOnSuccessAsync(kit => RunAsync(kit, runner, cancellationToken)).ConfigureAwait(false);
         }
 
         #endregion
@@ -486,28 +364,9 @@ namespace saiflow.engine.Service
         /// Run Automatically
         /// 自动运行
         /// </summary>
-        public WfExecutedResult RunAuto()
-        {
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = RunAuto(kit);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
 
-        public WfExecutedResult RunAuto(SQLBuilder kit)
+        public WfExecutedResult RunAuto(SQLBuilder kit, WfAppRunner runner)
         {
-            var runner = _wfAppRunner;
             WfExecutedResult runAppResult = WfExecutedResult.Default();
             try
             {
@@ -524,9 +383,8 @@ namespace saiflow.engine.Service
             return runAppResult;
         }
 
-        async Task<WfExecutedResult> RunAutoAsync(SQLBuilder kit, CancellationToken cancellationToken)
+        async Task<WfExecutedResult> RunAutoAsync(SQLBuilder kit, WfAppRunner runner, CancellationToken cancellationToken)
         {
-            var runner = _wfAppRunner;
             WfExecutedResult runAppResult = WfExecutedResult.Default();
             try
             {
@@ -554,7 +412,7 @@ namespace saiflow.engine.Service
         WfExecutedResult ExecuteRunAutoCore(SQLBuilder kit, WfAppRunner runner)
         {
             var runAppResult = WfExecutedResult.Default();
-            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceRunAuto(Sail, runner, kit, ref runAppResult);
+            var runtimeInstance = Runtimes.CreateRuntimeInstanceRunAuto(runner, kit, ref runAppResult);
             return FinishRunAutoCore(kit, runner, runtimeInstance, runAppResult);
         }
 
@@ -597,12 +455,7 @@ namespace saiflow.engine.Service
         /// 流程执行自动
         /// </summary>
         public WfExecutedResult RunProcessAuto(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            var result = RunAuto();
-
-            return result;
-        }
+            => CommitOnSuccess(kit => RunAuto(kit, runner));
 
         /// <summary>
         /// Run process auto async：可取消等待实例锁；Factory 预载 IO-await；Mediator Execute 仍同步（阶段 3 首刀）。
@@ -610,22 +463,7 @@ namespace saiflow.engine.Service
         public async Task<WfExecutedResult> RunProcessAutoAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _wfAppRunner = runner;
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = await RunAutoAsync(kit, cancellationToken).ConfigureAwait(false);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
+            return await CommitOnSuccessAsync(kit => RunAutoAsync(kit, runner, cancellationToken)).ConfigureAwait(false);
         }
 
         #endregion
@@ -635,28 +473,9 @@ namespace saiflow.engine.Service
         /// Process withdraw
         /// 流程撤回
         /// </summary>
-        public WfExecutedResult Withdraw()
-        {
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = Withdraw(kit);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
 
-        public WfExecutedResult Withdraw(SQLBuilder kit)
+        public WfExecutedResult Withdraw(SQLBuilder kit, WfAppRunner runner)
         {
-            var runner = _wfAppRunner;
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteWithdrawCore(kit, runner);
         }
@@ -669,7 +488,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceWithdraw(Sail, runner, ref withdrawedResult);
+                runtimeInstance = Runtimes.CreateRuntimeInstanceWithdraw(runner, ref withdrawedResult);
 
                 //Not satisfied with withdraw operation, return exception
                 if (withdrawedResult.Status == WfExecutedStatus.Exception)
@@ -718,12 +537,7 @@ namespace saiflow.engine.Service
         /// 流程撤回
         /// </summary>
         public WfExecutedResult WithdrawProcess(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            var result = Withdraw();
-
-            return result;
-        }
+            => CommitOnSuccess(kit => Withdraw(kit, runner));
 
         /// <summary>
         /// Process withdraw async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
@@ -738,28 +552,9 @@ namespace saiflow.engine.Service
         /// Process sendback
         /// 流程退回
         /// </summary>
-        public WfExecutedResult SendBack()
-        {
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = SendBack(kit);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
 
-        public WfExecutedResult SendBack(SQLBuilder kit)
+        public WfExecutedResult SendBack(SQLBuilder kit, WfAppRunner runner)
         {
-            var runner = _wfAppRunner;
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteSendBackCore(kit, runner);
         }
@@ -772,7 +567,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceSendBack(Sail, runner, ref sendbackResult);
+                runtimeInstance = Runtimes.CreateRuntimeInstanceSendBack(runner, ref sendbackResult);
 
                 if (sendbackResult.Status == WfExecutedStatus.Exception)
                 {
@@ -820,12 +615,7 @@ namespace saiflow.engine.Service
         /// 退回到下一步
         /// </summary>
         public WfExecutedResult SendBackProcess(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            var result = SendBack();
-
-            return result;
-        }
+            => CommitOnSuccess(kit => SendBack(kit, runner));
 
         /// <summary>
         /// Process sendback async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
@@ -840,28 +630,9 @@ namespace saiflow.engine.Service
         /// Process Resend
         /// 流程转发
         /// </summary>
-        public WfExecutedResult Resend()
-        {
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = Resend(kit);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
 
-        public WfExecutedResult Resend(SQLBuilder kit)
+        public WfExecutedResult Resend(SQLBuilder kit, WfAppRunner runner)
         {
-            var runner = _wfAppRunner;
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteResendCore(kit, runner);
         }
@@ -874,7 +645,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceResend(Sail, runner, ref resendResult);
+                runtimeInstance = Runtimes.CreateRuntimeInstanceResend(runner, ref resendResult);
 
                 if (resendResult.Status == WfExecutedStatus.Exception)
                 {
@@ -922,12 +693,7 @@ namespace saiflow.engine.Service
         /// 重新转发（退回到的节点）
         /// </summary>
         public WfExecutedResult ResendProcess(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            var result = Resend();
-
-            return result;
-        }
+            => CommitOnSuccess(kit => Resend(kit, runner));
 
         /// <summary>
         /// Process Resend Async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
@@ -944,28 +710,9 @@ namespace saiflow.engine.Service
         /// 流程修订
         /// (�˻غ�Ľڵ�����ָ������)
         /// </summary>
-        public WfExecutedResult Revise()
-        {
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = Revise(kit);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
 
-        public WfExecutedResult Revise(SQLBuilder kit)
+        public WfExecutedResult Revise(SQLBuilder kit, WfAppRunner runner)
         {
-            var runner = _wfAppRunner;
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteReviseCore(kit, runner);
         }
@@ -978,7 +725,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceRevise(Sail, runner, ref reviseResult);
+                runtimeInstance = Runtimes.CreateRuntimeInstanceRevise(runner, ref reviseResult);
 
                 if (reviseResult.Status == WfExecutedStatus.Success)
                 {
@@ -1026,12 +773,7 @@ namespace saiflow.engine.Service
         /// 流程修订（退回后的节点重新指派任务）
         /// </summary>
         public WfExecutedResult ReviseProcess(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            var result = Revise();
-
-            return result;
-        }
+            => CommitOnSuccess(kit => Revise(kit, runner));
 
         /// <summary>
         /// Process revise async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
@@ -1048,28 +790,9 @@ namespace saiflow.engine.Service
         /// 流程反签
         /// (�Ѿ����������̿��Ա����
         /// </summary>
-        public WfExecutedResult Reverse()
-        {
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = Reverse(kit);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
 
-        public WfExecutedResult Reverse(SQLBuilder kit)
+        public WfExecutedResult Reverse(SQLBuilder kit, WfAppRunner runner)
         {
-            var runner = _wfAppRunner;
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteReverseCore(kit, runner);
         }
@@ -1082,7 +805,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceReverse(Sail, runner, ref reversedResult);
+                runtimeInstance = Runtimes.CreateRuntimeInstanceReverse(runner, ref reversedResult);
 
                 if (reversedResult.Status == WfExecutedStatus.Exception)
                 {
@@ -1130,12 +853,7 @@ namespace saiflow.engine.Service
         /// 流程反签
         /// </summary>
         public WfExecutedResult ReverseProcess(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            var result = Reverse();
-
-            return result;
-        }
+            => CommitOnSuccess(kit => Reverse(kit, runner));
 
         /// <summary>
         /// Process reverse async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
@@ -1150,28 +868,9 @@ namespace saiflow.engine.Service
         /// Process reject
         /// 流程驳回
         /// </summary>
-        public WfExecutedResult Reject()
-        {
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = Reject(kit);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
 
-        public WfExecutedResult Reject(SQLBuilder kit)
+        public WfExecutedResult Reject(SQLBuilder kit, WfAppRunner runner)
         {
-            var runner = _wfAppRunner;
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteRejectCore(kit, runner);
         }
@@ -1185,7 +884,7 @@ namespace saiflow.engine.Service
             try
             {
                 runner.NextActivityPerformers = FillNextActivityPerforms(runner, JumpOptionEnum.Startup);
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceReject(Sail, runner, ref rejectedResult);
+                runtimeInstance = Runtimes.CreateRuntimeInstanceReject(runner, ref rejectedResult);
                 if (rejectedResult.Status == WfExecutedStatus.Exception)
                 {
                     return rejectedResult;
@@ -1232,12 +931,7 @@ namespace saiflow.engine.Service
         /// 流程驳回
         /// </summary>
         public WfExecutedResult RejectProcess(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            var result = Reject();
-
-            return result;
-        }
+            => CommitOnSuccess(kit => Reject(kit, runner));
 
         /// <summary>
         /// Process reject async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
@@ -1252,28 +946,9 @@ namespace saiflow.engine.Service
         /// Process Close
         /// 流程关闭
         /// </summary>
-        public WfExecutedResult Close()
-        {
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = Close(kit);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
 
-        public WfExecutedResult Close(SQLBuilder kit)
+        public WfExecutedResult Close(SQLBuilder kit, WfAppRunner runner)
         {
-            var runner = _wfAppRunner;
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteCloseCore(kit, runner);
         }
@@ -1284,7 +959,7 @@ namespace saiflow.engine.Service
             try
             {
                 runner.NextActivityPerformers = FillNextActivityPerforms(runner, JumpOptionEnum.End);
-                var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceClose(Sail, runner, ref closedResult);
+                var runtimeInstance = Runtimes.CreateRuntimeInstanceClose(runner, ref closedResult);
                 if (closedResult.Status == WfExecutedStatus.Exception)
                     return closedResult;
 
@@ -1329,12 +1004,7 @@ namespace saiflow.engine.Service
         /// 流程关闭
         /// </summary>
         public WfExecutedResult CloseProcess(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            var result = Close();
-
-            return result;
-        }
+            => CommitOnSuccess(kit => Close(kit, runner));
 
         /// <summary>
         /// Process Close Async：可取消等待实例锁；预载/Execute 仍同步（范围收窄）。
@@ -1349,29 +1019,9 @@ namespace saiflow.engine.Service
         /// Process Jump
         /// 流程跳转
         /// </summary>
-        public WfExecutedResult Jump(JumpOptionEnum jumpOption = JumpOptionEnum.Default)
-        {
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = Jump(kit, jumpOption);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
 
-        public WfExecutedResult Jump(SQLBuilder kit,
-            JumpOptionEnum jumpOption = JumpOptionEnum.Default)
+        public WfExecutedResult Jump(SQLBuilder kit, JumpOptionEnum jumpOption, WfAppRunner runner)
         {
-            var runner = _wfAppRunner;
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteJumpCore(kit, runner, jumpOption);
         }
@@ -1382,7 +1032,7 @@ namespace saiflow.engine.Service
             try
             {
                 runner.NextActivityPerformers = FillNextActivityPerforms(runner, jumpOption);
-                var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceJump(Sail, runner, ref jumpResult);
+                var runtimeInstance = Runtimes.CreateRuntimeInstanceJump(runner, ref jumpResult);
 
                 if (jumpResult.Status == WfExecutedStatus.Exception)
                     return jumpResult;
@@ -1427,14 +1077,9 @@ namespace saiflow.engine.Service
         /// Process Jump
         /// 流程跳转
         /// </summary>
-        public WfExecutedResult JumpProcess(WfAppRunner runner, 
+        public WfExecutedResult JumpProcess(WfAppRunner runner,
             JumpOptionEnum jumpOption = JumpOptionEnum.Default)
-        {
-            _wfAppRunner = runner;
-            var result = Jump(jumpOption);
-
-            return result;
-        }
+            => CommitOnSuccess(kit => Jump(kit, jumpOption, runner));
 
         /// <summary>
         /// Process Jump Async：可取消等待实例锁；预载/Execute 仍同步（范围收窄）。
@@ -1450,7 +1095,7 @@ namespace saiflow.engine.Service
             JumpOptionEnum jumpOption)
         {
             IDictionary<string, PerformerList> nextActivityPerformers = null;
-            var pm = ProcessModelFactory.CreateByProcess(Sail, runner.ProcessId, runner.Version);
+            var pm = Sail.ProcessModelFactory.CreateByProcess(runner.ProcessId, runner.Version);
             if (jumpOption == JumpOptionEnum.Default)
             {
                 nextActivityPerformers = runner.NextActivityPerformers;
@@ -1458,7 +1103,7 @@ namespace saiflow.engine.Service
             else if (jumpOption == JumpOptionEnum.Startup)
             {
                 var firstActivity = pm.GetFirstActivity();
-                var aim = new ActivityInstanceManager(Sail);
+                var aim = Sail.ManagerFactory.Activities;
                 var firstActivityInstance = aim.GetActivityInstanceLatest(runner.AppInstanceId, runner.ProcessId, firstActivity.ActivityId);
                 nextActivityPerformers = new Dictionary<string, PerformerList>();
                 var performer = new Performer(firstActivityInstance.CreatedUserId, firstActivityInstance.CreatedUserName);
@@ -1484,28 +1129,9 @@ namespace saiflow.engine.Service
         /// Process Signforward
         /// 流程会签
         /// </summary>
-        public WfExecutedResult SignForward()
-        {
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = SignForward(kit);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
 
-        public WfExecutedResult SignForward(SQLBuilder kit)
+        public WfExecutedResult SignForward(SQLBuilder kit, WfAppRunner runner)
         {
-            var runner = _wfAppRunner;
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteSignForwardCore(kit, runner);
         }
@@ -1518,7 +1144,7 @@ namespace saiflow.engine.Service
             WfRuntimeManager runtimeInstance = null;
             try
             {
-                runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceSignForward(Sail, runner, ref signforwardResult);
+                runtimeInstance = Runtimes.CreateRuntimeInstanceSignForward(runner, ref signforwardResult);
 
                 if (signforwardResult.Status == WfExecutedStatus.Exception)
                 {
@@ -1566,12 +1192,7 @@ namespace saiflow.engine.Service
         /// 会签
         /// </summary>
         public WfExecutedResult SignForwardProcess(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            var result = SignForward();
-
-            return result;
-        }
+            => CommitOnSuccess(kit => SignForward(kit, runner));
 
         /// <summary>
         /// Process Signforward Async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
@@ -1586,24 +1207,7 @@ namespace saiflow.engine.Service
         /// 转办：结束本人待办 + 本节点交给他人，不推进下一节点。
         /// </summary>
         public WfExecutedResult TransferProcess(WfAppRunner runner)
-        {
-            _wfAppRunner = runner;
-            using (var kit = Sail.UseRunSQL())
-            {
-                kit.beginTransaction();
-                try
-                {
-                    var result = Transfer(kit);
-                    if (result.Status == WfExecutedStatus.Success)
-                        kit.commit();
-                    return result;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-        }
+            => CommitOnSuccess(kit => Transfer(kit, runner));
 
         /// <summary>
         /// Transfer async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
@@ -1611,9 +1215,8 @@ namespace saiflow.engine.Service
         public Task<WfExecutedResult> TransferProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
             => RunVerbAsync(runner, cancellationToken, ExecuteTransferCore);
 
-        public WfExecutedResult Transfer(SQLBuilder kit)
+        public WfExecutedResult Transfer(SQLBuilder kit, WfAppRunner runner)
         {
-            var runner = _wfAppRunner;
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteTransferCore(kit, runner);
         }
@@ -1641,7 +1244,7 @@ namespace saiflow.engine.Service
                     return result;
                 }
 
-                var tm = new TaskManager(Sail);
+                var tm = Sail.ManagerFactory.Tasks;
                 var taskView = tm.GetTaskView(kit, runner.TaskId.Value);
                 if (taskView?.ActivityInstanceId == null)
                 {
@@ -1651,7 +1254,7 @@ namespace saiflow.engine.Service
                     return result;
                 }
 
-                var aim = new ActivityInstanceManager(Sail);
+                var aim = Sail.ManagerFactory.Activities;
                 var activityInstance = aim.GetById(kit, taskView.ActivityInstanceId.Value);
                 var processInstanceId = activityInstance.ProcessInstanceId ?? 0;
 
@@ -1749,7 +1352,7 @@ namespace saiflow.engine.Service
             bool result = true;
             try
             {
-                var pim = new ProcessInstanceManager(Sail);
+                var pim = Managers.ProcessInstances;
                 pim.Resume(processInstanceId, runner);
             }
             catch (Exception ex)
@@ -1767,8 +1370,8 @@ namespace saiflow.engine.Service
             bool result = true;
             try
             {
-                var pim = new ProcessInstanceManager(Sail);
-                var taskMng = new TaskManager(Sail);
+                var pim = Managers.ProcessInstances;
+                var taskMng = Sail.ManagerFactory.Tasks;
                 TaskEntity taskentity = taskMng.GetTask(taskId);
                 pim.Suspend(taskentity.ProcessInstanceId.Value, runner);
             }
@@ -1785,7 +1388,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public bool CancelProcess(WfAppRunner runner)
         {
-            var pim = new ProcessInstanceManager(Sail);
+            var pim = Managers.ProcessInstances;
             return pim.Cancel(runner);
         }
 
@@ -1795,7 +1398,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public bool DiscardProcess(WfAppRunner runner)
         {
-            var pim = new ProcessInstanceManager(Sail);
+            var pim = Managers.ProcessInstances;
             return pim.Discard(runner);
         }
 
@@ -1805,7 +1408,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public bool TerminateProcess(WfAppRunner terminator)
         {
-            var pim = new ProcessInstanceManager(Sail);
+            var pim = Managers.ProcessInstances;
             return pim.Terminate(terminator);
         }
 
@@ -1818,7 +1421,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void AgreeTask(int taskId)
         {
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             aim.Agree(taskId);
         }
 
@@ -1829,7 +1432,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public void RefuseTask(int taskId)
         {
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             aim.Refuse(taskId);
         }
         #endregion

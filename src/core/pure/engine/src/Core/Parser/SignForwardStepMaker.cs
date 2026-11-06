@@ -64,7 +64,7 @@ namespace saiflow.engine.Runtime
             {
                 //运行状态的流程实例
                 //Process instance of running status
-                var tm = new TaskManager(Sail);
+                var tm = Sail.ManagerFactory.Tasks;
                 TaskViewEntity taskView = tm.GetTaskOfMine(SailSqlAccess.Sibling(kit), runner);
 
                 var isRunningTask = tm.CheckTaskStateInRunningState(taskView);

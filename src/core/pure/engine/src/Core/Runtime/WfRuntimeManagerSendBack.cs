@@ -49,7 +49,7 @@ namespace saiflow.engine.Runtime
                     }
                     else if (this.ProcessModel.IsMINode(prevActivity) == true)
                     {
-                        var aim = new ActivityInstanceManager(Sail);
+                        var aim = Sail.ManagerFactory.Activities;
                         var prevActivityInstance = aim.GetActivityInstanceLatest(SailSqlAccess.Sibling(kit), runningNode.ProcessInstanceId.Value, prevActivityId);
                         if (prevActivityInstance.MainActivityInstanceId == null)
                         {
@@ -171,12 +171,12 @@ namespace saiflow.engine.Runtime
         {
             //更新当前任务记录为退回状态
             //Update the current task record to sendback status
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             tm.SendBack(SailSqlAccess.Sibling(kit), base.TaskView.Id.Value, base.SendBackOperation.ActivityResource.AppRunner);
 
             //更新当前办理节点的状态（从准备或运行状态更新为退回状态）
             //Update the status of the current processing node (from ready or running status to sendback status)
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             aim.SendBack(SailSqlAccess.Sibling(kit), base.SendBackOperation.BackwardFromActivityInstance.Id.Value, base.SendBackOperation.ActivityResource.AppRunner);
         }
     }

@@ -51,7 +51,7 @@ namespace saiflow.engine.Runtime
             rmins.WfExecutedResult = result = new WfExecutedResult();
             rmins.Sail = client;
 
-            var pim = new ProcessInstanceManager(client);
+            var pim = client.ProcessInstances;
             ProcessInstanceEntity processInstance = pim.GetProcessInstanceCurrent(
                 kit,
                 runner.AppInstanceId,
@@ -121,7 +121,7 @@ namespace saiflow.engine.Runtime
             rmins.WfExecutedResult = result = new WfExecutedResult();
             rmins.Sail = client;
 
-            var pim = new ProcessInstanceManager(client);
+            var pim = client.ProcessInstances;
             var subProcessInstance = pim.GetSubProcessInstance(kit,
                 runner.AppInstanceId,
                 runner.ProcessId,
@@ -183,7 +183,7 @@ namespace saiflow.engine.Runtime
             }
             rmins.AppRunner = runner;
 
-            var aim = new ActivityInstanceManager(client);
+            var aim = client.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
             var runningNode = aim.GetRunningNode(SailSqlAccess.Sibling(kit), runner, out taskView);
 
@@ -198,7 +198,7 @@ namespace saiflow.engine.Runtime
                 return rmins;
             }
 
-            var isRunning = (new TaskManager(client)).CheckTaskStateInRunningState(taskView);
+            var isRunning = client.ManagerFactory.Tasks.CheckTaskStateInRunningState(taskView);
             if (isRunning == false)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -210,7 +210,7 @@ namespace saiflow.engine.Runtime
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
             var kitForPi = SailSqlAccess.Sibling(kit);
-            var processInstance = (new ProcessInstanceManager(client)).GetById(kitForPi, runningNode.ProcessInstanceId.Value);
+            var processInstance = client.ProcessInstances.GetById(kitForPi, runningNode.ProcessInstanceId.Value);
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
             var processModel = ProcessModelFactory.CreateByTask(client, SailSqlAccess.Sibling(kit), taskView);
 
@@ -269,7 +269,7 @@ namespace saiflow.engine.Runtime
             }
             rmins.AppRunner = runner;
 
-            var aim = new ActivityInstanceManager(client);
+            var aim = client.ManagerFactory.Activities;
             var (runningNode, taskView) = await aim.GetRunningNodeAsync(kit, runner, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -282,7 +282,7 @@ namespace saiflow.engine.Runtime
                 return (rmins, result);
             }
 
-            var isRunning = (new TaskManager(client)).CheckTaskStateInRunningState(taskView);
+            var isRunning = client.ManagerFactory.Tasks.CheckTaskStateInRunningState(taskView);
             if (isRunning == false)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -292,7 +292,7 @@ namespace saiflow.engine.Runtime
             }
 
             // 与同步路径一致：预载 PI（存在性/同事务读）；ProcessId 仍取自 runningNode
-            _ = await (new ProcessInstanceManager(client))
+            _ = await client.ProcessInstances
                 .GetByIdAsync(kit, runningNode.ProcessInstanceId.Value, cancellationToken)
                 .ConfigureAwait(false);
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
@@ -347,13 +347,13 @@ namespace saiflow.engine.Runtime
             }
             rmins.AppRunner = runner;
 
-            var aim = new ActivityInstanceManager(client);
+            var aim = client.ManagerFactory.Activities;
             var runningNode = aim.GetById(runner.ActivityInstanceId.Value);
 
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
             var kitForPi = SailSqlAccess.Sibling(kit);
-            var processInstance = (new ProcessInstanceManager(client)).GetById(kitForPi, runningNode.ProcessInstanceId.Value);
+            var processInstance = client.ProcessInstances.GetById(kitForPi, runningNode.ProcessInstanceId.Value);
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
             var processModel = ProcessModelFactory.CreateByProcess(client, processInstance.ProcessId, processInstance.Version);
             var activityResource = ActivityResourceFactory.Create(runner,
@@ -392,11 +392,11 @@ namespace saiflow.engine.Runtime
             }
             rmins.AppRunner = runner;
 
-            var aim = new ActivityInstanceManager(client);
+            var aim = client.ManagerFactory.Activities;
             var runningNode = await aim.GetByIdAsync(kit, runner.ActivityInstanceId.Value, cancellationToken)
                 .ConfigureAwait(false);
 
-            var processInstance = await (new ProcessInstanceManager(client))
+            var processInstance = await client.ProcessInstances
                 .GetByIdAsync(kit, runningNode.ProcessInstanceId.Value, cancellationToken)
                 .ConfigureAwait(false);
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId.Value;
@@ -449,7 +449,7 @@ namespace saiflow.engine.Runtime
                 return rmins;
             }
 
-            var aim = new ActivityInstanceManager(client);
+            var aim = client.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
             var runningNode = aim.GetRunningNode(runner, out taskView);
 
@@ -508,7 +508,7 @@ namespace saiflow.engine.Runtime
                 return rmins;
             }
 
-            var aim = new ActivityInstanceManager(client);
+            var aim = client.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
             var runningNode = aim.GetRunningNode(runner, out taskView);
 
@@ -534,7 +534,7 @@ namespace saiflow.engine.Runtime
             //跳转到曾经执行过的节点上,可以作为跳回方式处理
             //Jumping to a node that has been executed before can be handled as a bounce back method
             rmins.IsBackward = true;
-            rmins.BackwardContext.ProcessInstance = (new ProcessInstanceManager(client)).GetById(runningNode.ProcessInstanceId.Value);
+            rmins.BackwardContext.ProcessInstance = client.ProcessInstances.GetById(runningNode.ProcessInstanceId.Value);
             rmins.BackwardContext.BackwardToTaskActivity = processModel.GetActivity(jumpBackActivityId);
 
             //获取当前运行节点的上一步节点
@@ -647,7 +647,7 @@ namespace saiflow.engine.Runtime
                 return rmins;
             }
 
-            var aim = new ActivityInstanceManager(client);
+            var aim = client.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
             var runningNode = aim.GetRunningNode(runner, out taskView);
 
@@ -701,7 +701,7 @@ namespace saiflow.engine.Runtime
 
             //先查找当前用户正在办理的运行节点
             //First, search for the running node that the current user is currently processing
-            var aim = new ActivityInstanceManager(client);
+            var aim = client.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
             var runningNode = aim.GetRunningNode(runner, out taskView);
 
@@ -736,7 +736,7 @@ namespace saiflow.engine.Runtime
             //获取上一步节点信息
             //Obtain the previous node information
             var hasGatewayPassed = false;
-            var processInstance = (new ProcessInstanceManager(client)).GetById(runningNode.ProcessInstanceId.Value);
+            var processInstance = client.ProcessInstances.GetById(runningNode.ProcessInstanceId.Value);
             var processModel = ProcessModelFactory.CreateByProcessInstance(client, processInstance);
             var previousStepChecker = new PreviousStepChecker(client);
             var previousActivityList = previousStepChecker.GetPreviousActivityList(runningNode, processModel, out hasGatewayPassed);
@@ -901,7 +901,7 @@ namespace saiflow.engine.Runtime
             }
             //获取已经完成任务的信息
             //Retrieve information on completed tasks
-            var tm = new TaskManager(client);
+            var tm = client.ManagerFactory.Tasks;
             var taskDone = tm.GetTaskView(runner.TaskId.Value);
 
             if (tm.IsMine(taskDone, runner.UserId) == false)
@@ -936,7 +936,7 @@ namespace saiflow.engine.Runtime
             {
                 using (var kit = client.UseRunSQL())
                 {
-                    var aim = new ActivityInstanceManager(client);
+                    var aim = client.ManagerFactory.Activities;
                     var childList = aim.GetActivityMulitipleInstanceWithStateBatch(SailSqlAccess.Sibling(kit), runningNode.ProcessInstanceId.Value, runningNode.Id.Value, (short)ActivityStateEnum.Ready);
                     runningNode = childList.FirstOrDefault();
                 }
@@ -969,7 +969,7 @@ namespace saiflow.engine.Runtime
             //获取上一步节点信息
             //Obtain the previous node information
             var hasGatewayPassed = false;
-            var processInstance = (new ProcessInstanceManager(client)).GetById(runningNode.ProcessInstanceId.Value);
+            var processInstance = client.ProcessInstances.GetById(runningNode.ProcessInstanceId.Value);
             
             var previousStepChecker = new PreviousStepChecker(client);
             var processModel = ProcessModelFactory.CreateByTask(client, taskToDo);
@@ -1066,10 +1066,10 @@ namespace saiflow.engine.Runtime
 
             //获取退回源活动实例数据
             //Retrieve the data of the returned source activity instance
-            var tm = new TaskManager(client);
+            var tm = client.ManagerFactory.Tasks;
             var taskView = tm.GetTaskView(runner.TaskId.Value);
 
-            var aim = new ActivityInstanceManager(client);
+            var aim = client.ManagerFactory.Activities;
             var runningActivityInstance = aim.GetById(taskView.ActivityInstanceId.Value);
             if (runningActivityInstance.BackSrcActivityInstanceId == null)
             {
@@ -1135,10 +1135,10 @@ namespace saiflow.engine.Runtime
 
             //获取退回源活动实例数据
             //Retrieve the data of the returned source activity instance
-            var tm = new TaskManager(client);
+            var tm = client.ManagerFactory.Tasks;
             var taskView = tm.GetTaskView(runner.TaskId.Value);
 
-            var aim = new ActivityInstanceManager(client);
+            var aim = client.ManagerFactory.Activities;
 
             rmins.TaskView = taskView;
             rmins.RunningActivityInstance = aim.GetById(taskView.ActivityInstanceId.Value);
@@ -1170,7 +1170,7 @@ namespace saiflow.engine.Runtime
             var rmins = new WfRuntimeManagerReverse();
             rmins.WfExecutedResult = result = new WfExecutedResult();
             rmins.Sail = client;
-            var pim = new ProcessInstanceManager(client);
+            var pim = client.ProcessInstances;
             var processInstance = pim.GetProcessInstanceLatest(runner.AppInstanceId, runner.ProcessId, runner.Version);
             if (processInstance == null || processInstance.ProcessState != (short)ProcessStateEnum.Completed)
             {
@@ -1190,7 +1190,7 @@ namespace saiflow.engine.Runtime
             var processModel = ProcessModelFactory.CreateByProcessInstance(client, processInstance);
             var endActivity = processModel.GetActivity(endTransitionInstance.ToActivityId);
 
-            var aim = new ActivityInstanceManager(client);
+            var aim = client.ManagerFactory.Activities;
             var endActivityInstance = aim.GetById(endTransitionInstance.ToActivityInstanceId.Value);
 
             bool hasGatewayNode = false;
@@ -1261,7 +1261,7 @@ namespace saiflow.engine.Runtime
 
             rmins.AppRunner = runner;
 
-            var aim = new ActivityInstanceManager(client);
+            var aim = client.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
             var runningNode = aim.GetRunningNode(runner, out taskView);
 
@@ -1284,7 +1284,7 @@ namespace saiflow.engine.Runtime
                 runner.NextActivityPerformers, 
                 runner.Conditions);
 
-            var tm = new TaskManager(client);
+            var tm = client.ManagerFactory.Tasks;
             rmins.TaskView = taskView;
             rmins.RunningActivityInstance = runningNode;
             rmins.ProcessModel = processModel;

@@ -261,36 +261,6 @@ namespace saiflow.engine.Service
         int SaveRuleSet(RuleSetEntity entity);
         void DeleteRuleSet(string ruleSetCode);
 
-        #region Chain Service Interface
-        IWorkflowService CreateRunner(WfAppRunner runner);
-        IWorkflowService CreateRunner(string userId, string userName);
-        IWorkflowService UseApp(string appInstanceId, string appName, string appCode = null);
-        IWorkflowService UseProcess(string processId, string version = null);
-        IWorkflowService IfCondition(IDictionary<string, string> conditions);
-        IWorkflowService IfCondition(string name, string value);
-        IWorkflowService OnTask(int taskId);
-        IWorkflowService SetVariable(string name, string value);
-        IWorkflowService SetVariable(IDictionary<string, string> variables);
-        IWorkflowService NextStep(string activityId, PerformerList performerList);
-        IWorkflowService NextStep(IDictionary<string, PerformerList> nextActivityPerformers);
-        IWorkflowService NextStepInt(string userId, string userName);
-        IWorkflowService NextStepInt(PerformerList performerList);
-        IWorkflowService PrevStepInt();
-
-        //流转相关接口
-        //Flow related method
-        WfExecutedResult Start();
-        WfExecutedResult StartByMessage();
-        WfExecutedResult Run();
-        WfExecutedResult Withdraw();
-        WfExecutedResult SendBack();
-        WfExecutedResult Resend();
-        WfExecutedResult Revise();
-        WfExecutedResult Jump(JumpOptionEnum jumpOption = JumpOptionEnum.Default);
-        WfExecutedResult Reverse();
-        WfExecutedResult Reject();
-        WfExecutedResult Close();
-        WfExecutedResult SignForward();
-        #endregion
+        // 链式建造见 SailClient.CreateRunBuilder（B）；本接口仅为无状态执行（吃 WfAppRunner）。
     }
 }

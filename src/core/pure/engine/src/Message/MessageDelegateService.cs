@@ -167,7 +167,7 @@ namespace saiflow.engine.Message
 
             //封装下一步的步骤信息
             //Encapsulate the next step information
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             var runningActivityInstance = aim.GetActivityInstanceLatest(runner.AppInstanceId, runner.ProcessId, msgRunnerView.ActivityEntity.ActivityId);
             if (runningActivityInstance != null)
             {

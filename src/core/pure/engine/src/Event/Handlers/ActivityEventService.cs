@@ -37,7 +37,7 @@ namespace saiflow.engine.Event
         /// <returns></returns>
         public override T GetInstance<T>(int id)
         {
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             var entity = aim.GetById(SailSqlAccess.Sibling(Kit), id);
             return entity as T;
         }

@@ -91,7 +91,7 @@ namespace saiflow.engine.Pattern
                 kit);
 
             //插入任务数据
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             var newTaskId = tm.Insert(SailSqlAccess.Sibling(kit), toActivityInstance,
                 new Performer(WfDefine.SYSTEM_JOBTIMER_USER_ID, WfDefine.SYSTEM_JOBTIMER_USER_NAME),
                 runner);

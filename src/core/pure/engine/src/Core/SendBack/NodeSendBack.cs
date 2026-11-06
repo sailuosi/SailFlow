@@ -27,8 +27,8 @@ namespace saiflow.engine.Runtime
             Sail = client ?? throw new ArgumentNullException(nameof(client));
             _sendBackOperation = sendbackOperation;
             _kit = kit;
-            _activityInstanceManager = new ActivityInstanceManager(Sail);
-            _taskManager = new TaskManager(Sail);
+            _activityInstanceManager = Sail.ManagerFactory.Activities;
+            _taskManager = Sail.ManagerFactory.Tasks;
             _transitionInstanceManager = new TransitionInstanceManager(Sail);
         }
 

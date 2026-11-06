@@ -143,7 +143,7 @@ namespace saiflow.engine.Xpdl
             else if(currentGatewayActivity.GatewayDetail.DirectionType == GatewayDirectionEnum.ApprovalOrSplit)
             {
                 var fromActivity = fromTransition.FromActivity;
-                var aim = new ActivityInstanceManager(Sail);
+                var aim = Sail.ManagerFactory.Activities;
                 var nodePassedResult = aim.CheckActivityInstancePassedResult(SailSqlAccess.Sibling(kit), this.ActivityInstanceId);
 
                 //根据节点通过类型连线类型

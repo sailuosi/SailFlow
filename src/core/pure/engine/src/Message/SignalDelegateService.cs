@@ -157,7 +157,7 @@ namespace saiflow.engine.Message
             var resultList = new List<SignalConsumedResult>();
             //封装下一步的步骤信息
             //Encapsulate the next step information
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             var runningActivityInstanceList = aim.GetActivityInstanceList(jobInfo.ProcessId, jobInfo.Version, jobInfo.ActivityId);
             foreach (var activityInstance in runningActivityInstanceList)
             {

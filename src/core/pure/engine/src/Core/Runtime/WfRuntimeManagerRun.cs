@@ -82,7 +82,7 @@ namespace saiflow.engine.Runtime
         /// <summary>实例已 Completed 时走 Gate/Hook 三轨的 OnProcessCompleted（不再走 EventSubscriptionList）。</summary>
         private void FireProcessCompletedHooks(SQLBuilder kit)
         {
-            var pim = new ProcessInstanceManager(Sail);
+            var pim = Sail.ProcessInstances;
             var entity = pim.GetById(kit, RunningActivityInstance.ProcessInstanceId.Value);
             if (entity == null || entity.ProcessState != (short)ProcessStateEnum.Completed)
                 return;

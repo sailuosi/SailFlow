@@ -93,7 +93,7 @@ namespace saiflow.engine.Pattern
 
                 if (string.IsNullOrEmpty(processId))
                 {
-                    var processInstance = new ProcessInstanceManager(client).GetById(kit, processInstanceId);
+                    var processInstance = client.ProcessInstances.GetById(kit, processInstanceId);
                     if (processInstance == null)
                         throw new WorkflowException($"Process instance not found: id={processInstanceId}");
                     processId = processInstance.ProcessId;

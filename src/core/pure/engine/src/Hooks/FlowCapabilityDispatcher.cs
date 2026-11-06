@@ -39,7 +39,7 @@ namespace saiflow.engine.Hooks
             if (!string.IsNullOrEmpty(cached))
                 return cached;
 
-            var pm = new ProcessManager(Sail);
+            var pm = Sail.ManagerFactory.Processes;
             var entity = pm.GetByVersion(kit, processId, version, throwException: false);
             var code = entity?.ProcessCode;
             if (!string.IsNullOrEmpty(code))

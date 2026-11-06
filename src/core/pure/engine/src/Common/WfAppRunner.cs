@@ -7,6 +7,7 @@ using System.Text;
 namespace saiflow.engine.Common
 {
     /// <summary>
+    /// B · 命令入参袋（请求级）。可由 <c>SailClient.CreateRunBuilder(...).Build()</c> 产出；勿挂在 Client/Service 字段。
     /// Process executor (operator of business applications)
     /// Explanation: WfAppRunner is the object for transmitting process flow parameters, 
     /// including business data, resource data, and process definition data required for engine execution.

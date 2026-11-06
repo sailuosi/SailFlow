@@ -65,12 +65,12 @@ namespace saiflow.engine.Runtime
         {
             IDictionary<string, PerformerList> nextSteps = null;
 
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             TaskViewEntity taskView = tm.GetTaskOfMine(runner);
 
             //读取活动实例中记录的步骤预选数据
             //Read the pre selected data of the steps recorded in the activity instance
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             if (taskView.MainActivityInstanceId != null)
             {
                 var mainActivityInstanceId = taskView.MainActivityInstanceId.Value;
@@ -144,9 +144,9 @@ namespace saiflow.engine.Runtime
             using (var kit = Sail.UseRunSQL())
             {
                 TaskViewEntity taskView = null;
-                var tm = new TaskManager(Sail);
+                var tm = Sail.ManagerFactory.Tasks;
                 ProcessInstanceEntity processInstance = null;
-                var pim = new ProcessInstanceManager(Sail);
+                var pim = Sail.ProcessInstances;
                 if (runner.TaskId != null)
                 {
                     //运行中的流程

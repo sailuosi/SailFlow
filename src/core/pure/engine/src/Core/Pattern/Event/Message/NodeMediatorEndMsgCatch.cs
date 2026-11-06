@@ -38,7 +38,7 @@ namespace saiflow.engine.Pattern
             OnBeforeExecuteWorkItem();
 
             //将流程实例设为完成
-            ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
+            var pim = Sail.ProcessInstances;
             var kit = SailSqlAccess.Sibling(Kit);
             var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id.Value,
                 ActivityForwardContext.ActivityResource.AppRunner);
@@ -97,13 +97,13 @@ namespace saiflow.engine.Pattern
             string mainActivityId,
             SQLBuilder kit)
         {
-            var pm = new ProcessInstanceManager(Sail);
+            var pm = Sail.ProcessInstances;
             var mainProcessInstance = pm.GetByActivity(kit, mainActivityInstanceId);
             var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, SailSqlAccess.Sibling(kit), mainProcessInstance);
             var nextSteps = processModel.GetNextActivityTreeView(mainActivityId);
 
             //获取主流程任务
-            var task = new TaskManager(Sail).GetTaskByActivity(SailSqlAccess.Sibling(kit), mainProcessInstance.Id.Value, mainActivityInstanceId);
+            var task = Sail.ManagerFactory.Tasks.GetTaskByActivity(SailSqlAccess.Sibling(kit), mainProcessInstance.Id.Value, mainActivityInstanceId);
             var runner = new WfAppRunner
             {
                 AppName = mainProcessInstance.AppName,

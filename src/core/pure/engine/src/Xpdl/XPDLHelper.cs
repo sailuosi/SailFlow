@@ -133,7 +133,7 @@ namespace saiflow.engine.Xpdl
             out ProcessEntity catchProcessEntity)
         {
             Activity catchActivity = null;
-            var pm = new ProcessManager(client);
+            var pm = client.ManagerFactory.Processes;
             var processEntity = pm.GetByVersion(processInstance.ProcessId, processInstance.Version);
             var xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(processEntity.XmlContent);

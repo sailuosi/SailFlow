@@ -39,7 +39,7 @@ namespace saiflow.engine.Pattern
 
             var processInstanceId = eventService.GetProcessInstanceId();
             var kit = eventService.GetKit();
-            var processInstance = new ProcessInstanceManager(client).GetById(kit, processInstanceId);
+            var processInstance = client.ProcessInstances.GetById(kit, processInstanceId);
             var pvm = new ProcessVariableManager(client);
 
             foreach (var item in result.OutputVariables)
@@ -109,7 +109,7 @@ namespace saiflow.engine.Pattern
                 }
             }
 
-            var processInstance = new ProcessInstanceManager(client).GetById(kit, processInstanceId);
+            var processInstance = client.ProcessInstances.GetById(kit, processInstanceId);
             if (processInstance != null
                 && !string.IsNullOrWhiteSpace(processInstance.ProcessId)
                 && !string.IsNullOrWhiteSpace(processInstance.Version)
@@ -120,7 +120,7 @@ namespace saiflow.engine.Pattern
                 var inputDefs = defs?.Where(IsWfVariableInput).ToList() ?? new List<VariableEntity>();
                 if (inputDefs.Count > 0)
                 {
-                    var aim = new ActivityInstanceManager(client);
+                    var aim = client.ManagerFactory.Activities;
                     foreach (var def in inputDefs)
                     {
                         var key = (def.Name ?? string.Empty).Trim();

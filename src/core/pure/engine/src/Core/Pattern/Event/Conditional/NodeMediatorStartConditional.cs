@@ -45,7 +45,7 @@ namespace saiflow.engine.Pattern
 
                 if (result == true)
                 {
-                    ProcessInstanceManager pim = new ProcessInstanceManager(Sail);
+                    var pim = Sail.ProcessInstances;
                     var kit = SailSqlAccess.Sibling(Kit);
                     var newId = pim.Insert(kit, ActivityForwardContext.ProcessInstance);
                     ActivityForwardContext.ProcessInstance.Id = newId;

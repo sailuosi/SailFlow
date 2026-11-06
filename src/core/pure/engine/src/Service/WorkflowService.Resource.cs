@@ -30,7 +30,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<Role> GetRoleByProcess(string processId, string version)
         {
-            var processModel = ProcessModelFactory.CreateByProcess(Sail, processId, version);
+            var processModel = Sail.ProcessModelFactory.CreateByProcess(processId, version);
             var roleList = processModel.GetRoles();
 
             return roleList;
@@ -42,7 +42,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<Role> GetRoleUserListByProcess(string processId, string version)
         {
-            var processModel = ProcessModelFactory.CreateByProcess(Sail, processId, version);
+            var processModel = Sail.ProcessModelFactory.CreateByProcess(processId, version);
             var roleList = processModel.GetRoles();
             var idsin = roleList.Select(r => r.Id).ToList().ToArray();
 
@@ -98,7 +98,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<Form> GetFormList(string processId, string version)
         {
-            var processModel = ProcessModelFactory.CreateByProcess(Sail, processId, version);
+            var processModel = Sail.ProcessModelFactory.CreateByProcess(processId, version);
             var list = processModel.GetFormList();
             return list;
         }
@@ -109,7 +109,7 @@ namespace saiflow.engine.Service
         /// </summary>
         public IList<Form> GetFormFieldEditComp(FieldQuery query)
         {
-            var processModel = ProcessModelFactory.CreateByProcess(Sail, query.ProcessId, query.ProcessVersion);
+            var processModel = Sail.ProcessModelFactory.CreateByProcess(query.ProcessId, query.ProcessVersion);
             var formList = processModel.GetFormList();
 
             foreach (var form in formList)

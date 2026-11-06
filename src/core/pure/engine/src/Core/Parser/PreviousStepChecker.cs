@@ -36,7 +36,7 @@ namespace saiflow.engine.Runtime
         internal IList<NodeView> GetPreviousActivityTree(int taskId, out Boolean hasGatewayPassed)
         {
             hasGatewayPassed = false;
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             var runningNode = aim.GetByTask(taskId);
             var nodeList = GetPreviousActivityTree(runningNode, out hasGatewayPassed);
             return nodeList;
@@ -50,7 +50,7 @@ namespace saiflow.engine.Runtime
         internal IList<NodeView> GetPreviousActivityTree(WfAppRunner runner, out Boolean hasGatewayPassed)
         {
             hasGatewayPassed = false;
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             var runningNode = aim.GetRunningNode(runner);
             var nodeList = GetPreviousActivityTree(runningNode, out hasGatewayPassed);
             return nodeList;
@@ -62,11 +62,11 @@ namespace saiflow.engine.Runtime
         /// </summary>
         private IList<NodeView> GetPreviousActivityTree(ActivityInstanceEntity runningNode, out Boolean hasGatewayPassed)
         {
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
 
             //获取前置节点列表
             //Get the list of previous nodes
-            var processInstance = (new ProcessInstanceManager(Sail)).GetById(runningNode.ProcessInstanceId.Value);
+            var processInstance = Sail.ProcessInstances.GetById(runningNode.ProcessInstanceId.Value);
             var processModel = ProcessModelFactory.CreateByProcessInstance(Sail, processInstance);
             var previousActivityList = GetPreviousActivityList(runningNode, processModel, out hasGatewayPassed);
 
@@ -336,7 +336,7 @@ namespace saiflow.engine.Runtime
                 backSrcActivityInstanceId = runningNode.Id.Value;
             }
 
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             var runningTransitionList = transitionList
                 .Where(o => o.ToActivityInstanceId == backSrcActivityInstanceId)
                 .ToList();
@@ -371,7 +371,7 @@ namespace saiflow.engine.Runtime
                 .Where(o => o.ToActivityInstanceId == toActivityInstanceId)
                 .ToList();
 
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             foreach (var entity in previousTransitionList)
             {
                 var activityType = EnumHelper.ParseEnum<ActivityTypeEnum>(entity.FromActivityType.ToString());

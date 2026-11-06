@@ -260,7 +260,7 @@ namespace saiflow.engine.Pattern
                     //加签主节点分发操作
                     if (forwardContext.CurrentActivity.MultiSignDetail.ComplexType == ComplexTypeEnum.SignForward)
                     {
-                        var aim = new ActivityInstanceManager(client);
+                        var aim = client.ManagerFactory.Activities;
                         var miChildList = aim.GetActivityMulitipleInstanceWithState(forwardContext.FromActivityInstance.Id.Value, forwardContext.FromActivityInstance.ProcessInstanceId.Value);
 
                         //传入加签动态变量

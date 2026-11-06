@@ -20,7 +20,7 @@ namespace saiflow.engine.Runtime
         /// <param name="kit"></param>
         internal override void ExecuteInstanceImp(SQLBuilder kit)
         {
-            var processInstance = new ProcessInstanceManager(Sail)
+            var processInstance = Sail.ProcessInstances
                 .CreateNewProcessInstanceObject(base.AppRunner, base.ProcessModel.ProcessEntity);
 
             var startActivity = base.ProcessModel.GetStartActivity();

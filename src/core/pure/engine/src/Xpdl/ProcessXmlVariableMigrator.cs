@@ -39,7 +39,7 @@ namespace saiflow.engine.Xpdl
         public static MigrationResult MigrateFromDatabase(SailClient client, bool skipActivityIfWfVariableExists = true)
         {
             var result = new MigrationResult();
-            var pm = new ProcessManager(client);
+            var pm = client.ManagerFactory.Processes;
             List<ProcessEntity> all;
             try
             {

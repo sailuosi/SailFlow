@@ -105,7 +105,7 @@ namespace saiflow.engine.Manager
             var taskId = runner.TaskId;
             taskView = null;
 
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             ActivityInstanceEntity runningNode = null;
             if (taskId != null && taskId.Value > 0)
             {
@@ -164,7 +164,7 @@ namespace saiflow.engine.Manager
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             TaskViewEntity taskView = null;
             ActivityInstanceEntity runningNode = null;
 
@@ -1362,7 +1362,7 @@ namespace saiflow.engine.Manager
             string leaveVersion = null;
             try
             {
-                var pi = new ProcessInstanceManager(Sail).GetById(
+                var pi = Sail.ProcessInstances.GetById(
                     kit, mainActivityInstance.ProcessInstanceId.Value);
                 leaveProcessId = pi?.ProcessId ?? leaveProcessId;
                 leaveVersion = pi?.Version;

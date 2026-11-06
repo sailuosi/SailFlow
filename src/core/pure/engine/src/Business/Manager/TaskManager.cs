@@ -460,7 +460,7 @@ namespace saiflow.engine.Manager
                 {
                     var task = GetTask(kit, taskRunner.TaskId.Value);
                     SetTaskState(kit, task, taskRunner.UserId, taskRunner.UserName, TaskStateEnum.Reading);
-                    new ActivityInstanceManager(Sail).Read(kit, task.ActivityInstanceId.Value, taskRunner);
+                    Sail.ManagerFactory.Activities.Read(kit, task.ActivityInstanceId.Value, taskRunner);
                     kit.commit();
                 }
                 catch (System.Exception e)
@@ -521,7 +521,7 @@ namespace saiflow.engine.Manager
         {
             if (task?.ActivityInstanceId == null)
                 return;
-            var activityInstance = new ActivityInstanceManager(Sail).GetById(kit, task.ActivityInstanceId.Value);
+            var activityInstance = Sail.ManagerFactory.Activities.GetById(kit, task.ActivityInstanceId.Value);
             Sail.CapabilityDispatcher.FireTaskLifecycle(kit, task, activityInstance, runner, kind);
         }
 
@@ -546,7 +546,7 @@ namespace saiflow.engine.Manager
 
         internal WfDataManagedResult Entrust(SQLBuilder kit, TaskEntrustedEntity entity, bool cancelOriginalTask = true)
         {
-            var am = new ActivityInstanceManager(Sail);
+            var am = Sail.ManagerFactory.Activities;
             var activityInstance = am.GetByTask(kit, entity.TaskId.Value);
 
             if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
@@ -599,7 +599,7 @@ namespace saiflow.engine.Manager
                 && task.TaskState != (short)TaskStateEnum.Reading)
                 return WfDataManagedResult.Exception("Transfer task is not in to-do state.");
 
-            var am = new ActivityInstanceManager(Sail);
+            var am = Sail.ManagerFactory.Activities;
             var activityInstance = am.GetById(kit, task.ActivityInstanceId.Value);
             if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
                 && activityInstance.ActivityState != (short)ActivityStateEnum.Running)
@@ -669,7 +669,7 @@ namespace saiflow.engine.Manager
             }
             activityInstance.AssignedUserIds = ids.ToString();
             activityInstance.AssignedUserNames = names.ToString();
-            new ActivityInstanceManager(Sail).Update(kit, activityInstance);
+            Sail.ManagerFactory.Activities.Update(kit, activityInstance);
         }
 
         internal void CancelEntrustedTask(int taskId)
@@ -749,7 +749,7 @@ namespace saiflow.engine.Manager
         internal void Replace(SQLBuilder kit, int activityInstanceId, List<TaskReplacedEntity> replaced, WfAppRunner runner)
         {
             CancelTask(kit, activityInstanceId);
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             var activityInstance = aim.GetById(kit, activityInstanceId);
             activityInstance.AssignedUserIds = GenerateActivityAssignedUserIDs(replaced);
             activityInstance.AssignedUserNames = GenerateActivityAssignedUserNames(replaced);

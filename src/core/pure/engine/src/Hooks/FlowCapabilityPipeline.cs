@@ -55,7 +55,7 @@ namespace saiflow.engine.Hooks
             {
                 if (string.IsNullOrEmpty(ctx.Version))
                 {
-                    var processInstance = new ProcessInstanceManager(sail).GetById(kit, processInstanceId);
+                    var processInstance = sail.ProcessInstances.GetById(kit, processInstanceId);
                     ctx.Version = processInstance?.Version ?? ctx.Version;
                 }
             }

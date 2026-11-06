@@ -235,6 +235,7 @@ public sealed class SailClientBuilder
         }
 
         SailFlowCapabilityExtensions.ApplyPendingRegistrations(client, Services);
+        SailEngineFactoryExtensions.ApplyPendingFactories(client, Services);
 
         foreach (var d in Services.OrderBy(x => x.Order)
                      .Where(x => x.Phase == SailFeaturePhase.ConfigureClient))

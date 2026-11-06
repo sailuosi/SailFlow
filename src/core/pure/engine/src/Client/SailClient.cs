@@ -14,10 +14,11 @@ using saiflow.hub.Localize;
 namespace saiflow.engine.Client;
 
 /// <summary>
-/// 流程运行根实例（对齐 BeeFlow Client 模式）。
+/// A · 流程运行根实例（对齐 BeeFlow Client 模式；每实例一套富功能/工厂）。
 /// 具体 <see cref="DBInstance"/> 仅在应用宿主构建时注入，业务层通过 DI 获取本实例。
 /// 数据访问终态约定：无事务用 <see cref="UseRunSQL"/>；有事务由上游灌入同一 <see cref="SQLBuilder"/>（begin/commit）。
 /// 业务不持有 DBInstance，不依赖 DBExecutor。切片完成须符合约定，禁止中间态。详见 doc/slick/08。
+/// 寿命立法见 doc/sail/dev/专题-对象生命周期与复用边界.md。
 /// </summary>
 public partial class SailClient
 {

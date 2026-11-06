@@ -74,7 +74,7 @@ namespace saiflow.engine.Pattern
             {
                 if (activityInstanceManager == null)
                 {
-                    activityInstanceManager = new ActivityInstanceManager(Sail);
+                    activityInstanceManager = Sail.ManagerFactory.Activities;
                 }
                 return activityInstanceManager;
             }
@@ -87,7 +87,7 @@ namespace saiflow.engine.Pattern
             {
                 if (taskManager == null)
                 {
-                    taskManager = new TaskManager(Sail);
+                    taskManager = Sail.ManagerFactory.Tasks;
                 }
                 return taskManager;
             }
@@ -99,7 +99,7 @@ namespace saiflow.engine.Pattern
             get
             {
                 if (processInstanceManager == null)
-                    processInstanceManager = new ProcessInstanceManager(Sail);
+                    processInstanceManager = Sail.ProcessInstances;
                 return processInstanceManager;
             }
         }

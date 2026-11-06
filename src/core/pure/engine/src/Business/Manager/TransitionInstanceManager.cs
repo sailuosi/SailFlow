@@ -166,7 +166,7 @@ namespace saiflow.engine.Manager
             string appInstanceId, string processId, string version)
         {
             IEnumerable<TransitionInstanceEntity> list = new List<TransitionInstanceEntity>();
-            var pim = new ProcessInstanceManager(Sail);
+            var pim = Sail.ProcessInstances;
             var pi = pim.GetProcessInstanceCurrent(appInstanceId, processId, version);
             if (pi != null)
                 list = GetTransitionInstanceList(appInstanceId, processId, pi.Id.Value);

@@ -2,12 +2,13 @@ using System;
 using saiflow.hub.Resource;
 using saiflow.hub.Form;
 using saiflow.engine.Client;
+using saiflow.engine.Factories;
 
 namespace saiflow.engine.Service
 {
     /// <summary>
-    /// Workflow Service - Main Entry
-    /// 工作流服务 - 主入口
+    /// H · 无状态办理执行器：持 A=<see cref="SailClient"/>，动词只吃 <see cref="Common.WfAppRunner"/> 参数；
+    /// 不持链式会话 / Runner 字段。建造见 <c>Sail.CreateRunBuilder</c>。
     /// </summary>
     public partial class WorkflowService : IWorkflowService
     {
@@ -16,6 +17,12 @@ namespace saiflow.engine.Service
         /// 运行根实例（对齐 mooSQL DBInstance 下传）。
         /// </summary>
         protected SailClient Sail { get; }
+
+        /// <summary>A · Runtime 工厂（默认转发旧 static）。</summary>
+        protected DefaultRuntimeFactory Runtimes => SailFactoryAccess.Runtime(Sail);
+
+        /// <summary>A · Manager 工厂（含 internal ProcessInstances）。</summary>
+        protected DefaultManagerFactory Managers => SailFactoryAccess.Managers(Sail);
 
         /// <summary>
         /// Role User Resource Service Interface

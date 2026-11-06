@@ -77,7 +77,7 @@ namespace saiflow.engine.Xpdl
             if (_modelCache.TryGetValue(cacheKey, out var cached))
                 return cached;
 
-            var pm = new ProcessManager(client);
+            var pm = client.ManagerFactory.Processes;
             var entity = pm.GetByVersion(kit, processId, version, false);
 
             if (entity == null)
@@ -173,7 +173,7 @@ namespace saiflow.engine.Xpdl
                 if (subProcessNode.SubProcessNested == null)
                 {
                     //Referenced from outer
-                    var pm = new ProcessManager(client);
+                    var pm = client.ManagerFactory.Processes;
                     entity = pm.GetById(kit, subProcessNode.SubProcessDefId);
                 }
                 else
@@ -246,7 +246,7 @@ namespace saiflow.engine.Xpdl
             int subProcessDefId,
             string subProcessId)
         {
-            var pm = new ProcessManager(client);
+            var pm = client.ManagerFactory.Processes;
             ProcessEntity processEntity = null;
             if (subProcessType.HasValue 
                 && subProcessType.Value == SubProcessTypeEnum.Referenced)

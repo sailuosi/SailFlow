@@ -23,12 +23,12 @@ namespace saiflow.engine.Runtime
         {
             WfExecutedResult result = base.WfExecutedResult;
 
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             tm.Complete(SailSqlAccess.Sibling(kit), this.TaskView.Id.Value, base.AppRunner);
 
             //取消当前其它处于办理状态的节点
             //Cancel other nodes currently in processing status
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             var runningList = aim.GetRunningActivityInstanceList(SailSqlAccess.Sibling(kit), base.AppRunner.AppInstanceId, base.AppRunner.ProcessId, base.AppRunner.Version);
             foreach (var ai in runningList)
             {
