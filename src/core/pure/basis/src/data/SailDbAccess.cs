@@ -45,21 +45,4 @@ namespace saiflow.data
         public static SooRepository<T, K> UseRepo<T, K>() where T : class, new()
             => GetRequired().useRepo<T, K>();
     }
-
-    /// <summary>
-    /// <see cref="IRepository"/> 工厂。默认 <see cref="MooSqlRepository"/>。
-    /// </summary>
-    public static class RepositoryProvider
-    {
-        private static Func<IRepository> _factory = () => new MooSqlRepository();
-
-        public static void Use(Func<IRepository> factory)
-        {
-            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-        }
-
-        public static void UseMooSql() => Use(() => new MooSqlRepository());
-
-        public static IRepository Create() => _factory();
-    }
 }

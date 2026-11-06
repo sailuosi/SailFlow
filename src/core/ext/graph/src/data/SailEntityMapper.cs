@@ -8,7 +8,7 @@ namespace saiflow.data
     /// <summary>
     /// 读取实体映射：优先 mooSQL <c>[SooTable]</c>/<c>[SooColumn]</c>（属性 Name / IsPrimaryKey），
     /// 兼容过渡期自建 <c>[Table]</c>/<c>[Column]</c>（字段 TableName/ColumnName）。
-    /// 供 <see cref="MooSqlRepository"/> / <see cref="SailEntityKit"/> 构建 SQL，不依赖 DapperExtensions。
+    /// 供 <see cref="SailEntityKit"/> / <see cref="SailCmdRunner"/> 构建 SQL，不依赖 DapperExtensions。
     /// </summary>
     public static class SailEntityMapper
     {

@@ -1,4 +1,3 @@
-using saiflow.data;
 using saiflow.AI.Entity;
 using saiflow.AI.Configuration;
 using saiflow.AI.Implementation;
@@ -20,7 +19,7 @@ namespace saiflow.AI.Manager
     /// Knowledge Base Document Manager
     /// 知识库文档管理类（所有操作通过 Supabase REST API 完成）
     /// </summary>
-    public class KbDocumentManager : ManagerBase
+    public class KbDocumentManager
     {
         private readonly AiAppConfigProviderOptions _configOptions;
 
