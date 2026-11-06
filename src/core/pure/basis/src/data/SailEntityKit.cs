@@ -36,9 +36,6 @@ namespace saiflow.data
         public static string KeyColumn<T>() where T : class
             => SailEntityMapper.GetColumnMaps<T>().FirstOrDefault(m => m.IsKey)?.ColumnName ?? "id";
 
-        /// <summary>配置 INSERT 字段；调用方再 <c>doInsert</c> 或 <c>toInsert</c>。</summary>
-        public static (SQLBuilder Kit, object KeyValue) PrepareInsert<T>(T entity, SQLBuilder kit = null) where T : class
-            => PrepareInsertOnTable(entity, SailEntityMapper.ResolveTableName<T>(), kit);
 
         /// <summary>向指定物理表 INSERT（热分表 / 冷表）。</summary>
         public static (SQLBuilder Kit, object KeyValue) PrepareInsertOnTable<T>(
@@ -69,8 +66,6 @@ namespace saiflow.data
             return (kit, keyVal);
         }
 
-        public static SQLBuilder PrepareUpdate<T>(T entity, SQLBuilder kit = null) where T : class
-            => PrepareUpdateOnTable(entity, SailEntityMapper.ResolveTableName<T>(), kit);
 
         /// <summary>在指定物理表 UPDATE。</summary>
         public static SQLBuilder PrepareUpdateOnTable<T>(
@@ -103,8 +98,6 @@ namespace saiflow.data
             return kit.where(keyMap.ColumnName, keyVal);
         }
 
-        public static SQLBuilder PrepareDeleteById<T>(object primaryId, SQLBuilder kit = null) where T : class
-            => PrepareDeleteByIdOnTable<T>(primaryId, SailEntityMapper.ResolveTableName<T>(), kit);
 
         /// <summary>在指定物理表按主键 DELETE。</summary>
         public static SQLBuilder PrepareDeleteByIdOnTable<T>(
@@ -115,8 +108,6 @@ namespace saiflow.data
             return (kit ?? NewKit()).setTable(physicalTable).where(KeyColumn<T>(), primaryId);
         }
 
-        public static SQLBuilder PrepareSelectById<T>(object primaryId, SQLBuilder kit = null) where T : class
-            => PrepareSelectByIdOnTable<T>(primaryId, SailEntityMapper.ResolveTableName<T>(), kit);
 
         /// <summary>在指定物理表按主键 SELECT。</summary>
         public static SQLBuilder PrepareSelectByIdOnTable<T>(
@@ -130,57 +121,10 @@ namespace saiflow.data
                 .where(KeyColumn<T>(), primaryId);
         }
 
-        public static SQLBuilder PrepareSelectAll<T>(SQLBuilder kit = null) where T : class
-        {
-            var table = SailEntityMapper.ResolveTableName<T>();
-            return (kit ?? NewKit()).select("*").from(table);
-        }
 
-        public static SQLBuilder PrepareSelectByIds<T>(IEnumerable<object> ids, SQLBuilder kit = null) where T : class
-        {
-            if (ids == null)
-                throw new ArgumentNullException(nameof(ids));
-            var table = SailEntityMapper.ResolveTableName<T>();
-            var list = ids as IList<object> ?? ids.ToList();
-            return (kit ?? NewKit())
-                .select("*")
-                .from(table)
-                .whereIn(KeyColumn<T>(), list);
-        }
 
-        public static SQLBuilder PrepareSelectByName<T>(string colName, object value, SQLBuilder kit = null) where T : class
-        {
-            var table = SailEntityMapper.ResolveTableName<T>();
-            return (kit ?? NewKit()).select("*").from(table).where(colName, value);
-        }
 
-        public static SQLBuilder PrepareDeleteByIds<T>(IEnumerable<object> ids, SQLBuilder kit = null) where T : class
-        {
-            if (ids == null)
-                throw new ArgumentNullException(nameof(ids));
-            var table = SailEntityMapper.ResolveTableName<T>();
-            var list = ids as IList<object> ?? ids.ToList();
-            return (kit ?? NewKit()).setTable(table).whereIn(KeyColumn<T>(), list);
-        }
 
-        public static string ResolveSql(SQLCmd cmd)
-        {
-            if (cmd == null)
-                throw new ArgumentNullException(nameof(cmd));
-            if (cmd.para != null)
-                return cmd.para.ResolveDelayParas(cmd.sql) ?? cmd.sql;
-            return cmd.sql;
-        }
 
-        /// <summary>同 conn/trans 执行（ADO；不经 Dapper）。</summary>
-        public static int Execute(IDbConnection conn, SQLCmd cmd, IDbTransaction transaction = null)
-            => SailCmdRunner.ExecuteOnConn(conn, ResolveSql(cmd), cmd?.para, transaction);
-
-        /// <summary>同 conn/trans 查询实体（ADO + SailEntityMapper）。</summary>
-        public static IEnumerable<T> Query<T>(IDbConnection conn, SQLCmd cmd, IDbTransaction transaction = null) where T : class
-            => SailCmdRunner.QueryEntitiesOnConn<T>(conn, ResolveSql(cmd), cmd?.para, transaction);
-
-        public static T QueryFirstOrDefault<T>(IDbConnection conn, SQLCmd cmd, IDbTransaction transaction = null) where T : class
-            => Query<T>(conn, cmd, transaction).FirstOrDefault();
     }
 }

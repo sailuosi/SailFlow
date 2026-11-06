@@ -76,23 +76,7 @@ namespace saiflow.engine.HotShard
             return false;
         }
 
-        public static string ResolveProcessId(SailClient sail, int processInstanceId)
-        {
-            if (sail == null || processInstanceId <= 0)
-                return null;
-            try
-            {
-                using (var kit = sail.UseRunSQL())
-                {
-                    var pi = kit.useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
-                    return pi?.ProcessId;
-                }
-            }
-            catch
-            {
-                return null;
-            }
-        }
+
 
         public static string ResolveProcessId(SQLBuilder kit, int processInstanceId)
         {
