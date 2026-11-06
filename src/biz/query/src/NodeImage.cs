@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace saiflow.engine.Common
+namespace saiflow.biz.query
 {
     /// <summary>
-    /// Activity running info
+    /// Activity running info（查询展示用，非引擎主路径）
     /// 流转信息
     /// </summary>
     public class NodeImage
@@ -15,12 +10,12 @@ namespace saiflow.engine.Common
         /// Activity Instance Id
         /// 节点实例Id
         /// </summary>
-        public Int32 Id { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// Activity Name
         /// 节点名称
         /// </summary>
-        public String ActivityName { get; set; }
+        public string ActivityName { get; set; }
     }
 }

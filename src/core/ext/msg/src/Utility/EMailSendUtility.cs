@@ -3,19 +3,19 @@ using System.ComponentModel;
 using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
-using saiflow.engine.Entity;
-using saiflow.engine.Manager;
-using saiflow.engine.Common;
-using saiflow.hub.Localize;
 using saiflow.engine.Client;
+using saiflow.engine.Common;
+using saiflow.engine.Manager;
 
-namespace saiflow.engine.Utility
+namespace saiflow.msg
 {
     /// <summary>
-    /// EMail send utility — SMTP 取自已注册的 <see cref="SailClient.Config"/>。
+    /// SMTP 发送工具（默认待办邮件通道使用；SMTP 取自 <see cref="SailClient.Config"/>）。
     /// </summary>
     public class EMailSendUtility
     {
+        private const string TaskEmailSendError = "PROCESS TASK EMAIL SEND ERROR";
+
         public event EventHandler OnEMailSendCompleted;
 
         private readonly int TaskId;
@@ -38,18 +38,18 @@ namespace saiflow.engine.Utility
                 Credentials = new System.Net.NetworkCredential(
                     cfg.SmtpAccount,
                     cfg.SmtpPassword),
-                Host      = cfg.SmtpHost,
-                Port      = cfg.SmtpPort,
+                Host = cfg.SmtpHost,
+                Port = cfg.SmtpPort,
                 EnableSsl = cfg.SmtpSsl,
             };
 
             var mail = new MailMessage
             {
-                Subject         = title,
-                Body            = body,
-                From            = new MailAddress(cfg.SmtpAccount),
-                BodyEncoding    = Encoding.UTF8,
-                IsBodyHtml      = true,
+                Subject = title,
+                Body = body,
+                From = new MailAddress(cfg.SmtpAccount),
+                BodyEncoding = Encoding.UTF8,
+                IsBodyHtml = true,
             };
             mail.To.Add(new MailAddress(receiveEmail));
 
@@ -64,7 +64,7 @@ namespace saiflow.engine.Utility
                 if (e.Error != null && !string.IsNullOrEmpty(e.Error.Message))
                 {
                     var callbackMailMessage = e.UserState as MailMessage;
-                    LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_TASK_EMAIL_ERROR, LogEventType.Error,
+                    LogManager.RecordLog(Sail, TaskEmailSendError, LogEventType.Error,
                         LogPriority.Normal, callbackMailMessage, e.Error);
                 }
                 callbackClient.Dispose();

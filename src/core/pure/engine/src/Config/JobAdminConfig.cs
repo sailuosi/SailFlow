@@ -11,12 +11,5 @@ namespace saiflow.engine.Config
         public const string DefaultSmtpPassword = "123456789";
         public const string DefaultSmtpHost = "smtp.abc.com";
         public const int DefaultSmtpPort = 25;
-
-        // 兼容旧引用名（默认值）
-        internal static readonly string EMailSendUtility_LocalHostWebApp = DefaultLocalHostWebApp;
-        internal static readonly string EMailSendUtility_SendEMailAccount = DefaultSmtpAccount;
-        internal static readonly string EMailSendUtility_SendEMailPassword = DefaultSmtpPassword;
-        internal static readonly string EMailSendUtility_SendEMailHost = DefaultSmtpHost;
-        internal static readonly int EMailSendUtility_SendEMailHostPort = DefaultSmtpPort;
     }
 }

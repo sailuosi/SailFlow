@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace saiflow.engine.Common
+namespace saiflow.biz.query
 {
     /// <summary>
-    /// Transition Image
+    /// Transition Image（查询展示用，非引擎主路径）
     /// 转移信息
     /// </summary>
     public class TransitionImage
@@ -16,12 +10,12 @@ namespace saiflow.engine.Common
         /// Transition Instance Id
         /// 转移实例Id
         /// </summary>
-        public Int32 Id { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// Transition Id
         /// 转移Id
         /// </summary>
-        public String TransitionId { get; set; }
+        public string TransitionId { get; set; }
     }
 }

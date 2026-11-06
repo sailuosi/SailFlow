@@ -42,10 +42,6 @@ namespace saiflow.engine.Common
         public const string WF_VARIABLE_DIRECT_NEXTSTEP = "WF_VARIABLE_DIRECT_NEXTSTEP";
         public const string WF_VARIABLE_DIRECT_NEXTSTEP_VALUE = "1";
 
-        //邮件发送
-        //Email sending
-        public const string WF_PROCESS_TASK_EMAIL_ERROR = "PROCESS TASK EMAL SEND ERROR";
-
         //外部事件注册标志
         //External event registration flag
         public const bool WF_PROCESS_REGISTER_EVENT = true;
