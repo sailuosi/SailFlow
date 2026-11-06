@@ -47,9 +47,15 @@ namespace saiflow.engine.Runtime
         {
             NextStepInfo nextStepInfo = new NextStepInfo();
             var nextResult = GetNextActivityRoleUserTree(resourceService, runner, condition);
+            if (nextResult == null)
+                return nextStepInfo;
+
             nextStepInfo.Message = nextResult.Message;
             nextStepInfo.NextActivityRoleUserTree = nextResult.StepList;
-            if (nextResult.StepList != null && nextResult.StepList.Count > 0)
+            // 预选办理人依赖运行中 TaskView；发起前预览没有任务，跳过以免 NRE
+            if (nextResult.StepList != null
+                && nextResult.StepList.Count > 0
+                && (runner.TaskId != null || !string.IsNullOrEmpty(runner.AppInstanceId)))
             {
                 nextStepInfo.NextActivityPerformers = GetNextActivityPerformersPriliminary(runner);
             }
@@ -69,6 +75,9 @@ namespace saiflow.engine.Runtime
 
             var tm = Sail.ManagerFactory.Tasks;
             TaskViewEntity taskView = tm.GetTaskOfMine(runner);
+            // 发起前 / 无我的任务：无可读的预选步骤
+            if (taskView == null)
+                return nextSteps;
 
             //读取活动实例中记录的步骤预选数据
             //Read the pre selected data of the steps recorded in the activity instance
@@ -218,16 +227,25 @@ namespace saiflow.engine.Runtime
                 {
                     // 流程准备启动：从「开始事件」取下一步（首个办理节点），勿从 GetFirstActivity 再往后跳一跳
                     processModel = Sail.ProcessModelFactory.CreateByProcess( runner.ProcessId, runner.Version);
-                    var startActivity = processModel.GetStartActivity();
+                    var startActivity = processModel?.GetStartActivity();
+                    if (startActivity == null)
+                    {
+                        throw new WorkflowException(
+                            Sail.Messages.GetEngineMessage("nextstepparser.getnextactivityroleusertree.error")
+                            ?? "start activity not found");
+                    }
                     nextTreeResult = processModel.GetNextActivityListView(startActivity.ActivityId,
                         null,
                         condition,
                         kit);
-                    foreach (var ns in nextTreeResult.StepList)
+                    if (nextTreeResult?.StepList != null)
                     {
-                        var roleIDs = ns.Roles != null ? ns.Roles.Select(x => x.Id).ToArray() : Array.Empty<string>();
-                        if (roleIDs.Length > 0)
-                            ns.Users = resourceService.GetUserListByRoleReceiverType(roleIDs, runner.UserId, (int)ns.ReceiverType);
+                        foreach (var ns in nextTreeResult.StepList)
+                        {
+                            var roleIDs = ns.Roles != null ? ns.Roles.Select(x => x.Id).ToArray() : Array.Empty<string>();
+                            if (roleIDs.Length > 0)
+                                ns.Users = resourceService.GetUserListByRoleReceiverType(roleIDs, runner.UserId, (int)ns.ReceiverType);
+                        }
                     }
                 }
             }

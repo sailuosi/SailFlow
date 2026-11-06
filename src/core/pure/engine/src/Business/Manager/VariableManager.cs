@@ -117,7 +117,8 @@ namespace saiflow.engine.Manager
                 item.Version = version;
                 item.ActivityId = activityId;
                 item.SortOrder = order++;
-                item.Id = 0;
+                // 自增主键新建须 null，勿写 0（会进 INSERT 撞 PRIMARY KEY）
+                item.Id = null;
                 Insert(kit, item);
             }
         }

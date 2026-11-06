@@ -12,7 +12,9 @@ namespace saiflow.engine.HotShard
     {
         public static int InsertReturnId<T>(SQLBuilder kit, string physicalTable, T entity) where T : class
         {
-            var idObj = kit.insertReturnId(entity);
+            var idObj = string.IsNullOrWhiteSpace(physicalTable)
+                ? kit.insertReturnId(entity)
+                : kit.insertReturnId(entity, physicalTable);
             return Convert.ToInt32(idObj);
         }
 

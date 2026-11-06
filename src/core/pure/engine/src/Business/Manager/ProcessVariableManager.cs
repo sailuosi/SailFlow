@@ -292,12 +292,28 @@ namespace saiflow.engine.Manager
             if (string.IsNullOrWhiteSpace(entity.ProcessId) && entity.ProcessInstanceId.HasValue)
                 entity.ProcessId = ResolveProcessId(kit, entity.ProcessInstanceId.Value);
 
-            ProcessVariableEntity existProcessVariable;
-            if (entity.Id != 0)
+            ProcessVariableEntity existProcessVariable = null;
+            // Id 未赋值（null/0）视为新建；勿用 !=0（null!=0 为 true，会误走 GetById）
+            if (entity.Id is > 0)
+            {
                 existProcessVariable = GetVariableById(kit, entity.Id.Value);
-            else
-                existProcessVariable = GetVariableByActivity(
-                    kit, entity.ProcessInstanceId.Value, entity.ActivityInstanceId.Value, entity.Name);
+            }
+            else if (entity.ProcessInstanceId is > 0)
+            {
+                var isProcessScope = string.Equals(
+                    entity.VariableScope,
+                    ProcessVariableScopeEnum.Process.ToString(),
+                    StringComparison.OrdinalIgnoreCase);
+                if (isProcessScope)
+                {
+                    existProcessVariable = GetVariableByProcess(kit, entity.ProcessInstanceId.Value, entity.Name);
+                }
+                else if (entity.ActivityInstanceId is > 0)
+                {
+                    existProcessVariable = GetVariableByActivity(
+                        kit, entity.ProcessInstanceId.Value, entity.ActivityInstanceId.Value, entity.Name);
+                }
+            }
 
             if (existProcessVariable != null)
             {
@@ -309,6 +325,8 @@ namespace saiflow.engine.Manager
                 return existProcessVariable.Id.Value;
             }
 
+            // 新建：清空 Id，避免 INSERT 带 id=0 撞 UNIQUE
+            entity.Id = null;
             entity.UpdatedDateTime = DateTime.UtcNow;
             return Insert(kit, entity);
         }
