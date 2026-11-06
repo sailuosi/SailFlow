@@ -20,10 +20,11 @@
 | [todo-产品缺口.md](./todo-产品缺口.md) | **活动缺口**：联调 + 余债；已接线见 [progress/2026-11-04-产品缺口接线归档.md](./progress/2026-11-04-产品缺口接线归档.md) |
 | [存疑参考功能点.md](./存疑参考功能点.md) | **存疑对照**：外来引擎功能点（如 AntFlow 承办）；不默认纳入基线 |
 | [特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md) | **OA 动词**：场景/名称、Sail 编码、执行含义；含候选未入码表项 |
-| [dev/开发手册-OA命令执行链路.md](./dev/开发手册-OA命令执行链路.md) | **开发手册**：Host → WorkflowService → Factory → Runtime → Mediator/Manager → DB（类·方法） |
+| [dev/开发手册-OA命令执行链路.md](./dev/开发手册-OA命令执行链路.md) | **开发手册**：Host → WorkflowService → Factory → Runtime → Mediator/Manager → DB（D3+D4） |
 | [dev/专题-对象生命周期与复用边界.md](./dev/专题-对象生命周期与复用边界.md) | **规范**：A/B/C/H、四槽、入参袋 vs 编排袋（D3 + D4-a/b 已落地） |
 | [done/专题-对象生命周期与复用边界-分析归档.md](./done/专题-对象生命周期与复用边界-分析归档.md) | **归档**：寿命专题动机 / 利弊 / 纪要 / 修订流水 |
+| [done/残旧口径清出-OA手册与基线-2026-11-06.md](./done/残旧口径清出-OA手册与基线-2026-11-06.md) | **归档**：自 OA 手册/基线清出的 D3 前样例 |
 | [progress/](./progress/) | 分期落地记录（Hook、Feature DependsOn 等） |
-| [done/](./done/) | 已落地专题的分析归档 |
+| [done/](./done/) | 已落地专题的分析归档 / 残旧口径 |
 
 产品壳（菜单、Host API、办理 UX）见宿主仓 `sleveen-admin/doc/sailflow-features.md`。

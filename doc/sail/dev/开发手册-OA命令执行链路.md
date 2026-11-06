@@ -1,9 +1,10 @@
 # 开发手册 · OA 命令执行链路（类 / 方法级）
 
-> 状态：**现行实现对齐说明**（2026-11-06）  
+> 状态：**现行实现对齐说明**（2026-11-06；**D3 + D4-a/b**）  
 > 用途：从宿主调度入口追到 DB 读写，固化主要办理动词的**类·方法**链路，方便排障与改命令。  
-> **读法（D3 已落地）**：装配经 `SailClient` 四槽（`RuntimeFactory` / `MediatorFactory` / `ProcessModelFactory` / `ManagerFactory`）；Runtime/Mediator 内部为 `RuntimeInstanceCreator` / `MediatorInstanceCreator`。寿命立法见 [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md)。  
-> 关联：[特性说明-中国式OA审批要素.md](../特性说明-中国式OA审批要素.md) · [特性说明-引擎能力基线.md](../特性说明-引擎能力基线.md) · [特性设计-回调与事件.md](../特性设计-回调与事件.md) · [草案-命令执行管道.md](../草案-命令执行管道.md) · [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) · [架构设计-项目依赖与分层.md](../架构设计-项目依赖与分层.md)
+> **读法**：装配经 `SailClient` 四槽（`RuntimeFactory` / `MediatorFactory` / `ProcessModelFactory` / `ManagerFactory`）；Runtime/Mediator 内部为 `RuntimeInstanceCreator` / `MediatorInstanceCreator`；Manager 经 `ManagerFactory`；Service **无状态**（不扣 Runner）。寿命立法见 [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md)。  
+> 关联：[特性说明-中国式OA审批要素.md](../特性说明-中国式OA审批要素.md) · [特性说明-引擎能力基线.md](../特性说明-引擎能力基线.md) · [特性设计-回调与事件.md](../特性设计-回调与事件.md) · [草案-命令执行管道.md](../草案-命令执行管道.md) · [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) · [架构设计-项目依赖与分层.md](../架构设计-项目依赖与分层.md)  
+> D3 前残旧样例（`_wfAppRunner` / `new *Manager` / `NodeSendBackFactory`）已迁 [../done/残旧口径清出-OA手册与基线-2026-11-06.md](../done/残旧口径清出-OA手册与基线-2026-11-06.md)。
 
 ---
 
@@ -62,7 +63,7 @@ Gate / 成功后 Hook：
 | `kit.useRepo<TEntity, TKey>()` | 主键 CRUD（`GetById` / `InsertReturnId` / `Update`…） |
 | `kit.useClip()` | 条件查询 / 批量更新 |
 
-Manager 经 `Sail.ManagerFactory` / `SailFactoryAccess.Managers`；模型经 `Sail.client.ProcessModelFactory.CreateBy*`。
+Manager 经 `Sail.ManagerFactory` / `SailFactoryAccess.Managers`；模型经 `Sail.ProcessModelFactory.CreateBy*`。
 
 ---
 
@@ -146,7 +147,7 @@ WfRuntimeManagerRun.ExecuteInstanceImp
 | Gate | `FlowOperation.Start` |
 | Runtime | `WfRuntimeManagerStartup.ExecuteInstanceImp` |
 | 建实例对象 | `ProcessInstanceManager.CreateNewProcessInstanceObject`（内存实体，尚未 Insert） |
-| Mediator | `ActivityForwardContext.CreateStartupContext` → `MediatorFactory.CreateNodeMediator` → 通常 `NodeMediatorStart.ExecuteWorkItem` |
+| Mediator | `ActivityForwardContext.CreateStartupContext` → `SailFactoryAccess.Mediator(Sail).CreateNodeMediator` → 通常 `NodeMediatorStart.ExecuteWorkItem` |
 | Start 写库 | `ProcessInstanceManager.Insert` · `ActivityInstanceManager.Insert` + `Complete`（开始节点自动完）· `ContinueForwardCurrentNode` → 首任务 AI/Task/Transition |
 | Hook | `OnProcessStarted` |
 
@@ -174,7 +175,7 @@ WfRuntimeManagerRun.ExecuteInstanceImp
 | Factory 读库 | `ActivityInstanceManager.GetRunningNode` · `IsMineTask` · `ProcessInstanceManager.GetById` · `client.ProcessModelFactory.CreateByProcessInstance` · `PreviousStepChecker.GetPreviousActivityList` |
 | Gate | `FlowOperation.SendBack` |
 | Runtime | `WfRuntimeManagerSendBack.ExecuteInstanceImp` |
-| 退回执行 | `DistributeEachPerformerTask` → `NodeSendBackFactory.CreateNodeReverter` → `NodeSendBack*.Execute`（按普通/会签组合生成回退 AI+Task+Transition） |
+| 退回执行 | `DistributeEachPerformerTask` → `SailFactoryAccess.Mediator(Sail).CreateNodeSendBack` → `NodeSendBack*.Execute`（按普通/会签组合生成回退 AI+Task+Transition） |
 | 收尾写库 | `SetRunningNodeSendBack` → `TaskManager.SendBack` · `ActivityInstanceManager.SendBack` |
 | Hook | `OnProcessSendBacked` |
 
@@ -345,18 +346,12 @@ public Task<WfExecutedResult> ExecuteAsync(SailOperationContext ctx, Cancellatio
 ### 6.3 WorkflowService：事务 · 锁 · Core
 
 ```csharp
-// WorkflowService.ProcessExecution.cs
+// WorkflowService.ProcessExecution.cs（H · 无状态；不扣 runner 字段）
 public async Task<WfExecutedResult> RunProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
 {
-    _wfAppRunner = runner;
-    using (var kit = Sail.UseRunSQL())
-    {
-        kit.beginTransaction();
-        var result = await RunAsync(kit, cancellationToken); // 内含 AcquireAsync + ExecuteRunCoreAsync
-        if (result.Status == WfExecutedStatus.Success)
-            kit.commit();
-        return result;
-    }
+    cancellationToken.ThrowIfCancellationRequested();
+    // CommitOnSuccessAsync：UseRunSQL + beginTransaction + AcquireAsync → 成功才 commit
+    return await CommitOnSuccessAsync(kit => RunAsync(kit, runner, cancellationToken));
 }
 ```
 
@@ -394,12 +389,12 @@ WfExecutedResult FinishRunCore(SQLBuilder kit, WfAppRunner runner,
 ### 6.4 Factory：预载当前任务与运行节点（读库）
 
 ```csharp
-// RuntimeFactory.CreateRuntimeInstanceAppRunning
-var aim = new ActivityInstanceManager(client);
+// RuntimeInstanceCreator.CreateRuntimeInstanceAppRunning（经 ManagerFactory / ProcessInstances）
+var aim = _sail.ManagerFactory.Activities;
 var runningNode = aim.GetRunningNode(SailSqlAccess.Sibling(kit), runner, out taskView);
 // 校验 AssignedUserIds 含当前用户、Task 处于 Running
-var processInstance = (new ProcessInstanceManager(client)).GetById(kitForPi, runningNode.ProcessInstanceId.Value);
-var processModel = client.ProcessModelFactory.CreateByTask(SailSqlAccess.Sibling(kit), taskView);
+var processInstance = _sail.ProcessInstances.GetById(kitForPi, runningNode.ProcessInstanceId.Value);
+var processModel = _sail.ProcessModelFactory.CreateByTask(SailSqlAccess.Sibling(kit), taskView);
 // ProcessVariableResolver.CheckVariableRequired …
 rmins.TaskView = taskView;
 rmins.RunningActivityInstance = runningNode;
@@ -425,7 +420,7 @@ if (taskId != null && taskId.Value > 0)
 // WfRuntimeManagerRun.ExecuteInstanceImp
 var runningExecutionContext = ActivityForwardContext.CreateRunningContextByTask(
     TaskView, ProcessModel, ActivityResource, false, kit, Sail);
-NodeMediator mediator = MediatorFactory.CreateNodeMediator(runningExecutionContext, kit, Sail);
+NodeMediator mediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediator(runningExecutionContext, kit);
 mediator.LinkContext.FromActivityInstance = RunningActivityInstance;
 mediator.ExecuteWorkItem(null);
 ```
@@ -558,3 +553,5 @@ FlowCapabilityPipeline.AfterSuccess(/* OnActivityCreated */);
 |------|------|
 | 2026-11-06 | 初稿：外层调度 → WorkflowService → Factory → Runtime → Mediator/Manager → DB；覆盖主要 OA 动词 |
 | 2026-11-06 | 增 §6：Approve→RunProcess 典型链（Host→Gate→Mediator→DB 关键代码） |
+| 2026-11-06 | **D3+D4 对齐**：去 `_wfAppRunner` / `new *Manager` / `NodeSendBackFactory` 样例；残旧迁 done |
+| 2026-11-06 | §5.1 / §6.5 Mediator 调用改 `SailFactoryAccess.Mediator`；模型入口改为 `Sail.ProcessModelFactory` |
