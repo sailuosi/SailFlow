@@ -41,7 +41,7 @@ namespace saiflow.engine.Message
             ProcessEntity catchProcess = null;
             var catchActivity = XPDLHelper.GetMessageCatchActivity(Sail, processInstance, throwActivity, throwActivityInstance, out catchProcess);
 
-            var appRunner = new WfAppRunner();
+            var appRunner = new FlowCommandContext();
             appRunner.MessageTopic = topic;
             appRunner.AppName = throwActivityInstance.AppName;
             appRunner.AppInstanceId = throwActivityInstance.AppInstanceId;
@@ -52,7 +52,7 @@ namespace saiflow.engine.Message
             var msgRunnerView = new MessageRunnerView();
             msgRunnerView.ProcessEntity = catchProcess;
             msgRunnerView.ActivityEntity = catchActivity;
-            msgRunnerView.WfAppRunner = appRunner;
+            msgRunnerView.CommandContext = appRunner;
 
             var jsonRunner = Sail.JsonSerializer.Serialize(msgRunnerView);
 
@@ -153,17 +153,17 @@ namespace saiflow.engine.Message
         /// </summary>
         /// <param name="msgRunnerView"></param>
         /// <returns></returns>
-        private WfAppRunner GetRunnerFromMessagExchange(MessageRunnerView msgRunnerView)
+        private FlowCommandContext GetRunnerFromMessagExchange(MessageRunnerView msgRunnerView)
         {
-            var runner = new WfAppRunner();
+            var runner = new FlowCommandContext();
             runner.ProcessId = msgRunnerView.ProcessEntity.ProcessId;
             runner.Version = msgRunnerView.ProcessEntity.Version;
             runner.ProcessCode = msgRunnerView.ProcessEntity.ProcessCode;
-            runner.AppName = msgRunnerView.WfAppRunner.AppName;
-            runner.AppInstanceId = msgRunnerView.WfAppRunner.AppInstanceId;
-            runner.AppInstanceCode = msgRunnerView.WfAppRunner.AppInstanceCode;
-            runner.UserId = msgRunnerView.WfAppRunner.UserId;
-            runner.UserName = msgRunnerView.WfAppRunner.UserName;
+            runner.AppName = msgRunnerView.CommandContext.AppName;
+            runner.AppInstanceId = msgRunnerView.CommandContext.AppInstanceId;
+            runner.AppInstanceCode = msgRunnerView.CommandContext.AppInstanceCode;
+            runner.UserId = msgRunnerView.CommandContext.UserId;
+            runner.UserName = msgRunnerView.CommandContext.UserName;
 
             //封装下一步的步骤信息
             //Encapsulate the next step information

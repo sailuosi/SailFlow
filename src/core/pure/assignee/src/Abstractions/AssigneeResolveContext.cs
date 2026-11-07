@@ -9,6 +9,6 @@ public class AssigneeResolveContext
     public ConfigPair Config { get; set; } = null!;
 
     public string ActivityId => Request.ActivityId;
-    public WfAppRunner? Runner => Request.Runner;
+    public FlowCommandContext? Runner => Request.Runner;
     public IDictionary<string, PerformerList>? NextActivityPerformers => Request.NextActivityPerformers;
 }

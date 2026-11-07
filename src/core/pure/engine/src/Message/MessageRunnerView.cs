@@ -15,6 +15,6 @@ namespace saiflow.engine.Message
     {
         public ProcessEntity ProcessEntity { get; set; }
         public Activity ActivityEntity { get; set; }
-        public WfAppRunner WfAppRunner { get; set; }
+        public FlowCommandContext CommandContext { get; set; }
     }
 }

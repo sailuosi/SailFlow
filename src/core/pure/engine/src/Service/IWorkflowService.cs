@@ -27,14 +27,14 @@ namespace saiflow.engine.Service
 		IList<Activity> GetAllTaskActivityList(string processId, string version);
         IList<Role> GetActivityRoles(string processId, string version, string activityId);
         NodeView GetNextActivity(int taskId, IDictionary<string, string> condition = null);
-        NodeView GetNextActivity(WfAppRunner runner, IDictionary<string, string> condition = null);
+        NodeView GetNextActivity(FlowCommandContext runner, IDictionary<string, string> condition = null);
         IList<NodeView> GetNextActivityTree(string processId, string version, string activityId, IDictionary<string, string> condition);
 
         IList<NodeView> GetNextActivityTree(int taskId, IDictionary<string, string> condition = null);
         Task<IList<NodeView>> GetNextActivityTreeAsync(int taskId, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
-        IList<NodeView> GetNextActivityTree(WfAppRunner runner, IDictionary<string, string> condition = null);
-        Task<IList<NodeView>> GetNextActivityTreeAsync(WfAppRunner runner, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
+        IList<NodeView> GetNextActivityTree(FlowCommandContext runner, IDictionary<string, string> condition = null);
+        Task<IList<NodeView>> GetNextActivityTreeAsync(FlowCommandContext runner, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Obtain the next activity list according to the application process
@@ -54,18 +54,18 @@ namespace saiflow.engine.Service
         /// Obtain the next activity list according to the application process
         /// 根据应用获取流程下一步活动列表
         /// </summary>
-        IList<Activity> GetNextActivityList(WfAppRunner runner,
+        IList<Activity> GetNextActivityList(FlowCommandContext runner,
             IDictionary<string, string> condition = null);
 
         /// <summary>
         /// Obtain the next activity list according to the application process
         /// 根据应用获取流程下一步活动列表
         /// </summary>
-        Task<IList<Activity>> GetNextActivityListAsync(WfAppRunner runner,
+        Task<IList<Activity>> GetNextActivityListAsync(FlowCommandContext runner,
             IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
-        IList<NodeView> GetNextActivityRoleUserTree(WfAppRunner runner, IDictionary<string, string> condition = null);
-        Task<IList<NodeView>> GetNextActivityRoleUserTreeAsync(WfAppRunner runner, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
+        IList<NodeView> GetNextActivityRoleUserTree(FlowCommandContext runner, IDictionary<string, string> condition = null);
+        Task<IList<NodeView>> GetNextActivityRoleUserTreeAsync(FlowCommandContext runner, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Business-level API for obtaining the next-step information, including structure, roles and users.
@@ -73,112 +73,112 @@ namespace saiflow.engine.Service
         /// 业务层获取“下一步”信息的统一接口，返回结构、角色与用户等完整信息。
         /// 推荐界面层与业务服务统一通过此方法获取下一步，而不要直接依赖 IProcessModel 的结构层方法。
         /// </summary>
-        NextStepInfo GetNextStepInfo(WfAppRunner runner, IDictionary<string, string> condition = null);
-        Task<NextStepInfo> GetNextStepInfoAsync(WfAppRunner runner, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
+        NextStepInfo GetNextStepInfo(FlowCommandContext runner, IDictionary<string, string> condition = null);
+        Task<NextStepInfo> GetNextStepInfoAsync(FlowCommandContext runner, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
-        IList<NodeView> GetFirstActivityRoleUserTree(WfAppRunner runner, IDictionary<string, string> condition = null);
-        Task<IList<NodeView>> GetFirstActivityRoleUserTreeAsync(WfAppRunner runner, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
+        IList<NodeView> GetFirstActivityRoleUserTree(FlowCommandContext runner, IDictionary<string, string> condition = null);
+        Task<IList<NodeView>> GetFirstActivityRoleUserTreeAsync(FlowCommandContext runner, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
-        IList<NodeView> GetPreviousActivityTree(WfAppRunner runner);
-        Task<IList<NodeView>> GetPreviousActivityTreeAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        IList<NodeView> GetPreviousActivityTree(FlowCommandContext runner);
+        Task<IList<NodeView>> GetPreviousActivityTreeAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
-        PreviousStepInfo GetPreviousStepInfo(WfAppRunner runner);
-        Task<PreviousStepInfo> GetPreviousStepInfoAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        PreviousStepInfo GetPreviousStepInfo(FlowCommandContext runner);
+        Task<PreviousStepInfo> GetPreviousStepInfoAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
-        SignForwardStepInfo GetSignForwardStepInfo(WfAppRunner runner);
+        SignForwardStepInfo GetSignForwardStepInfo(FlowCommandContext runner);
 
         void ResetCache(string processId, string version = null);
 
         [Obsolete("replaced by the new method RunProcess()")]
-        WfExecutedResult RunProcessApp(WfAppRunner runner);
+        WfExecutedResult RunProcessApp(FlowCommandContext runner);
     
         //启动流程
         //Startup Process
-        WfExecutedResult StartProcess(WfAppRunner runner);
-        Task<WfExecutedResult> StartProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        WfExecutedResult StartProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> StartProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         //消息启动流程
         //Message Startup Process
-        WfExecutedResult StartProcessByMessage(WfAppRunner runner);
-        Task<WfExecutedResult> StartProcessByMessageAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        WfExecutedResult StartProcessByMessage(FlowCommandContext runner);
+        Task<WfExecutedResult> StartProcessByMessageAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         //运行流程
         //Run Process
-        WfExecutedResult RunProcess(WfAppRunner runner);
-        Task<WfExecutedResult> RunProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        WfExecutedResult RunProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> RunProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         //自动运行流程
         //Run Automatically Process
-        WfExecutedResult RunProcessAuto(WfAppRunner runner);
-        Task<WfExecutedResult> RunProcessAutoAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        WfExecutedResult RunProcessAuto(FlowCommandContext runner);
+        Task<WfExecutedResult> RunProcessAutoAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         //撤销流程
         //Withdraw Process
-        WfExecutedResult WithdrawProcess(WfAppRunner runner);
-        Task<WfExecutedResult> WithdrawProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        WfExecutedResult WithdrawProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> WithdrawProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         //退回流程
         //SendBack Process
-        WfExecutedResult SendBackProcess(WfAppRunner runner);
-        Task<WfExecutedResult> SendBackProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        WfExecutedResult SendBackProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> SendBackProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         //返送流程
         //Resend Process
-        WfExecutedResult ResendProcess(WfAppRunner runner);
-        Task<WfExecutedResult> ResendProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        WfExecutedResult ResendProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> ResendProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         //修订流程
         //Revise Process
-        WfExecutedResult ReviseProcess(WfAppRunner runner);
-        Task<WfExecutedResult> ReviseProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        WfExecutedResult ReviseProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> ReviseProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         //驳回流程
         //Reject Process
-        WfExecutedResult RejectProcess(WfAppRunner runner);
-        Task<WfExecutedResult> RejectProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        WfExecutedResult RejectProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> RejectProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         //关闭流程
         //Close Process
-        WfExecutedResult CloseProcess(WfAppRunner runner);
-        Task<WfExecutedResult> CloseProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        WfExecutedResult CloseProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> CloseProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         //返签流程
         //Reverse Process
-        WfExecutedResult ReverseProcess(WfAppRunner runner);
-        Task<WfExecutedResult> ReverseProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        WfExecutedResult ReverseProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> ReverseProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         //跳转流程
         //Jump Process
-        WfExecutedResult JumpProcess(WfAppRunner runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default);
-        Task<WfExecutedResult> JumpProcessAsync(WfAppRunner runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default, CancellationToken cancellationToken = default);
+        WfExecutedResult JumpProcess(FlowCommandContext runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default);
+        Task<WfExecutedResult> JumpProcessAsync(FlowCommandContext runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default, CancellationToken cancellationToken = default);
 
         //加签流程
         //Sign Forward Process
-        WfExecutedResult SignForwardProcess(WfAppRunner runner);
-        Task<WfExecutedResult> SignForwardProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        WfExecutedResult SignForwardProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> SignForwardProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 转办：结束本人待办，在本节点为指定人创建待办，不发生节点流转。
         /// 目标人取自 <c>NextActivityPerformers</c>（任意 ActivityId 键下的 Performer 列表）。
         /// </summary>
-        WfExecutedResult TransferProcess(WfAppRunner runner);
-        Task<WfExecutedResult> TransferProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default);
+        WfExecutedResult TransferProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> TransferProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         //审批决策
         //Approval
         void AgreeTask(int taskId);
         void RefuseTask(int taskId);
 
-        Boolean ResumeProcess(int activityInstanceId, WfAppRunner runner);
-        Boolean SuspendProcess(int taskId, WfAppRunner runner);
-        Boolean CancelProcess(WfAppRunner canceler);
-        Boolean DiscardProcess(WfAppRunner discarder);
-        Boolean TerminateProcess(WfAppRunner terminator);
-        Boolean SetTaskRead(WfAppRunner runner);
+        Boolean ResumeProcess(int activityInstanceId, FlowCommandContext runner);
+        Boolean SuspendProcess(int taskId, FlowCommandContext runner);
+        Boolean CancelProcess(FlowCommandContext canceler);
+        Boolean DiscardProcess(FlowCommandContext discarder);
+        Boolean TerminateProcess(FlowCommandContext terminator);
+        Boolean SetTaskRead(FlowCommandContext runner);
         WfDataManagedResult EntrustTask(TaskEntrustedEntity entrusted, bool cancalOriginalTask = true);
         void CancelEntrustedTask(int id);
-        Boolean ReplaceTask(int taskId, List<TaskReplacedEntity> replaced, WfAppRunner runner);
-        Boolean SetProcessOverdue(int processInstanceId, DateTime overdueDateTime, WfAppRunner runner);
+        Boolean ReplaceTask(int taskId, List<TaskReplacedEntity> replaced, FlowCommandContext runner);
+        Boolean SetProcessOverdue(int processInstanceId, DateTime overdueDateTime, FlowCommandContext runner);
         void SetActivityJobTimerCompleted(int activityInstanceId);
         void SetProcessJobTimerCompleted(int processInstanceId);
         int SaveProcessVariable(ProcessVariableEntity entity);
@@ -189,9 +189,9 @@ namespace saiflow.engine.Service
         TaskViewEntity GetTaskView(int processInstanceId, int activityInstanceId);
         TaskViewEntity GetTaskView(string appInstanceId, string processId, string userId);
         [Obsolete("replaced by the GetRunningTask, mainly used to run forward method internal")]
-        ActivityInstanceEntity GetRunningNode(WfAppRunner runner);
+        ActivityInstanceEntity GetRunningNode(FlowCommandContext runner);
 
-        ProcessInstanceEntity GetRunningProcessInstance(WfAppRunner runner);
+        ProcessInstanceEntity GetRunningProcessInstance(FlowCommandContext runner);
         ProcessInstanceEntity GetProcessInstance(int processInstanceId);
         IList<ProcessInstanceEntity> GetProcessInstance(string appInstanceId);
         ProcessInstanceEntity GetProcessInstanceByActivity(int activityInstanceId);
@@ -261,6 +261,6 @@ namespace saiflow.engine.Service
         int SaveRuleSet(RuleSetEntity entity);
         void DeleteRuleSet(string ruleSetCode);
 
-        // 链式建造见 SailClient.CreateRunBuilder（B）；本接口仅为无状态执行（吃 WfAppRunner）。
+        // 链式建造见 SailClient.CreateRunBuilder（B）；本接口仅为无状态执行（吃 FlowCommandContext）。
     }
 }

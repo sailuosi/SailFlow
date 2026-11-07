@@ -211,7 +211,7 @@ namespace saiflow.engine.Manager
             => kit.useSQL().useRepo<ProcessInstanceEntity>().Update(entity);
 
         internal ProcessInstanceEntity CreateNewProcessInstanceObject(
-            WfAppRunner runner,
+            FlowCommandContext runner,
             ProcessEntity processEntity,
             SubProcessNode subProcessNode = null)
         {
@@ -268,13 +268,13 @@ namespace saiflow.engine.Manager
         #endregion
 
         #region Business rules
-        internal ProcessInstanceEntity Complete(int processInstanceId, WfAppRunner runner)
+        internal ProcessInstanceEntity Complete(int processInstanceId, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             return Complete(kit, processInstanceId, runner);
         }
 
-        internal ProcessInstanceEntity Complete(SQLBuilder kit, int processInstanceId, WfAppRunner runner)
+        internal ProcessInstanceEntity Complete(SQLBuilder kit, int processInstanceId, FlowCommandContext runner)
         {
             var processInstance = GetById(kit, processInstanceId);
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), processInstance.ProcessState.ToString());
@@ -293,13 +293,13 @@ namespace saiflow.engine.Manager
             return processInstance;
         }
 
-        internal void Suspend(int processInstanceId, WfAppRunner runner)
+        internal void Suspend(int processInstanceId, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             Suspend(kit, processInstanceId, runner);
         }
 
-        internal void Suspend(SQLBuilder kit, int processInstanceId, WfAppRunner runner)
+        internal void Suspend(SQLBuilder kit, int processInstanceId, FlowCommandContext runner)
         {
             var bEntity = GetById(kit, processInstanceId);
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), bEntity.ProcessState.ToString());
@@ -317,13 +317,13 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal void Resume(int processInstanceId, WfAppRunner runner)
+        internal void Resume(int processInstanceId, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             Resume(kit, processInstanceId, runner);
         }
 
-        internal void Resume(SQLBuilder kit, int processInstanceId, WfAppRunner runner)
+        internal void Resume(SQLBuilder kit, int processInstanceId, FlowCommandContext runner)
         {
             var bEntity = GetById(kit, processInstanceId);
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), bEntity.ProcessState.ToString());
@@ -341,13 +341,13 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal void RecallSubProcess(int invokedActivityInstanceId, WfAppRunner runner)
+        internal void RecallSubProcess(int invokedActivityInstanceId, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             RecallSubProcess(kit, invokedActivityInstanceId, runner);
         }
 
-        internal void RecallSubProcess(SQLBuilder kit, int invokedActivityInstanceId, WfAppRunner runner)
+        internal void RecallSubProcess(SQLBuilder kit, int invokedActivityInstanceId, FlowCommandContext runner)
         {
             var clip = kit.useSQL().useClip();
             clip.from<ProcessInstanceEntity>(out var pi);
@@ -371,13 +371,13 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal void Reverse(int processInstanceId, WfAppRunner currentUser)
+        internal void Reverse(int processInstanceId, FlowCommandContext currentUser)
         {
             var kit = Sail.UseRunSQL();
             Reverse(kit, processInstanceId, currentUser);
         }
 
-        internal void Reverse(SQLBuilder kit, int processInstanceId, WfAppRunner currentUser)
+        internal void Reverse(SQLBuilder kit, int processInstanceId, FlowCommandContext currentUser)
         {
             var bEntity = GetById(kit, processInstanceId);
             if (bEntity.ProcessState == (short)ProcessStateEnum.Completed)
@@ -394,7 +394,7 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal bool Cancel(WfAppRunner runner)
+        internal bool Cancel(FlowCommandContext runner)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -412,7 +412,7 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal bool Cancel(SQLBuilder kit, WfAppRunner runner)
+        internal bool Cancel(SQLBuilder kit, FlowCommandContext runner)
         {
             try
             {
@@ -434,7 +434,7 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal bool Discard(WfAppRunner runner)
+        internal bool Discard(FlowCommandContext runner)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -452,7 +452,7 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal void Discard(SQLBuilder kit, WfAppRunner runner)
+        internal void Discard(SQLBuilder kit, FlowCommandContext runner)
         {
             var clip = kit.useSQL().useClip();
             clip.setTable<ProcessInstanceEntity>(out var pi);
@@ -467,7 +467,7 @@ namespace saiflow.engine.Manager
             clip.doUpdate();
         }
 
-        internal bool Terminate(WfAppRunner runner)
+        internal bool Terminate(FlowCommandContext runner)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -502,13 +502,13 @@ namespace saiflow.engine.Manager
             throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error"));
         }
 
-        internal bool SetOverdue(int processInstanceId, DateTime overdueDateTime, WfAppRunner runner)
+        internal bool SetOverdue(int processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             return SetOverdue(kit, processInstanceId, overdueDateTime, runner);
         }
 
-        internal bool SetOverdue(SQLBuilder kit, int processInstanceId, DateTime overdueDateTime, WfAppRunner runner)
+        internal bool SetOverdue(SQLBuilder kit, int processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
         {
             var entity = GetById(kit, processInstanceId);
             if (entity.ProcessState == (int)ProcessStateEnum.Running

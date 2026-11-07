@@ -15,7 +15,7 @@ namespace saiflow.engine.Runtime
     /// <summary>
     /// B · 命令执行编排袋（L-Cmd）。由 RuntimeFactory 按次 Create；字段遵守专题 B.0。
     /// 持本命令导航态 + 对 A（<see cref="Sail"/>）的只读引用；用毕即弃。
-    /// 入参袋是 <see cref="FlowCommandContext"/> / <see cref="WfAppRunner"/>——本类不是入参 Context。
+    /// 入参袋是 <see cref="FlowCommandContext"/>——本类不是入参 Context。
     /// </summary>
     internal abstract class WfRuntimeManager
     {
@@ -25,7 +25,7 @@ namespace saiflow.engine.Runtime
 
         #region Property and Basic Method
         /// <summary>本命令入参袋（B）；通常来自 RunBuilder.Build。</summary>
-        internal WfAppRunner AppRunner { get; set; }
+        internal FlowCommandContext AppRunner { get; set; }
         internal IProcessModel ProcessModel { get; set; }
         internal ProcessInstanceEntity ParentProcessInstance { get; set; }
         internal NodeBase InvokedSubProcessNode { get; set; }
@@ -44,7 +44,7 @@ namespace saiflow.engine.Runtime
 
         internal WfRuntimeManager()
         {
-            AppRunner = new WfAppRunner();
+            AppRunner = new FlowCommandContext();
             BackwardContext = new BackwardContext();
         }
         #endregion

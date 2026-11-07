@@ -46,7 +46,7 @@ namespace saiflow.engine.Pattern
             string transitionId,
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit)
         {
             //检查是否已有运行中的合并节点实例

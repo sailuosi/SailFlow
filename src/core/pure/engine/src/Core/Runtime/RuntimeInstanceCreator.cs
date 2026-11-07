@@ -36,14 +36,14 @@ namespace saiflow.engine.Runtime
         /// Startup Process
         /// 启动流程
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceStartup(WfAppRunner runner, ref WfExecutedResult result)
+        public WfRuntimeManager CreateRuntimeInstanceStartup(FlowCommandContext runner, ref WfExecutedResult result)
         {
             using var kit = _sail.UseRunSQL();
             return CreateRuntimeInstanceStartup(runner, kit, ref result);
         }
 
         /// <summary>Start 查重与后续 Insert 共用同一 kit/事务。</summary>
-        public WfRuntimeManager CreateRuntimeInstanceStartup(WfAppRunner runner, SQLBuilder kit, ref WfExecutedResult result)
+        public WfRuntimeManager CreateRuntimeInstanceStartup(FlowCommandContext runner, SQLBuilder kit, ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerStartup();
             rmins.WfExecutedResult = result = new WfExecutedResult();
@@ -107,7 +107,7 @@ namespace saiflow.engine.Runtime
         /// Sub Process Startup
         /// 子流程启动
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceStartupSub(WfAppRunner runner,
+        public WfRuntimeManager CreateRuntimeInstanceStartupSub(FlowCommandContext runner,
             ProcessInstanceEntity processInstance,
             SubProcessNode subProcessNode,
             PerformerList performerList,
@@ -159,7 +159,7 @@ namespace saiflow.engine.Runtime
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceAppRunning(WfAppRunner runner,
+        public WfRuntimeManager CreateRuntimeInstanceAppRunning(FlowCommandContext runner,
             SQLBuilder kit,
             ref WfExecutedResult result)
         {
@@ -243,7 +243,7 @@ namespace saiflow.engine.Runtime
         /// <summary>
         /// 异步创建 Run 运行时：预载热点走 Manager *Async(ct)；后续 Execute 仍同步（阶段 3 首刀）。
         /// </summary>
-        public async Task<(WfRuntimeManager Manager, WfExecutedResult Result)> CreateRuntimeInstanceAppRunningAsync(WfAppRunner runner,
+        public async Task<(WfRuntimeManager Manager, WfExecutedResult Result)> CreateRuntimeInstanceAppRunningAsync(FlowCommandContext runner,
             SQLBuilder kit,
             CancellationToken cancellationToken = default)
         {
@@ -322,7 +322,7 @@ namespace saiflow.engine.Runtime
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceRunAuto(WfAppRunner runner,
+        public WfRuntimeManager CreateRuntimeInstanceRunAuto(FlowCommandContext runner,
             SQLBuilder kit,
             ref WfExecutedResult result)
         {
@@ -365,7 +365,7 @@ namespace saiflow.engine.Runtime
         /// <summary>
         /// 异步创建 RunAuto 运行时：AI/PI 预载走 Manager *Async(ct)（阶段 3 首刀）。
         /// </summary>
-        public async Task<(WfRuntimeManager Manager, WfExecutedResult Result)> CreateRuntimeInstanceRunAutoAsync(WfAppRunner runner,
+        public async Task<(WfRuntimeManager Manager, WfExecutedResult Result)> CreateRuntimeInstanceRunAutoAsync(FlowCommandContext runner,
             SQLBuilder kit,
             CancellationToken cancellationToken = default)
         {
@@ -411,7 +411,7 @@ namespace saiflow.engine.Runtime
         /// Create a runtime instance object
         /// 创建跳转实例信息
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceJump(WfAppRunner runner,
+        public WfRuntimeManager CreateRuntimeInstanceJump(FlowCommandContext runner,
             ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerJump();
@@ -472,7 +472,7 @@ namespace saiflow.engine.Runtime
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceReject(WfAppRunner runner,
+        public WfRuntimeManager CreateRuntimeInstanceReject(FlowCommandContext runner,
             ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerReject();
@@ -609,7 +609,7 @@ namespace saiflow.engine.Runtime
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceClose(WfAppRunner runner,
+        public WfRuntimeManager CreateRuntimeInstanceClose(FlowCommandContext runner,
             ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerClose();
@@ -673,7 +673,7 @@ namespace saiflow.engine.Runtime
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        internal WfRuntimeManager CreateRuntimeInstanceSendBack(WfAppRunner runner,
+        internal WfRuntimeManager CreateRuntimeInstanceSendBack(FlowCommandContext runner,
             ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerSendBack();
@@ -878,7 +878,7 @@ namespace saiflow.engine.Runtime
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        internal WfRuntimeManager CreateRuntimeInstanceWithdraw(WfAppRunner runner,
+        internal WfRuntimeManager CreateRuntimeInstanceWithdraw(FlowCommandContext runner,
            ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerSendBack();
@@ -1042,7 +1042,7 @@ namespace saiflow.engine.Runtime
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        internal WfRuntimeManager CreateRuntimeInstanceResend(WfAppRunner runner,
+        internal WfRuntimeManager CreateRuntimeInstanceResend(FlowCommandContext runner,
             ref WfExecutedResult result)
         {
             WfRuntimeManager rmins = new WfRuntimeManagerResend();
@@ -1112,7 +1112,7 @@ namespace saiflow.engine.Runtime
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceRevise(WfAppRunner runner,
+        public WfRuntimeManager CreateRuntimeInstanceRevise(FlowCommandContext runner,
             ref WfExecutedResult result)
         {
             WfRuntimeManager rmins = new WfRuntimeManagerRevise();
@@ -1159,7 +1159,7 @@ namespace saiflow.engine.Runtime
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceReverse(WfAppRunner runner,
+        public WfRuntimeManager CreateRuntimeInstanceReverse(FlowCommandContext runner,
             ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerReverse();
@@ -1228,7 +1228,7 @@ namespace saiflow.engine.Runtime
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceSignForward(WfAppRunner runner,
+        public WfRuntimeManager CreateRuntimeInstanceSignForward(FlowCommandContext runner,
             ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerSignForward();

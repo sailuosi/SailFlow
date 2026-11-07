@@ -55,7 +55,7 @@ namespace saiflow.engine.Runtime
             BackwardTypeEnum backwardType,
             int backSrcActivityInstanceId,
             int backOrgActivityInstanceId,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             ActivityInstanceEntity entity = ActivityInstanceManager.CreateBackwardActivityInstanceObject(
                 processInstance.AppName,
@@ -82,7 +82,7 @@ namespace saiflow.engine.Runtime
             ActivityInstanceEntity toActivityInstance,
             TransitionTypeEnum transitionType,
             TransitionFlyingTypeEnum flyingType,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit)
         {
             var transition = SendBackOperation.ProcessModel.GetForwardTransition(toActivityInstance.ActivityId,

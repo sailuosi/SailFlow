@@ -28,7 +28,7 @@ namespace saiflow.engine.Pattern
         /// <summary>
         /// 自动创建
         /// </summary>
-        public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, WfAppRunner runner, SQLBuilder kit)
+        public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, FlowCommandContext runner, SQLBuilder kit)
         {
             var messageActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, runner);
             base.InsertActivityInstance(messageActivityInstance,
@@ -62,7 +62,7 @@ namespace saiflow.engine.Pattern
             ActivityInstanceEntity fromActivityInstance,
             Activity toActivity,
             ActivityInstanceEntity toActivityInstance,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit)
         {
             base.ActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance, runner);

@@ -44,7 +44,7 @@ namespace saiflow.engine.Service
                 kit.commit();
             return result;
         }
-        static string ResolveInstanceLockKey(WfAppRunner runner)
+        static string ResolveInstanceLockKey(FlowCommandContext runner)
             => string.IsNullOrEmpty(runner?.AppInstanceId) ? runner?.ProcessId : runner.AppInstanceId;
 
         /// <summary>
@@ -52,9 +52,9 @@ namespace saiflow.engine.Service
         /// 范围收窄：除 Run/RunAuto 外，动词不扩 Factory 预载 async；Core 内勿再 Acquire。
         /// </summary>
         async Task<WfExecutedResult> RunVerbAsync(
-            WfAppRunner runner,
+            FlowCommandContext runner,
             CancellationToken cancellationToken,
-            Func<SQLBuilder, WfAppRunner, WfExecutedResult> core)
+            Func<SQLBuilder, FlowCommandContext, WfExecutedResult> core)
         {
             cancellationToken.ThrowIfCancellationRequested();
             return await CommitOnSuccessAsync(async kit =>
@@ -74,7 +74,7 @@ namespace saiflow.engine.Service
         /// <summary>
         /// 在已有事务 kit 上启动。入口请用 <see cref="StartProcess"/> 或 <c>Sail.CreateRunBuilder(...).Start()</c>。
         /// </summary>
-        public WfExecutedResult Start(SQLBuilder kit, WfAppRunner runner)
+        public WfExecutedResult Start(SQLBuilder kit, FlowCommandContext runner)
         {
             WfExecutedResult startedResult = WfExecutedResult.Default();
             try
@@ -92,7 +92,7 @@ namespace saiflow.engine.Service
             return startedResult;
         }
 
-        async Task<WfExecutedResult> StartAsync(SQLBuilder kit, WfAppRunner runner, CancellationToken cancellationToken)
+        async Task<WfExecutedResult> StartAsync(SQLBuilder kit, FlowCommandContext runner, CancellationToken cancellationToken)
         {
             WfExecutedResult startedResult = WfExecutedResult.Default();
             try
@@ -118,7 +118,7 @@ namespace saiflow.engine.Service
             return startedResult;
         }
 
-        WfExecutedResult ExecuteStartCore(SQLBuilder kit, WfAppRunner runner)
+        WfExecutedResult ExecuteStartCore(SQLBuilder kit, FlowCommandContext runner)
         {
             var startedResult = WfExecutedResult.Default();
             var runtimeInstance = Runtimes.CreateRuntimeInstanceStartup(runner, kit, ref startedResult);
@@ -164,13 +164,13 @@ namespace saiflow.engine.Service
         /// <summary>
         /// Start process
         /// </summary>
-        public WfExecutedResult StartProcess(WfAppRunner runner)
+        public WfExecutedResult StartProcess(FlowCommandContext runner)
             => CommitOnSuccess(kit => Start(kit, runner));
 
         /// <summary>
         /// Start process async：可取消等待实例锁；Mediator 办理仍同步（阶段 2）。
         /// </summary>
-        public async Task<WfExecutedResult> StartProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public async Task<WfExecutedResult> StartProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             return await CommitOnSuccessAsync(kit => StartAsync(kit, runner, cancellationToken)).ConfigureAwait(false);
@@ -184,7 +184,7 @@ namespace saiflow.engine.Service
         /// 消息启动流程
         /// </summary>
 
-        public WfExecutedResult StartByMessage(SQLBuilder kit, WfAppRunner runner)
+        public WfExecutedResult StartByMessage(SQLBuilder kit, FlowCommandContext runner)
         {
             var pm = Sail.ManagerFactory.Processes;
             var entity = pm.GetByMessage(runner.MessageTopic);
@@ -200,13 +200,13 @@ namespace saiflow.engine.Service
         /// Start by Message
         /// 流程流转
         /// </summary>
-        public WfExecutedResult StartProcessByMessage(WfAppRunner runner)
+        public WfExecutedResult StartProcessByMessage(FlowCommandContext runner)
             => CommitOnSuccess(kit => StartByMessage(kit, runner));
 
         /// <summary>
         /// Start by Message Async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
         /// </summary>
-        public async Task<WfExecutedResult> StartProcessByMessageAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public async Task<WfExecutedResult> StartProcessByMessageAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             return await CommitOnSuccessAsync(async kit =>
@@ -232,7 +232,7 @@ namespace saiflow.engine.Service
         /// 或 workflow.RunProcess(runner);
         /// </summary>
 
-        public WfExecutedResult Run(SQLBuilder kit, WfAppRunner runner)
+        public WfExecutedResult Run(SQLBuilder kit, FlowCommandContext runner)
         {
             WfExecutedResult runAppResult = WfExecutedResult.Default();
             try
@@ -250,7 +250,7 @@ namespace saiflow.engine.Service
             return runAppResult;
         }
 
-        async Task<WfExecutedResult> RunAsync(SQLBuilder kit, WfAppRunner runner, CancellationToken cancellationToken)
+        async Task<WfExecutedResult> RunAsync(SQLBuilder kit, FlowCommandContext runner, CancellationToken cancellationToken)
         {
             WfExecutedResult runAppResult = WfExecutedResult.Default();
             try
@@ -276,14 +276,14 @@ namespace saiflow.engine.Service
             return runAppResult;
         }
 
-        WfExecutedResult ExecuteRunCore(SQLBuilder kit, WfAppRunner runner)
+        WfExecutedResult ExecuteRunCore(SQLBuilder kit, FlowCommandContext runner)
         {
             var runAppResult = WfExecutedResult.Default();
             var runtimeInstance = Runtimes.CreateRuntimeInstanceAppRunning(runner, kit, ref runAppResult);
             return FinishRunCore(kit, runner, runtimeInstance, runAppResult);
         }
 
-        async Task<WfExecutedResult> ExecuteRunCoreAsync(SQLBuilder kit, WfAppRunner runner, CancellationToken cancellationToken)
+        async Task<WfExecutedResult> ExecuteRunCoreAsync(SQLBuilder kit, FlowCommandContext runner, CancellationToken cancellationToken)
         {
             var (runtimeInstance, runAppResult) = await Runtimes
                 .CreateRuntimeInstanceAppRunningAsync(runner, kit, cancellationToken)
@@ -293,7 +293,7 @@ namespace saiflow.engine.Service
 
         WfExecutedResult FinishRunCore(
             SQLBuilder kit,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             WfRuntimeManager runtimeInstance,
             WfExecutedResult runAppResult)
         {
@@ -334,14 +334,14 @@ namespace saiflow.engine.Service
         /// 流程流转
         /// 说明：新方法统一调用 RunProcess()
         /// </summary>
-        public WfExecutedResult RunProcessApp(WfAppRunner runner)
+        public WfExecutedResult RunProcessApp(FlowCommandContext runner)
             => CommitOnSuccess(kit => Run(kit, runner));
 
         /// <summary>
         /// Run Process
         /// 流程流转
         /// </summary>
-        public WfExecutedResult RunProcess(WfAppRunner runner)
+        public WfExecutedResult RunProcess(FlowCommandContext runner)
             => CommitOnSuccess(kit => Run(kit, runner));
 
         /// <summary>
@@ -351,7 +351,7 @@ namespace saiflow.engine.Service
         /// <summary>
         /// Run async：可取消等待实例锁；Factory 预载 IO-await；Mediator Execute 仍同步（阶段 3 首刀）。
         /// </summary>
-        public async Task<WfExecutedResult> RunProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public async Task<WfExecutedResult> RunProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             return await CommitOnSuccessAsync(kit => RunAsync(kit, runner, cancellationToken)).ConfigureAwait(false);
@@ -365,7 +365,7 @@ namespace saiflow.engine.Service
         /// 自动运行
         /// </summary>
 
-        public WfExecutedResult RunAuto(SQLBuilder kit, WfAppRunner runner)
+        public WfExecutedResult RunAuto(SQLBuilder kit, FlowCommandContext runner)
         {
             WfExecutedResult runAppResult = WfExecutedResult.Default();
             try
@@ -383,7 +383,7 @@ namespace saiflow.engine.Service
             return runAppResult;
         }
 
-        async Task<WfExecutedResult> RunAutoAsync(SQLBuilder kit, WfAppRunner runner, CancellationToken cancellationToken)
+        async Task<WfExecutedResult> RunAutoAsync(SQLBuilder kit, FlowCommandContext runner, CancellationToken cancellationToken)
         {
             WfExecutedResult runAppResult = WfExecutedResult.Default();
             try
@@ -409,14 +409,14 @@ namespace saiflow.engine.Service
             return runAppResult;
         }
 
-        WfExecutedResult ExecuteRunAutoCore(SQLBuilder kit, WfAppRunner runner)
+        WfExecutedResult ExecuteRunAutoCore(SQLBuilder kit, FlowCommandContext runner)
         {
             var runAppResult = WfExecutedResult.Default();
             var runtimeInstance = Runtimes.CreateRuntimeInstanceRunAuto(runner, kit, ref runAppResult);
             return FinishRunAutoCore(kit, runner, runtimeInstance, runAppResult);
         }
 
-        async Task<WfExecutedResult> ExecuteRunAutoCoreAsync(SQLBuilder kit, WfAppRunner runner, CancellationToken cancellationToken)
+        async Task<WfExecutedResult> ExecuteRunAutoCoreAsync(SQLBuilder kit, FlowCommandContext runner, CancellationToken cancellationToken)
         {
             var (runtimeInstance, runAppResult) = await Runtimes
                 .CreateRuntimeInstanceRunAutoAsync(runner, kit, cancellationToken)
@@ -426,7 +426,7 @@ namespace saiflow.engine.Service
 
         WfExecutedResult FinishRunAutoCore(
             SQLBuilder kit,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             WfRuntimeManager runtimeInstance,
             WfExecutedResult runAppResult)
         {
@@ -454,13 +454,13 @@ namespace saiflow.engine.Service
         /// Run process auto
         /// 流程执行自动
         /// </summary>
-        public WfExecutedResult RunProcessAuto(WfAppRunner runner)
+        public WfExecutedResult RunProcessAuto(FlowCommandContext runner)
             => CommitOnSuccess(kit => RunAuto(kit, runner));
 
         /// <summary>
         /// Run process auto async：可取消等待实例锁；Factory 预载 IO-await；Mediator Execute 仍同步（阶段 3 首刀）。
         /// </summary>
-        public async Task<WfExecutedResult> RunProcessAutoAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public async Task<WfExecutedResult> RunProcessAutoAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             return await CommitOnSuccessAsync(kit => RunAutoAsync(kit, runner, cancellationToken)).ConfigureAwait(false);
@@ -474,13 +474,13 @@ namespace saiflow.engine.Service
         /// 流程撤回
         /// </summary>
 
-        public WfExecutedResult Withdraw(SQLBuilder kit, WfAppRunner runner)
+        public WfExecutedResult Withdraw(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteWithdrawCore(kit, runner);
         }
 
-        WfExecutedResult ExecuteWithdrawCore(SQLBuilder kit, WfAppRunner runner)
+        WfExecutedResult ExecuteWithdrawCore(SQLBuilder kit, FlowCommandContext runner)
         {
             WfExecutedResult withdrawedResult = WfExecutedResult.Default();
 
@@ -536,13 +536,13 @@ namespace saiflow.engine.Service
         /// Process withdraw
         /// 流程撤回
         /// </summary>
-        public WfExecutedResult WithdrawProcess(WfAppRunner runner)
+        public WfExecutedResult WithdrawProcess(FlowCommandContext runner)
             => CommitOnSuccess(kit => Withdraw(kit, runner));
 
         /// <summary>
         /// Process withdraw async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
         /// </summary>
-        public Task<WfExecutedResult> WithdrawProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public Task<WfExecutedResult> WithdrawProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunVerbAsync(runner, cancellationToken, ExecuteWithdrawCore);
 
         #endregion
@@ -553,13 +553,13 @@ namespace saiflow.engine.Service
         /// 流程退回
         /// </summary>
 
-        public WfExecutedResult SendBack(SQLBuilder kit, WfAppRunner runner)
+        public WfExecutedResult SendBack(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteSendBackCore(kit, runner);
         }
 
-        WfExecutedResult ExecuteSendBackCore(SQLBuilder kit, WfAppRunner runner)
+        WfExecutedResult ExecuteSendBackCore(SQLBuilder kit, FlowCommandContext runner)
         {
             WfExecutedResult sendbackResult = WfExecutedResult.Default();
 
@@ -614,13 +614,13 @@ namespace saiflow.engine.Service
         /// Process sendback
         /// 退回到下一步
         /// </summary>
-        public WfExecutedResult SendBackProcess(WfAppRunner runner)
+        public WfExecutedResult SendBackProcess(FlowCommandContext runner)
             => CommitOnSuccess(kit => SendBack(kit, runner));
 
         /// <summary>
         /// Process sendback async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
         /// </summary>
-        public Task<WfExecutedResult> SendBackProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public Task<WfExecutedResult> SendBackProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunVerbAsync(runner, cancellationToken, ExecuteSendBackCore);
 
         #endregion
@@ -631,13 +631,13 @@ namespace saiflow.engine.Service
         /// 流程转发
         /// </summary>
 
-        public WfExecutedResult Resend(SQLBuilder kit, WfAppRunner runner)
+        public WfExecutedResult Resend(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteResendCore(kit, runner);
         }
 
-        WfExecutedResult ExecuteResendCore(SQLBuilder kit, WfAppRunner runner)
+        WfExecutedResult ExecuteResendCore(SQLBuilder kit, FlowCommandContext runner)
         {
             WfExecutedResult resendResult = WfExecutedResult.Default();
 
@@ -715,13 +715,13 @@ namespace saiflow.engine.Service
         /// Process Resend
         /// 重新转发（退回到的节点）
         /// </summary>
-        public WfExecutedResult ResendProcess(WfAppRunner runner)
+        public WfExecutedResult ResendProcess(FlowCommandContext runner)
             => CommitOnSuccess(kit => Resend(kit, runner));
 
         /// <summary>
         /// Process Resend Async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
         /// </summary>
-        public Task<WfExecutedResult> ResendProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public Task<WfExecutedResult> ResendProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunVerbAsync(runner, cancellationToken, ExecuteResendCore);
 
         #endregion
@@ -734,13 +734,13 @@ namespace saiflow.engine.Service
         /// (�˻غ�Ľڵ�����ָ������)
         /// </summary>
 
-        public WfExecutedResult Revise(SQLBuilder kit, WfAppRunner runner)
+        public WfExecutedResult Revise(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteReviseCore(kit, runner);
         }
 
-        WfExecutedResult ExecuteReviseCore(SQLBuilder kit, WfAppRunner runner)
+        WfExecutedResult ExecuteReviseCore(SQLBuilder kit, FlowCommandContext runner)
         {
             WfExecutedResult reviseResult = WfExecutedResult.Default();
 
@@ -795,13 +795,13 @@ namespace saiflow.engine.Service
         /// Process revise
         /// 流程修订（退回后的节点重新指派任务）
         /// </summary>
-        public WfExecutedResult ReviseProcess(WfAppRunner runner)
+        public WfExecutedResult ReviseProcess(FlowCommandContext runner)
             => CommitOnSuccess(kit => Revise(kit, runner));
 
         /// <summary>
         /// Process revise async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
         /// </summary>
-        public Task<WfExecutedResult> ReviseProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public Task<WfExecutedResult> ReviseProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunVerbAsync(runner, cancellationToken, ExecuteReviseCore);
 
         #endregion
@@ -814,13 +814,13 @@ namespace saiflow.engine.Service
         /// (�Ѿ����������̿��Ա����
         /// </summary>
 
-        public WfExecutedResult Reverse(SQLBuilder kit, WfAppRunner runner)
+        public WfExecutedResult Reverse(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteReverseCore(kit, runner);
         }
 
-        WfExecutedResult ExecuteReverseCore(SQLBuilder kit, WfAppRunner runner)
+        WfExecutedResult ExecuteReverseCore(SQLBuilder kit, FlowCommandContext runner)
         {
             WfExecutedResult reversedResult = WfExecutedResult.Default();
 
@@ -875,13 +875,13 @@ namespace saiflow.engine.Service
         /// Process reverse
         /// 流程反签
         /// </summary>
-        public WfExecutedResult ReverseProcess(WfAppRunner runner)
+        public WfExecutedResult ReverseProcess(FlowCommandContext runner)
             => CommitOnSuccess(kit => Reverse(kit, runner));
 
         /// <summary>
         /// Process reverse async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
         /// </summary>
-        public Task<WfExecutedResult> ReverseProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public Task<WfExecutedResult> ReverseProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunVerbAsync(runner, cancellationToken, ExecuteReverseCore);
 
         #endregion
@@ -892,13 +892,13 @@ namespace saiflow.engine.Service
         /// 流程驳回
         /// </summary>
 
-        public WfExecutedResult Reject(SQLBuilder kit, WfAppRunner runner)
+        public WfExecutedResult Reject(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteRejectCore(kit, runner);
         }
 
-        WfExecutedResult ExecuteRejectCore(SQLBuilder kit, WfAppRunner runner)
+        WfExecutedResult ExecuteRejectCore(SQLBuilder kit, FlowCommandContext runner)
         {
             WfExecutedResult rejectedResult = WfExecutedResult.Default();
 
@@ -953,13 +953,13 @@ namespace saiflow.engine.Service
         /// Process reject
         /// 流程驳回
         /// </summary>
-        public WfExecutedResult RejectProcess(WfAppRunner runner)
+        public WfExecutedResult RejectProcess(FlowCommandContext runner)
             => CommitOnSuccess(kit => Reject(kit, runner));
 
         /// <summary>
         /// Process reject async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
         /// </summary>
-        public Task<WfExecutedResult> RejectProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public Task<WfExecutedResult> RejectProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunVerbAsync(runner, cancellationToken, ExecuteRejectCore);
 
         #endregion
@@ -970,13 +970,13 @@ namespace saiflow.engine.Service
         /// 流程关闭
         /// </summary>
 
-        public WfExecutedResult Close(SQLBuilder kit, WfAppRunner runner)
+        public WfExecutedResult Close(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteCloseCore(kit, runner);
         }
 
-        WfExecutedResult ExecuteCloseCore(SQLBuilder kit, WfAppRunner runner)
+        WfExecutedResult ExecuteCloseCore(SQLBuilder kit, FlowCommandContext runner)
         {
             WfExecutedResult closedResult = WfExecutedResult.Default();
             try
@@ -1026,13 +1026,13 @@ namespace saiflow.engine.Service
         ///  Process Close
         /// 流程关闭
         /// </summary>
-        public WfExecutedResult CloseProcess(WfAppRunner runner)
+        public WfExecutedResult CloseProcess(FlowCommandContext runner)
             => CommitOnSuccess(kit => Close(kit, runner));
 
         /// <summary>
         /// Process Close Async：可取消等待实例锁；预载/Execute 仍同步（范围收窄）。
         /// </summary>
-        public Task<WfExecutedResult> CloseProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public Task<WfExecutedResult> CloseProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunVerbAsync(runner, cancellationToken, ExecuteCloseCore);
 
         #endregion
@@ -1043,13 +1043,13 @@ namespace saiflow.engine.Service
         /// 流程跳转
         /// </summary>
 
-        public WfExecutedResult Jump(SQLBuilder kit, JumpOptionEnum jumpOption, WfAppRunner runner)
+        public WfExecutedResult Jump(SQLBuilder kit, JumpOptionEnum jumpOption, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteJumpCore(kit, runner, jumpOption);
         }
 
-        WfExecutedResult ExecuteJumpCore(SQLBuilder kit, WfAppRunner runner, JumpOptionEnum jumpOption)
+        WfExecutedResult ExecuteJumpCore(SQLBuilder kit, FlowCommandContext runner, JumpOptionEnum jumpOption)
         {
             WfExecutedResult jumpResult = WfExecutedResult.Default();
             try
@@ -1100,21 +1100,21 @@ namespace saiflow.engine.Service
         /// Process Jump
         /// 流程跳转
         /// </summary>
-        public WfExecutedResult JumpProcess(WfAppRunner runner,
+        public WfExecutedResult JumpProcess(FlowCommandContext runner,
             JumpOptionEnum jumpOption = JumpOptionEnum.Default)
             => CommitOnSuccess(kit => Jump(kit, jumpOption, runner));
 
         /// <summary>
         /// Process Jump Async：可取消等待实例锁；预载/Execute 仍同步（范围收窄）。
         /// </summary>
-        public Task<WfExecutedResult> JumpProcessAsync(WfAppRunner runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default, CancellationToken cancellationToken = default)
+        public Task<WfExecutedResult> JumpProcessAsync(FlowCommandContext runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default, CancellationToken cancellationToken = default)
             => RunVerbAsync(runner, cancellationToken, (kit, r) => ExecuteJumpCore(kit, r, jumpOption));
 
         /// <summary>
         /// Regenerate the list of performers for the jump activity
         /// 流程跳转动作执行人员列表
         /// </summary>
-        private IDictionary<string, PerformerList> FillNextActivityPerforms(WfAppRunner runner,
+        private IDictionary<string, PerformerList> FillNextActivityPerforms(FlowCommandContext runner,
             JumpOptionEnum jumpOption)
         {
             IDictionary<string, PerformerList> nextActivityPerformers = null;
@@ -1153,13 +1153,13 @@ namespace saiflow.engine.Service
         /// 流程会签
         /// </summary>
 
-        public WfExecutedResult SignForward(SQLBuilder kit, WfAppRunner runner)
+        public WfExecutedResult SignForward(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteSignForwardCore(kit, runner);
         }
 
-        WfExecutedResult ExecuteSignForwardCore(SQLBuilder kit, WfAppRunner runner)
+        WfExecutedResult ExecuteSignForwardCore(SQLBuilder kit, FlowCommandContext runner)
         {
             WfExecutedResult signforwardResult = WfExecutedResult.Default();
 
@@ -1214,13 +1214,13 @@ namespace saiflow.engine.Service
         /// Process Signforward
         /// 会签
         /// </summary>
-        public WfExecutedResult SignForwardProcess(WfAppRunner runner)
+        public WfExecutedResult SignForwardProcess(FlowCommandContext runner)
             => CommitOnSuccess(kit => SignForward(kit, runner));
 
         /// <summary>
         /// Process Signforward Async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
         /// </summary>
-        public Task<WfExecutedResult> SignForwardProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public Task<WfExecutedResult> SignForwardProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunVerbAsync(runner, cancellationToken, ExecuteSignForwardCore);
 
         #endregion
@@ -1229,22 +1229,22 @@ namespace saiflow.engine.Service
         /// <summary>
         /// 转办：结束本人待办 + 本节点交给他人，不推进下一节点。
         /// </summary>
-        public WfExecutedResult TransferProcess(WfAppRunner runner)
+        public WfExecutedResult TransferProcess(FlowCommandContext runner)
             => CommitOnSuccess(kit => Transfer(kit, runner));
 
         /// <summary>
         /// Transfer async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
         /// </summary>
-        public Task<WfExecutedResult> TransferProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+        public Task<WfExecutedResult> TransferProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunVerbAsync(runner, cancellationToken, ExecuteTransferCore);
 
-        public WfExecutedResult Transfer(SQLBuilder kit, WfAppRunner runner)
+        public WfExecutedResult Transfer(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                 return ExecuteTransferCore(kit, runner);
         }
 
-        WfExecutedResult ExecuteTransferCore(SQLBuilder kit, WfAppRunner runner)
+        WfExecutedResult ExecuteTransferCore(SQLBuilder kit, FlowCommandContext runner)
         {
             var result = WfExecutedResult.Default();
 
@@ -1328,7 +1328,7 @@ namespace saiflow.engine.Service
             return result;
         }
 
-        private static PerformerList FlattenTransferTargets(WfAppRunner runner)
+        private static PerformerList FlattenTransferTargets(FlowCommandContext runner)
         {
             var list = new PerformerList();
             if (runner?.NextActivityPerformers == null)
@@ -1370,7 +1370,7 @@ namespace saiflow.engine.Service
         /// 恢复流程实例(只针对已挂起)
         /// 挂起(恢复)流程、取消(运行)流程、撤回执行或执行中的流程
         /// </summary>
-        public bool ResumeProcess(int processInstanceId, WfAppRunner runner)
+        public bool ResumeProcess(int processInstanceId, FlowCommandContext runner)
         {
             bool result = true;
             try
@@ -1388,7 +1388,7 @@ namespace saiflow.engine.Service
         /// Process Suspend
         /// 流程挂起实例
         /// </summary>
-        public bool SuspendProcess(int taskId, WfAppRunner runner)
+        public bool SuspendProcess(int taskId, FlowCommandContext runner)
         {
             bool result = true;
             try
@@ -1409,7 +1409,7 @@ namespace saiflow.engine.Service
         /// Process Cancel
         /// 取消流程
         /// </summary>
-        public bool CancelProcess(WfAppRunner runner)
+        public bool CancelProcess(FlowCommandContext runner)
         {
             var pim = Managers.ProcessInstances;
             return pim.Cancel(runner);
@@ -1419,7 +1419,7 @@ namespace saiflow.engine.Service
         /// Process Discard
         /// 流程流转
         /// </summary>
-        public bool DiscardProcess(WfAppRunner runner)
+        public bool DiscardProcess(FlowCommandContext runner)
         {
             var pim = Managers.ProcessInstances;
             return pim.Discard(runner);
@@ -1429,7 +1429,7 @@ namespace saiflow.engine.Service
         /// Process Terminate
         /// 终止流程
         /// </summary>
-        public bool TerminateProcess(WfAppRunner terminator)
+        public bool TerminateProcess(FlowCommandContext terminator)
         {
             var pim = Managers.ProcessInstances;
             return pim.Terminate(terminator);

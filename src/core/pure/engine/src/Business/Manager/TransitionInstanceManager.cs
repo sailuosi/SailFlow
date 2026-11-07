@@ -34,7 +34,7 @@ namespace saiflow.engine.Manager
             ActivityInstanceEntity toActivityInstance,
             TransitionTypeEnum transitionType,
             TransitionFlyingTypeEnum flyingType,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             byte conditionParseResult)
         {
             var entity = new TransitionInstanceEntity

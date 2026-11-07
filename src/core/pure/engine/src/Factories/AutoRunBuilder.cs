@@ -16,13 +16,13 @@ namespace saiflow.engine.Factories;
 public sealed class AutoRunBuilder
 {
     private readonly SailClient _sail;
-    private readonly WfAppRunner _runner;
+    private readonly FlowCommandContext _runner;
     private readonly AutoExecutionContext _context = new AutoExecutionContext();
     private IProcessModel _processModel;
     private string _notifySessionId;
     private Action<string, object> _notifyCallback;
 
-    internal AutoRunBuilder(SailClient sail, WfAppRunner runner)
+    internal AutoRunBuilder(SailClient sail, FlowCommandContext runner)
     {
         _sail = sail ?? throw new ArgumentNullException(nameof(sail));
         _runner = runner ?? throw new ArgumentNullException(nameof(runner));
@@ -87,7 +87,7 @@ public sealed class AutoRunBuilder
         return this;
     }
 
-    public WfAppRunner BuildRunner() => _runner;
+    public FlowCommandContext BuildRunner() => _runner;
 
     public Task<WfExecutedResult> Run()
     {

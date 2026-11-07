@@ -15,7 +15,7 @@ namespace saiflow.engine.Executor
         public SailClient Sail { get; set; }
         public IProcessModel ProcessModel { get; set; }
         public IDictionary<string, string> Variables { get; set; }
-        public WfAppRunner Runner { get; set; }
+        public FlowCommandContext Runner { get; set; }
 
         /// <summary>
         /// Track executed activity IDs to avoid executing the same node multiple times

@@ -275,7 +275,7 @@ namespace saiflow.engine.Pattern
             subProcessNode.ActivityInstance = toActivityInstance;
 
             //复制子流程启动用户信息
-            WfAppRunner subRunner = null;
+            FlowCommandContext subRunner = null;
             var performerList = new PerformerList();
             if (performer != null)
             {
@@ -392,7 +392,7 @@ namespace saiflow.engine.Pattern
                 var subKit = Sail.UseRunSQL();
                 var subProcessNode = (SubProcessNode)toActivity.Node;
                 subProcessNode.ActivityInstance = entity;   
-                WfAppRunner subRunner = CreateSubProcessRunner(activityResource.AppRunner, 
+                FlowCommandContext subRunner = CreateSubProcessRunner(activityResource.AppRunner, 
                     plist[i],
                     kit);
 
@@ -424,11 +424,11 @@ namespace saiflow.engine.Pattern
         /// 创建子流程时，重新生成runner信息
         /// </summary>
         /// <returns></returns>
-        private WfAppRunner CreateSubProcessRunner(WfAppRunner runner,
+        private FlowCommandContext CreateSubProcessRunner(FlowCommandContext runner,
             Performer performer,
             SQLBuilder kit)
         {
-            WfAppRunner subRunner = new WfAppRunner();
+            FlowCommandContext subRunner = new FlowCommandContext();
             subRunner.ProcessId = runner.ProcessId;
             subRunner.AppInstanceCode = runner.AppInstanceCode;
             subRunner.AppInstanceId = runner.AppInstanceId;

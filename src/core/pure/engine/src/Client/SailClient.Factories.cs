@@ -59,7 +59,7 @@ public partial class SailClient
     }
 
     /// <summary>B · 以已有入参袋开建造会话（仍每次 new Builder，不写回 Client 字段）。</summary>
-    public RunBuilder CreateRunBuilder(WfAppRunner runner)
+    public RunBuilder CreateRunBuilder(FlowCommandContext runner)
     {
         ArgumentNullException.ThrowIfNull(runner);
         return new RunBuilder(this, runner);
@@ -78,7 +78,7 @@ public partial class SailClient
     }
 
     /// <summary>B · 以已有袋开自动编排建造会话。</summary>
-    public AutoRunBuilder CreateAutoRunBuilder(WfAppRunner runner)
+    public AutoRunBuilder CreateAutoRunBuilder(FlowCommandContext runner)
     {
         ArgumentNullException.ThrowIfNull(runner);
         return new AutoRunBuilder(this, runner);

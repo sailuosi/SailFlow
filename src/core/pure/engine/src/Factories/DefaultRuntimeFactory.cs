@@ -28,7 +28,7 @@ public class DefaultRuntimeFactory : IRuntimeFactory
     }
 
     internal virtual ActivityResource CreateActivityResource(
-        WfAppRunner runner,
+        FlowCommandContext runner,
         IDictionary<string, PerformerList> nextActivityPerformers,
         IDictionary<string, string> conditionValuePair = null)
         => new ActivityResource(runner, nextActivityPerformers, conditionValuePair);
@@ -36,7 +36,7 @@ public class DefaultRuntimeFactory : IRuntimeFactory
     internal virtual ActivityResource CreateActivityResource(
         IProcessModel processModel,
         NextActivityComponent root,
-        WfAppRunner runner,
+        FlowCommandContext runner,
         IDictionary<string, string> conditionValuePair)
     {
         var nextActivityPerformers = GetActivityPerformerList(processModel, root, runner, conditionValuePair);
@@ -46,7 +46,7 @@ public class DefaultRuntimeFactory : IRuntimeFactory
     private static IDictionary<string, PerformerList> GetActivityPerformerList(
         IProcessModel processModel,
         NextActivityComponent root,
-        WfAppRunner runner,
+        FlowCommandContext runner,
         IDictionary<string, string> conditionValuePair)
     {
         IDictionary<string, PerformerList> nextActivityPerformers = new Dictionary<string, PerformerList>();
@@ -83,11 +83,11 @@ public class DefaultRuntimeFactory : IRuntimeFactory
     }
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceStartup(
-        WfAppRunner runner, SQLBuilder kit, ref WfExecutedResult result)
+        FlowCommandContext runner, SQLBuilder kit, ref WfExecutedResult result)
         => _instances.CreateRuntimeInstanceStartup(runner, kit, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceStartupSub(
-        WfAppRunner runner,
+        FlowCommandContext runner,
         ProcessInstanceEntity processInstance,
         SubProcessNode subProcessNode,
         PerformerList performerList,
@@ -97,56 +97,56 @@ public class DefaultRuntimeFactory : IRuntimeFactory
             runner, processInstance, subProcessNode, performerList, kit, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceAppRunning(
-        WfAppRunner runner, SQLBuilder kit, ref WfExecutedResult result)
+        FlowCommandContext runner, SQLBuilder kit, ref WfExecutedResult result)
         => _instances.CreateRuntimeInstanceAppRunning(runner, kit, ref result);
 
     internal virtual Task<(WfRuntimeManager Manager, WfExecutedResult Result)>
         CreateRuntimeInstanceAppRunningAsync(
-            WfAppRunner runner, SQLBuilder kit, CancellationToken cancellationToken)
+            FlowCommandContext runner, SQLBuilder kit, CancellationToken cancellationToken)
         => _instances.CreateRuntimeInstanceAppRunningAsync(runner, kit, cancellationToken);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceRunAuto(
-        WfAppRunner runner, SQLBuilder kit, ref WfExecutedResult result)
+        FlowCommandContext runner, SQLBuilder kit, ref WfExecutedResult result)
         => _instances.CreateRuntimeInstanceRunAuto(runner, kit, ref result);
 
     internal virtual Task<(WfRuntimeManager Manager, WfExecutedResult Result)>
         CreateRuntimeInstanceRunAutoAsync(
-            WfAppRunner runner, SQLBuilder kit, CancellationToken cancellationToken)
+            FlowCommandContext runner, SQLBuilder kit, CancellationToken cancellationToken)
         => _instances.CreateRuntimeInstanceRunAutoAsync(runner, kit, cancellationToken);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceWithdraw(
-        WfAppRunner runner, ref WfExecutedResult result)
+        FlowCommandContext runner, ref WfExecutedResult result)
         => _instances.CreateRuntimeInstanceWithdraw(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceSendBack(
-        WfAppRunner runner, ref WfExecutedResult result)
+        FlowCommandContext runner, ref WfExecutedResult result)
         => _instances.CreateRuntimeInstanceSendBack(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceResend(
-        WfAppRunner runner, ref WfExecutedResult result)
+        FlowCommandContext runner, ref WfExecutedResult result)
         => _instances.CreateRuntimeInstanceResend(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceRevise(
-        WfAppRunner runner, ref WfExecutedResult result)
+        FlowCommandContext runner, ref WfExecutedResult result)
         => _instances.CreateRuntimeInstanceRevise(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceReverse(
-        WfAppRunner runner, ref WfExecutedResult result)
+        FlowCommandContext runner, ref WfExecutedResult result)
         => _instances.CreateRuntimeInstanceReverse(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceReject(
-        WfAppRunner runner, ref WfExecutedResult result)
+        FlowCommandContext runner, ref WfExecutedResult result)
         => _instances.CreateRuntimeInstanceReject(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceClose(
-        WfAppRunner runner, ref WfExecutedResult result)
+        FlowCommandContext runner, ref WfExecutedResult result)
         => _instances.CreateRuntimeInstanceClose(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceJump(
-        WfAppRunner runner, ref WfExecutedResult result)
+        FlowCommandContext runner, ref WfExecutedResult result)
         => _instances.CreateRuntimeInstanceJump(runner, ref result);
 
     internal virtual WfRuntimeManager CreateRuntimeInstanceSignForward(
-        WfAppRunner runner, ref WfExecutedResult result)
+        FlowCommandContext runner, ref WfExecutedResult result)
         => _instances.CreateRuntimeInstanceSignForward(runner, ref result);
 }

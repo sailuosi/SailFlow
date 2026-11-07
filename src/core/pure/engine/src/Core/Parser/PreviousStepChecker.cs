@@ -47,7 +47,7 @@ namespace saiflow.engine.Runtime
         /// Retrieve the previous node tree
         /// 获取上一步节点树
         /// </summary>
-        internal IList<NodeView> GetPreviousActivityTree(WfAppRunner runner, out Boolean hasGatewayPassed)
+        internal IList<NodeView> GetPreviousActivityTree(FlowCommandContext runner, out Boolean hasGatewayPassed)
         {
             hasGatewayPassed = false;
             var aim = Sail.ManagerFactory.Activities;

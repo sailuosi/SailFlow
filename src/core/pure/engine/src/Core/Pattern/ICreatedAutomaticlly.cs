@@ -16,7 +16,7 @@ namespace saiflow.engine.Pattern
     {
         ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, 
             ProcessInstanceEntity processInstance, 
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit);
     }
 }

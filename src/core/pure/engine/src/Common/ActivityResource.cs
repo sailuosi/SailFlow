@@ -19,7 +19,7 @@ namespace saiflow.engine.Common
         /// Current process execution user
         /// 当前流程执行用户
         /// </summary>
-        public WfAppRunner AppRunner
+        public FlowCommandContext AppRunner
         {
             get;
             set;
@@ -57,7 +57,7 @@ namespace saiflow.engine.Common
         /// <param name="runner"></param>
         /// <param name="nextActivityPerformers"></param>
         /// <param name="conditionKeyValuePair"></param>
-        public ActivityResource(WfAppRunner runner,
+        public ActivityResource(FlowCommandContext runner,
             IDictionary<string, PerformerList> nextActivityPerformers,
             IDictionary<string, string> conditionKeyValuePair = null)
         {

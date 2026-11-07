@@ -56,7 +56,7 @@ namespace saiflow.engine.Runtime
         /// </summary>
         private void CancelBrothersNode(Activity toActivity,
             ActivityInstanceEntity fromActivityInstance,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit)
         {
             var processModel = this.SendBackOperation.ProcessModel;

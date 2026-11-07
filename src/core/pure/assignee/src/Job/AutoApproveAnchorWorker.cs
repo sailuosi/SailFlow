@@ -242,7 +242,7 @@ public sealed class AutoApproveAnchorWorker
         WfExecutedResult exec;
         if (task != null)
         {
-            var runner = new WfAppRunner
+            var runner = new FlowCommandContext
             {
                 UserId = userId,
                 UserName = anchor.PreferUserName ?? task.AssignedUserName ?? userId,
@@ -258,7 +258,7 @@ public sealed class AutoApproveAnchorWorker
         }
         else
         {
-            var runner = new WfAppRunner
+            var runner = new FlowCommandContext
             {
                 UserId = userId,
                 UserName = anchor.PreferUserName ?? userId,

@@ -42,7 +42,7 @@ namespace saiflow.engine.Runtime
         /// <param name="condition"></param>
         /// <returns></returns>
         internal NextStepInfo GetNextStepInfo(IResourceService resourceService,
-            WfAppRunner runner, 
+            FlowCommandContext runner, 
             IDictionary<string, string> condition = null)
         {
             NextStepInfo nextStepInfo = new NextStepInfo();
@@ -69,7 +69,7 @@ namespace saiflow.engine.Runtime
         /// </summary>
         /// <param name="runner"></param>
         /// <returns></returns>
-        private IDictionary<string, PerformerList> GetNextActivityPerformersPriliminary(WfAppRunner runner)
+        private IDictionary<string, PerformerList> GetNextActivityPerformersPriliminary(FlowCommandContext runner)
         {
             IDictionary<string, PerformerList> nextSteps = null;
 
@@ -133,7 +133,7 @@ namespace saiflow.engine.Runtime
         /// <param name="condition"></param>
         /// <returns></returns>
         internal NextActivityListViewResult GetNextActivityRoleUserTree(IResourceService resourceService, 
-            WfAppRunner runner,
+            FlowCommandContext runner,
             IDictionary<string, string> condition)
         {
             // 发起前预览只需 ProcessId；运行中查询才需要 AppInstanceId / TaskId

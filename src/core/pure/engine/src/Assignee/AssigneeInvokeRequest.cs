@@ -13,7 +13,7 @@ namespace saiflow.engine.Assignee
         public int? ProcessInstanceId { get; set; }
         public string ActivityId { get; set; }
         public string ActivityCode { get; set; }
-        public WfAppRunner Runner { get; set; }
+        public FlowCommandContext Runner { get; set; }
         public IDictionary<string, PerformerList> NextActivityPerformers { get; set; }
 
         /// <summary>

@@ -22,7 +22,7 @@ namespace saiflow.engine.Executor
         protected SailClient Sail { get; }
 
         public Task<WfExecutedResult> Run(
-            WfAppRunner runner,
+            FlowCommandContext runner,
             IProcessModel processModel,
             AutoExecutionContext executionContext = null,
             string notifyClientSessionId = null,

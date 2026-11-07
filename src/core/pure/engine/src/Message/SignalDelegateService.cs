@@ -41,7 +41,7 @@ namespace saiflow.engine.Message
         {
             var topic = throwActivity.TriggerDetail.Expression;
 
-            var appRunner = new WfAppRunner();
+            var appRunner = new FlowCommandContext();
             appRunner.MessageTopic = topic;
             appRunner.AppName = throwActivityInstance.AppName;
             appRunner.AppInstanceId = throwActivityInstance.AppInstanceId;
@@ -50,7 +50,7 @@ namespace saiflow.engine.Message
             appRunner.UserName = throwActivityInstance.CreatedUserName;
 
             var signalRunnerView = new SignalRunnerView();
-            signalRunnerView.WfAppRunner = appRunner;
+            signalRunnerView.CommandContext = appRunner;
 
             var jsonRunner = Sail.JsonSerializer.Serialize(signalRunnerView);
 
@@ -70,7 +70,7 @@ namespace saiflow.engine.Message
             var resultList = new List<SignalConsumedResult>();
             //get signal runner info
             var signalRunnerView = Sail.JsonSerializer.Deserialize<SignalRunnerView>(entity.Line);
-            var appRunner = signalRunnerView.WfAppRunner;
+            var appRunner = signalRunnerView.CommandContext;
             var topic = appRunner.MessageTopic;
 
             var jim = Sail.ManagerFactory.JobInfos;
@@ -133,16 +133,16 @@ namespace saiflow.engine.Message
         /// <param name="msgRunnerView"></param>
         /// <param name="jobInfo"></param>
         /// <returns></returns>
-        private WfAppRunner GetStartRunnerFromSignalExchange(SignalRunnerView msgRunnerView, JobInfoEntity jobInfo)
+        private FlowCommandContext GetStartRunnerFromSignalExchange(SignalRunnerView msgRunnerView, JobInfoEntity jobInfo)
         {
-            var runner = new WfAppRunner();
+            var runner = new FlowCommandContext();
             runner.ProcessId = jobInfo.ProcessId;
             runner.Version = jobInfo.Version;
-            runner.AppName = msgRunnerView.WfAppRunner.AppName;
-            runner.AppInstanceId = msgRunnerView.WfAppRunner.AppInstanceId;
-            runner.AppInstanceCode = msgRunnerView.WfAppRunner.AppInstanceCode;
-            runner.UserId = msgRunnerView.WfAppRunner.UserId;
-            runner.UserName = msgRunnerView.WfAppRunner.UserName;
+            runner.AppName = msgRunnerView.CommandContext.AppName;
+            runner.AppInstanceId = msgRunnerView.CommandContext.AppInstanceId;
+            runner.AppInstanceCode = msgRunnerView.CommandContext.AppInstanceCode;
+            runner.UserId = msgRunnerView.CommandContext.UserId;
+            runner.UserName = msgRunnerView.CommandContext.UserName;
             return runner;
         }
 
@@ -192,11 +192,11 @@ namespace saiflow.engine.Message
         /// <param name="signalRunner"></param>
         /// <param name="jobInfo"></param>
         /// <returns></returns>
-        private WfAppRunner GetRunnerFromActivityInstance(SignalRunnerView signalRunner, 
+        private FlowCommandContext GetRunnerFromActivityInstance(SignalRunnerView signalRunner, 
             JobInfoEntity jobInfo, 
             ActivityInstanceEntity activityInstance)
         {
-            var runner = new WfAppRunner();
+            var runner = new FlowCommandContext();
             runner.ProcessId = jobInfo.ProcessId;
             runner.Version = jobInfo.Version;
             runner.AppName = activityInstance.AppName;
@@ -204,8 +204,8 @@ namespace saiflow.engine.Message
             runner.AppInstanceCode = activityInstance.AppInstanceCode;
             //using activityinstanceid to call RunProcessAuto() method
             runner.ActivityInstanceId = activityInstance.Id;
-            runner.UserId = signalRunner.WfAppRunner.UserId;
-            runner.UserName = signalRunner.WfAppRunner.UserName;
+            runner.UserId = signalRunner.CommandContext.UserId;
+            runner.UserName = signalRunner.CommandContext.UserName;
 
             if (!string.IsNullOrEmpty(activityInstance.NextStepPerformers))
             {

@@ -347,7 +347,7 @@ public Task<WfExecutedResult> ExecuteAsync(SailOperationContext ctx, Cancellatio
 
 ```csharp
 // WorkflowService.ProcessExecution.cs（H · 无状态；不扣 runner 字段）
-public async Task<WfExecutedResult> RunProcessAsync(WfAppRunner runner, CancellationToken cancellationToken = default)
+public async Task<WfExecutedResult> RunProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
 {
     cancellationToken.ThrowIfCancellationRequested();
     // CommitOnSuccessAsync：UseRunSQL + beginTransaction + AcquireAsync → 成功才 commit
@@ -358,7 +358,7 @@ public async Task<WfExecutedResult> RunProcessAsync(WfAppRunner runner, Cancella
 `FinishRunCore` 是推进类命令的标准「Gate → Execute → Hook」模板：
 
 ```csharp
-WfExecutedResult FinishRunCore(SQLBuilder kit, WfAppRunner runner,
+WfExecutedResult FinishRunCore(SQLBuilder kit, FlowCommandContext runner,
     WfRuntimeManager runtimeInstance, WfExecutedResult runAppResult)
 {
     if (runAppResult.Status == WfExecutedStatus.Exception)

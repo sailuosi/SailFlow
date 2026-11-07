@@ -31,7 +31,7 @@ namespace saiflow.engine.Pattern
             string transitionId,
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit)
         {
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Unknown);
@@ -55,7 +55,7 @@ namespace saiflow.engine.Pattern
             string transitionId,
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit)
         {
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Unknown);
@@ -77,7 +77,7 @@ namespace saiflow.engine.Pattern
             string transitionId,
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit)
         {
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Unknown);
@@ -113,7 +113,7 @@ namespace saiflow.engine.Pattern
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
             int tokensCountRequired,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit)
         {
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Unknown);

@@ -63,7 +63,7 @@ namespace saiflow.engine.Pattern
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            WfAppRunner runner = new WfAppRunner
+            FlowCommandContext runner = new FlowCommandContext
             {
                 UserId = activityResource.AppRunner.UserId,         
                 UserName = activityResource.AppRunner.UserName

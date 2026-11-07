@@ -14,7 +14,7 @@ namespace saiflow.engine.Hooks
         public static FlowHookContext BuildGateContext(
             SailClient sail,
             SQLBuilder kit,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             int processInstanceId,
             ActivityInstanceEntity activityInstance,
             int? taskId,
@@ -32,7 +32,7 @@ namespace saiflow.engine.Hooks
         public static FlowHookContext BuildHookContext(
             SailClient sail,
             SQLBuilder kit,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             int processInstanceId,
             ActivityInstanceEntity activityInstance,
             int? taskId,

@@ -263,13 +263,13 @@ namespace saiflow.engine.Manager
         /// Get my taskview
         /// 获取任务视图
         /// </summary>
-        internal TaskViewEntity GetTaskOfMine(WfAppRunner runner)
+        internal TaskViewEntity GetTaskOfMine(FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             return GetTaskOfMine(kit, runner);
         }
 
-        internal TaskViewEntity GetTaskOfMine(SQLBuilder kit, WfAppRunner runner)
+        internal TaskViewEntity GetTaskOfMine(SQLBuilder kit, FlowCommandContext runner)
         {
             if (runner.TaskId != null)
                 return GetTaskView(kit, runner.TaskId.Value);
@@ -331,7 +331,7 @@ namespace saiflow.engine.Manager
 
         internal void Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
             PerformerList performers,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             foreach (Performer performer in performers)
                 Insert(kit, activityInstance, performer, runner);
@@ -339,7 +339,7 @@ namespace saiflow.engine.Manager
 
         internal int Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
             Performer performer,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             return Insert(kit, activityInstance, performer, runner.UserId, runner.UserName, null, runner);
         }
@@ -350,7 +350,7 @@ namespace saiflow.engine.Manager
             string runnerId,
             string runnerName,
             int? entrustedTaskId = null,
-            WfAppRunner runner = null)
+            FlowCommandContext runner = null)
         {
             return Insert(kit, activityInstance,
                 new Performer(performerId, performerName)
@@ -370,7 +370,7 @@ namespace saiflow.engine.Manager
             string runnerId,
             string runnerName,
             int? entrustedTaskId = null,
-            WfAppRunner runner = null)
+            FlowCommandContext runner = null)
         {
             var entity = new TaskEntity
             {
@@ -413,7 +413,7 @@ namespace saiflow.engine.Manager
         /// </summary>
         internal void Renew(SQLBuilder kit, ActivityInstanceEntity sourceActivityInstance,
             ActivityInstanceEntity newInstance,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             var performer = new Performer(sourceActivityInstance.AssignedUserIds,
                 sourceActivityInstance.AssignedUserNames)
@@ -444,7 +444,7 @@ namespace saiflow.engine.Manager
             Update(kit, task);
         }
 
-        internal void SetTaskRead(WfAppRunner taskRunner)
+        internal void SetTaskRead(FlowCommandContext taskRunner)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -477,7 +477,7 @@ namespace saiflow.engine.Manager
 
         internal void EndTaskState(SQLBuilder kit, long taskId,
             TaskStateEnum taskState,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             var task = GetTask(kit, (int)taskId);
             task.TaskState = (byte)taskState;
@@ -487,20 +487,20 @@ namespace saiflow.engine.Manager
             Update(kit, task);
         }
 
-        internal void Complete(SQLBuilder kit, int taskId, WfAppRunner runner)
+        internal void Complete(SQLBuilder kit, int taskId, FlowCommandContext runner)
         {
             EndTaskState(kit, taskId, TaskStateEnum.Completed, runner);
             var task = GetTask(kit, taskId);
             FireTaskLifecycle(kit, task, runner, TaskNotifyKind.Completed);
         }
 
-        internal void Withdraw(SQLBuilder kit, long taskId, WfAppRunner runner)
+        internal void Withdraw(SQLBuilder kit, long taskId, FlowCommandContext runner)
         {
             EndTaskState(kit, taskId, TaskStateEnum.Withdrawed, runner);
             FireTaskLifecycle(kit, GetTask(kit, (int)taskId), runner, TaskNotifyKind.Cancelled);
         }
 
-        internal void SendBack(SQLBuilder kit, long taskId, WfAppRunner runner)
+        internal void SendBack(SQLBuilder kit, long taskId, FlowCommandContext runner)
         {
             EndTaskState(kit, taskId, TaskStateEnum.SendBacked, runner);
             FireTaskLifecycle(kit, GetTask(kit, (int)taskId), runner, TaskNotifyKind.Cancelled);
@@ -509,7 +509,7 @@ namespace saiflow.engine.Manager
         private void FireTaskLifecycle(
             SQLBuilder kit,
             TaskEntity task,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             TaskNotifyKind kind)
         {
             if (task?.ActivityInstanceId == null)
@@ -575,7 +575,7 @@ namespace saiflow.engine.Manager
         internal WfDataManagedResult Transfer(
             SQLBuilder kit,
             int taskId,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             PerformerList targets)
         {
             if (targets == null || targets.Count == 0)
@@ -721,7 +721,7 @@ namespace saiflow.engine.Manager
             FireTaskLifecycle(kit, newTask, null, TaskNotifyKind.Created);
         }
 
-        internal Boolean Replace(int activityInstanceId, List<TaskReplacedEntity> replaced, WfAppRunner runner)
+        internal Boolean Replace(int activityInstanceId, List<TaskReplacedEntity> replaced, FlowCommandContext runner)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -739,7 +739,7 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal void Replace(SQLBuilder kit, int activityInstanceId, List<TaskReplacedEntity> replaced, WfAppRunner runner)
+        internal void Replace(SQLBuilder kit, int activityInstanceId, List<TaskReplacedEntity> replaced, FlowCommandContext runner)
         {
             CancelTask(kit, activityInstanceId);
             var aim = Sail.ManagerFactory.Activities;

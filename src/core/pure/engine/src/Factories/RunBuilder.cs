@@ -12,15 +12,14 @@ namespace saiflow.engine.Factories;
 
 /// <summary>
 /// B · 办理链式建造会话。由 <see cref="SailClient.CreateRunBuilder"/> 每次 <c>new</c>；
-/// <see cref="Build"/> / <see cref="BuildCommandContext"/> 产出<strong>入参袋</strong>
-/// （<see cref="FlowCommandContext"/>）；执行编排袋由 Runtime/Mediator 工厂另建。
+/// <see cref="Build"/> 产出入参袋 <see cref="FlowCommandContext"/>；执行编排袋由 Runtime/Mediator 工厂另建。
 /// </summary>
 public sealed class RunBuilder
 {
     private readonly SailClient _sail;
-    private readonly WfAppRunner _runner;
+    private readonly FlowCommandContext _runner;
 
-    internal RunBuilder(SailClient sail, WfAppRunner runner)
+    internal RunBuilder(SailClient sail, FlowCommandContext runner)
     {
         _sail = sail ?? throw new ArgumentNullException(nameof(sail));
         _runner = runner ?? throw new ArgumentNullException(nameof(runner));
@@ -116,20 +115,8 @@ public sealed class RunBuilder
         return this;
     }
 
-    /// <summary>建成命令入参袋（基型 <see cref="WfAppRunner"/>；规范名见 <see cref="BuildCommandContext"/>）。</summary>
-    public WfAppRunner Build() => _runner;
-
-    /// <summary>
-    /// 建成命令入参 Context（规范类型 <see cref="FlowCommandContext"/>）。
-    /// <c>CreateRunBuilder(userId, userName)</c> 路径恒可成功；若 <c>CreateRunBuilder(WfAppRunner)</c> 传入的不是本类型则抛错。
-    /// </summary>
-    public FlowCommandContext BuildCommandContext()
-    {
-        if (_runner is FlowCommandContext ctx)
-            return ctx;
-        throw new InvalidOperationException(
-            "Command bag is a legacy WfAppRunner. Use CreateRunBuilder(userId, userName) or pass a FlowCommandContext.");
-    }
+    /// <summary>建成命令入参袋 <see cref="FlowCommandContext"/>。</summary>
+    public FlowCommandContext Build() => _runner;
 
     public WfExecutedResult Start() => Service().StartProcess(Build());
 

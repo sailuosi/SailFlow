@@ -7,7 +7,7 @@ using saiflow.engine.Factories;
 namespace saiflow.engine.Service
 {
     /// <summary>
-    /// H · 无状态办理执行器：持 A=<see cref="SailClient"/>，动词只吃 <see cref="Common.WfAppRunner"/> 参数；
+    /// H · 无状态办理执行器：持 A=<see cref="SailClient"/>，动词只吃 <see cref="Common.FlowCommandContext"/> 参数；
     /// 不持链式会话 / Runner 字段。建造见 <c>Sail.CreateRunBuilder</c>。
     /// </summary>
     public partial class WorkflowService : IWorkflowService

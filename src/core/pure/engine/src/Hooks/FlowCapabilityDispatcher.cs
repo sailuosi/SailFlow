@@ -205,7 +205,7 @@ namespace saiflow.engine.Hooks
             SQLBuilder kit,
             TaskEntity task,
             ActivityInstanceEntity activityInstance,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             TaskNotifyKind kind)
         {
             if (task == null)
@@ -373,7 +373,7 @@ namespace saiflow.engine.Hooks
         }
 
         public FlowHookContext BuildHookContextFromRuntime(
-            WfAppRunner runner,
+            FlowCommandContext runner,
             int processInstanceId,
             ActivityInstanceEntity activityInstance,
             int? taskId,

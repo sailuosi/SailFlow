@@ -34,7 +34,7 @@ namespace saiflow.engine.Runtime
         /// </summary>
         /// <param name="runner"></param>
         /// <returns></returns>
-        internal SignForwardStepInfo GetSignForwardStepInfo(WfAppRunner runner)
+        internal SignForwardStepInfo GetSignForwardStepInfo(FlowCommandContext runner)
         {
             var signForwardStepInfo = new SignForwardStepInfo();
             var signResult = GetSignForwardRoleUserTree(runner);
@@ -48,7 +48,7 @@ namespace saiflow.engine.Runtime
         /// </summary>
         /// <param name="runner"></param>
         /// <returns></returns>
-        internal NextActivityListViewResult GetSignForwardRoleUserTree(WfAppRunner runner)
+        internal NextActivityListViewResult GetSignForwardRoleUserTree(FlowCommandContext runner)
         {
             var nextTreeResult = new NextActivityListViewResult();
 

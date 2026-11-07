@@ -22,7 +22,7 @@ namespace saiflow.engine.Pattern
             ActivityInstanceEntity fromActivityInstance,
             Activity currentActivity,
             ActivityInstanceEntity currentActivityInstance,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit);
     }
 
@@ -35,7 +35,7 @@ namespace saiflow.engine.Pattern
             string transitionId,
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit);
     }
 }

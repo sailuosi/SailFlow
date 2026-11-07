@@ -69,7 +69,7 @@ namespace saiflow.engine.Manager
         /// Obtain the current running node information of the process
         /// 获取流程当前运行节点信息
         /// </summary>
-        internal ActivityInstanceEntity GetRunningNode(WfAppRunner runner)
+        internal ActivityInstanceEntity GetRunningNode(FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             return GetRunningNode(kit, runner, out _);
@@ -79,7 +79,7 @@ namespace saiflow.engine.Manager
         /// Obtain the current running node information of the process
         /// 获取流程当前运行节点信息
         /// </summary>
-        internal ActivityInstanceEntity GetRunningNode(WfAppRunner runner,
+        internal ActivityInstanceEntity GetRunningNode(FlowCommandContext runner,
             out TaskViewEntity taskView)
         {
             var kit = Sail.UseRunSQL();
@@ -91,7 +91,7 @@ namespace saiflow.engine.Manager
         /// 获取流程当前运行节点信息
         /// </summary>
         internal ActivityInstanceEntity GetRunningNode(SQLBuilder kit,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             out TaskViewEntity taskView)
         {
             var taskId = runner.TaskId;
@@ -148,11 +148,11 @@ namespace saiflow.engine.Manager
         }
 
         /// <summary>
-        /// 异步获取当前运行节点（可取消）。返回 (Node, TaskView)；语义对齐同步 <see cref="GetRunningNode(SQLBuilder, WfAppRunner, out TaskViewEntity)"/>。
+        /// 异步获取当前运行节点（可取消）。返回 (Node, TaskView)；语义对齐同步 <see cref="GetRunningNode(SQLBuilder, FlowCommandContext, out TaskViewEntity)"/>。
         /// </summary>
         internal async Task<(ActivityInstanceEntity Node, TaskViewEntity TaskView)> GetRunningNodeAsync(
             SQLBuilder kit,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -827,7 +827,7 @@ namespace saiflow.engine.Manager
             string processId,
             int processInstanceId,
             Activity activity,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             ActivityInstanceEntity instance = new ActivityInstanceEntity();
             instance.ActivityId = activity.ActivityId;
@@ -919,7 +919,7 @@ namespace saiflow.engine.Manager
             BackwardTypeEnum backwardType,
             int backSrcActivityInstanceId,
             int backOrgActivityInstanceId,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             ActivityInstanceEntity instance = new ActivityInstanceEntity();
             instance.ActivityId = activity.ActivityId;
@@ -952,7 +952,7 @@ namespace saiflow.engine.Manager
         /// 更新活动节点的Token数目
         /// </summary>
         internal void IncreaseTokensHad(SQLBuilder kit, int activityInstanceId,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             // CAS 自增：WHERE TokensHad=旧值，避免并行汇聚丢 token
             _ = runner;
@@ -989,7 +989,7 @@ namespace saiflow.engine.Manager
         /// 活动实例被读取
         /// </summary>
         internal void Read(SQLBuilder kit, int activityInstanceId,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             SetActivityState(kit, activityInstanceId, ActivityStateEnum.Running, runner);
         }
@@ -1000,7 +1000,7 @@ namespace saiflow.engine.Manager
         /// </summary>
         private void SetActivityState(SQLBuilder kit, int activityInstanceId,
             ActivityStateEnum activityState,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             var activityInstance = GetById(kit, activityInstanceId);
             activityInstance.ActivityState = (short)activityState;
@@ -1015,7 +1015,7 @@ namespace saiflow.engine.Manager
         /// 撤销活动实例
         /// </summary>
         internal void Withdraw(SQLBuilder kit, int activityInstanceId,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             EndActivityState(kit, activityInstanceId, ActivityStateEnum.Withdrawed, runner);
         }
@@ -1025,7 +1025,7 @@ namespace saiflow.engine.Manager
         /// 退回活动实例
         /// </summary>
         internal void SendBack(SQLBuilder kit, int activityInstanceId,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             EndActivityState(kit, activityInstanceId, ActivityStateEnum.Sendbacked, runner);
         }
@@ -1036,7 +1036,7 @@ namespace saiflow.engine.Manager
         /// </summary>
         private void EndActivityState(SQLBuilder kit, int activityInstanceId,
             ActivityStateEnum activityState,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             var activityInstance = GetById(kit, activityInstanceId);
             activityInstance.ActivityState = (short)activityState;
@@ -1052,13 +1052,13 @@ namespace saiflow.engine.Manager
         /// 活动实例完成
         /// </summary>
         internal void Complete(SQLBuilder kit, int activityInstanceId,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             EndActivityState(kit, activityInstanceId, ActivityStateEnum.Completed, runner);
         }
 
         internal void Complete(SQLBuilder kit, ActivityInstanceEntity activityInstance,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             activityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             activityInstance.EndedUserId = runner.UserId;
@@ -1164,7 +1164,7 @@ namespace saiflow.engine.Manager
         /// 取消节点运行
         /// </summary>
         internal void Cancel(SQLBuilder kit, int activityInstanceId,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             var clip = kit.useSQL().useClip();
             clip.setTable<ActivityInstanceEntity>(out var ai);
@@ -1183,7 +1183,7 @@ namespace saiflow.engine.Manager
         /// Update the status of unfinished nodes in the countersignature node
         /// 更新会签节点中未办理完成的节点状态
         /// </summary>
-        internal void CancelUnCompletedMultipleInstance(SQLBuilder kit, int mainActivityInstanceId, WfAppRunner runner)
+        internal void CancelUnCompletedMultipleInstance(SQLBuilder kit, int mainActivityInstanceId, FlowCommandContext runner)
         {
             var clip = kit.useSQL().useClip();
             clip.setTable<ActivityInstanceEntity>(out var ai);
@@ -1202,7 +1202,7 @@ namespace saiflow.engine.Manager
         /// Withdraw the master node and its multiple instance nodes below it
         /// 撤销主节点及其下面的多实例子节点
         /// </summary>
-        internal void WithdrawMainIncludedChildNodes(SQLBuilder kit, int mainActivityInstanceId, WfAppRunner runner)
+        internal void WithdrawMainIncludedChildNodes(SQLBuilder kit, int mainActivityInstanceId, FlowCommandContext runner)
         {
             SetActivityState(kit, mainActivityInstanceId, ActivityStateEnum.Withdrawed, runner);
             WithdrawMultipleInstance(kit, mainActivityInstanceId, runner);
@@ -1212,7 +1212,7 @@ namespace saiflow.engine.Manager
         /// Update the node status of the counter signature processing node
         /// 更新会签办理节点的节点状态
         /// </summary>
-        private void WithdrawMultipleInstance(SQLBuilder kit, int mainActivityInstanceId, WfAppRunner runner)
+        private void WithdrawMultipleInstance(SQLBuilder kit, int mainActivityInstanceId, FlowCommandContext runner)
         {
             var clip = kit.useSQL().useClip();
             clip.setTable<ActivityInstanceEntity>(out var ai);
@@ -1230,7 +1230,7 @@ namespace saiflow.engine.Manager
         /// Put the node back in a suspended state
         /// 重新使节点处于挂起状态
         /// </summary>
-        internal void Resuspend(SQLBuilder kit, int activityInstanceId, WfAppRunner runner)
+        internal void Resuspend(SQLBuilder kit, int activityInstanceId, FlowCommandContext runner)
         {
             SetActivityState(kit, activityInstanceId, ActivityStateEnum.Suspended, runner);
         }
@@ -1239,7 +1239,7 @@ namespace saiflow.engine.Manager
         /// Put the node back in a running state
         /// 重新使节点处于运行状态
         /// </summary>
-        internal void Rerun(SQLBuilder kit, int activityInstanceId, WfAppRunner runner)
+        internal void Rerun(SQLBuilder kit, int activityInstanceId, FlowCommandContext runner)
         {
             SetActivityState(kit, activityInstanceId, ActivityStateEnum.Running, runner);
         }

@@ -608,7 +608,7 @@ o.Mode = HookMode.Sync;                  // 仅 Hook 有意义
 
 | | `WorkflowService.Subscribe` | Gate / Hook / Notifier |
 |--|----------------------------|-------------------------|
-| 生命周期 | 单次 `WfAppRunner` | `SailClient` 级，启动注册 |
+| 生命周期 | 单次 `FlowCommandContext` | `SailClient` 级，启动注册 |
 | 发送前拒绝 | 弱（易与异常混淆） | Gate + `HookResult` → 结构化 `WfExecutedResult` |
 | 过滤 | 无 | Process / Activity / Events / TaskKinds |
 | 可靠补调 | 无 | `wf_hook_outbox` + Drain + 死信复活 |

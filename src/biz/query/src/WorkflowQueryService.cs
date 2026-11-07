@@ -125,7 +125,7 @@ namespace saiflow.biz.query
             }
         }
 
-        public IList<Performer> GetTaskPerformers(WfAppRunner runner)
+        public IList<Performer> GetTaskPerformers(FlowCommandContext runner)
         {
             var tasks = GetReadyTaskOfApp(runner).ToList();
             IList<Performer> performerList = new List<Performer>();
@@ -136,7 +136,7 @@ namespace saiflow.biz.query
             return performerList;
         }
 
-        public IEnumerable<TaskViewEntity> GetReadyTaskOfApp(WfAppRunner runner)
+        public IEnumerable<TaskViewEntity> GetReadyTaskOfApp(FlowCommandContext runner)
         {
             var clip = Sail.UseRunSQL().useClip();
             clip.from<TaskViewEntity>(out var t);
@@ -452,7 +452,7 @@ namespace saiflow.biz.query
             return GetActivityInstanceCompleted(task.AppInstanceId, task.ProcessId);
         }
 
-        public IList<NodeImage> GetActivityInstanceCompleted(WfAppRunner runner)
+        public IList<NodeImage> GetActivityInstanceCompleted(FlowCommandContext runner)
             => GetActivityInstanceCompleted(runner.AppInstanceId, runner.ProcessId);
 
         public IList<NodeImage> GetActivityInstanceCompleted(string appInstanceId, string processId)

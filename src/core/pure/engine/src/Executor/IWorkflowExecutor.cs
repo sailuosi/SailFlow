@@ -13,7 +13,7 @@ namespace saiflow.engine.Executor
     public interface IWorkflowExecutor
     {
         Task<WfExecutedResult> Run(
-            WfAppRunner runner,
+            FlowCommandContext runner,
             IProcessModel processModel,
             AutoExecutionContext executionContext = null,
             string notifyClientSessionId = null,

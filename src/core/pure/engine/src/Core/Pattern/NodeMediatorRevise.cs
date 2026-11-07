@@ -121,7 +121,7 @@ namespace saiflow.engine.Pattern
         {
             bool canContinueForwardCurrentNode = true;
 
-            WfAppRunner runner = new WfAppRunner
+            FlowCommandContext runner = new FlowCommandContext
             {
                 UserId = activityResource.AppRunner.UserId,        
                 UserName = activityResource.AppRunner.UserName

@@ -62,7 +62,7 @@ namespace saiflow.engine.Pattern
         /// </summary>
         protected ActivityInstanceEntity CreateActivityInstanceObject(Activity activity,
             ProcessInstanceEntity processInstance,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             var aim = Sail.ManagerFactory.Activities;
             this.GatewayActivityInstance = aim.CreateActivityInstanceObject(processInstance.AppName,
@@ -96,7 +96,7 @@ namespace saiflow.engine.Pattern
             ActivityInstanceEntity toActivityInstance,
             TransitionTypeEnum transitionType,
             TransitionFlyingTypeEnum flyingType,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit)
         {
             var tim = Sail.ManagerFactory.Transitions;
@@ -117,7 +117,7 @@ namespace saiflow.engine.Pattern
         /// 完成活动实例
         /// </summary>
         internal virtual void CompleteActivityInstance(int ActivityInstanceId,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit)
         {
             ActivityInstanceManager.Complete(kit.useSQL(), ActivityInstanceId, runner);

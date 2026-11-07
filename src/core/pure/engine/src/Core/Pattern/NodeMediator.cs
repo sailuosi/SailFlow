@@ -25,7 +25,7 @@ namespace saiflow.engine.Pattern
     /// <summary>
     /// B · 节点执行编排袋（L-Cmd）。由 MediatorFactory 按次 Create；字段遵守专题 B.0。
     /// 对 A 仅只读引用（<see cref="Sail"/> / ManagerFactory）；不在袋内缓存 Manager 实例字段。
-    /// 入参袋见 <see cref="FlowCommandContext"/> / <see cref="WfAppRunner"/>——本类不是命令入参 Context。
+    /// 入参袋见 <see cref="FlowCommandContext"/>——本类不是命令入参 Context。
     /// </summary>
     internal abstract class NodeMediator
     {
@@ -1056,7 +1056,7 @@ namespace saiflow.engine.Pattern
         /// </summary>
         protected ActivityInstanceEntity CreateActivityInstanceObject(Activity activity,
             ProcessInstanceEntity processInstance,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             ActivityInstanceEntity entity = ActivityInstanceManager.CreateActivityInstanceObject(processInstance.AppName,
                 processInstance.AppInstanceId,
@@ -1082,7 +1082,7 @@ namespace saiflow.engine.Pattern
         /// 完成活动实例
         /// </summary>
         protected virtual void CompleteActivityInstance(int ActivityInstanceId,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit)
         {
             ActivityInstanceManager.Complete(kit.useSQL(), ActivityInstanceId, runner);
@@ -1197,7 +1197,7 @@ namespace saiflow.engine.Pattern
             SQLBuilder kit,
             ProcessInstanceEntity processInstance,
             ActivityInstanceEntity activityInstance,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             EventFireTypeEnum eventType)
         {
             if (runner == null || processInstance?.Id == null || activityInstance == null)
@@ -1219,7 +1219,7 @@ namespace saiflow.engine.Pattern
         protected void FireActivityReady(
             SQLBuilder kit,
             ActivityInstanceEntity activityInstance,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             if (runner == null || activityInstance?.ProcessInstanceId == null)
                 return;
@@ -1235,7 +1235,7 @@ namespace saiflow.engine.Pattern
             BackwardTypeEnum backwardType,
             int backSrcActivityInstanceId,
             int backOrgActivityInstanceId,
-            WfAppRunner runner)
+            FlowCommandContext runner)
         {
             ActivityInstanceEntity entity = ActivityInstanceManager.CreateBackwardActivityInstanceObject(
                 processInstance.AppName,
@@ -1261,7 +1261,7 @@ namespace saiflow.engine.Pattern
             ActivityInstanceEntity toActivityInstance,
             TransitionTypeEnum transitionType,
             TransitionFlyingTypeEnum flyingType,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit)
         {
             var tim = Sail.ManagerFactory.Transitions;

@@ -31,7 +31,7 @@ namespace saiflow.engine.Pattern
             string transitionId,
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
-            WfAppRunner runner,
+            FlowCommandContext runner,
             SQLBuilder kit)
         {
             var gatewayActivityInstance = base.CreateActivityInstanceObject(base.GatewayActivity,

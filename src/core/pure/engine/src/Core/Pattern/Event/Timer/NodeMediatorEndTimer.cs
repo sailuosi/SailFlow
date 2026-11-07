@@ -93,7 +93,7 @@ namespace saiflow.engine.Pattern
         /// <summary>
         /// 使用流程定义资源添加角色用户
         /// </summary>
-        private WfAppRunner FillNextActivityPerformersByRoleList(int mainActivityInstanceId,
+        private FlowCommandContext FillNextActivityPerformersByRoleList(int mainActivityInstanceId,
             string mainActivityId,
             SQLBuilder kit)
         {
@@ -104,7 +104,7 @@ namespace saiflow.engine.Pattern
 
             //获取主流程任务
             var task = Sail.ManagerFactory.Tasks.GetTaskByActivity(kit.useSQL(), mainProcessInstance.Id.Value, mainActivityInstanceId);
-            var runner = new WfAppRunner
+            var runner = new FlowCommandContext
             {
                 AppName = mainProcessInstance.AppName,
                 AppInstanceId = mainProcessInstance.AppInstanceId,
