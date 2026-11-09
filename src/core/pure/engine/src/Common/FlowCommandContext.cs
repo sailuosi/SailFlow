@@ -89,13 +89,13 @@ namespace saiflow.engine.Common
         /// Task Id, distinguishing the unique task in the current user's ActiveInstance list
         /// 流程数据：待办任务Id
         /// </summary>
-        public Nullable<int> TaskId { get; set; }
+        public string TaskId { get; set; }
 
         /// <summary>
         /// Process data: Activity instance Id
         /// 流程数据：活动实例Id
         /// </summary>
-        public Nullable<int> ActivityInstanceId { get; set; }
+        public string ActivityInstanceId { get; set; }
 
         /// <summary>
         /// Approval Status

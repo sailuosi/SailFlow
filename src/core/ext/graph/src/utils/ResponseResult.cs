@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -185,7 +185,7 @@ namespace saiflow.WebUtility
         /// <summary>
         /// Success
         /// </summary>
-        public static ResponseResult<T> Success(int newId, string message = null)
+        public static ResponseResult<T> Success(string newId, string message = null)
         {
             var result = new ResponseResult<T>();
             result.NewId = newId;

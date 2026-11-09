@@ -153,7 +153,7 @@ namespace saiflow.engine.Pattern
         {
             if (_eventService == null)
             {
-                int? fromActivityInstanceId = null;
+                string fromActivityInstanceId = null;
                 string fromActivityId = string.Empty;
                 string fromActivityName = string.Empty;
                 if (IsNotNodeMediatorStart(this) == true && ActivityForwardContext.FromActivityInstance != null)
@@ -167,7 +167,7 @@ namespace saiflow.engine.Pattern
                 {
                     AppInstanceId = ActivityForwardContext.ProcessInstance.AppInstanceId,
                     ProcessId = ActivityForwardContext.ProcessInstance.ProcessId,
-                    ProcessInstanceId = ActivityForwardContext.ProcessInstance.Id.Value,
+                    ProcessInstanceId = ActivityForwardContext.ProcessInstance.Id,
                     ActivityId = fromActivityId,
                     ActivityName = fromActivityName
                 };
@@ -245,7 +245,7 @@ namespace saiflow.engine.Pattern
                 Sail,
                 Kit,
                 runner,
-                processInstance.Id.Value,
+                processInstance.Id,
                 ai,
                 ActivityForwardContext.TaskId,
                 eventType,
@@ -673,7 +673,7 @@ namespace saiflow.engine.Pattern
 
                 var kit = Kit.useSQL();
                 var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
-                var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id.Value, currentActivityInstance.Id.Value,
+                var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id, currentActivityInstance.Id,
                     outputVariableNameList);
 
                 var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
@@ -751,7 +751,7 @@ namespace saiflow.engine.Pattern
 
                 var kit = Kit.useSQL();
                 var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
-                var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id.Value, currentActivityInstance.Id.Value,
+                var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id, currentActivityInstance.Id,
                     outputVariableNameList);
                 var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
 
@@ -1062,7 +1062,7 @@ namespace saiflow.engine.Pattern
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,
                 processInstance.ProcessId,
-                processInstance.Id.Value,
+                processInstance.Id,
                 activity,
                 runner);
 
@@ -1072,7 +1072,7 @@ namespace saiflow.engine.Pattern
         /// <summary>
         /// 插入活动实例
         /// </summary>
-        protected virtual int InsertActivityInstance(ActivityInstanceEntity activityInstance,
+        protected virtual string InsertActivityInstance(ActivityInstanceEntity activityInstance,
             SQLBuilder kit)
         {
             return ActivityInstanceManager.Insert(kit.useSQL(), activityInstance);
@@ -1081,7 +1081,7 @@ namespace saiflow.engine.Pattern
         /// <summary>
         /// 完成活动实例
         /// </summary>
-        protected virtual void CompleteActivityInstance(int ActivityInstanceId,
+        protected virtual void CompleteActivityInstance(string ActivityInstanceId,
             FlowCommandContext runner,
             SQLBuilder kit)
         {
@@ -1207,7 +1207,7 @@ namespace saiflow.engine.Pattern
                 Sail,
                 kit,
                 runner,
-                processInstance.Id.Value,
+                processInstance.Id,
                 activityInstance,
                 null,
                 eventType,
@@ -1224,7 +1224,7 @@ namespace saiflow.engine.Pattern
             if (runner == null || activityInstance?.ProcessInstanceId == null)
                 return;
 
-            var processInstance = ProcessInstanceManager.GetById(kit, activityInstance.ProcessInstanceId.Value);
+            var processInstance = ProcessInstanceManager.GetById(kit, activityInstance.ProcessInstanceId);
             FireActivityLifecycle(kit, processInstance, activityInstance, runner, EventFireTypeEnum.OnActivityReady);
         }
 
@@ -1233,15 +1233,15 @@ namespace saiflow.engine.Pattern
         /// </summary>
         protected ActivityInstanceEntity CreateBackwardToActivityInstanceObject(ProcessInstanceEntity processInstance,
             BackwardTypeEnum backwardType,
-            int backSrcActivityInstanceId,
-            int backOrgActivityInstanceId,
+            string backSrcActivityInstanceId,
+            string backOrgActivityInstanceId,
             FlowCommandContext runner)
         {
             ActivityInstanceEntity entity = ActivityInstanceManager.CreateBackwardActivityInstanceObject(
                 processInstance.AppName,
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,
-                processInstance.Id.Value,
+                processInstance.Id,
                 processInstance.ProcessId,
                 this.BackwardContext.BackwardToTaskActivity,
                 backwardType,
@@ -1255,7 +1255,7 @@ namespace saiflow.engine.Pattern
         /// <summary>
         /// 插入转移实例
         /// </summary>
-        internal virtual int InsertTransitionInstance(ProcessInstanceEntity processInstance,
+        internal virtual string InsertTransitionInstance(ProcessInstanceEntity processInstance,
             String transitionId,
             ActivityInstanceEntity fromActivityInstance,
             ActivityInstanceEntity toActivityInstance,
@@ -1407,8 +1407,8 @@ namespace saiflow.engine.Pattern
         /// </summary>
         protected void BindAutoApproveAnchorActivityInstance(SQLBuilder kit, ActivityInstanceEntity activityInstance)
         {
-            if (activityInstance?.Id is not > 0
-                || activityInstance.ProcessInstanceId is not > 0
+            if (string.IsNullOrWhiteSpace(activityInstance?.Id)
+                || string.IsNullOrWhiteSpace(activityInstance.ProcessInstanceId)
                 || string.IsNullOrWhiteSpace(activityInstance.ActivityId))
                 return;
 
@@ -1416,9 +1416,9 @@ namespace saiflow.engine.Pattern
             {
                 Sail.ManagerFactory.HookOutbox.BindAssigneeAutoApproveActivityInstance(
                     kit.useSQL(),
-                    activityInstance.ProcessInstanceId.Value,
+                    activityInstance.ProcessInstanceId,
                     activityInstance.ActivityId,
-                    activityInstance.Id.Value);
+                    activityInstance.Id);
             }
             catch (Exception ex)
             {

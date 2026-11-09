@@ -40,7 +40,7 @@ namespace saiflow.engine.Runtime
             mediator.ExecuteWorkItem(null);
 
             WfExecutedResult result = base.WfExecutedResult;
-            result.ProcessInstanceIdStarted = processInstance.Id.Value;
+            result.ProcessInstanceIdStarted = processInstance.Id;
             result.Status = WfExecutedStatus.Success;
         }
     }

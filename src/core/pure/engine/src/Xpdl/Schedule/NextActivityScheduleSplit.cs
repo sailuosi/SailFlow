@@ -19,18 +19,12 @@ namespace saiflow.engine.Xpdl
     internal class NextActivityScheduleSplit : NextActivityScheduleBase
     {
 #region Property and Constructor
-        private Nullable<int> _activityInstanceId;
-        internal Nullable<int> ActivityInstanceId
-        {
-            get
-            {
-                return _activityInstanceId;
-            }
-        }
+        private string _activityInstanceId;
+        internal string ActivityInstanceId => _activityInstanceId;
 
         protected SailClient Sail { get; }
 
-        internal NextActivityScheduleSplit(IProcessModel processModel, Nullable<int> activityInstanceId, SailClient client)
+        internal NextActivityScheduleSplit(IProcessModel processModel, string activityInstanceId, SailClient client)
             : base(processModel)
         {
             Sail = client ?? throw new ArgumentNullException(nameof(client));

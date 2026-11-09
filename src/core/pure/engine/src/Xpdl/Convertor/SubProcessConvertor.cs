@@ -28,7 +28,7 @@ namespace saiflow.engine.Xpdl
                 //External subprocess node attribute information
                 var subProcessNode = new SubProcessNode(entity);
                 var subInfoNode = subInfoList[0];
-                subProcessNode.SubProcessDefId = int.Parse(subInfoNode.SubProcessDefId);
+                subProcessNode.SubProcessDefId = subInfoNode.SubProcessDefId;
                 subProcessNode.SubProcessId = subInfoNode.SubProcessId;
                 entity.Node = subProcessNode;
             }

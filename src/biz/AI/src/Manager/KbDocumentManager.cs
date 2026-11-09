@@ -130,7 +130,7 @@ namespace saiflow.AI.Manager
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             HttpResponseMessage response;
-            if (entity.Id > 0)
+            if (!string.IsNullOrWhiteSpace(entity.Id))
                 response = httpClient.PatchAsync($"/rest/v1/biz_documents?id=eq.{entity.Id}", content).Result;
             else
                 response = httpClient.PostAsync("/rest/v1/biz_documents", content).Result;
@@ -144,7 +144,7 @@ namespace saiflow.AI.Manager
             var responseContent = response.Content.ReadAsStringAsync().Result;
             var savedRows = JsonConvert.DeserializeObject<List<JObject>>(responseContent);
             if (savedRows != null && savedRows.Count > 0)
-                entity.Id = savedRows[0]["id"]?.Value<long>() ?? 0;
+                entity.Id = savedRows[0]["id"]?.ToString();
 
             return entity;
         }
@@ -358,7 +358,7 @@ namespace saiflow.AI.Manager
             {
                 var doc = new KbDocumentEntity
                 {
-                    Id = result.Id,
+                    Id = result.Id.ToString(),
                     Content = result.Content ?? string.Empty
                 };
 

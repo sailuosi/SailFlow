@@ -97,14 +97,14 @@ public sealed class AutoApproveAnchorWorker
     {
         var om = new HookOutboxManager(Sail);
         var anchor = Deserialize(row);
-        if (anchor == null || anchor.ProcessInstanceId is not > 0 || string.IsNullOrWhiteSpace(anchor.ActivityId))
+        if (anchor == null || string.IsNullOrWhiteSpace(anchor.ProcessInstanceId) || string.IsNullOrWhiteSpace(anchor.ActivityId))
         {
             TerminalSkip(om, row, "Invalid AutoApproveAnchor payload (need ProcessInstanceId+ActivityId).");
             return;
         }
 
         // Outbox 列优先于 Payload（CreateNewTask 回写）
-        if (row.ActivityInstanceId is > 0)
+        if (!string.IsNullOrWhiteSpace(row.ActivityInstanceId))
             anchor.ActivityInstanceId = row.ActivityInstanceId;
 
         TaskEntity? task;
@@ -117,9 +117,9 @@ public sealed class AutoApproveAnchorWorker
         {
             var sibling = probeKit.useSQL();
 
-            if (!IsProcessInstanceRunnable(sibling, anchor.ProcessInstanceId!.Value))
+            if (!IsProcessInstanceRunnable(sibling, anchor.ProcessInstanceId))
             {
-                if (IsProcessInstanceTerminal(sibling, anchor.ProcessInstanceId.Value)
+                if (IsProcessInstanceTerminal(sibling, anchor.ProcessInstanceId)
                     || IsAnchorTargetAlreadyLeft(sibling, anchor))
                 {
                     MarkDone(om, row, alreadyDone: true);
@@ -357,7 +357,7 @@ public sealed class AutoApproveAnchorWorker
         if (list.Count == 0)
             return null;
 
-        if (anchor.TaskId is > 0)
+        if (!string.IsNullOrWhiteSpace(anchor.TaskId))
             return list.FirstOrDefault(x => x.Id == anchor.TaskId);
 
         if (!string.IsNullOrWhiteSpace(anchor.PreferUserId))
@@ -369,7 +369,7 @@ public sealed class AutoApproveAnchorWorker
         return list.Count == 1 ? list[0] : null;
     }
 
-    static bool IsProcessInstanceRunnable(SQLBuilder kit, int processInstanceId)
+    static bool IsProcessInstanceRunnable(SQLBuilder kit, string processInstanceId)
     {
         try
         {
@@ -386,7 +386,7 @@ public sealed class AutoApproveAnchorWorker
         }
     }
 
-    static bool IsProcessInstanceTerminal(SQLBuilder kit, int processInstanceId)
+    static bool IsProcessInstanceTerminal(SQLBuilder kit, string processInstanceId)
     {
         try
         {
@@ -411,7 +411,7 @@ public sealed class AutoApproveAnchorWorker
     {
         try
         {
-            if (anchor.ActivityInstanceId is > 0)
+            if (!string.IsNullOrWhiteSpace(anchor.ActivityInstanceId))
             {
                 var clip = kit.useClip();
                 clip.from<ActivityInstanceEntity>(out var a);
@@ -454,7 +454,7 @@ public sealed class AutoApproveAnchorWorker
 
     static bool IsTaskActivityReady(SQLBuilder kit, TaskEntity task)
     {
-        if (task.ActivityInstanceId is not > 0)
+        if (string.IsNullOrWhiteSpace(task.ActivityInstanceId))
             return true;
         try
         {
@@ -484,7 +484,7 @@ public sealed class AutoApproveAnchorWorker
         var list = clip.select(a).queryList()?.ToList() ?? new List<ActivityInstanceEntity>();
         if (list.Count == 0)
             return null;
-        if (anchor.ActivityInstanceId is > 0)
+        if (!string.IsNullOrWhiteSpace(anchor.ActivityInstanceId))
             return list.FirstOrDefault(x => x.Id == anchor.ActivityInstanceId);
         // 无 AI Id 且多 Ready：拒绝自动，避免误挑（勿 OrderByDescending）
         return list.Count == 1 ? list[0] : null;
@@ -518,7 +518,7 @@ public sealed class AutoApproveAnchorWorker
         return false;
     }
 
-    static ProcessInstanceEntity? LoadProcessInstance(SQLBuilder kit, int processInstanceId)
+    static ProcessInstanceEntity? LoadProcessInstance(SQLBuilder kit, string processInstanceId)
     {
         var clip = kit.useClip();
         clip.from<ProcessInstanceEntity>(out var p);
@@ -526,13 +526,13 @@ public sealed class AutoApproveAnchorWorker
         return clip.select(p).queryList()?.FirstOrDefault();
     }
 
-    static string ResolveVersionByProcessInstance(SQLBuilder kit, int? processInstanceId)
+    static string ResolveVersionByProcessInstance(SQLBuilder kit, string processInstanceId)
     {
         try
         {
-            if (processInstanceId is not > 0)
+            if (string.IsNullOrWhiteSpace(processInstanceId))
                 return "1";
-            var pi = LoadProcessInstance(kit, processInstanceId.Value);
+            var pi = LoadProcessInstance(kit, processInstanceId);
             return string.IsNullOrWhiteSpace(pi?.Version) ? "1" : pi!.Version;
         }
         catch

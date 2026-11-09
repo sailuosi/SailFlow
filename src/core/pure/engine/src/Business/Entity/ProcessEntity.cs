@@ -12,8 +12,8 @@ namespace saiflow.engine.Entity
     [SooTable(Name = "wf_process", Caption = "流程定义", Type = DBTableType.Table)]
     public class ProcessEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
         [SooColumn(Name = "process_id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "process_name")]
@@ -28,8 +28,8 @@ namespace saiflow.engine.Entity
         public string AppType { get; set; }
         [SooColumn(Name = "package_type")]
         public byte? PackageType { get; set; }
-        [SooColumn(Name = "package_id")]
-        public int? PackageId { get; set; }
+        [SooColumn(Name = "package_id", Length = 64)]
+        public string PackageId { get; set; }
         [SooColumn(Name = "participant_guid")]
         public string ParticipantGUID { get; set; }
         [SooColumn(Name = "page_url")]

@@ -43,7 +43,7 @@ namespace saiflow.data.Lifecycle
             var ok = 0;
             foreach (var pi in candidates)
             {
-                if (pi.Id.HasValue && ArchiveOne(pi.Id.Value))
+                if (!string.IsNullOrWhiteSpace(pi.Id) && ArchiveOne(pi.Id))
                     ok++;
             }
 
@@ -51,22 +51,22 @@ namespace saiflow.data.Lifecycle
         }
 
         /// <summary>归档单个实例（幂等：冷表已有主键则跳过插入，仍删热表）。</summary>
-        public bool ArchiveOne(int processInstanceId)
+        public bool ArchiveOne(string processInstanceId)
         {
             if (Cold.IsSameDatabase)
                 return ArchiveOneSameDb(processInstanceId);
             return ArchiveOneCrossDb(processInstanceId);
         }
 
-        private bool ArchiveOneSameDb(int processInstanceId)
+        private bool ArchiveOneSameDb(string processInstanceId)
         {
             using (var kit = Cold.UseHotSQL())
             {
                 kit.beginTransaction();
                 try
                 {
-                    var pi = kit.useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
-                    if (pi == null || !pi.Id.HasValue || !IsArchivable(pi))
+                    var pi = kit.useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
+                    if (pi == null || !!string.IsNullOrWhiteSpace(pi.Id) || !IsArchivable(pi))
                     {
                         kit.commit();
                         return false;
@@ -86,7 +86,7 @@ namespace saiflow.data.Lifecycle
             }
         }
 
-        private bool ArchiveOneCrossDb(int processInstanceId)
+        private bool ArchiveOneCrossDb(string processInstanceId)
         {
             ProcessInstanceEntity pi;
             List<ActivityInstanceEntity> activities;
@@ -96,11 +96,11 @@ namespace saiflow.data.Lifecycle
 
             using (var hot = Cold.UseHotSQL())
             {
-                pi = hot.useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
+                pi = hot.useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
                 if (pi == null || !IsArchivable(pi))
                     return false;
 
-                var id = pi.Id.Value;
+                var id = pi.Id;
                 activities = LoadActivities(hot, id);
                 tasks = LoadTasks(hot, id);
                 transitions = LoadTransitions(hot, id);
@@ -169,7 +169,7 @@ namespace saiflow.data.Lifecycle
 
         private void CopyClosure(SQLBuilder hot, SQLBuilder cold, ProcessInstanceEntity pi, int year)
         {
-            var id = pi.Id.Value;
+            var id = pi.Id;
             WriteClosure(
                 cold,
                 year,
@@ -210,7 +210,7 @@ namespace saiflow.data.Lifecycle
             ArchiveRowCopier.InsertPreservingKey(kit, histTable, entity);
         }
 
-        private static List<ActivityInstanceEntity> LoadActivities(SQLBuilder kit, int processInstanceId)
+        private static List<ActivityInstanceEntity> LoadActivities(SQLBuilder kit, string processInstanceId)
         {
             var clip = kit.useSQL().useClip();
             clip.from<ActivityInstanceEntity>(out var a);
@@ -218,7 +218,7 @@ namespace saiflow.data.Lifecycle
             return clip.select(a).queryList().ToList();
         }
 
-        private static List<TaskEntity> LoadTasks(SQLBuilder kit, int processInstanceId)
+        private static List<TaskEntity> LoadTasks(SQLBuilder kit, string processInstanceId)
         {
             var clip = kit.useSQL().useClip();
             clip.from<TaskEntity>(out var t);
@@ -226,7 +226,7 @@ namespace saiflow.data.Lifecycle
             return clip.select(t).queryList().ToList();
         }
 
-        private List<TransitionInstanceEntity> LoadTransitions(SQLBuilder kit, int processInstanceId)
+        private List<TransitionInstanceEntity> LoadTransitions(SQLBuilder kit, string processInstanceId)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
             return LoadByProcessInstanceWithFallback<TransitionInstanceEntity>(
@@ -237,7 +237,7 @@ namespace saiflow.data.Lifecycle
                 Sail.HotShard.IsSharded(processId));
         }
 
-        private List<ProcessVariableEntity> LoadVariables(SQLBuilder kit, int processInstanceId)
+        private List<ProcessVariableEntity> LoadVariables(SQLBuilder kit, string processInstanceId)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
             return LoadByProcessInstanceWithFallback<ProcessVariableEntity>(
@@ -248,7 +248,7 @@ namespace saiflow.data.Lifecycle
                 Sail.HotShard.IsSharded(processId));
         }
 
-        private void DeleteHotClosure(SQLBuilder kit, int processInstanceId)
+        private void DeleteHotClosure(SQLBuilder kit, string processInstanceId)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
 
@@ -270,14 +270,14 @@ namespace saiflow.data.Lifecycle
             if (Sail.HotShard.IsSharded(processId))
                 DeleteByProcessInstance(kit, Sail.HotShard.DefaultVariableTable, processInstanceId);
 
-            kit.useRepo<ProcessInstanceEntity, int>().DeleteById(processInstanceId);
+            kit.useRepo<ProcessInstanceEntity, string>().DeleteById(processInstanceId);
         }
 
-        private static string ResolveProcessId(SQLBuilder kit, int processInstanceId)
+        private static string ResolveProcessId(SQLBuilder kit, string processInstanceId)
         {
             try
             {
-                var pi = kit.useSQL().useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
+                var pi = kit.useSQL().useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
                 return pi?.ProcessId;
             }
             catch
@@ -288,7 +288,7 @@ namespace saiflow.data.Lifecycle
 
         private static List<T> LoadByProcessInstanceWithFallback<T>(
             SQLBuilder kit,
-            int processInstanceId,
+            string processInstanceId,
             string primaryTable,
             string defaultTable,
             bool mergeDefault) where T : class, new()
@@ -302,22 +302,22 @@ namespace saiflow.data.Lifecycle
                 return rows;
 
             var idProp = typeof(T).GetProperty("Id");
-            var seen = new HashSet<int>();
+            var seen = new HashSet<string>();
             foreach (var row in rows)
             {
-                if (idProp?.GetValue(row) is int id)
+                if (idProp?.GetValue(row) is string id && !string.IsNullOrWhiteSpace(id))
                     seen.Add(id);
             }
             foreach (var row in legacy)
             {
-                if (idProp?.GetValue(row) is int id && seen.Contains(id))
+                if (idProp?.GetValue(row) is string id && !string.IsNullOrWhiteSpace(id) && seen.Contains(id))
                     continue;
                 rows.Add(row);
             }
             return rows;
         }
 
-        private static List<T> LoadByProcessInstance<T>(SQLBuilder kit, string table, int processInstanceId)
+        private static List<T> LoadByProcessInstance<T>(SQLBuilder kit, string table, string processInstanceId)
             where T : class, new()
         {
             try
@@ -333,7 +333,7 @@ namespace saiflow.data.Lifecycle
             }
         }
 
-        private static void DeleteByProcessInstance(SQLBuilder kit, string physicalTable, int processInstanceId)
+        private static void DeleteByProcessInstance(SQLBuilder kit, string physicalTable, string processInstanceId)
         {
             try
             {

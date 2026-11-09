@@ -39,33 +39,33 @@ namespace saiflow.AI.Service
             }
 
             // Query the ai_model_provider table according to model_provider_id to obtain the baseUrl and apiKey
-            if (!axConfig.ModelProviderId.HasValue)
+            if (!!string.IsNullOrWhiteSpace(axConfig.ModelProviderId))
             {
                 throw new InvalidOperationException($"ModelProviderId is not set in AxConfig for ProcessId: {axConfig.ProcessId}, Version: {axConfig.Version}, ActivityId: {axConfig.ActivityId}");
             }
 
             // Get model provider configuration
             var modelProviderManager = new AiModelProviderManager(Sail);
-            var modelProvider = modelProviderManager.GetById(axConfig.ModelProviderId.Value);
+            var modelProvider = modelProviderManager.GetById(axConfig.ModelProviderId);
 
             if (modelProvider == null)
             {
-                throw new InvalidOperationException($"AIModelProvider not found for ModelProviderId: {axConfig.ModelProviderId.Value}");
+                throw new InvalidOperationException($"AIModelProvider not found for ModelProviderId: {axConfig.ModelProviderId}");
             }
 
             if (!modelProvider.IsActive)
             {
-                throw new InvalidOperationException($"AIModelProvider with Id {axConfig.ModelProviderId.Value} is not active");
+                throw new InvalidOperationException($"AIModelProvider with Id {axConfig.ModelProviderId} is not active");
             }
 
             if (string.IsNullOrWhiteSpace(modelProvider.BaseUrl))
             {
-                throw new InvalidOperationException($"BaseUrl is not set in AIModelProvider for Id: {axConfig.ModelProviderId.Value}");
+                throw new InvalidOperationException($"BaseUrl is not set in AIModelProvider for Id: {axConfig.ModelProviderId}");
             }
 
             if (string.IsNullOrWhiteSpace(modelProvider.ApiKey))
             {
-                throw new InvalidOperationException($"ApiKey is not set in AIModelProvider for Id: {axConfig.ModelProviderId.Value}");
+                throw new InvalidOperationException($"ApiKey is not set in AIModelProvider for Id: {axConfig.ModelProviderId}");
             }
 
             if (string.IsNullOrEmpty(axConfig.ModelName))

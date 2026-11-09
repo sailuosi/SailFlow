@@ -28,7 +28,7 @@ namespace saiflow.engine.Pattern
 
             var pim = Sail.ProcessInstances;
             var kit = Kit.useSQL();
-            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id.Value,
+            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id,
                 ActivityForwardContext.ActivityResource.AppRunner);
 
             OnAfterExecuteWorkItem();

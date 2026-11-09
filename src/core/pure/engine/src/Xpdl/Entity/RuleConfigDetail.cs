@@ -13,7 +13,7 @@ namespace saiflow.engine.Xpdl
         public string RuleSetCode { get; set; }
 
         /// <summary><c>wf_rule_set.id</c> when resolved.</summary>
-        public int? RuleSetId { get; set; }
+        public string RuleSetId { get; set; }
 
         /// <summary><c>wf_rule_set.rule_set_name</c></summary>
         public string RuleSetName { get; set; }

@@ -21,7 +21,7 @@ namespace saiflow.AI.Service
         private SQLBuilder Kit() => Sail.UseRunSQL();
 
         #region AIModel Data Service
-        public AiModelProviderEntity GetModelById(int id)
+        public AiModelProviderEntity GetModelById(string id)
         {
             var modelManager = new AiModelProviderManager(Sail);
             var entity = modelManager.GetById(id);
@@ -43,7 +43,7 @@ namespace saiflow.AI.Service
             return modelManager.GetByModelType(modelType ?? string.Empty);
         }
 
-        public int CreateModel(AiModelProviderEntity modelEntity)
+        public string CreateModel(AiModelProviderEntity modelEntity)
         {
             var modelManager = new AiModelProviderManager(Sail);
             modelEntity.ApiUUID = Guid.NewGuid().ToString();
@@ -61,7 +61,7 @@ namespace saiflow.AI.Service
                 kit.beginTransaction();
                 try
                 {
-                    var existedModelEntity = kit.useRepo<AiModelProviderEntity, int>().GetById(modelEntity.Id);
+                    var existedModelEntity = kit.useRepo<AiModelProviderEntity, string>().GetById(modelEntity.Id);
                     if (modelEntity.ApiKey != existedModelEntity.ApiKey)
                     {
                         modelEntity.ApiKey = ApiKeyCryptoHelper.Encrypt(modelEntity.ApiKey, modelEntity.ApiUUID);
@@ -78,7 +78,7 @@ namespace saiflow.AI.Service
             }
         }
 
-        public void DeleteModel(int modelId)
+        public void DeleteModel(string modelId)
         {
             var modelManager = new AiModelProviderManager(Sail);
             modelManager.DeleteAgent(modelId);

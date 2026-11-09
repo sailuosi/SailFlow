@@ -14,18 +14,18 @@ namespace saiflow.engine.Entity
     [SooTable(Name = "wf_process_variable", Caption = "流程变量运行时", Type = DBTableType.Table)]
     public class ProcessVariableEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
         [SooColumn(Name = "variable_scope")]
         public string VariableScope { get; set; }
         [SooColumn(Name = "app_instance_id")]
         public string AppInstanceId { get; set; }
         [SooColumn(Name = "process_id")]
         public string ProcessId { get; set; }
-        [SooColumn(Name = "process_instance_id")]
-        public int? ProcessInstanceId { get; set; }
-        [SooColumn(Name = "activity_instance_id")]
-        public int? ActivityInstanceId { get; set; }
+        [SooColumn(Name = "process_instance_id", Length = 64)]
+        public string ProcessInstanceId { get; set; }
+        [SooColumn(Name = "activity_instance_id", Length = 64)]
+        public string ActivityInstanceId { get; set; }
         [SooColumn(Name = "activity_id")]
         public string ActivityId { get; set; }
         [SooColumn(Name = "activity_name")]

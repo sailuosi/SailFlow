@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -14,7 +14,7 @@ namespace saiflow.engine.Utility
     internal class CachedHelper
     {
         private static readonly ConcurrentDictionary<string, XmlDocument> _xpdlCache = new ConcurrentDictionary<string, XmlDocument>();
-        private static readonly ConcurrentDictionary<int, object> _fullEntityMapCache = new ConcurrentDictionary<int, object>();
+        private static readonly ConcurrentDictionary<string, object> _fullEntityMapCache = new ConcurrentDictionary<string, object>();
 
         /// <summary>
         /// Set Xpdl Cache
@@ -67,7 +67,7 @@ namespace saiflow.engine.Utility
         /// Cache the dynamic mapping method for entity Reader conversion
         /// 设置实体Reader转换的动态映射方法缓存
         /// </summary>
-        internal static object SetEntityCache(int id, object obj)
+        internal static object SetEntityCache(string id, object obj)
         {
             return _fullEntityMapCache.GetOrAdd(id, obj);
         }
@@ -76,7 +76,7 @@ namespace saiflow.engine.Utility
         /// Cache the dynamic mapping method for reading entity Reader conversion
         /// 读取实体Reader转换的动态映射方法缓存
         /// </summary>
-        internal static object GetEntityCache(int id)
+        internal static object GetEntityCache(string id)
         {
             object obj = null;
             if (_fullEntityMapCache.ContainsKey(id))

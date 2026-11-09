@@ -35,19 +35,19 @@ namespace saiflow.engine.Manager
             return clip.select(v).queryList().ToList();
         }
 
-        public VariableEntity GetById(int id)
-            => Sail.UseRunSQL().useRepo<VariableEntity, int>().GetById(id);
+        public VariableEntity GetById(string id)
+            => Sail.UseRunSQL().useRepo<VariableEntity, string>().GetById(id);
 
-        public int Insert(VariableEntity entity)
+        public string Insert(VariableEntity entity)
         {
             var kit = Sail.UseRunSQL();
             return Insert(kit, entity);
         }
 
-        public int Insert(SQLBuilder kit, VariableEntity entity)
+        public string Insert(SQLBuilder kit, VariableEntity entity)
         {
             entity.CreatedDateTime = DateTime.UtcNow;
-            var newId = kit.useRepo<VariableEntity, int>().InsertReturnId(entity);
+            var newId = kit.useRepo<VariableEntity, string>().InsertReturnId(entity);
             entity.Id = newId;
             return newId;
         }
@@ -64,11 +64,11 @@ namespace saiflow.engine.Manager
             kit.useRepo<VariableEntity>().Update(entity);
         }
 
-        public void Delete(int id)
-            => Sail.UseRunSQL().useRepo<VariableEntity, int>().DeleteById(id);
+        public void Delete(string id)
+            => Sail.UseRunSQL().useRepo<VariableEntity, string>().DeleteById(id);
 
-        public void Delete(SQLBuilder kit, int id)
-            => kit.useRepo<VariableEntity, int>().DeleteById(id);
+        public void Delete(SQLBuilder kit, string id)
+            => kit.useRepo<VariableEntity, string>().DeleteById(id);
 
         public void DeleteByProcessActivity(string processId, string version, string activityId)
         {
@@ -117,7 +117,7 @@ namespace saiflow.engine.Manager
                 item.Version = version;
                 item.ActivityId = activityId;
                 item.SortOrder = order++;
-                // 自增主键新建须 null，勿写 0（会进 INSERT 撞 PRIMARY KEY）
+                // 新建：清空 Id，由 AutoKey=Guid 发号
                 item.Id = null;
                 Insert(kit, item);
             }

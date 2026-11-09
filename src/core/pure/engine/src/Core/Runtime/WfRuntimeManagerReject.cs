@@ -24,7 +24,7 @@ namespace saiflow.engine.Runtime
             WfExecutedResult result = base.WfExecutedResult;
 
             var tm = Sail.ManagerFactory.Tasks;
-            tm.Complete(kit.useSQL(), this.TaskView.Id.Value, base.AppRunner);
+            tm.Complete(kit.useSQL(), this.TaskView.Id, base.AppRunner);
 
             //取消当前其它处于办理状态的节点
             //Cancel other nodes currently in processing status
@@ -34,7 +34,7 @@ namespace saiflow.engine.Runtime
             {
                 if (ai.Id != base.BackwardContext.BackwardFromActivityInstance.Id)
                 {
-                    aim.Cancel(kit.useSQL(), ai.Id.Value, base.AppRunner);
+                    aim.Cancel(kit.useSQL(), ai.Id, base.AppRunner);
                 }
             }
 
@@ -48,7 +48,7 @@ namespace saiflow.engine.Runtime
                 base.ActivityResource,
                 kit);
 
-            aim.SendBack(kit.useSQL(), base.BackwardContext.BackwardFromActivityInstance.Id.Value, base.ActivityResource.AppRunner);
+            aim.SendBack(kit.useSQL(), base.BackwardContext.BackwardFromActivityInstance.Id, base.ActivityResource.AppRunner);
 
             result.BackwardTaskReceiver = base.BackwardContext.BackwardTaskReceiver;
             result.Status = WfExecutedStatus.Success;

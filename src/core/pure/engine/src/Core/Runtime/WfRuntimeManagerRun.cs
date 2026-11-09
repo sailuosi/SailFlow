@@ -26,7 +26,7 @@ namespace saiflow.engine.Runtime
         internal override void ExecuteInstanceImp(SQLBuilder kit)
         {
             var result = base.WfExecutedResult;
-            result.ProcessInstanceIdStarted = RunningActivityInstance.ProcessInstanceId.Value;
+            result.ProcessInstanceIdStarted = RunningActivityInstance.ProcessInstanceId;
 
             try
             {
@@ -84,7 +84,7 @@ namespace saiflow.engine.Runtime
         private void FireProcessCompletedHooks(SQLBuilder kit)
         {
             var pim = Sail.ProcessInstances;
-            var entity = pim.GetById(kit, RunningActivityInstance.ProcessInstanceId.Value);
+            var entity = pim.GetById(kit, RunningActivityInstance.ProcessInstanceId);
             if (entity == null || entity.ProcessState != (short)ProcessStateEnum.Completed)
                 return;
 
@@ -92,7 +92,7 @@ namespace saiflow.engine.Runtime
                 Sail,
                 kit,
                 AppRunner,
-                RunningActivityInstance.ProcessInstanceId.Value,
+                RunningActivityInstance.ProcessInstanceId,
                 RunningActivityInstance,
                 TaskView?.Id,
                 EventFireTypeEnum.OnProcessCompleted,

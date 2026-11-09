@@ -34,15 +34,15 @@ namespace saiflow.AI.Implementation
         {
             if (serviceType == AiServiceTypeEnum.RAG)
             {
-                if (axConfig?.RagEmbeddingModelId == null || !axConfig.RagEmbeddingModelId.HasValue)
+                if (string.IsNullOrWhiteSpace(axConfig?.RagEmbeddingModelId))
                     throw new InvalidOperationException("RAG 节点必须在 ai_activity_config 中设置 RagEmbeddingModelId，指向 ai_model_provider 中的向量模型 (model_type=vector_model)。");
                 if (sail == null)
                     throw new ArgumentNullException(nameof(sail), "SailClient is required for RAG embedding provider lookup.");
 
                 var modelManager = new AiModelProviderManager(sail);
-                var embeddingProvider = modelManager.GetById(axConfig.RagEmbeddingModelId.Value);
+                var embeddingProvider = modelManager.GetById(axConfig.RagEmbeddingModelId);
                 if (embeddingProvider == null)
-                    throw new InvalidOperationException($"ai_model_provider 中未找到 Id={axConfig.RagEmbeddingModelId.Value} 的向量模型配置。");
+                    throw new InvalidOperationException($"ai_model_provider 中未找到 Id={axConfig.RagEmbeddingModelId} 的向量模型配置。");
                 if (!embeddingProvider.IsActive)
                     throw new InvalidOperationException($"ai_model_provider Id={embeddingProvider.Id} 已被禁用，请在节点配置中启用。");
 

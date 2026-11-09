@@ -7,7 +7,7 @@ namespace saiflow.biz.query
     [SooTable(Name = "sf_process_instance_copy", Caption = "流程抄送", Type = DBTableType.Table)]
     public class SailProcessCopyEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, Length = 64)]
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
         public string Id { get; set; }
 
         [SooColumn(Name = "user_id", Length = 64)]

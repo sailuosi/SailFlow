@@ -13,10 +13,10 @@ namespace saiflow.engine.Entity
     [SooTable(Name = "wf_activity_instance", Caption = "活动实例", Type = DBTableType.Table)]
     public class ActivityInstanceEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
-        [SooColumn(Name = "process_instance_id")]
-        public int? ProcessInstanceId { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
+        [SooColumn(Name = "process_instance_id", Length = 64)]
+        public string ProcessInstanceId { get; set; }
         [SooColumn(Name = "app_name")]
         public string AppName { get; set; }
         [SooColumn(Name = "app_instance_id")]
@@ -87,8 +87,8 @@ namespace saiflow.engine.Entity
         /// </summary>
         [SooColumn(Name = "merge_type")]
         public short? MergeType { get; set; }
-        [SooColumn(Name = "main_activity_instance_id")]
-        public int? MainActivityInstanceId { get; set; }
+        [SooColumn(Name = "main_activity_instance_id", Length = 64)]
+        public string MainActivityInstanceId { get; set; }
         /// <summary>
         /// Sign Together Passover Type: Count / Percentage
         /// 会签通过率类型：个数或百分比
@@ -107,10 +107,10 @@ namespace saiflow.engine.Entity
         public short? SignForwardType { get; set; }
         [SooColumn(Name = "backward_type")]
         public short? BackwardType { get; set; }
-        [SooColumn(Name = "back_src_activity_instance_id")]
-        public int? BackSrcActivityInstanceId { get; set; }
-        [SooColumn(Name = "back_org_activity_instance_id")]
-        public int? BackOrgActivityInstanceId { get; set; }
+        [SooColumn(Name = "back_src_activity_instance_id", Length = 64)]
+        public string BackSrcActivityInstanceId { get; set; }
+        [SooColumn(Name = "back_org_activity_instance_id", Length = 64)]
+        public string BackOrgActivityInstanceId { get; set; }
         [SooColumn(Name = "next_step_performers")]
         public string NextStepPerformers { get; set; }
         [SooColumn(Name = "created_user_id")]

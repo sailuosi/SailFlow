@@ -38,9 +38,9 @@ namespace saiflow.hub.Form
 
         public Form GetForm(string formId)
         {
-            if (string.IsNullOrWhiteSpace(formId) || !int.TryParse(formId, out var id))
+            if (string.IsNullOrWhiteSpace(formId))
                 return null;
-            var entity = new FormManager(Sail).GetById(id);
+            var entity = new FormManager(Sail).GetById(formId);
             return entity == null ? null : ToForm(entity, includeContent: true);
         }
 
@@ -49,17 +49,15 @@ namespace saiflow.hub.Form
             if (form == null) throw new ArgumentNullException(nameof(form));
             var fm = new FormManager(Sail);
             FormEntity entity;
-            var existingId = 0;
-            var parsed = !string.IsNullOrWhiteSpace(form.FormId) && int.TryParse(form.FormId, out existingId);
-            var isNew = !parsed || existingId <= 0;
+            var isNew = string.IsNullOrWhiteSpace(form.FormId);
             if (isNew)
             {
                 entity = new FormEntity();
             }
             else
             {
-                entity = fm.GetById(existingId) ?? new FormEntity { Id = existingId };
-                isNew = entity.Id == null || entity.Id <= 0;
+                entity = fm.GetById(form.FormId) ?? new FormEntity { Id = form.FormId };
+                isNew = string.IsNullOrWhiteSpace(entity.Id);
             }
 
             entity.FormName = form.FormName;
@@ -73,25 +71,25 @@ namespace saiflow.hub.Form
             if (isNew)
             {
                 var newId = fm.Insert(entity);
-                return newId.ToString();
+                return newId;
             }
 
             fm.Update(entity);
-            return entity.Id?.ToString() ?? form.FormId;
+            return entity.Id ?? form.FormId;
         }
 
         public bool DeleteForm(string formId)
         {
-            if (string.IsNullOrWhiteSpace(formId) || !int.TryParse(formId, out var id))
+            if (string.IsNullOrWhiteSpace(formId))
                 return false;
-            return new FormManager(Sail).Delete(id);
+            return new FormManager(Sail).Delete(formId);
         }
 
         private static Form ToForm(FormEntity item, bool includeContent)
         {
             var form = new Form
             {
-                FormId = item.Id?.ToString(),
+                FormId = item.Id,
                 FormCode = item.FormCode,
                 FormName = item.FormName,
                 Version = item.Version,
@@ -167,7 +165,7 @@ namespace saiflow.hub.Form
             var formManager = new FormManager(Sail);
             var fieldManager = new FieldManager(Sail);
 
-            var summartyFieldList = formManager.GetFieldSummaryList(int.Parse(formId)).ToList();
+            var summartyFieldList = formManager.GetFieldSummaryList(formId).ToList();
             var fieldActivityEditItem = fieldManager.GetFieldActivityEditListByForm(formId, 
                 query.ProcessId, query.ProcessVersion, query.ActivityId);
 

@@ -11,7 +11,7 @@ namespace saiflow.engine.Entity
     /// </summary>
     public class ProcessVariableTaskView
     {
-        public int TaskId { get; set; }
+        public string TaskId { get; set; }
         public string VariableScope { get; set; }
         public string Name { get; set; }
         public string Value { get; set; }

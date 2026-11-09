@@ -23,8 +23,8 @@ namespace saiflow.AI.Manager
         private SQLBuilder Kit() => Sail.UseRunSQL();
         #region get
 
-        public AiModelProviderEntity GetById(int id)
-            => Kit().useRepo<AiModelProviderEntity, int>().GetById(id);
+        public AiModelProviderEntity GetById(string id)
+            => Kit().useRepo<AiModelProviderEntity, string>().GetById(id);
 
         public List<AiModelProviderEntity> GetAll()
         {
@@ -52,7 +52,7 @@ namespace saiflow.AI.Manager
 
         #region insert / update / delete
 
-        public int Insert(AiModelProviderEntity entity)
+        public string Insert(AiModelProviderEntity entity)
         {
             using (var kit = Kit())
             {
@@ -70,8 +70,8 @@ namespace saiflow.AI.Manager
             }
         }
 
-        public int Insert(SQLBuilder kit, AiModelProviderEntity entity)
-            => kit.useSQL().useRepo<AiModelProviderEntity, int>().InsertReturnId(entity);
+        public string Insert(SQLBuilder kit, AiModelProviderEntity entity)
+            => kit.useSQL().useRepo<AiModelProviderEntity, string>().InsertReturnId(entity);
 
         public void Update(AiModelProviderEntity entity)
         {
@@ -93,11 +93,11 @@ namespace saiflow.AI.Manager
         public void Update(SQLBuilder kit, AiModelProviderEntity entity)
         {
             entity.UpdatedDateTime = DateTime.UtcNow;
-            kit.useSQL().useRepo<AiModelProviderEntity, int>().Update(entity);
+            kit.useSQL().useRepo<AiModelProviderEntity, string>().Update(entity);
         }
 
-        public void DeleteAgent(int modelId)
-            => Kit().useRepo<AiModelProviderEntity, int>().DeleteById(modelId);
+        public void DeleteAgent(string modelId)
+            => Kit().useRepo<AiModelProviderEntity, string>().DeleteById(modelId);
 
         #endregion
     }

@@ -10,8 +10,8 @@ namespace saiflow.engine.Entity
     [SooTable(Name = "wf_variable", Caption = "流程变量定义", Type = DBTableType.Table)]
     public class VariableEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
         [SooColumn(Name = "process_id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "version")]

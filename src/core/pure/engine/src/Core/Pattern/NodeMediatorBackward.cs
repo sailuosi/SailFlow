@@ -45,8 +45,8 @@ namespace saiflow.engine.Pattern
         {
             var toActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
-                fromActivityInstance.Id.Value,
-                base.BackwardContext.BackwardToTaskActivityInstance.Id.Value,
+                fromActivityInstance.Id,
+                base.BackwardContext.BackwardToTaskActivityInstance.Id,
                 activityResource.AppRunner);
 
             toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
@@ -54,8 +54,8 @@ namespace saiflow.engine.Pattern
 
             base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
-            base.ReturnDataContext.ActivityInstanceId = toActivityInstance.Id.Value;
-            base.ReturnDataContext.ProcessInstanceId = toActivityInstance.ProcessInstanceId.Value;
+            base.ReturnDataContext.ActivityInstanceId = toActivityInstance.Id;
+            base.ReturnDataContext.ProcessInstanceId = toActivityInstance.ProcessInstanceId;
 
             base.CreateNewTask(toActivityInstance, activityResource, kit);
 
@@ -106,7 +106,7 @@ namespace saiflow.engine.Pattern
         internal void CreateBackwardActivityTaskOfInnerMultipleInstance(ProcessInstanceEntity processInstance,
             ActivityInstanceEntity originalBackwardToActivityInstance,
             BackwardTypeEnum backwardType,
-            int backSrcActivityInstanceId,
+            string backSrcActivityInstanceId,
             ActivityResource activityResource,
             SQLBuilder kit)
         {
@@ -114,7 +114,7 @@ namespace saiflow.engine.Pattern
             var rollbackPreviousActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
                 backSrcActivityInstanceId,
-                originalBackwardToActivityInstance.Id.Value,
+                originalBackwardToActivityInstance.Id,
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
@@ -127,8 +127,8 @@ namespace saiflow.engine.Pattern
 
             base.ActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
 
-            base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.Id.Value;
-            base.ReturnDataContext.ProcessInstanceId = rollbackPreviousActivityInstance.ProcessInstanceId.Value;
+            base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.Id;
+            base.ReturnDataContext.ProcessInstanceId = rollbackPreviousActivityInstance.ProcessInstanceId;
 
             base.CreateNewTask(rollbackPreviousActivityInstance, activityResource, kit);
         }
@@ -149,8 +149,8 @@ namespace saiflow.engine.Pattern
             //创建退回目标节点信息
             var rollbackPreviousActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
-                fromActivityInstance.Id.Value,
-                originalBackwardToActivityInstance.Id.Value,
+                fromActivityInstance.Id,
+                originalBackwardToActivityInstance.Id,
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
@@ -162,8 +162,8 @@ namespace saiflow.engine.Pattern
             rollbackPreviousActivityInstance.AssignedUserNames = originalBackwardToActivityInstance.AssignedUserNames;
 
             base.ActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
-            base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.Id.Value;
-            base.ReturnDataContext.ProcessInstanceId = rollbackPreviousActivityInstance.ProcessInstanceId.Value;
+            base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.Id;
+            base.ReturnDataContext.ProcessInstanceId = rollbackPreviousActivityInstance.ProcessInstanceId;
             base.CreateNewTask(rollbackPreviousActivityInstance, activityResource, kit);
 
             base.InsertTransitionInstance(processInstance,

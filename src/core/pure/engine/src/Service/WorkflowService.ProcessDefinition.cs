@@ -63,7 +63,7 @@ namespace saiflow.engine.Service
         /// Retrieve the process by id
         /// 获取流程定义记录
         /// </summary>
-        public ProcessEntity GetProcessById(int id)
+        public ProcessEntity GetProcessById(string id)
         {
             var pm = Sail.ManagerFactory.Processes;
             var entity = pm.GetById(id);
@@ -74,7 +74,7 @@ namespace saiflow.engine.Service
         /// Retrieve the process file by id
         /// 获取流程定义文件
         /// </summary>
-        public ProcessFileEntity GetProcessFileById(int id)
+        public ProcessFileEntity GetProcessFileById(string id)
         {
             var pm = Sail.ManagerFactory.Processes;
             var entity = pm.GetProcessFileById(id, Sail.ProcessModelFactory.CreateXpdlStorage());
@@ -117,7 +117,7 @@ namespace saiflow.engine.Service
         /// Insert process
         /// 创建流程定义记录
         /// </summary>
-        public int InsertProcess(ProcessEntity entity)
+        public string InsertProcess(ProcessEntity entity)
         {
             var pm = Sail.ManagerFactory.Processes;
             var processId = pm.Insert(entity);
@@ -128,7 +128,7 @@ namespace saiflow.engine.Service
         /// Create process
         /// 创建流程定义记录
         /// </summary>
-        public int CreateProcess(ProcessEntity entity)
+        public string CreateProcess(ProcessEntity entity)
         {
             var pm = Sail.ManagerFactory.Processes;
             var processId = pm.CreateProcess(entity);
@@ -139,11 +139,11 @@ namespace saiflow.engine.Service
         /// Create process version
         /// 创建流程定义记录新版本
         /// </summary>
-        public int CreateProcessVersion(ProcessEntity entity)
+        public string CreateProcessVersion(ProcessEntity entity)
         {
-            int newProcessId = 0;
+            string newProcessId = null;
             var pm = Sail.ManagerFactory.Processes;
-            var entityDB = pm.GetById(entity.Id.Value);
+            var entityDB = pm.GetById(entity.Id);
             if (entity != null)
             {
                 newProcessId = pm.Upgrade(entityDB.ProcessId, entityDB.Version, entity.Version);
@@ -208,7 +208,7 @@ namespace saiflow.engine.Service
         /// Delete process
         /// 删除流程定义记录
         /// </summary>
-        public void DeleteProcess(int id)
+        public void DeleteProcess(string id)
         {
             var pm = Sail.ManagerFactory.Processes;
             pm.Delete(id);

@@ -27,7 +27,7 @@ namespace saiflow.hub.Form
                 .where("ProcessId", processId)
                 .where("ProcessVersion", processVersion)
                 .where("ActivityId", activityId)
-                .where("FormId", int.Parse(formId))
+                .where("FormId", formId)
                 .queryUnique<FieldActivityEditEntity>();
         }
 

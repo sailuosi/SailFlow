@@ -23,15 +23,15 @@ namespace saiflow.engine.Service
         Activity GetActivityEntity(string processId, string version, string actvityId);
         Activity GetNextActivity(string processId, string version, string activityId);
         IList<Activity> GetTaskActivityList(string processId, string version);
-        IList<Activity> GetTaskActivityList(int processId);
+        IList<Activity> GetTaskActivityList(string processId);
 		IList<Activity> GetAllTaskActivityList(string processId, string version);
         IList<Role> GetActivityRoles(string processId, string version, string activityId);
-        NodeView GetNextActivity(int taskId, IDictionary<string, string> condition = null);
+        NodeView GetNextActivity(string taskId, IDictionary<string, string> condition = null);
         NodeView GetNextActivity(FlowCommandContext runner, IDictionary<string, string> condition = null);
         IList<NodeView> GetNextActivityTree(string processId, string version, string activityId, IDictionary<string, string> condition);
 
-        IList<NodeView> GetNextActivityTree(int taskId, IDictionary<string, string> condition = null);
-        Task<IList<NodeView>> GetNextActivityTreeAsync(int taskId, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
+        IList<NodeView> GetNextActivityTree(string taskId, IDictionary<string, string> condition = null);
+        Task<IList<NodeView>> GetNextActivityTreeAsync(string taskId, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
         IList<NodeView> GetNextActivityTree(FlowCommandContext runner, IDictionary<string, string> condition = null);
         Task<IList<NodeView>> GetNextActivityTreeAsync(FlowCommandContext runner, IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
@@ -40,14 +40,14 @@ namespace saiflow.engine.Service
         /// Obtain the next activity list according to the application process
         /// 获取下一步活动列表
         /// </summary>
-        IList<Activity> GetNextActivityList(int taskId,
+        IList<Activity> GetNextActivityList(string taskId,
             IDictionary<string, string> condition = null);
         
         /// <summary>
         /// Obtain the next activity list according to the application process
         /// 获取下一步活动列表
         /// </summary>
-        Task<IList<Activity>> GetNextActivityListAsync(int taskId, 
+        Task<IList<Activity>> GetNextActivityListAsync(string taskId, 
             IDictionary<string, string> condition = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -166,41 +166,41 @@ namespace saiflow.engine.Service
 
         //审批决策
         //Approval
-        void AgreeTask(int taskId);
-        void RefuseTask(int taskId);
+        void AgreeTask(string taskId);
+        void RefuseTask(string taskId);
 
-        Boolean ResumeProcess(int activityInstanceId, FlowCommandContext runner);
-        Boolean SuspendProcess(int taskId, FlowCommandContext runner);
+        Boolean ResumeProcess(string activityInstanceId, FlowCommandContext runner);
+        Boolean SuspendProcess(string taskId, FlowCommandContext runner);
         Boolean CancelProcess(FlowCommandContext canceler);
         Boolean DiscardProcess(FlowCommandContext discarder);
         Boolean TerminateProcess(FlowCommandContext terminator);
         Boolean SetTaskRead(FlowCommandContext runner);
         WfDataManagedResult EntrustTask(TaskEntrustedEntity entrusted, bool cancalOriginalTask = true);
-        void CancelEntrustedTask(int id);
-        Boolean ReplaceTask(int taskId, List<TaskReplacedEntity> replaced, FlowCommandContext runner);
-        Boolean SetProcessOverdue(int processInstanceId, DateTime overdueDateTime, FlowCommandContext runner);
-        void SetActivityJobTimerCompleted(int activityInstanceId);
-        void SetProcessJobTimerCompleted(int processInstanceId);
-        int SaveProcessVariable(ProcessVariableEntity entity);
+        void CancelEntrustedTask(string id);
+        Boolean ReplaceTask(string taskId, List<TaskReplacedEntity> replaced, FlowCommandContext runner);
+        Boolean SetProcessOverdue(string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner);
+        void SetActivityJobTimerCompleted(string activityInstanceId);
+        void SetProcessJobTimerCompleted(string processInstanceId);
+        string SaveProcessVariable(ProcessVariableEntity entity);
 
-        User GetProcessInitiator(int processInstanceId);
+        User GetProcessInitiator(string processInstanceId);
 
-        TaskViewEntity GetTaskView(int taskId);
-        TaskViewEntity GetTaskView(int processInstanceId, int activityInstanceId);
+        TaskViewEntity GetTaskView(string taskId);
+        TaskViewEntity GetTaskView(string processInstanceId, string activityInstanceId);
         TaskViewEntity GetTaskView(string appInstanceId, string processId, string userId);
         [Obsolete("replaced by the GetRunningTask, mainly used to run forward method internal")]
         ActivityInstanceEntity GetRunningNode(FlowCommandContext runner);
 
         ProcessInstanceEntity GetRunningProcessInstance(FlowCommandContext runner);
-        ProcessInstanceEntity GetProcessInstance(int processInstanceId);
-        IList<ProcessInstanceEntity> GetProcessInstance(string appInstanceId);
-        ProcessInstanceEntity GetProcessInstanceByActivity(int activityInstanceId);
+        ProcessInstanceEntity GetProcessInstance(string processInstanceId);
+        IList<ProcessInstanceEntity> GetProcessInstanceListByAppInstance(string appInstanceId);
+        ProcessInstanceEntity GetProcessInstanceByActivity(string activityInstanceId);
         void UpdateProcessInstance(ProcessInstanceEntity entity);
 
-        IList<ActivityInstanceEntity> GetActivityInstanceList(int processInstanceId);
-        IList<ActivityInstanceEntity> GetTargetActivityInstanceList(int fromActivityInstanceId);
-        ActivityInstanceEntity GetActivityInstance(int activityInstanceId);
-        ProcessEntity GetProcessById(int id);
+        IList<ActivityInstanceEntity> GetActivityInstanceList(string processInstanceId);
+        IList<ActivityInstanceEntity> GetTargetActivityInstanceList(string fromActivityInstanceId);
+        ActivityInstanceEntity GetActivityInstance(string activityInstanceId);
+        ProcessEntity GetProcessById(string id);
         ProcessEntity GetProcessUsing(string processId);
         ProcessEntity GetProcessByVersion(string processId, string version);
         ProcessEntity GetProcessByName(string processName, string version = null);
@@ -208,18 +208,18 @@ namespace saiflow.engine.Service
         IList<ProcessEntity> GetProcessList();
 
         ProcessFileEntity GetProcessFile(string processId, string version);
-        ProcessFileEntity GetProcessFileById(int id);
+        ProcessFileEntity GetProcessFileById(string id);
         void SaveProcessFile(ProcessFileEntity entity);
 
-        int CreateProcess(ProcessEntity entity);
-        int CreateProcessVersion(ProcessEntity entity);
+        string CreateProcess(ProcessEntity entity);
+        string CreateProcessVersion(ProcessEntity entity);
         ProcessFileEntity CreateProcessByXML(string xmlContent);
-        int InsertProcess(ProcessEntity entity);
+        string InsertProcess(ProcessEntity entity);
         void UpdateProcess(ProcessEntity entity);
         void UpdateProcessUsingState(string processId, string version, byte usingState);
         void UpgradeProcess(string processId, string version, string newVersion);
         void DeleteProcess(string processId, string version);
-		void DeleteProcess(int id);
+		void DeleteProcess(string id);
         bool DeleteInstanceInt(string processId, string version);
         void ImportProcess(string xmlContent);
         ProcessValidateResult ValidateProcess(ProcessEntity processValidateEntity);
@@ -244,21 +244,21 @@ namespace saiflow.engine.Service
         //Process Variables Interfaces
         IList<ProcessVariableEntity> GetProcessVariableList(ProcessVariableQuery query);
         ProcessVariableEntity GetProcessVariable(ProcessVariableQuery query);
-        ProcessVariableEntity GetProcessVariable(int variableId);
-        Boolean ValidateProcessVariable(int processInstanceId, string expression);
-        void DeleteProcessVariable(int variableId);
+        ProcessVariableEntity GetProcessVariable(string variableId);
+        Boolean ValidateProcessVariable(string processInstanceId, string expression);
+        void DeleteProcessVariable(string variableId);
         
         //流程变量定义接口（wf_variable）
         IList<VariableEntity> GetVariableDefinitionList(string processId, string version, string activityId);
-        VariableEntity GetVariableDefinition(int id);
-        int SaveVariableDefinition(VariableEntity entity);
-        void DeleteVariableDefinition(int id);
+        VariableEntity GetVariableDefinition(string id);
+        string SaveVariableDefinition(VariableEntity entity);
+        void DeleteVariableDefinition(string id);
         void SaveVariableDefinitionList(string processId, string version, string activityId, IList<VariableEntity> list);
 
         //规则集接口（wf_rule_set）
         IList<RuleSetEntity> GetRuleSetList();
         RuleSetEntity GetRuleSet(string ruleSetCode);
-        int SaveRuleSet(RuleSetEntity entity);
+        string SaveRuleSet(RuleSetEntity entity);
         void DeleteRuleSet(string ruleSetCode);
 
         // 链式建造见 SailClient.CreateRunBuilder（B）；本接口仅为无状态执行（吃 FlowCommandContext）。

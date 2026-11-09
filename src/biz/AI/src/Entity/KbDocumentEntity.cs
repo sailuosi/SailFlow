@@ -9,8 +9,8 @@ namespace saiflow.AI.Entity
     [SooTable(Name = "biz_documents", Caption = "知识库文档", Type = DBTableType.Table)]
     public class KbDocumentEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public long? Id { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
 
         [SooColumn(Name = "content")]
         public string Content { get; set; }

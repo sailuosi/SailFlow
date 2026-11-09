@@ -50,7 +50,7 @@ namespace saiflow.engine.Pattern
                     var pim = Sail.ProcessInstances;
                     var kit = Kit.useSQL();
                     bool isCompleted = pim.CheckSubProcessInstanceCompleted(kit,
-                        base.LinkContext.FromActivityInstance.Id.Value,
+                        base.LinkContext.FromActivityInstance.Id,
                         base.LinkContext.FromActivityInstance.ActivityId);
                     if (isCompleted == false)
                     {
@@ -81,7 +81,7 @@ namespace saiflow.engine.Pattern
         /// <summary>
         /// 完成工作项
         /// </summary>
-        internal bool CompleteWorkItem(int? taskId,
+        internal bool CompleteWorkItem(string taskId,
             ActivityResource activityResource,
             SQLBuilder kit)
         {
@@ -91,12 +91,12 @@ namespace saiflow.engine.Pattern
             {
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
-                base.TaskManager.Complete(kit.useSQL(), taskId.Value, activityResource.AppRunner);
+                base.TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
             }
 
             //设置活动节点的状态为完成状态
             //将活动节点状态设为完成
-            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 
             //先判断是否是多实例类型的任务
@@ -106,13 +106,13 @@ namespace saiflow.engine.Pattern
             {
                 //取出主节点信息
                 //获取主节点信息
-                var mainNodeIndex = base.LinkContext.FromActivityInstance.MainActivityInstanceId.Value;
+                var mainNodeIndex = base.LinkContext.FromActivityInstance.MainActivityInstanceId;
                 var mainActivityInstance = base.ActivityInstanceManager.GetById(mainNodeIndex);
 
                 //取出多实例节点列表
                 //获取多实例节点列表
                 var sqList = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithState(
-                    kit.useSQL(),mainNodeIndex,base.LinkContext.FromActivityInstance.ProcessInstanceId.Value,(short)ActivityStateEnum.Suspended).ToList<ActivityInstanceEntity>();
+                    kit.useSQL(),mainNodeIndex,base.LinkContext.FromActivityInstance.ProcessInstanceId,(short)ActivityStateEnum.Suspended).ToList<ActivityInstanceEntity>();
 
                 if (base.LinkContext.FromActivity.MultiSignDetail.MergeType == MergeTypeEnum.Sequence)
                 {
@@ -132,7 +132,7 @@ namespace saiflow.engine.Pattern
                         //设置下一个任务对应的子流程进入运行状态
                         //将下一任务对应子流程设为运行
                         base.ProcessInstanceManager.RecallSubProcess(Kit.useSQL(),
-                            nextActivityInstance.Id.Value,
+                            nextActivityInstance.Id,
                             activityResource.AppRunner);
 
                         canContinueForwardCurrentNode = false;

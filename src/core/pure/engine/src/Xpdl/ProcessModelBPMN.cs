@@ -520,7 +520,7 @@ namespace saiflow.engine.Xpdl
         /// 其它便捷重载最终都委托到此方法。
         /// </summary>
         public NextActivityListViewResult GetNextActivityListView(string currentActivityId,
-            Nullable<int> activityInstanceId,
+            string activityInstanceId,
             IDictionary<string, string> conditions,
             SQLBuilder kit)
         {
@@ -628,7 +628,7 @@ namespace saiflow.engine.Xpdl
         ///    常规业务/界面层应通过 WorkflowService.GetNextStepInfo / NextStepParser 统一获取下一步信息。
         /// </summary>
         public NextActivityMatchedResult GetNextActivityTreeListRuntime(string currentActivityId,
-            Nullable<int> activityInstanceId,
+            string activityInstanceId,
             IDictionary<string, string> conditionKeyValuePair,
             ActivityResource activityResource,
             Expression<Func<ActivityResource, Activity, bool>> expression,

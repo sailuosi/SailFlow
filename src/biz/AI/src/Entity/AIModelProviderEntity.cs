@@ -6,8 +6,8 @@ namespace saiflow.AI.Entity
     [SooTable(Name = "ai_model_provider", Caption = "AI 模型提供方", Type = DBTableType.Table)]
     public class AiModelProviderEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
         [SooColumn(Name = "model_provider")]
         public string ModelProvider { get; set; }
         [SooColumn(Name = "model_name")]

@@ -35,7 +35,7 @@ namespace saiflow.engine.Event
         /// <typeparam name="T"></typeparam>
         /// <param name="id"></param>
         /// <returns></returns>
-        public override T GetInstance<T>(int id)
+        public override T GetInstance<T>(string id)
         {
             var aim = Sail.ManagerFactory.Activities;
             var entity = aim.GetById(Kit.useSQL(), id);

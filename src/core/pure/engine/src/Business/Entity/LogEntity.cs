@@ -13,8 +13,8 @@ namespace saiflow.engine.Entity
     [SooTable(Name = "wf_log", Caption = "日志", Type = DBTableType.Table)]
     public class LogEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
         [SooColumn(Name = "event_type_id")]
         public int? EventTypeId { get; set; }
         [SooColumn(Name = "priority")]

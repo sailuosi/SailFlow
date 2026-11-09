@@ -50,7 +50,7 @@ namespace saiflow.engine.Service
         /// Get the node list of task types
         /// 获取任务类型的节点列表
         /// </summary>
-        public IList<Activity> GetTaskActivityList(int processId)
+        public IList<Activity> GetTaskActivityList(string processId)
         {
             var pm = Sail.ManagerFactory.Processes;
             var entity = pm.GetById(processId);
@@ -120,7 +120,7 @@ namespace saiflow.engine.Service
         /// (without considering the situation of multiple subsequent nodes)
         /// 简单模式：根据应用获取流程下一步节点(不考虑有多个后续节点的情况）
         /// </summary>
-        public NodeView GetNextActivity(int taskId,
+        public NodeView GetNextActivity(string taskId,
             IDictionary<string, string> condition = null)
         {
             var runner = new FlowCommandContext { TaskId = taskId };
@@ -154,7 +154,7 @@ namespace saiflow.engine.Service
         /// Obtain the next node list according to the application process
         /// 获取下一步活动列表树
         /// </summary>
-        public IList<NodeView> GetNextActivityTree(int taskId,
+        public IList<NodeView> GetNextActivityTree(string taskId,
             IDictionary<string, string> condition = null)
         {
             var runner = new FlowCommandContext { TaskId = taskId };
@@ -166,7 +166,7 @@ namespace saiflow.engine.Service
         /// Obtain the next node list according to the application process
         /// 获取下一步活动列表树
         /// </summary>
-        public async Task<IList<NodeView>> GetNextActivityTreeAsync(int taskId,
+        public async Task<IList<NodeView>> GetNextActivityTreeAsync(string taskId,
             IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
             var runner = new FlowCommandContext { TaskId = taskId };
@@ -200,7 +200,7 @@ namespace saiflow.engine.Service
         /// Obtain the next activity list according to the application process
         /// 获取下一步活动列表
         /// </summary>
-        public IList<Activity> GetNextActivityList(int taskId,
+        public IList<Activity> GetNextActivityList(string taskId,
             IDictionary<string, string> condition = null)
         {
             var runner = new FlowCommandContext { TaskId = taskId };
@@ -212,7 +212,7 @@ namespace saiflow.engine.Service
         /// Obtain the next activity list according to the application process
         /// 获取下一步活动列表
         /// </summary>
-        public async Task<IList<Activity>> GetNextActivityListAsync(int taskId,
+        public async Task<IList<Activity>> GetNextActivityListAsync(string taskId,
             IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
             var runner = new FlowCommandContext { TaskId = taskId };
@@ -458,7 +458,7 @@ namespace saiflow.engine.Service
         /// Get process instance by id
         /// 获取流程实例数据
         /// </summary>
-        public ProcessInstanceEntity GetProcessInstance(int processInstanceId)
+        public ProcessInstanceEntity GetProcessInstance(string processInstanceId)
         {
             var pim = Managers.ProcessInstances;
             var instance = pim.GetById(processInstanceId);
@@ -469,7 +469,7 @@ namespace saiflow.engine.Service
         /// Get process instance by app instance id
         /// 获取流程实例数据
         /// </summary>
-        public IList<ProcessInstanceEntity> GetProcessInstance(string appInstanceId)
+        public IList<ProcessInstanceEntity> GetProcessInstanceListByAppInstance(string appInstanceId)
         {
             var pim = Managers.ProcessInstances;
             var list = pim.GetProcessInstance(appInstanceId).ToList();
@@ -480,7 +480,7 @@ namespace saiflow.engine.Service
         /// Get process instance by activity instance id
         /// 获取流程实例数据
         /// </summary>
-        public ProcessInstanceEntity GetProcessInstanceByActivity(int activityInstanceId)
+        public ProcessInstanceEntity GetProcessInstanceByActivity(string activityInstanceId)
         {
             var pim = Managers.ProcessInstances;
             return pim.GetByActivity(activityInstanceId);
@@ -501,7 +501,7 @@ namespace saiflow.engine.Service
         /// Get process initiator
         /// 获取流程发起人信息
         /// </summary>
-        public User GetProcessInitiator(int processInstanceId)
+        public User GetProcessInitiator(string processInstanceId)
         {
             User initiator = null;
             try
@@ -520,7 +520,7 @@ namespace saiflow.engine.Service
         /// Get activity instance
         /// 获取活动实例数据
         /// </summary>
-        public ActivityInstanceEntity GetActivityInstance(int activityInstanceId)
+        public ActivityInstanceEntity GetActivityInstance(string activityInstanceId)
         {
             var aim = Sail.ManagerFactory.Activities;
             var instance = aim.GetById(activityInstanceId);
@@ -531,7 +531,7 @@ namespace saiflow.engine.Service
         /// Get activity instance
         /// 获取一个流程实例下的所有活动实例
         /// </summary>
-        public IList<ActivityInstanceEntity> GetActivityInstanceList(int processInstanceId)
+        public IList<ActivityInstanceEntity> GetActivityInstanceList(string processInstanceId)
         {
             var aim = Sail.ManagerFactory.Activities;
             using (var kit = Sail.UseRunSQL())
@@ -544,7 +544,7 @@ namespace saiflow.engine.Service
         /// Get target activity instance list
         /// 获取目标活动实例列表
         /// </summary>
-        public IList<ActivityInstanceEntity> GetTargetActivityInstanceList(int fromActivityInstanceId)
+        public IList<ActivityInstanceEntity> GetTargetActivityInstanceList(string fromActivityInstanceId)
         {
             var tim = Managers.Transitions;
             return tim.GetTargetActivityInstanceList(fromActivityInstanceId);
@@ -560,7 +560,7 @@ namespace saiflow.engine.Service
             return tm.Entrust(entrusted, cancalOriginalTask);
         }
 
-        public void CancelEntrustedTask(int id)
+        public void CancelEntrustedTask(string id)
         {
             var tm = Sail.ManagerFactory.Tasks;
             tm.CancelEntrustedTask(id);
@@ -570,7 +570,7 @@ namespace saiflow.engine.Service
         /// Replace task
         /// 取代任务
         /// </summary>
-        public Boolean ReplaceTask(int taskId, List<TaskReplacedEntity> replaced, FlowCommandContext runner)
+        public Boolean ReplaceTask(string taskId, List<TaskReplacedEntity> replaced, FlowCommandContext runner)
         {
             var tm = Sail.ManagerFactory.Tasks;
             return tm.Replace(taskId, replaced, runner);
@@ -580,7 +580,7 @@ namespace saiflow.engine.Service
         /// Set process overdue
         /// 设置流程实例的过期时间
         /// </summary>
-        public Boolean SetProcessOverdue(int processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
+        public Boolean SetProcessOverdue(string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
         {
             var pim = Managers.ProcessInstances;
             return pim.SetOverdue(processInstanceId, overdueDateTime, runner);
@@ -592,7 +592,7 @@ namespace saiflow.engine.Service
         /// 设置流程实例的定时作业为完成状态
         /// (用于HangFire后台轮询任务)
         /// </summary>
-        public void SetProcessJobTimerCompleted(int processInstanceId)
+        public void SetProcessJobTimerCompleted(string processInstanceId)
         {
             var pim = Managers.ProcessInstances;
             var processInstance = pim.GetById(processInstanceId);
@@ -607,7 +607,7 @@ namespace saiflow.engine.Service
         /// 设置活动实例的定时作业为完成状态
         /// (用于HangFire后台轮询任务)
         /// </summary>
-        public void SetActivityJobTimerCompleted(int activityInstanceId)
+        public void SetActivityJobTimerCompleted(string activityInstanceId)
         {
             var aim = Sail.ManagerFactory.Activities;
             var activityInstance = aim.GetById(activityInstanceId);
@@ -643,7 +643,7 @@ namespace saiflow.engine.Service
         /// Get process variable
         /// 获取流程变量
         /// </summary>
-        public ProcessVariableEntity GetProcessVariable(int variableId)
+        public ProcessVariableEntity GetProcessVariable(string variableId)
         {
             var pvm = Managers.ProcessVariables;
             var entity = pvm.GetVariableById(variableId);
@@ -677,7 +677,7 @@ namespace saiflow.engine.Service
         /// Delete process variable
         /// 删除流程变量
         /// </summary>
-        public void DeleteProcessVariable(int variableId)
+        public void DeleteProcessVariable(string variableId)
         {
             var pvm = Managers.ProcessVariables;
             pvm.DeleteVariable(variableId);
@@ -687,7 +687,7 @@ namespace saiflow.engine.Service
         /// Validate process variable
         /// 验证触发表达式是否满足
         /// </summary>
-        public Boolean ValidateProcessVariable(int processInstanceId, string expression)
+        public Boolean ValidateProcessVariable(string processInstanceId, string expression)
         {
             var pvm = Managers.ProcessVariables;
             return pvm.ValidateProcessVariable(processInstanceId, expression);
@@ -707,7 +707,7 @@ namespace saiflow.engine.Service
         /// Save process variable
         /// 保存流程变量
         /// </summary>
-        public int SaveProcessVariable(ProcessVariableEntity entity)
+        public string SaveProcessVariable(ProcessVariableEntity entity)
         {
             var pvm = Managers.ProcessVariables;
             var entityId = pvm.SaveVariable(entity);
@@ -726,7 +726,7 @@ namespace saiflow.engine.Service
         /// <summary>
         /// 获取单条流程变量定义
         /// </summary>
-        public VariableEntity GetVariableDefinition(int id)
+        public VariableEntity GetVariableDefinition(string id)
         {
             var vm = Managers.Variables;
             return vm.GetById(id);
@@ -735,13 +735,13 @@ namespace saiflow.engine.Service
         /// <summary>
         /// 保存单条流程变量定义
         /// </summary>
-        public int SaveVariableDefinition(VariableEntity entity)
+        public string SaveVariableDefinition(VariableEntity entity)
         {
             var vm = Managers.Variables;
-            if (entity.Id != 0)
+            if (!string.IsNullOrWhiteSpace(entity.Id))
             {
                 vm.Update(entity);
-                return entity.Id.Value;
+                return entity.Id;
             }
             return vm.Insert(entity);
         }
@@ -749,7 +749,7 @@ namespace saiflow.engine.Service
         /// <summary>
         /// 删除流程变量定义
         /// </summary>
-        public void DeleteVariableDefinition(int id)
+        public void DeleteVariableDefinition(string id)
         {
             var vm = Managers.Variables;
             vm.Delete(id);
@@ -785,7 +785,7 @@ namespace saiflow.engine.Service
         /// <summary>
         /// 保存规则集（按 code 更新/新增）
         /// </summary>
-        public int SaveRuleSet(RuleSetEntity entity)
+        public string SaveRuleSet(RuleSetEntity entity)
         {
             var rm = Managers.RuleSets;
             var exist = rm.GetByCode(entity?.RuleSetCode ?? "");
@@ -793,7 +793,7 @@ namespace saiflow.engine.Service
             {
                 entity.Id = exist.Id;
                 rm.Update(entity);
-                return entity.Id.Value;
+                return entity.Id;
             }
             return rm.Insert(entity);
         }
@@ -834,7 +834,7 @@ namespace saiflow.engine.Service
         /// Get task view
         /// 获取任务视图
         /// </summary>
-        public TaskViewEntity GetTaskView(int taskId)
+        public TaskViewEntity GetTaskView(string taskId)
         {
             var tm = Sail.ManagerFactory.Tasks;
             var entity = tm.GetTaskView(taskId);
@@ -845,7 +845,7 @@ namespace saiflow.engine.Service
         /// Get task view
         /// 获取任务视图
         /// </summary>
-        public TaskViewEntity GetTaskView(int processInstanceId, int activityInstanceId)
+        public TaskViewEntity GetTaskView(string processInstanceId, string activityInstanceId)
         {
             var tm = Sail.ManagerFactory.Tasks;
             var entity = tm.GetTaskViewByActivity(processInstanceId, activityInstanceId);

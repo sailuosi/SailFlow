@@ -16,6 +16,9 @@ namespace saiflow.biz.Bootstrap
     /// <summary>
     /// Business-side DB bootstrap: core engine tables + optional AI tables + minimal seed.
     /// Hosts should call this instead of anything in the engine assembly.
+    /// <para>
+    /// 主键为 string + AutoKey=Guid（非库自增）。已有 INTEGER 自增库无法靠 upsert 改类型，开发环境请删库重建。
+    /// </para>
     /// </summary>
     public static class SailSchemaInitializer
     {
@@ -188,7 +191,6 @@ namespace saiflow.biz.Bootstrap
             {
                 new ProcessEntity
                 {
-                    Id = 1,
                     ProcessId = "sail-seed-hello",
                     ProcessName = "Sail Seed Hello",
                     ProcessCode = "SEED_HELLO",

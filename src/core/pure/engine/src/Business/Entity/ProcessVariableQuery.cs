@@ -14,8 +14,8 @@ namespace saiflow.engine.Entity
     public class ProcessVariableQuery
     {
         public ProcessVariableScopeEnum VariableSceope { get; set; }
-        public int ProcessInstanceId { get; set; }
-        public int ActivityInstanceId { get; set; }
+        public string ProcessInstanceId { get; set; }
+        public string ActivityInstanceId { get; set; }
         public string Name { get; set; }
     }
 }

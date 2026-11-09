@@ -73,7 +73,7 @@ namespace saiflow.engine.Pattern
         {
             var expression = ActivityForwardContext.CurrentActivity.TriggerDetail.Expression;
             var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
-            var isConditionPassed = pvm.ValidateProcessVariable(kit, LinkContext.FromActivityInstance.ProcessInstanceId.Value,
+            var isConditionPassed = pvm.ValidateProcessVariable(kit, LinkContext.FromActivityInstance.ProcessInstanceId,
                 expression);
             if (isConditionPassed == false)
             {
@@ -84,7 +84,7 @@ namespace saiflow.engine.Pattern
         /// <summary>
         /// 完成任务实例
         /// </summary>  
-        internal bool CompleteWorkItem(int? taskId,
+        internal bool CompleteWorkItem(string taskId,
             ActivityResource activityResource,
             SQLBuilder kit)
         {
@@ -98,12 +98,12 @@ namespace saiflow.engine.Pattern
             {
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
-                TaskManager.Complete(kit.useSQL(), taskId.Value, activityResource.AppRunner);
+                TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
             }
 
             //设置活动节点的状态为完成状态
             //将活动节点状态设为完成
-            ActivityInstanceManager.Complete(kit.useSQL(), LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(kit.useSQL(), LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
 
             LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             bool canContinueForwardCurrentNode = LinkContext.FromActivityInstance.CanNotRenewInstance == 0;
@@ -123,7 +123,7 @@ namespace saiflow.engine.Pattern
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            int newActivityInstanceId = 0;
+            string newActivityInstanceId = null;
             bool isParallel = false;
             if (fromActivityInstance.ActivityType == (short)ActivityTypeEnum.GatewayNode)
             {

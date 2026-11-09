@@ -45,7 +45,7 @@ public sealed class DefaultProcessModelFactory : IProcessModelFactory
     internal NextActivityScheduleBase CreateActivityScheduleGateway(
         IProcessModel processModel,
         GatewaySplitJoinTypeEnum splitJoinType,
-        int? activityInstanceId = null)
+        string activityInstanceId = null)
     {
         if (splitJoinType == GatewaySplitJoinTypeEnum.Split)
             return new NextActivityScheduleSplit(processModel, activityInstanceId, _sail);
@@ -175,7 +175,7 @@ public sealed class DefaultProcessModelFactory : IProcessModelFactory
             processInstance.ProcessId,
             processInstance.Version,
             subProcessType,
-            processInstance.SubProcessDefId.Value,
+            processInstance.SubProcessDefId,
             processInstance.SubProcessId);
     }
 
@@ -189,7 +189,7 @@ public sealed class DefaultProcessModelFactory : IProcessModelFactory
             taskView.ProcessId,
             taskView.Version,
             subProcessType,
-            taskView.SubProcessDefId.Value,
+            taskView.SubProcessDefId,
             taskView.SubProcessId);
     }
 
@@ -198,7 +198,7 @@ public sealed class DefaultProcessModelFactory : IProcessModelFactory
         string processId,
         string version,
         SubProcessTypeEnum? subProcessType,
-        int subProcessDefId,
+        string subProcessDefId,
         string subProcessId)
     {
         var pm = _sail.ManagerFactory.Processes;

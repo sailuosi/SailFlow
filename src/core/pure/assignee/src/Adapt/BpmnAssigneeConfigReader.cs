@@ -41,7 +41,7 @@ public static class BpmnAssigneeConfigReader
             request.ProcessId ?? main.ProcessId,
             request.Version ?? request.Runner?.Version,
             main.ActivityId,
-            processInstanceId: request.ProcessInstanceId > 0
+            processInstanceId: !string.IsNullOrWhiteSpace(request.ProcessInstanceId)
                 ? request.ProcessInstanceId
                 : main.ProcessInstanceId);
         if (activity == null)
@@ -62,16 +62,16 @@ public static class BpmnAssigneeConfigReader
         string? processId,
         string? version,
         string? activityId,
-        int? processInstanceId)
+        string processInstanceId)
     {
         if (sail == null || string.IsNullOrEmpty(activityId))
             return null;
 
         try
         {
-            if (string.IsNullOrEmpty(version) && processInstanceId is > 0)
+            if (string.IsNullOrEmpty(version) && !string.IsNullOrWhiteSpace(processInstanceId))
             {
-                var pi = sail.UseRunSQL().useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId.Value);
+                var pi = sail.UseRunSQL().useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
                 version = pi?.Version;
                 processId ??= pi?.ProcessId;
             }

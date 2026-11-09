@@ -21,7 +21,7 @@ namespace saiflow.engine.Core
         internal Activity CurrentActivity { get; set; }
         internal ActivityResource ActivityResource { get; set; }
         internal ActivityInstanceEntity FromActivityInstance { get; set; }
-        internal Nullable<int> TaskId { get; set; }
+        internal string TaskId { get; set; }
         internal Boolean IsNotParsedByTransition { get; set; }
         internal SailClient Sail { get; set; }
 
@@ -51,8 +51,8 @@ namespace saiflow.engine.Core
             Sail = client ?? throw new ArgumentNullException(nameof(client));
             TaskId = taskView.Id;
 
-            FromActivityInstance = Sail.ManagerFactory.Activities.GetById(kit.useSQL(), taskView.ActivityInstanceId.Value);
-            ProcessInstance = Sail.ProcessInstances.GetById(kit, taskView.ProcessInstanceId.Value);
+            FromActivityInstance = Sail.ManagerFactory.Activities.GetById(kit.useSQL(), taskView.ActivityInstanceId);
+            ProcessInstance = Sail.ProcessInstances.GetById(kit, taskView.ProcessInstanceId);
             CurrentActivity = processModel.GetActivity(taskView.ActivityId);
             ProcessModel = processModel;
             ActivityResource = activityResource;
@@ -68,8 +68,8 @@ namespace saiflow.engine.Core
         {
             Sail = client ?? throw new ArgumentNullException(nameof(client));
 
-            FromActivityInstance = Sail.ManagerFactory.Activities.GetById(kit.useSQL(), activityInstance.Id.Value);
-            ProcessInstance = Sail.ProcessInstances.GetById(kit, activityInstance.ProcessInstanceId.Value);
+            FromActivityInstance = Sail.ManagerFactory.Activities.GetById(kit.useSQL(), activityInstance.Id);
+            ProcessInstance = Sail.ProcessInstances.GetById(kit, activityInstance.ProcessInstanceId);
             CurrentActivity = processModel.GetActivity(activityInstance.ActivityId);
             ProcessModel = processModel;
             ActivityResource = activityResource;

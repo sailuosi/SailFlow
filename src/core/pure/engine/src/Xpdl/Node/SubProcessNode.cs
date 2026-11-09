@@ -16,7 +16,7 @@ namespace saiflow.engine.Xpdl
         /// <summary>
         /// SubProcessId
         /// </summary>
-        public int SubProcessDefId { get; set; }
+        public string SubProcessDefId { get; set; }
         /// <summary>
         /// SubProcessId
         /// </summary>

@@ -23,7 +23,7 @@ namespace saiflow.engine.Xpdl
         /// </summary>
         internal NextActivityMatchedResult GetNextActivityTreeListCore(SailClient client, IProcessModel processModel,
             string currentActivityId,
-            Nullable<int> activityInstanceId,
+            string activityInstanceId,
             IDictionary<string, string> conditionKeyValuePair,
             SQLBuilder kit)
         {

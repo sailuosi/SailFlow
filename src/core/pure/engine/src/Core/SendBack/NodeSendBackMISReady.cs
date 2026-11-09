@@ -33,7 +33,7 @@ namespace saiflow.engine.Runtime
         {
             var runner = base.SendBackOperation.ActivityResource.AppRunner;
             var runningNode = base.SendBackOperation.BackwardFromActivityInstance;
-            var runningMainNode = base.ActivityInstanceManager.GetById(runningNode.MainActivityInstanceId.Value);
+            var runningMainNode = base.ActivityInstanceManager.GetById(runningNode.MainActivityInstanceId);
             var previousActivityInstance = base.ActivityInstanceManager.GetPreviousActivityInstanceSimple(Kit.useSQL(), runningNode, base.SendBackOperation.BackwardToTaskActivity.ActivityId);
 
             //创建撤销到上一步的节点记录
@@ -51,7 +51,7 @@ namespace saiflow.engine.Runtime
             //If the previous node is also a co signing node, update the main node status to running status
             if (previousActivityInstance.ActivityType == (short)ActivityTypeEnum.MultiSignNode)
             {
-                base.ActivityInstanceManager.Rerun(Kit.useSQL(), previousActivityInstance.MainActivityInstanceId.Value, runner);
+                base.ActivityInstanceManager.Rerun(Kit.useSQL(), previousActivityInstance.MainActivityInstanceId, runner);
             }
         }
 
@@ -70,8 +70,8 @@ namespace saiflow.engine.Runtime
         {
             var rollbackPreviousActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
-                fromActivityInstance.Id.Value,
-                originalBackwardToActivityInstance.Id.Value,
+                fromActivityInstance.Id,
+                originalBackwardToActivityInstance.Id,
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;

@@ -10,7 +10,7 @@ namespace saiflow.engine.Assignee
         public string ProcessId { get; set; }
         /// <summary>流程版本（RoleGroup / 读定义时需要）。</summary>
         public string Version { get; set; }
-        public int? ProcessInstanceId { get; set; }
+        public string ProcessInstanceId { get; set; }
         public string ActivityId { get; set; }
         public string ActivityCode { get; set; }
         public FlowCommandContext Runner { get; set; }

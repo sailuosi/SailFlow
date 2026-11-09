@@ -79,10 +79,10 @@ namespace saiflow.engine.Manager
                 if (candidate.NextRetryAt != null && candidate.NextRetryAt > now)
                     continue;
 
-                if (candidate.Id is not > 0)
+                if (string.IsNullOrWhiteSpace(candidate.Id))
                     continue;
 
-                if (TryClaimOne(kit, candidate.Id.Value, leaseSeconds, out var row))
+                if (TryClaimOne(kit, candidate.Id, leaseSeconds, out var row))
                     claimed.Add(row);
             }
 
@@ -109,7 +109,7 @@ namespace saiflow.engine.Manager
 
             foreach (var row in rows)
             {
-                if (row.Id is not > 0)
+                if (string.IsNullOrWhiteSpace(row.Id))
                     continue;
 
                 var update = kit.useSQL().useClip();
@@ -126,7 +126,7 @@ namespace saiflow.engine.Manager
             return reclaimed;
         }
 
-        public void ResetProcessing(SQLBuilder kit, int id)
+        public void ResetProcessing(SQLBuilder kit, string id)
         {
             var repo = kit.useSQL().useRepo<HookOutboxEntity>();
             var row = repo.GetById(id);
@@ -167,11 +167,11 @@ namespace saiflow.engine.Manager
         /// </summary>
         public int BindAssigneeAutoApproveActivityInstance(
             SQLBuilder kit,
-            int processInstanceId,
+            string processInstanceId,
             string activityId,
-            int activityInstanceId)
+            string activityInstanceId)
         {
-            if (processInstanceId <= 0 || activityInstanceId <= 0 || string.IsNullOrWhiteSpace(activityId))
+            if (string.IsNullOrWhiteSpace(processInstanceId) || string.IsNullOrWhiteSpace(activityInstanceId) || string.IsNullOrWhiteSpace(activityId))
                 return 0;
 
             var clip = kit.useSQL().useClip();
@@ -228,7 +228,7 @@ namespace saiflow.engine.Manager
             kit.useSQL().useRepo<HookOutboxEntity>().Update(row);
         }
 
-        public void ResetDead(SQLBuilder kit, int id)
+        public void ResetDead(SQLBuilder kit, string id)
         {
             var repo = kit.useSQL().useRepo<HookOutboxEntity>();
             var row = repo.GetById(id);
@@ -284,7 +284,7 @@ namespace saiflow.engine.Manager
             return clip.select(o).count();
         }
 
-        public int ResetDeadBatch(SQLBuilder kit, IEnumerable<int> ids)
+        public int ResetDeadBatch(SQLBuilder kit, IEnumerable<string> ids)
         {
             if (ids == null)
                 return 0;
@@ -305,7 +305,7 @@ namespace saiflow.engine.Manager
             var count = 0;
             foreach (var row in dead)
             {
-                if (ResetDeadIfDead(kit, row.Id.Value))
+                if (ResetDeadIfDead(kit, row.Id))
                     count++;
             }
 
@@ -372,19 +372,19 @@ namespace saiflow.engine.Manager
                              ?? new List<HookOutboxEntity>();
 
             var n = 0;
-            var repo = kit.useSQL().useRepo<HookOutboxEntity, int>();
+            var repo = kit.useSQL().useRepo<HookOutboxEntity, string>();
             foreach (var row in candidates)
             {
-                if (!row.Id.HasValue)
+                if (!!string.IsNullOrWhiteSpace(row.Id))
                     continue;
-                repo.DeleteById(row.Id.Value);
+                repo.DeleteById(row.Id);
                 n++;
             }
 
             return n;
         }
 
-        private bool ResetDeadIfDead(SQLBuilder kit, int id)
+        private bool ResetDeadIfDead(SQLBuilder kit, string id)
         {
             var repo = kit.useSQL().useRepo<HookOutboxEntity>();
             var row = repo.GetById(id);
@@ -400,7 +400,7 @@ namespace saiflow.engine.Manager
             return true;
         }
 
-        private bool TryClaimOne(SQLBuilder kit, int id, int leaseSeconds, out HookOutboxEntity row)
+        private bool TryClaimOne(SQLBuilder kit, string id, int leaseSeconds, out HookOutboxEntity row)
         {
             row = null;
             var now = DateTime.UtcNow;

@@ -25,7 +25,7 @@ namespace saiflow.data.Lifecycle
 
         public void Handle(FlowHookContext ctx)
         {
-            if (ctx == null || ctx.ProcessInstanceId <= 0)
+            if (ctx == null || string.IsNullOrWhiteSpace(ctx.ProcessInstanceId))
                 return;
             if (ctx.EventType != EventFireTypeEnum.OnProcessCompleted
                 && ctx.EventType != EventFireTypeEnum.OnProcessClosed)

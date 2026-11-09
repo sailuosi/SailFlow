@@ -17,7 +17,7 @@ namespace saiflow.engine.Manager
             _inner = client.ManagerFactory.HookOutbox;
         }
 
-        public int ResetDeadBatch(SQLBuilder kit, IEnumerable<int> ids) =>
+        public int ResetDeadBatch(SQLBuilder kit, IEnumerable<string> ids) =>
             _inner.ResetDeadBatch(kit, ids);
 
         public int ResetAllDead(SQLBuilder kit, int limit = 500) =>

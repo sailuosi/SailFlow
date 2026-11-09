@@ -54,7 +54,7 @@ public sealed class RunBuilder
         return this;
     }
 
-    public RunBuilder OnTask(int taskId)
+    public RunBuilder OnTask(string taskId)
     {
         _runner.TaskId = taskId;
         return this;

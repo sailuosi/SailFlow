@@ -32,7 +32,7 @@ namespace saiflow.engine.Runtime
         internal ActivityResource ActivityResource { get; set; }
         internal TaskViewEntity TaskView { get; set; }
         internal ActivityInstanceEntity RunningActivityInstance { get; set; }
-        internal int ProcessInstanceId { get; set; }
+        internal string ProcessInstanceId { get; set; }
         internal ProcessInstanceEntity ProcessInstance { get; set; }
         
         internal BackwardContext BackwardContext { get; set; }

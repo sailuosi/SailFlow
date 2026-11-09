@@ -7,8 +7,8 @@ namespace saiflow.engine.Entity
     [SooTable(Name = "wf_hook_outbox", Caption = "钩子Outbox", Type = DBTableType.Table)]
     public class HookOutboxEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
 
         [SooColumn(Name = "kind")]
         public string Kind { get; set; }
@@ -25,14 +25,14 @@ namespace saiflow.engine.Entity
         [SooColumn(Name = "process_code")]
         public string ProcessCode { get; set; }
 
-        [SooColumn(Name = "process_instance_id")]
-        public int? ProcessInstanceId { get; set; }
+        [SooColumn(Name = "process_instance_id", Length = 64)]
+        public string ProcessInstanceId { get; set; }
 
-        [SooColumn(Name = "activity_instance_id")]
-        public int? ActivityInstanceId { get; set; }
+        [SooColumn(Name = "activity_instance_id", Length = 64)]
+        public string ActivityInstanceId { get; set; }
 
-        [SooColumn(Name = "task_id")]
-        public int? TaskId { get; set; }
+        [SooColumn(Name = "task_id", Length = 64)]
+        public string TaskId { get; set; }
 
         [SooColumn(Name = "payload_json")]
         public string PayloadJson { get; set; }

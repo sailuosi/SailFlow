@@ -59,7 +59,7 @@ namespace saiflow.engine.Pattern
         /// <summary>
         /// 完成工作项
         /// </summary>   
-        internal bool CompleteWorkItem(int? taskId,
+        internal bool CompleteWorkItem(string taskId,
             ActivityResource activityResource,
             SQLBuilder kit)
         {
@@ -72,11 +72,11 @@ namespace saiflow.engine.Pattern
             if (taskId != null)
             {
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
-                base.TaskManager.Complete(kit.useSQL(), taskId.Value, activityResource.AppRunner);
+                base.TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
             }
 
             //将活动节点状态设为完成
-            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
 
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             Boolean canContinueForwardCurrentNode = base.LinkContext.FromActivityInstance.CanNotRenewInstance == 0;
@@ -170,7 +170,7 @@ namespace saiflow.engine.Pattern
                         Sail,
                         kit,
                         runner,
-                        processInstance.Id.Value,
+                        processInstance.Id,
                         toActivityInstance,
                         null,
                         EventFireTypeEnum.OnActivityCreated,
@@ -193,7 +193,7 @@ namespace saiflow.engine.Pattern
         {
             if (fromActivityInstance.BackSrcActivityInstanceId != null)
             {
-                var backSrcActivityInstance = base.ActivityInstanceManager.GetById(kit.useSQL(), fromActivityInstance.BackSrcActivityInstanceId.Value);
+                var backSrcActivityInstance = base.ActivityInstanceManager.GetById(kit.useSQL(), fromActivityInstance.BackSrcActivityInstanceId);
                 toActivityInstance.BackSrcActivityInstanceId = backSrcActivityInstance.BackSrcActivityInstanceId;
                 toActivityInstance.BackOrgActivityInstanceId = backSrcActivityInstance.BackOrgActivityInstanceId;
             }

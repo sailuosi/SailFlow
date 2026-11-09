@@ -26,38 +26,38 @@ namespace saiflow.data.Lifecycle
         public SailDataLifecycleOptions Options =>
             Sail.DataLifecycleOptions ?? new SailDataLifecycleOptions();
 
-        public ProcessInstanceEntity GetProcessInstance(int id, int endedYear)
+        public ProcessInstanceEntity GetProcessInstance(string id, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.ProcessInstance, endedYear);
             return LoadById<ProcessInstanceEntity>(table, id);
         }
 
-        public IList<TaskEntity> GetTasks(int processInstanceId, int endedYear)
+        public IList<TaskEntity> GetTasks(string processInstanceId, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.Task, endedYear);
             return LoadByPi<TaskEntity>(table, processInstanceId);
         }
 
-        public IList<ActivityInstanceEntity> GetActivityInstances(int processInstanceId, int endedYear)
+        public IList<ActivityInstanceEntity> GetActivityInstances(string processInstanceId, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.ActivityInstance, endedYear);
             return LoadByPi<ActivityInstanceEntity>(table, processInstanceId);
         }
 
-        public IList<TransitionInstanceEntity> GetTransitions(int processInstanceId, int endedYear)
+        public IList<TransitionInstanceEntity> GetTransitions(string processInstanceId, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.TransitionInstance, endedYear);
             return LoadByPi<TransitionInstanceEntity>(table, processInstanceId);
         }
 
-        public IList<ProcessVariableEntity> GetVariables(int processInstanceId, int endedYear)
+        public IList<ProcessVariableEntity> GetVariables(string processInstanceId, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.ProcessVariable, endedYear);
             return LoadByPi<ProcessVariableEntity>(table, processInstanceId);
         }
 
         /// <summary>热表未命中时按候选年份依次查冷表。</summary>
-        public ProcessInstanceEntity FindProcessInstance(int id, IEnumerable<int> candidateYears)
+        public ProcessInstanceEntity FindProcessInstance(string id, IEnumerable<int> candidateYears)
         {
             if (candidateYears == null)
                 return null;
@@ -71,7 +71,7 @@ namespace saiflow.data.Lifecycle
             return null;
         }
 
-        private T LoadById<T>(string table, int id) where T : class, new()
+        private T LoadById<T>(string table, string id) where T : class, new()
         {
             try
             {
@@ -89,7 +89,7 @@ namespace saiflow.data.Lifecycle
             }
         }
 
-        private IList<T> LoadByPi<T>(string table, int processInstanceId) where T : class, new()
+        private IList<T> LoadByPi<T>(string table, string processInstanceId) where T : class, new()
         {
             try
             {

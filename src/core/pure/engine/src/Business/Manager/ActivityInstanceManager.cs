@@ -33,11 +33,11 @@ namespace saiflow.engine.Manager
         /// Retrieve activity instances based on Id
         /// 根据ID获取活动实例
         /// </summary>
-        public ActivityInstanceEntity GetById(int activityInstanceId)
+        public ActivityInstanceEntity GetById(string activityInstanceId)
         {
             try
             {
-                return Sail.UseRunSQL().useRepo<ActivityInstanceEntity, int>().GetById(activityInstanceId);
+                return Sail.UseRunSQL().useRepo<ActivityInstanceEntity, string>().GetById(activityInstanceId);
             }
             catch (System.Exception e)
             {
@@ -46,15 +46,15 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal ActivityInstanceEntity GetById(SQLBuilder kit, int activityInstanceId)
-            => kit.useSQL().useRepo<ActivityInstanceEntity, int>().GetById(activityInstanceId);
+        internal ActivityInstanceEntity GetById(SQLBuilder kit, string activityInstanceId)
+            => kit.useSQL().useRepo<ActivityInstanceEntity, string>().GetById(activityInstanceId);
 
         /// <summary>
         /// 异步按 Id 取活动实例（Clip take(1)，可取消）。与同步 Repo.GetById 双轨。
         /// </summary>
         internal async Task<ActivityInstanceEntity> GetByIdAsync(
             SQLBuilder kit,
-            int activityInstanceId,
+            string activityInstanceId,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -99,10 +99,10 @@ namespace saiflow.engine.Manager
 
             var tm = Sail.ManagerFactory.Tasks;
             ActivityInstanceEntity runningNode = null;
-            if (taskId != null && taskId.Value > 0)
+            if (!string.IsNullOrWhiteSpace(taskId))
             {
-                taskView = tm.GetTaskView(kit, taskId.Value);
-                runningNode = GetById(kit, taskView.ActivityInstanceId.Value);
+                taskView = tm.GetTaskView(kit, taskId);
+                runningNode = GetById(kit, taskView.ActivityInstanceId);
                 return runningNode;
             }
 
@@ -118,7 +118,7 @@ namespace saiflow.engine.Manager
             if (activityInstanceList.Count == 1)
             {
                 runningNode = activityInstanceList[0];
-                taskView = tm.GetTaskOfMineByActivityInstance(kit, runningNode.Id.Value, runner.UserId);
+                taskView = tm.GetTaskOfMineByActivityInstance(kit, runningNode.Id, runner.UserId);
             }
             else if (activityInstanceList.Count > 1)
             {
@@ -133,7 +133,7 @@ namespace saiflow.engine.Manager
 
                 if (runningNode != null)
                 {
-                    taskView = tm.GetTaskOfMineByActivityInstance(kit, runningNode.Id.Value, runner.UserId);
+                    taskView = tm.GetTaskOfMineByActivityInstance(kit, runningNode.Id, runner.UserId);
                 }
                 else
                 {
@@ -161,10 +161,10 @@ namespace saiflow.engine.Manager
             ActivityInstanceEntity runningNode = null;
 
             var taskId = runner.TaskId;
-            if (taskId != null && taskId.Value > 0)
+            if (!string.IsNullOrWhiteSpace(taskId))
             {
-                taskView = await tm.GetTaskViewAsync(kit, taskId.Value, cancellationToken).ConfigureAwait(false);
-                runningNode = await GetByIdAsync(kit, taskView.ActivityInstanceId.Value, cancellationToken)
+                taskView = await tm.GetTaskViewAsync(kit, taskId, cancellationToken).ConfigureAwait(false);
+                runningNode = await GetByIdAsync(kit, taskView.ActivityInstanceId, cancellationToken)
                     .ConfigureAwait(false);
                 return (runningNode, taskView);
             }
@@ -185,7 +185,7 @@ namespace saiflow.engine.Manager
             {
                 runningNode = activityInstanceList[0];
                 taskView = await tm.GetTaskOfMineByActivityInstanceAsync(
-                        kit, runningNode.Id.Value, runner.UserId, cancellationToken)
+                        kit, runningNode.Id, runner.UserId, cancellationToken)
                     .ConfigureAwait(false);
             }
             else
@@ -202,7 +202,7 @@ namespace saiflow.engine.Manager
                 if (runningNode != null)
                 {
                     taskView = await tm.GetTaskOfMineByActivityInstanceAsync(
-                            kit, runningNode.Id.Value, runner.UserId, cancellationToken)
+                            kit, runningNode.Id, runner.UserId, cancellationToken)
                         .ConfigureAwait(false);
                 }
                 else
@@ -222,10 +222,10 @@ namespace saiflow.engine.Manager
         /// Get the instance of the return source activity
         /// 获取退回源活动实例
         /// </summary>
-        internal ActivityInstanceEntity GetBackSrcActivityInstance(int currentActivityInstanceId)
+        internal ActivityInstanceEntity GetBackSrcActivityInstance(string currentActivityInstanceId)
         {
             var currentActivityInstance = GetById(currentActivityInstanceId);
-            var backSrcActivityInstance = GetById(currentActivityInstance.BackSrcActivityInstanceId.Value);
+            var backSrcActivityInstance = GetById(currentActivityInstance.BackSrcActivityInstanceId);
 
             return backSrcActivityInstance;
         }
@@ -261,7 +261,7 @@ namespace saiflow.engine.Manager
         /// Get Activity Instance
         /// 获取活动节点实例
         /// </summary>
-        internal IList<ActivityInstanceEntity> GetActivityInstanceList(SQLBuilder kit, int processInstanceId)
+        internal IList<ActivityInstanceEntity> GetActivityInstanceList(SQLBuilder kit, string processInstanceId)
         {
             var clip = kit.useSQL().useClip();
             clip.from<ActivityInstanceEntity>(out var ai);
@@ -274,7 +274,7 @@ namespace saiflow.engine.Manager
         /// Get Activity Instance Latest
         /// 获取活动节点实例
         /// </summary>
-        internal ActivityInstanceEntity GetActivityInstanceLatest(int processInstanceId,
+        internal ActivityInstanceEntity GetActivityInstanceLatest(string processInstanceId,
             string activityId)
         {
             var kit = Sail.UseRunSQL();
@@ -285,7 +285,7 @@ namespace saiflow.engine.Manager
         /// Get Activity Instance Latest
         /// 获取最近的节点实例
         /// </summary>
-        internal ActivityInstanceEntity GetActivityInstanceLatest(SQLBuilder kit, int processInstanceId,
+        internal ActivityInstanceEntity GetActivityInstanceLatest(SQLBuilder kit, string processInstanceId,
             string activityId)
         {
             var clip = kit.useSQL().useClip();
@@ -324,7 +324,7 @@ namespace saiflow.engine.Manager
             if (list.Count > 0)
             {
                 var matchedActivityInstance = list[0];
-                return GetById(kit, matchedActivityInstance.Id.Value);
+                return GetById(kit, matchedActivityInstance.Id);
             }
 
             return null;
@@ -355,7 +355,7 @@ namespace saiflow.engine.Manager
         /// Get activity instances with running status
         /// 获取运行状态的活动实例
         /// </summary>
-        internal ActivityInstanceEntity GetActivityRunning(SQLBuilder kit, int processInstanceId,
+        internal ActivityInstanceEntity GetActivityRunning(SQLBuilder kit, string processInstanceId,
             string activityId)
         {
             return GetActivityByState(kit, processInstanceId, activityId, ActivityStateEnum.Running);
@@ -365,7 +365,7 @@ namespace saiflow.engine.Manager
         /// Obtain activity instances based on states
         /// 根据状态获取活动实例
         /// </summary>
-        internal ActivityInstanceEntity GetActivityByState(SQLBuilder kit, int processInstanceId,
+        internal ActivityInstanceEntity GetActivityByState(SQLBuilder kit, string processInstanceId,
             string activityId,
             ActivityStateEnum activityState)
         {
@@ -425,14 +425,14 @@ namespace saiflow.engine.Manager
 
             if (runningNode.BackSrcActivityInstanceId != null)
             {
-                originalRunningNode = GetById(kit, runningNode.BackOrgActivityInstanceId.Value);
+                originalRunningNode = GetById(kit, runningNode.BackOrgActivityInstanceId);
             }
             else
             {
                 originalRunningNode = runningNode;
             }
 
-            var instanceList = GetActivityInstanceListCompletedSimple(kit, processInstanceId.Value, previousActivityId);
+            var instanceList = GetActivityInstanceListCompletedSimple(kit, processInstanceId, previousActivityId);
 
             var withoutBackSrcInfoList = instanceList.Where(a => a.BackSrcActivityInstanceId == null);
 
@@ -455,7 +455,7 @@ namespace saiflow.engine.Manager
         /// Obtain activity instances with completion status
         /// 获取完成状态的活动实例
         /// </summary>
-        internal IList<ActivityInstanceEntity> GetActivityInstanceListCompletedSimple(int processInstanceId,
+        internal IList<ActivityInstanceEntity> GetActivityInstanceListCompletedSimple(string processInstanceId,
             string activityId)
         {
             var kit = Sail.UseRunSQL();
@@ -466,7 +466,7 @@ namespace saiflow.engine.Manager
         /// Obtain activity instances with completion status
         /// 获取完成状态的活动实例
         /// </summary>
-        internal IList<ActivityInstanceEntity> GetActivityInstanceListCompletedSimple(SQLBuilder kit, int processInstanceId,
+        internal IList<ActivityInstanceEntity> GetActivityInstanceListCompletedSimple(SQLBuilder kit, string processInstanceId,
             string activityId)
         {
             var clip = kit.useSQL().useClip();
@@ -482,7 +482,7 @@ namespace saiflow.engine.Manager
         /// Retrieve activity instance information from task Id
         /// 由任务ID获取活动实例信息
         /// </summary>
-        internal ActivityInstanceEntity GetByTask(int taskId)
+        internal ActivityInstanceEntity GetByTask(string taskId)
         {
             var kit = Sail.UseRunSQL();
             return GetByTask(kit, taskId);
@@ -492,7 +492,7 @@ namespace saiflow.engine.Manager
         /// Retrieve activity instance information from task Id
         /// 由任务ID获取活动实例信息
         /// </summary>
-        internal ActivityInstanceEntity GetByTask(SQLBuilder kit, int taskId)
+        internal ActivityInstanceEntity GetByTask(SQLBuilder kit, string taskId)
         {
             ActivityInstanceEntity entity = null;
             var clip = kit.useSQL().useClip();
@@ -568,7 +568,7 @@ namespace saiflow.engine.Manager
         /// Retrieve the list of completed child nodes under the main node
         /// 获取主节点下已经完成的子节点列表
         /// </summary>
-        internal List<ActivityInstanceEntity> GetMultipleInstanceListCompleted(int mainActivityInstanceId)
+        internal List<ActivityInstanceEntity> GetMultipleInstanceListCompleted(string mainActivityInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetMultipleInstanceListCompleted(kit, mainActivityInstanceId);
@@ -578,7 +578,7 @@ namespace saiflow.engine.Manager
         /// Retrieve the list of completed child nodes under the main node
         /// 获取主节点下已经完成的子节点列表
         /// </summary>
-        internal List<ActivityInstanceEntity> GetMultipleInstanceListCompleted(SQLBuilder kit, int mainActivityInstanceId)
+        internal List<ActivityInstanceEntity> GetMultipleInstanceListCompleted(SQLBuilder kit, string mainActivityInstanceId)
         {
             var clip = kit.useSQL().useClip();
             clip.from<ActivityInstanceEntity>(out var ai);
@@ -610,7 +610,7 @@ namespace saiflow.engine.Manager
             ActivityInstanceEntity originalRunningNode = null;
             if (runningNode.BackSrcActivityInstanceId != null)
             {
-                originalRunningNode = GetById(kit, runningNode.BackOrgActivityInstanceId.Value);
+                originalRunningNode = GetById(kit, runningNode.BackOrgActivityInstanceId);
             }
             else
             {
@@ -629,7 +629,7 @@ namespace saiflow.engine.Manager
 
             var firstMIChild = withoutBackSrcInfoList.First(a => a.EndedUserId == originalRunningNode.CreatedUserId);
 
-            return GetMultipleInstanceListCompleted(kit, firstMIChild.MainActivityInstanceId.Value);
+            return GetMultipleInstanceListCompleted(kit, firstMIChild.MainActivityInstanceId);
         }
 
         /// <summary>
@@ -663,10 +663,14 @@ namespace saiflow.engine.Manager
         /// </summary>
         private List<ActivityInstanceEntity> FilteredActivityInstanceInTheSameBatch(List<ActivityInstanceEntity> instanceList)
         {
-            var maxBackSrcActivityInstanceId = instanceList.Max<ActivityInstanceEntity>(a => a.BackSrcActivityInstanceId);
-            if (maxBackSrcActivityInstanceId != null)
+            var maxBackSrcActivityInstanceId = instanceList
+                .Select(a => a.BackSrcActivityInstanceId)
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .OrderByDescending(id => id, StringComparer.Ordinal)
+                .FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(maxBackSrcActivityInstanceId))
             {
-                var childrenList = instanceList.Where<ActivityInstanceEntity>(a => a.BackSrcActivityInstanceId == maxBackSrcActivityInstanceId.Value).ToList();
+                var childrenList = instanceList.Where<ActivityInstanceEntity>(a => a.BackSrcActivityInstanceId == maxBackSrcActivityInstanceId).ToList();
                 return childrenList;
             }
             else
@@ -679,8 +683,8 @@ namespace saiflow.engine.Manager
         /// Obtain multi instance nodes of signing together nodes based on activity status
         /// 根据活动状态获取会签节点的多实例节点
         /// </summary>
-        public List<ActivityInstanceEntity> GetActivityMulitipleInstanceWithState(int mainActivityInstanceId,
-            int processInstanceId,
+        public List<ActivityInstanceEntity> GetActivityMulitipleInstanceWithState(string mainActivityInstanceId,
+            string processInstanceId,
             short? activityState = null)
         {
             var kit = Sail.UseRunSQL();
@@ -693,8 +697,8 @@ namespace saiflow.engine.Manager
         /// 获取同一批的主节点下的子节点列表记录
         /// 包括：需要过滤回退后的回退标识类型的过滤
         /// </summary>
-        internal IList<ActivityInstanceEntity> GetActivityMulitipleInstanceWithStateBatch(SQLBuilder kit, int processInstanceId,
-            int mainActivityInstanceId,
+        internal IList<ActivityInstanceEntity> GetActivityMulitipleInstanceWithStateBatch(SQLBuilder kit, string processInstanceId,
+            string mainActivityInstanceId,
             short? activityState)
         {
             var instanceList = GetActivityMulitipleInstanceWithState(kit,
@@ -710,8 +714,8 @@ namespace saiflow.engine.Manager
         /// Obtain multi instance nodes of signing together nodes based on activity status
         /// 根据活动状态获取会签节点的多实例节点
         /// </summary>
-        internal List<ActivityInstanceEntity> GetActivityMulitipleInstanceWithState(SQLBuilder kit, int mainActivityInstanceId,
-            int processInstanceId,
+        internal List<ActivityInstanceEntity> GetActivityMulitipleInstanceWithState(SQLBuilder kit, string mainActivityInstanceId,
+            string processInstanceId,
             short? activityState)
         {
             var clip = kit.useSQL().useClip();
@@ -731,8 +735,8 @@ namespace saiflow.engine.Manager
         /// 查询分支实例的个数
         /// </summary>
         internal int GetGatewayInstanceCountByTransition(SQLBuilder kit, string splitActivityId,
-            int splitActivityInstanceId,
-            int processInstanceId)
+            string splitActivityInstanceId,
+            string processInstanceId)
         {
             var clip = kit.useSQL().useClip();
             clip.from<TransitionInstanceEntity>(out var ti);
@@ -747,8 +751,8 @@ namespace saiflow.engine.Manager
         /// Obtain the number of valid branches
         ///  获取有效的分支数目
         /// </summary>
-        internal List<ActivityInstanceEntity> GetValidSplitedActivityInstanceList(SQLBuilder kit, int processInstanceId,
-            int splitGatewayInstanceId)
+        internal List<ActivityInstanceEntity> GetValidSplitedActivityInstanceList(SQLBuilder kit, string processInstanceId,
+            string splitGatewayInstanceId)
         {
             var clip = kit.useSQL().useClip();
             clip.from<ActivityInstanceEntity>(out var ai);
@@ -765,8 +769,8 @@ namespace saiflow.engine.Manager
         /// Obtain the number of valid branches
         /// 获取有效的子节点列表
         /// </summary>
-        internal List<ActivityInstanceEntity> GetValidActivityInstanceListOfMI(int mainActivityInstanceId,
-            int processInstanceId)
+        internal List<ActivityInstanceEntity> GetValidActivityInstanceListOfMI(string mainActivityInstanceId,
+            string processInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetValidActivityInstanceListOfMI(kit, mainActivityInstanceId, processInstanceId);
@@ -776,8 +780,8 @@ namespace saiflow.engine.Manager
         /// Obtain the number of valid branches
         /// 获取有效的子节点列表
         /// </summary>
-        internal List<ActivityInstanceEntity> GetValidActivityInstanceListOfMI(SQLBuilder kit, int mainActivityInstanceId,
-            int processInstanceId)
+        internal List<ActivityInstanceEntity> GetValidActivityInstanceListOfMI(SQLBuilder kit, string mainActivityInstanceId,
+            string processInstanceId)
         {
             var clip = kit.useSQL().useClip();
             clip.from<ActivityInstanceEntity>(out var ai);
@@ -789,26 +793,26 @@ namespace saiflow.engine.Manager
             clip.where(() => ai.ProcessInstanceId, processInstanceId);
             var list = clip.select(ai).queryList().ToList();
 
-            var backList = new List<int>();
+            var backList = new List<string>();
             foreach (var child in list)
             {
-                if (child.BackSrcActivityInstanceId != null)
+                if (!string.IsNullOrWhiteSpace(child.BackSrcActivityInstanceId))
                 {
-                    if (backList.Any(a => a == child.BackSrcActivityInstanceId.Value) == false)
-                        backList.Add(child.BackSrcActivityInstanceId.Value);
+                    if (backList.Any(a => a == child.BackSrcActivityInstanceId) == false)
+                        backList.Add(child.BackSrcActivityInstanceId);
                 }
 
-                if (child.BackOrgActivityInstanceId != null)
+                if (!string.IsNullOrWhiteSpace(child.BackOrgActivityInstanceId))
                 {
-                    if (backList.Any(a => a == child.BackOrgActivityInstanceId.Value) == false)
-                        backList.Add(child.BackOrgActivityInstanceId.Value);
+                    if (backList.Any(a => a == child.BackOrgActivityInstanceId) == false)
+                        backList.Add(child.BackOrgActivityInstanceId);
                 }
             }
 
             if (backList.Count > 0)
             {
-                int[] backArray = backList.ToArray();
-                var validList = list.Where(a => !backArray.Contains(a.Id.Value)).ToList();
+                string[] backArray = backList.ToArray();
+                var validList = list.Where(a => !backArray.Contains(a.Id)).ToList();
                 return validList;
             }
 
@@ -825,7 +829,7 @@ namespace saiflow.engine.Manager
             string appInstanceId,
             string appInstanceCode,
             string processId,
-            int processInstanceId,
+            string processInstanceId,
             Activity activity,
             FlowCommandContext runner)
         {
@@ -913,12 +917,12 @@ namespace saiflow.engine.Manager
         internal ActivityInstanceEntity CreateBackwardActivityInstanceObject(string appName,
             string appInstanceId,
             string appInstanceCode,
-            int processInstanceId,
+            string processInstanceId,
             string processId,
             Activity activity,
             BackwardTypeEnum backwardType,
-            int backSrcActivityInstanceId,
-            int backOrgActivityInstanceId,
+            string backSrcActivityInstanceId,
+            string backOrgActivityInstanceId,
             FlowCommandContext runner)
         {
             ActivityInstanceEntity instance = new ActivityInstanceEntity();
@@ -951,7 +955,7 @@ namespace saiflow.engine.Manager
         /// Update the number of tokens for the activity node
         /// 更新活动节点的Token数目
         /// </summary>
-        internal void IncreaseTokensHad(SQLBuilder kit, int activityInstanceId,
+        internal void IncreaseTokensHad(SQLBuilder kit, string activityInstanceId,
             FlowCommandContext runner)
         {
             // CAS 自增：WHERE TokensHad=旧值，避免并行汇聚丢 token
@@ -988,7 +992,7 @@ namespace saiflow.engine.Manager
         /// Activity instance read
         /// 活动实例被读取
         /// </summary>
-        internal void Read(SQLBuilder kit, int activityInstanceId,
+        internal void Read(SQLBuilder kit, string activityInstanceId,
             FlowCommandContext runner)
         {
             SetActivityState(kit, activityInstanceId, ActivityStateEnum.Running, runner);
@@ -998,7 +1002,7 @@ namespace saiflow.engine.Manager
         /// Set activity instance status
         /// 设置活动实例状态
         /// </summary>
-        private void SetActivityState(SQLBuilder kit, int activityInstanceId,
+        private void SetActivityState(SQLBuilder kit, string activityInstanceId,
             ActivityStateEnum activityState,
             FlowCommandContext runner)
         {
@@ -1014,7 +1018,7 @@ namespace saiflow.engine.Manager
         /// Withdraw activity instance
         /// 撤销活动实例
         /// </summary>
-        internal void Withdraw(SQLBuilder kit, int activityInstanceId,
+        internal void Withdraw(SQLBuilder kit, string activityInstanceId,
             FlowCommandContext runner)
         {
             EndActivityState(kit, activityInstanceId, ActivityStateEnum.Withdrawed, runner);
@@ -1024,7 +1028,7 @@ namespace saiflow.engine.Manager
         /// Sendback activity instance
         /// 退回活动实例
         /// </summary>
-        internal void SendBack(SQLBuilder kit, int activityInstanceId,
+        internal void SendBack(SQLBuilder kit, string activityInstanceId,
             FlowCommandContext runner)
         {
             EndActivityState(kit, activityInstanceId, ActivityStateEnum.Sendbacked, runner);
@@ -1034,7 +1038,7 @@ namespace saiflow.engine.Manager
         /// Set the end status of the activity
         /// 设置活动结束状态
         /// </summary>
-        private void EndActivityState(SQLBuilder kit, int activityInstanceId,
+        private void EndActivityState(SQLBuilder kit, string activityInstanceId,
             ActivityStateEnum activityState,
             FlowCommandContext runner)
         {
@@ -1051,7 +1055,7 @@ namespace saiflow.engine.Manager
         /// Complete activity instance
         /// 活动实例完成
         /// </summary>
-        internal void Complete(SQLBuilder kit, int activityInstanceId,
+        internal void Complete(SQLBuilder kit, string activityInstanceId,
             FlowCommandContext runner)
         {
             EndActivityState(kit, activityInstanceId, ActivityStateEnum.Completed, runner);
@@ -1072,7 +1076,7 @@ namespace saiflow.engine.Manager
         /// Update approval status to agree
         /// 更新审批状态为同意
         /// </summary>
-        internal void SetApprovalStatus(SQLBuilder kit, int activityInstanceId)
+        internal void SetApprovalStatus(SQLBuilder kit, string activityInstanceId)
         {
             var activityInstance = GetById(kit, activityInstanceId);
             if (activityInstance.ApprovalStatus == (short)ApprovalStatusEnum.Null)
@@ -1095,14 +1099,14 @@ namespace saiflow.engine.Manager
             var splitActivity = processModel.GetBackwardGatewayActivity(gatewayActivity, ref joinCount, ref splitCount);
             var taskActivityList = processModel.GetAllTaskActivityList(splitActivity, gatewayActivity);
 
-            UpdateActivityInstanceBlockedBetweenSplitJoin(kit, gatewayInstance.ProcessInstanceId.Value, taskActivityList);
+            UpdateActivityInstanceBlockedBetweenSplitJoin(kit, gatewayInstance.ProcessInstanceId, taskActivityList);
         }
 
         /// <summary>
         /// Update the activities in the activity to block status
         /// 更新活动里面的活动为阻止状态
         /// </summary>
-        private void UpdateActivityInstanceBlockedBetweenSplitJoin(SQLBuilder kit, int processInstanceId,
+        private void UpdateActivityInstanceBlockedBetweenSplitJoin(SQLBuilder kit, string processInstanceId,
             IList<Activity> taskActivityList)
         {
             var idsin = taskActivityList.Select(a => a.ActivityId).ToList();
@@ -1126,13 +1130,13 @@ namespace saiflow.engine.Manager
         /// Insert activity instance
         /// 插入活动实例
         /// </summary>
-        internal int Insert(ActivityInstanceEntity entity)
+        internal string Insert(ActivityInstanceEntity entity)
         {
             var kit = Sail.UseRunSQL();
             return Insert(kit, entity);
         }
 
-        internal int Insert(SQLBuilder kit, ActivityInstanceEntity entity)
+        internal string Insert(SQLBuilder kit, ActivityInstanceEntity entity)
         {
             if (entity.ActivityType == (short)ActivityTypeEnum.GatewayNode
                 && string.IsNullOrEmpty(entity.ActivityName))
@@ -1140,7 +1144,7 @@ namespace saiflow.engine.Manager
                 entity.ActivityName = "GATEWAY";
             }
 
-            int newId = kit.useSQL().useRepo<ActivityInstanceEntity, int>().InsertReturnId(entity);
+            string newId = kit.useSQL().useRepo<ActivityInstanceEntity, string>().InsertReturnId(entity);
             entity.Id = newId;
 
             return newId;
@@ -1163,7 +1167,7 @@ namespace saiflow.engine.Manager
         /// Cancel activity instance
         /// 取消节点运行
         /// </summary>
-        internal void Cancel(SQLBuilder kit, int activityInstanceId,
+        internal void Cancel(SQLBuilder kit, string activityInstanceId,
             FlowCommandContext runner)
         {
             var clip = kit.useSQL().useClip();
@@ -1183,7 +1187,7 @@ namespace saiflow.engine.Manager
         /// Update the status of unfinished nodes in the countersignature node
         /// 更新会签节点中未办理完成的节点状态
         /// </summary>
-        internal void CancelUnCompletedMultipleInstance(SQLBuilder kit, int mainActivityInstanceId, FlowCommandContext runner)
+        internal void CancelUnCompletedMultipleInstance(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner)
         {
             var clip = kit.useSQL().useClip();
             clip.setTable<ActivityInstanceEntity>(out var ai);
@@ -1202,7 +1206,7 @@ namespace saiflow.engine.Manager
         /// Withdraw the master node and its multiple instance nodes below it
         /// 撤销主节点及其下面的多实例子节点
         /// </summary>
-        internal void WithdrawMainIncludedChildNodes(SQLBuilder kit, int mainActivityInstanceId, FlowCommandContext runner)
+        internal void WithdrawMainIncludedChildNodes(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner)
         {
             SetActivityState(kit, mainActivityInstanceId, ActivityStateEnum.Withdrawed, runner);
             WithdrawMultipleInstance(kit, mainActivityInstanceId, runner);
@@ -1212,7 +1216,7 @@ namespace saiflow.engine.Manager
         /// Update the node status of the counter signature processing node
         /// 更新会签办理节点的节点状态
         /// </summary>
-        private void WithdrawMultipleInstance(SQLBuilder kit, int mainActivityInstanceId, FlowCommandContext runner)
+        private void WithdrawMultipleInstance(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner)
         {
             var clip = kit.useSQL().useClip();
             clip.setTable<ActivityInstanceEntity>(out var ai);
@@ -1230,7 +1234,7 @@ namespace saiflow.engine.Manager
         /// Put the node back in a suspended state
         /// 重新使节点处于挂起状态
         /// </summary>
-        internal void Resuspend(SQLBuilder kit, int activityInstanceId, FlowCommandContext runner)
+        internal void Resuspend(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner)
         {
             SetActivityState(kit, activityInstanceId, ActivityStateEnum.Suspended, runner);
         }
@@ -1239,7 +1243,7 @@ namespace saiflow.engine.Manager
         /// Put the node back in a running state
         /// 重新使节点处于运行状态
         /// </summary>
-        internal void Rerun(SQLBuilder kit, int activityInstanceId, FlowCommandContext runner)
+        internal void Rerun(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner)
         {
             SetActivityState(kit, activityInstanceId, ActivityStateEnum.Running, runner);
         }
@@ -1248,14 +1252,14 @@ namespace saiflow.engine.Manager
         /// Delete activity instance
         /// 删除活动实例
         /// </summary>
-        internal void Delete(int activityInstanceId)
+        internal void Delete(string activityInstanceId)
         {
             var kit = Sail.UseRunSQL();
             Delete(kit, activityInstanceId);
         }
 
-        internal void Delete(SQLBuilder kit, int activityInstanceId)
-            => kit.useSQL().useRepo<ActivityInstanceEntity, int>().DeleteById(activityInstanceId);
+        internal void Delete(SQLBuilder kit, string activityInstanceId)
+            => kit.useSQL().useRepo<ActivityInstanceEntity, string>().DeleteById(activityInstanceId);
         #endregion
 
         #region Activity Instance Approval Status 活动实例审批状态
@@ -1263,7 +1267,7 @@ namespace saiflow.engine.Manager
         /// Agree
         /// 同意
         /// </summary>
-        internal void Agree(int taskId)
+        internal void Agree(string taskId)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -1280,7 +1284,7 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal void Agree(SQLBuilder kit, int taskId)
+        internal void Agree(SQLBuilder kit, string taskId)
         {
             var activityInstance = GetByTask(kit, taskId);
             activityInstance.ApprovalStatus = (short)ApprovalStatusEnum.Agreed;
@@ -1291,7 +1295,7 @@ namespace saiflow.engine.Manager
         /// Refuse
         /// 拒绝
         /// </summary>
-        internal void Refuse(int taskId)
+        internal void Refuse(string taskId)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -1308,7 +1312,7 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal void Refuse(SQLBuilder kit, int taskId)
+        internal void Refuse(SQLBuilder kit, string taskId)
         {
             var activityInstance = GetByTask(kit, taskId);
             activityInstance.ApprovalStatus = (short)ApprovalStatusEnum.Refused;
@@ -1319,15 +1323,15 @@ namespace saiflow.engine.Manager
         /// Check the pass type of the current node
         ///  检查当前节点的通过类型
         /// </summary>
-        internal NodePassedResult CheckActivityInstancePassedResult(SQLBuilder kit, Nullable<int> activityInstanceId)
+        internal NodePassedResult CheckActivityInstancePassedResult(SQLBuilder kit, string activityInstanceId)
         {
             var result = NodePassedResult.Create(NodePassedTypeEnum.Default);
             if (activityInstanceId != null)
             {
-                var activityInstance = GetById(kit, activityInstanceId.Value);
+                var activityInstance = GetById(kit, activityInstanceId);
                 if (IsMultipleInstanceChildren(activityInstance) == true)
                 {
-                    var mainActivityInstance = GetById(kit, activityInstance.MainActivityInstanceId.Value);
+                    var mainActivityInstance = GetById(kit, activityInstance.MainActivityInstanceId);
                     var nodePassedType = CheckMIPassRateInfo(kit, activityInstance, mainActivityInstance);
                     result = NodePassedResult.Create(nodePassedType);
                 }
@@ -1346,7 +1350,7 @@ namespace saiflow.engine.Manager
         internal NodePassedTypeEnum CheckMIPassRateInfo(SQLBuilder kit, ActivityInstanceEntity currentActivityInstance,
             ActivityInstanceEntity mainActivityInstance)
         {
-            var childActivityInstanceList = GetValidActivityInstanceListOfMI(kit, mainActivityInstance.Id.Value, mainActivityInstance.ProcessInstanceId.Value);
+            var childActivityInstanceList = GetValidActivityInstanceListOfMI(kit, mainActivityInstance.Id, mainActivityInstance.ProcessInstanceId);
 
             // R2：已挂管道时只走 LeaveJudge（含 Legacy 会签→Collaborate 推断）；禁止回落旧通过率旁路
             var pipeline = Sail.AssigneePipeline;
@@ -1355,7 +1359,7 @@ namespace saiflow.engine.Manager
             try
             {
                 var pi = Sail.ProcessInstances.GetById(
-                    kit, mainActivityInstance.ProcessInstanceId.Value);
+                    kit, mainActivityInstance.ProcessInstanceId);
                 leaveProcessId = pi?.ProcessId ?? leaveProcessId;
                 leaveVersion = pi?.Version;
             }
@@ -1369,8 +1373,8 @@ namespace saiflow.engine.Manager
                 if (pipeline.TryCanLeave(
                         new LeaveInvokeRequest
                         {
-                            ProcessInstanceId = mainActivityInstance.ProcessInstanceId.Value,
-                            ActivityInstanceId = currentActivityInstance.Id.Value,
+                            ProcessInstanceId = mainActivityInstance.ProcessInstanceId,
+                            ActivityInstanceId = currentActivityInstance.Id,
                             ProcessId = leaveProcessId,
                             Version = leaveVersion,
                             CurrentActivityInstance = currentActivityInstance,

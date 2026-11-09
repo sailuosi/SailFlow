@@ -13,8 +13,8 @@ namespace saiflow.engine.Event
     {
         public string AppInstanceId { get; set; }
         public string ProcessId { get; set; }
-        public int ProcessInstanceId { get; set; }
-        public int ActivityInstanceId { get; set; }
+        public string ProcessInstanceId { get; set; }
+        public string ActivityInstanceId { get; set; }
         public string ActivityId { get; set; }
         public string ActivityName { get; set; }
         public string ActivityCode { get; set; }

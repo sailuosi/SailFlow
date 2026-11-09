@@ -26,13 +26,13 @@ namespace saiflow.engine.Runtime
             WfExecutedResult result = base.WfExecutedResult;
 
             var aim = Sail.ManagerFactory.Activities;
-            aim.Complete(kit.useSQL(), base.RunningActivityInstance.Id.Value, this.AppRunner);
+            aim.Complete(kit.useSQL(), base.RunningActivityInstance.Id, this.AppRunner);
 
             //构建跳转上下文
             //Build jump context
             var jumpActivityId = base.AppRunner.NextActivityPerformers.First().Key;
             var jumpforwardActivity = base.ProcessModel.GetActivity(jumpActivityId);
-            var processInstance = Sail.ProcessInstances.GetById(base.RunningActivityInstance.ProcessInstanceId.Value);
+            var processInstance = Sail.ProcessInstances.GetById(base.RunningActivityInstance.ProcessInstanceId);
 
             var jumpforwardExecutionContext = ActivityForwardContext.CreateRunningContextByTask(base.TaskView,
                     base.ProcessModel,

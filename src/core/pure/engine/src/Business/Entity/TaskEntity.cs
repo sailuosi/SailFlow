@@ -14,12 +14,12 @@ namespace saiflow.engine.Entity
     [SooTable(Name = "wf_task", Caption = "任务", Type = DBTableType.Table)]
     public class TaskEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
-        [SooColumn(Name = "activity_instance_id")]
-        public int? ActivityInstanceId { get; set; }
-        [SooColumn(Name = "process_instance_id")]
-        public int? ProcessInstanceId { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
+        [SooColumn(Name = "activity_instance_id", Length = 64)]
+        public string ActivityInstanceId { get; set; }
+        [SooColumn(Name = "process_instance_id", Length = 64)]
+        public string ProcessInstanceId { get; set; }
         [SooColumn(Name = "app_name")]
         public string AppName { get; set; }
         [SooColumn(Name = "app_instance_id")]
@@ -34,8 +34,8 @@ namespace saiflow.engine.Entity
         public short? TaskType { get; set; }
         [SooColumn(Name = "task_state")]
         public short? TaskState { get; set; }
-        [SooColumn(Name = "entrusted_task_id")]
-        public int? EntrustedTaskId { get; set; }        //被委托任务Id
+        [SooColumn(Name = "entrusted_task_id", Length = 64)]
+        public string EntrustedTaskId { get; set; }        //被委托任务Id
         [SooColumn(Name = "assigned_user_id")]
         public string AssignedUserId { get; set; }
         [SooColumn(Name = "assigned_user_name")]

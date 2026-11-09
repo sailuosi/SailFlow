@@ -15,9 +15,9 @@ namespace saiflow.engine.Hooks
             SailClient sail,
             SQLBuilder kit,
             FlowCommandContext runner,
-            int processInstanceId,
+            string processInstanceId,
             ActivityInstanceEntity activityInstance,
-            int? taskId,
+            string taskId,
             FlowOperation operation) =>
             BuildHookContext(
                 sail,
@@ -33,9 +33,9 @@ namespace saiflow.engine.Hooks
             SailClient sail,
             SQLBuilder kit,
             FlowCommandContext runner,
-            int processInstanceId,
+            string processInstanceId,
             ActivityInstanceEntity activityInstance,
-            int? taskId,
+            string taskId,
             EventFireTypeEnum eventType,
             FlowOperation operation)
         {
@@ -51,7 +51,7 @@ namespace saiflow.engine.Hooks
             ctx.Version = runner?.Version;
             ctx.ProcessCode = runner?.ProcessCode ?? ctx.ProcessCode;
 
-            if (kit != null && processInstanceId > 0)
+            if (kit != null && !string.IsNullOrWhiteSpace(processInstanceId))
             {
                 if (string.IsNullOrEmpty(ctx.Version))
                 {

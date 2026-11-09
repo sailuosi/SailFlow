@@ -18,11 +18,11 @@ namespace saiflow.msg
 
         public event EventHandler OnEMailSendCompleted;
 
-        private readonly int TaskId;
+        private readonly string TaskId;
         private readonly SailClient Sail;
         private readonly TaskMailOptions Options;
 
-        public EMailSendUtility(SailClient client, TaskMailOptions options, int taskId)
+        public EMailSendUtility(SailClient client, TaskMailOptions options, string taskId)
         {
             Sail = client ?? throw new ArgumentNullException(nameof(client));
             Options = options ?? throw new ArgumentNullException(nameof(options));

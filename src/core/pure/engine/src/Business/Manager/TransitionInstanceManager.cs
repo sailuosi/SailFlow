@@ -64,13 +64,13 @@ namespace saiflow.engine.Manager
         #endregion
 
         #region Insert / Delete
-        internal int Insert(TransitionInstanceEntity entity)
+        internal string Insert(TransitionInstanceEntity entity)
         {
             var kit = Sail.UseRunSQL();
             return Insert(kit, entity);
         }
 
-        internal int Insert(SQLBuilder kit, TransitionInstanceEntity entity)
+        internal string Insert(SQLBuilder kit, TransitionInstanceEntity entity)
         {
             var table = Router.ResolveTransitionTable(entity?.ProcessId);
             var newId = HotShardEntityAccess.InsertReturnId(kit, table, entity);
@@ -78,19 +78,19 @@ namespace saiflow.engine.Manager
             return newId;
         }
 
-        internal void Delete(int transitionInstanceId)
+        internal void Delete(string transitionInstanceId)
             => Delete(Sail.UseRunSQL(), transitionInstanceId);
 
-        internal void Delete(SQLBuilder kit, int transitionInstanceId)
+        internal void Delete(SQLBuilder kit, string transitionInstanceId)
             => HotShardEntityAccess.DeleteByIdProbing<TransitionInstanceEntity>(
                 kit, Router.TransitionLookupTables, transitionInstanceId);
         #endregion
 
         #region Query
-        internal TransitionInstanceEntity GetById(int transitionInstanceId)
+        internal TransitionInstanceEntity GetById(string transitionInstanceId)
             => GetById(Sail.UseRunSQL(), transitionInstanceId);
 
-        internal TransitionInstanceEntity GetById(SQLBuilder kit, int transitionInstanceId)
+        internal TransitionInstanceEntity GetById(SQLBuilder kit, string transitionInstanceId)
             => HotShardEntityAccess.GetByIdProbing<TransitionInstanceEntity>(
                 kit, Router.TransitionLookupTables, transitionInstanceId);
 
@@ -169,19 +169,19 @@ namespace saiflow.engine.Manager
             var pim = Sail.ProcessInstances;
             var pi = pim.GetProcessInstanceCurrent(appInstanceId, processId, version);
             if (pi != null)
-                list = GetTransitionInstanceList(appInstanceId, processId, pi.Id.Value);
+                list = GetTransitionInstanceListByProcessInstance(appInstanceId, processId, pi.Id);
             return list;
         }
 
-        internal IEnumerable<TransitionInstanceEntity> GetTransitionInstanceList(
-            string appInstanceId, string processId, int processInstanceId)
+        internal IEnumerable<TransitionInstanceEntity> GetTransitionInstanceListByProcessInstance(
+            string appInstanceId, string processId, string processInstanceId)
         {
             var kit = Sail.UseRunSQL();
-            return GetTransitionInstanceList(kit, appInstanceId, processId, processInstanceId);
+            return GetTransitionInstanceListByProcessInstance(kit, appInstanceId, processId, processInstanceId);
         }
 
-        internal IEnumerable<TransitionInstanceEntity> GetTransitionInstanceList(
-            SQLBuilder kit, string appInstanceId, string processId, int processInstanceId)
+        internal IEnumerable<TransitionInstanceEntity> GetTransitionInstanceListByProcessInstance(
+            SQLBuilder kit, string appInstanceId, string processId, string processInstanceId)
         {
             return QueryWithFallback(kit, processId, table =>
             {
@@ -195,13 +195,13 @@ namespace saiflow.engine.Manager
             });
         }
 
-        internal IList<ActivityInstanceEntity> GetTargetActivityInstanceList(int fromActivityInstanceId)
+        internal IList<ActivityInstanceEntity> GetTargetActivityInstanceList(string fromActivityInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetTargetActivityInstanceList(kit, fromActivityInstanceId);
         }
 
-        internal IList<ActivityInstanceEntity> GetTargetActivityInstanceList(SQLBuilder kit, int fromActivityInstanceId)
+        internal IList<ActivityInstanceEntity> GetTargetActivityInstanceList(SQLBuilder kit, string fromActivityInstanceId)
         {
             var targetIDs = GetTargetActivityInstanceIDs(kit, fromActivityInstanceId);
             return kit.useSQL().useRepo<ActivityInstanceEntity>()
@@ -210,7 +210,7 @@ namespace saiflow.engine.Manager
         }
 
         /// <summary>同库同事务的新 kit，避免链式 select 状态互相污染。</summary>
-        private IList<dynamic> GetTargetActivityInstanceIDs(SQLBuilder kit, int fromActivityInstanceId)
+        private IList<dynamic> GetTargetActivityInstanceIDs(SQLBuilder kit, string fromActivityInstanceId)
         {
             var processId = ResolveProcessIdFromActivity(kit, fromActivityInstanceId);
             var transitions = QueryWithFallback(kit, processId, table =>
@@ -225,18 +225,18 @@ namespace saiflow.engine.Manager
             foreach (var trans in transitions)
             {
                 if (trans.ToActivityType == (int)ActivityTypeEnum.GatewayNode)
-                    targetIDs.AddRange(GetTargetActivityInstanceIDs(kit, trans.ToActivityInstanceId.Value));
+                    targetIDs.AddRange(GetTargetActivityInstanceIDs(kit, trans.ToActivityInstanceId));
                 else
                     targetIDs.Add(trans.ToActivityInstanceId);
             }
             return targetIDs;
         }
 
-        private string ResolveProcessIdFromActivity(SQLBuilder kit, int activityInstanceId)
+        private string ResolveProcessIdFromActivity(SQLBuilder kit, string activityInstanceId)
         {
             try
             {
-                var ai = kit.useSQL().useRepo<ActivityInstanceEntity, int>().GetById(activityInstanceId);
+                var ai = kit.useSQL().useRepo<ActivityInstanceEntity, string>().GetById(activityInstanceId);
                 return ai?.ProcessId;
             }
             catch
@@ -284,10 +284,10 @@ namespace saiflow.engine.Manager
             if (legacy.Count == 0)
                 return rows;
 
-            var seen = new HashSet<int>(rows.Where(x => x.Id.HasValue).Select(x => x.Id.Value));
+            var seen = new HashSet<string>(rows.Where(x => !string.IsNullOrWhiteSpace(x.Id)).Select(x => x.Id));
             foreach (var row in legacy)
             {
-                if (row.Id.HasValue && seen.Contains(row.Id.Value))
+                if (!string.IsNullOrWhiteSpace(row.Id) && seen.Contains(row.Id))
                     continue;
                 rows.Add(row);
             }

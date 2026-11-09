@@ -13,32 +13,32 @@ namespace saiflow.engine.Entity
     [SooTable(Name = "wf_transition_instance", Caption = "转移实例", Type = DBTableType.Table)]
     public class TransitionInstanceEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
         [SooColumn(Name = "transition_id")]
         public string TransitionId { get; set; }
         [SooColumn(Name = "app_name")]
         public string AppName { get; set; }
         [SooColumn(Name = "app_instance_id")]
         public string AppInstanceId { get; set; }
-        [SooColumn(Name = "process_instance_id")]
-        public int? ProcessInstanceId { get; set; }
+        [SooColumn(Name = "process_instance_id", Length = 64)]
+        public string ProcessInstanceId { get; set; }
         [SooColumn(Name = "process_id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "transition_type")]
         public byte? TransitionType { get; set; }
         [SooColumn(Name = "flying_type")]
         public byte? FlyingType { get; set; }
-        [SooColumn(Name = "from_activity_instance_id")]
-        public int? FromActivityInstanceId { get; set; }
+        [SooColumn(Name = "from_activity_instance_id", Length = 64)]
+        public string FromActivityInstanceId { get; set; }
         [SooColumn(Name = "from_activity_id")]
         public string FromActivityId { get; set; }
         [SooColumn(Name = "from_activity_type")]
         public short? FromActivityType { get; set; }
         [SooColumn(Name = "from_activity_name")]
         public string FromActivityName { get; set; }
-        [SooColumn(Name = "to_activity_instance_id")]
-        public int? ToActivityInstanceId { get; set; }
+        [SooColumn(Name = "to_activity_instance_id", Length = 64)]
+        public string ToActivityInstanceId { get; set; }
         [SooColumn(Name = "to_activity_id")]
         public string ToActivityId { get; set; }
         [SooColumn(Name = "to_activity_type")]

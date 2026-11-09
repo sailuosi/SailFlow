@@ -14,8 +14,8 @@ namespace saiflow.engine.Entity
     [SooTable(Name = "wf_job_info", Caption = "作业信息", Type = DBTableType.Table)]
     public class JobInfoEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
         [SooColumn(Name = "job_name")]
         public string JobName { get; set; }
         [SooColumn(Name = "topic")]

@@ -84,7 +84,7 @@ namespace saiflow.engine.Runtime
             var aim = Sail.ManagerFactory.Activities;
             if (taskView.MainActivityInstanceId != null)
             {
-                var mainActivityInstanceId = taskView.MainActivityInstanceId.Value;
+                var mainActivityInstanceId = taskView.MainActivityInstanceId;
                 var mainActivityInstance = aim.GetById(mainActivityInstanceId);
                 if (mainActivityInstance != null)
                 {
@@ -102,7 +102,7 @@ namespace saiflow.engine.Runtime
                 {
                     //获取网关节点信息
                     //Obtain gateway node information
-                    var gatewayActivityInstance = aim.GetActivityInstanceLatest(taskView.ProcessInstanceId.Value, nextActivity.ActivityId);
+                    var gatewayActivityInstance = aim.GetActivityInstanceLatest(taskView.ProcessInstanceId, nextActivity.ActivityId);
                     if (gatewayActivityInstance != null
                         && !string.IsNullOrEmpty(gatewayActivityInstance.NextStepPerformers))
                     {
@@ -113,7 +113,7 @@ namespace saiflow.engine.Runtime
                 {
                     //中间Timer事件节点
                     //Intermediate Timer Event Node
-                    var timerActivityInstance = aim.GetActivityInstanceLatest(taskView.ProcessInstanceId.Value, nextActivity.ActivityId);
+                    var timerActivityInstance = aim.GetActivityInstanceLatest(taskView.ProcessInstanceId, nextActivity.ActivityId);
                     if (timerActivityInstance != null
                         && !string.IsNullOrEmpty(timerActivityInstance.NextStepPerformers))
                     {
@@ -162,8 +162,8 @@ namespace saiflow.engine.Runtime
                 {
                     //运行中的流程
                     //Running process
-                    taskView = tm.GetTaskView(runner.TaskId.Value);
-                    processInstance = pim.GetById(taskView.ProcessInstanceId.Value);
+                    taskView = tm.GetTaskView(runner.TaskId);
+                    processInstance = pim.GetById(taskView.ProcessInstanceId);
                 }
                 else if (!string.IsNullOrEmpty(runner.AppInstanceId))
                 {
@@ -211,7 +211,7 @@ namespace saiflow.engine.Runtime
                         if (ns.ReceiverType == ReceiverTypeEnum.ProcessInitiator)       
                         {
                             ns.Users = AppendUserList(ns.Users, pim.GetProcessInitiator(kit,
-                                taskView.ProcessInstanceId.Value));  
+                                taskView.ProcessInstanceId));  
                         }
                         else
                         {

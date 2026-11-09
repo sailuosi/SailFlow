@@ -10,12 +10,14 @@ namespace saiflow.engine.HotShard
     /// <summary>按物理表名对实体做 CRUD（热分表路由后使用）。</summary>
     public static class HotShardEntityAccess
     {
-        public static int InsertReturnId<T>(SQLBuilder kit, string physicalTable, T entity) where T : class
+        public static string InsertReturnId<T>(SQLBuilder kit, string physicalTable, T entity) where T : class
         {
-            var idObj = string.IsNullOrWhiteSpace(physicalTable)
-                ? kit.insertReturnId(entity)
-                : kit.insertReturnId(entity, physicalTable);
-            return Convert.ToInt32(idObj);
+            if (string.IsNullOrWhiteSpace(physicalTable))
+                kit.insert(entity);
+            else
+                kit.insert(entity, physicalTable);
+            var prop = typeof(T).GetProperty("Id");
+            return prop?.GetValue(entity) as string;
         }
 
         public static void Update<T>(SQLBuilder kit, string physicalTable, T entity) where T : class
@@ -23,19 +25,19 @@ namespace saiflow.engine.HotShard
             kit.update(entity, physicalTable);
         }
 
-        public static T GetById<T>(SQLBuilder kit, string physicalTable, int id) where T : class
+        public static T GetById<T>(SQLBuilder kit, string physicalTable, string id) where T : class
         {
             return kit.findRowById<T>(id, physicalTable);
         }
         //=> SailEntityKit.PrepareSelectByIdOnTable<T>(id, physicalTable, kit).queryUnique<T>();
 
-        public static void DeleteById<T>(SQLBuilder kit, string physicalTable, int id) where T : class
+        public static void DeleteById<T>(SQLBuilder kit, string physicalTable, string id) where T : class
         {
             kit.deleteById<T>(id, physicalTable);
         }
 
         /// <summary>按 LookupTables 顺序探测主键；命中即返回。</summary>
-        public static T GetByIdProbing<T>(SQLBuilder kit, IReadOnlyList<string> tables, int id) where T : class
+        public static T GetByIdProbing<T>(SQLBuilder kit, IReadOnlyList<string> tables, string id) where T : class
         {
             if (tables == null || tables.Count == 0)
                 return null;
@@ -56,7 +58,7 @@ namespace saiflow.engine.HotShard
         }
 
         /// <summary>按 LookupTables 顺序删除；删到行为止。</summary>
-        public static bool DeleteByIdProbing<T>(SQLBuilder kit, IReadOnlyList<string> tables, int id) where T : class
+        public static bool DeleteByIdProbing<T>(SQLBuilder kit, IReadOnlyList<string> tables, string id) where T : class
         {
             if (tables == null || tables.Count == 0)
                 return false;
@@ -80,13 +82,13 @@ namespace saiflow.engine.HotShard
 
 
 
-        public static string ResolveProcessId(SQLBuilder kit, int processInstanceId)
+        public static string ResolveProcessId(SQLBuilder kit, string processInstanceId)
         {
-            if (kit == null || processInstanceId <= 0)
+            if (kit == null || string.IsNullOrWhiteSpace(processInstanceId))
                 return null;
             try
             {
-                var pi = kit.useSQL().useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
+                var pi = kit.useSQL().useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
                 return pi?.ProcessId;
             }
             catch

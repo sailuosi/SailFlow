@@ -69,7 +69,7 @@ namespace saiflow.engine.Pattern
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,
                 processInstance.ProcessId,
-                processInstance.Id.Value,
+                processInstance.Id,
                 activity,
                 runner);
 
@@ -90,7 +90,7 @@ namespace saiflow.engine.Pattern
         /// <summary>
         /// 插入转移实例
         /// </summary>
-        internal virtual int InsertTransitionInstance(ProcessInstanceEntity processInstance,
+        internal virtual string InsertTransitionInstance(ProcessInstanceEntity processInstance,
             string transitionId,
             ActivityInstanceEntity fromActivityInstance,
             ActivityInstanceEntity toActivityInstance,
@@ -116,7 +116,7 @@ namespace saiflow.engine.Pattern
         /// <summary>
         /// 完成活动实例
         /// </summary>
-        internal virtual void CompleteActivityInstance(int ActivityInstanceId,
+        internal virtual void CompleteActivityInstance(string ActivityInstanceId,
             FlowCommandContext runner,
             SQLBuilder kit)
         {

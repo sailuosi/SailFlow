@@ -130,7 +130,7 @@ namespace saiflow.engine.Service
                 Sail,
                 kit,
                 runner,
-                0,
+                null,
                 runtimeInstance.RunningActivityInstance,
                 null,
                 FlowOperation.Start);
@@ -1268,7 +1268,7 @@ namespace saiflow.engine.Service
                 }
 
                 var tm = Sail.ManagerFactory.Tasks;
-                var taskView = tm.GetTaskView(kit, runner.TaskId.Value);
+                var taskView = tm.GetTaskView(kit, runner.TaskId);
                 if (taskView?.ActivityInstanceId == null)
                 {
                     result.Status = WfExecutedStatus.Exception;
@@ -1278,8 +1278,8 @@ namespace saiflow.engine.Service
                 }
 
                 var aim = Sail.ManagerFactory.Activities;
-                var activityInstance = aim.GetById(kit, taskView.ActivityInstanceId.Value);
-                var processInstanceId = activityInstance.ProcessInstanceId ?? 0;
+                var activityInstance = aim.GetById(kit, taskView.ActivityInstanceId);
+                var processInstanceId = activityInstance.ProcessInstanceId;
 
                 var gateCtx = FlowCapabilityPipeline.BuildGateContext(
                     Sail,
@@ -1292,7 +1292,7 @@ namespace saiflow.engine.Service
                 if (!FlowCapabilityPipeline.TryGate(Sail, kit, gateCtx, result))
                     return result;
 
-                var managed = tm.Transfer(kit, runner.TaskId.Value, runner, targets);
+                var managed = tm.Transfer(kit, runner.TaskId, runner, targets);
                 if (managed.Status != WfDataManagedStatusEnum.Success)
                 {
                     result.Status = WfExecutedStatus.Exception;
@@ -1370,7 +1370,7 @@ namespace saiflow.engine.Service
         /// 恢复流程实例(只针对已挂起)
         /// 挂起(恢复)流程、取消(运行)流程、撤回执行或执行中的流程
         /// </summary>
-        public bool ResumeProcess(int processInstanceId, FlowCommandContext runner)
+        public bool ResumeProcess(string processInstanceId, FlowCommandContext runner)
         {
             bool result = true;
             try
@@ -1388,7 +1388,7 @@ namespace saiflow.engine.Service
         /// Process Suspend
         /// 流程挂起实例
         /// </summary>
-        public bool SuspendProcess(int taskId, FlowCommandContext runner)
+        public bool SuspendProcess(string taskId, FlowCommandContext runner)
         {
             bool result = true;
             try
@@ -1396,7 +1396,7 @@ namespace saiflow.engine.Service
                 var pim = Managers.ProcessInstances;
                 var taskMng = Sail.ManagerFactory.Tasks;
                 TaskEntity taskentity = taskMng.GetTask(taskId);
-                pim.Suspend(taskentity.ProcessInstanceId.Value, runner);
+                pim.Suspend(taskentity.ProcessInstanceId, runner);
             }
             catch (Exception ex)
             {
@@ -1442,7 +1442,7 @@ namespace saiflow.engine.Service
         /// Agree
         /// 同意
         /// </summary>
-        public void AgreeTask(int taskId)
+        public void AgreeTask(string taskId)
         {
             var aim = Sail.ManagerFactory.Activities;
             aim.Agree(taskId);
@@ -1453,7 +1453,7 @@ namespace saiflow.engine.Service
         /// Refuse
         /// 拒绝
         /// </summary>
-        public void RefuseTask(int taskId)
+        public void RefuseTask(string taskId)
         {
             var aim = Sail.ManagerFactory.Activities;
             aim.Refuse(taskId);

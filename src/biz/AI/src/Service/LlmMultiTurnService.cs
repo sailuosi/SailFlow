@@ -41,13 +41,13 @@ namespace saiflow.AI.Service
                 throw new ArgumentNullException(nameof(axConfig));
             if (string.IsNullOrWhiteSpace(axConfig.ProcessId) || string.IsNullOrWhiteSpace(axConfig.Version) || string.IsNullOrWhiteSpace(axConfig.ActivityId))
                 throw new InvalidOperationException("ProcessId, Version, and ActivityId are required in AxConfig");
-            if (!axConfig.ModelProviderId.HasValue)
+            if (!!string.IsNullOrWhiteSpace(axConfig.ModelProviderId))
                 throw new InvalidOperationException("ModelProviderId is not set in AxConfig");
 
             var modelProviderManager = new AiModelProviderManager(Sail);
-            var modelProvider = modelProviderManager.GetById(axConfig.ModelProviderId.Value);
+            var modelProvider = modelProviderManager.GetById(axConfig.ModelProviderId);
             if (modelProvider == null)
-                throw new InvalidOperationException($"AIModelProvider not found for ModelProviderId: {axConfig.ModelProviderId.Value}");
+                throw new InvalidOperationException($"AIModelProvider not found for ModelProviderId: {axConfig.ModelProviderId}");
             if (!modelProvider.IsActive)
                 throw new InvalidOperationException("AIModelProvider is not active");
             if (string.IsNullOrWhiteSpace(modelProvider.BaseUrl) || string.IsNullOrWhiteSpace(modelProvider.ApiKey))

@@ -136,14 +136,14 @@ namespace saiflow.engine.Pattern
                             var sourceInst = ResolveSourceActivityInstance(activityInstance, def.SourceRef.Trim(), kit, aim);
                             if (sourceInst != null)
                             {
-                                var srcEntity = pvm.GetVariableByActivity(kit, processInstanceId, sourceInst.Id.Value,
+                                var srcEntity = pvm.GetVariableByActivity(kit, processInstanceId, sourceInst.Id,
                                     def.SourceVariableName.Trim());
                                 raw = srcEntity?.Value;
                             }
                         }
                         else
                         {
-                            var local = pvm.GetVariableByActivity(kit, processInstanceId, activityInstanceId.Value, key);
+                            var local = pvm.GetVariableByActivity(kit, processInstanceId, activityInstanceId, key);
                             raw = local?.Value;
                             if (raw == null && !string.IsNullOrEmpty(def.DefaultValue))
                                 raw = def.DefaultValue;
@@ -158,7 +158,7 @@ namespace saiflow.engine.Pattern
                 }
             }
 
-            var activityRows = pvm.GetVariableList(kit, processInstanceId, activityInstanceId.Value);
+            var activityRows = pvm.GetVariableList(kit, processInstanceId, activityInstanceId);
             if (activityRows != null)
             {
                 foreach (var v in activityRows)
@@ -192,7 +192,7 @@ namespace saiflow.engine.Pattern
             var prev = aim.GetPreviousActivityInstanceSimple(kit.useSQL(), currentInstance, sourceActivityId);
             if (prev != null) return prev;
 
-            var completed = aim.GetActivityInstanceListCompletedSimple(kit.useSQL(), currentInstance.ProcessInstanceId.Value, sourceActivityId);
+            var completed = aim.GetActivityInstanceListCompletedSimple(kit.useSQL(), currentInstance.ProcessInstanceId, sourceActivityId);
             return completed != null && completed.Count > 0 ? completed[0] : null;
         }
 

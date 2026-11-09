@@ -43,8 +43,8 @@ namespace saiflow.engine.Manager
             var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
             var loaded = pvm.GetVariableListByActivity(
                 kit,
-                taskView.ProcessInstanceId.Value,
-                taskView.ActivityInstanceId.Value,
+                taskView.ProcessInstanceId,
+                taskView.ActivityInstanceId,
                 requiredNames) ?? new List<ProcessVariableEntity>();
             var byName = loaded
                 .Where(e => e != null && !string.IsNullOrEmpty(e.Name))

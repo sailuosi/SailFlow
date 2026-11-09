@@ -266,7 +266,7 @@ namespace saiflow.engine.Pattern
                     if (forwardContext.CurrentActivity.MultiSignDetail.ComplexType == ComplexTypeEnum.SignForward)
                     {
                         var aim = _sail.ManagerFactory.Activities;
-                        var miChildList = aim.GetActivityMulitipleInstanceWithState(forwardContext.FromActivityInstance.Id.Value, forwardContext.FromActivityInstance.ProcessInstanceId.Value);
+                        var miChildList = aim.GetActivityMulitipleInstanceWithState(forwardContext.FromActivityInstance.Id, forwardContext.FromActivityInstance.ProcessInstanceId);
 
                         //传入加签动态变量
                         var controlParamSheet = forwardContext.ActivityResource.AppRunner.ControlParameterSheet;

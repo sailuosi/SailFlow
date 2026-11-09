@@ -56,16 +56,16 @@ namespace saiflow.AI.Service
             }
 
             // Resolve model provider
-            if (!axConfig.ModelProviderId.HasValue)
+            if (!!string.IsNullOrWhiteSpace(axConfig.ModelProviderId))
                 throw new InvalidOperationException($"ModelProviderId is not set for ActivityId={axConfig.ActivityId}");
 
             var modelProviderManager = new AiModelProviderManager(Sail);
-            var modelProvider        = modelProviderManager.GetById(axConfig.ModelProviderId.Value);
+            var modelProvider        = modelProviderManager.GetById(axConfig.ModelProviderId);
 
             if (modelProvider == null)
-                throw new InvalidOperationException($"AIModelProvider not found for id={axConfig.ModelProviderId.Value}");
+                throw new InvalidOperationException($"AIModelProvider not found for id={axConfig.ModelProviderId}");
             if (!modelProvider.IsActive)
-                throw new InvalidOperationException($"AIModelProvider id={axConfig.ModelProviderId.Value} is not active");
+                throw new InvalidOperationException($"AIModelProvider id={axConfig.ModelProviderId} is not active");
             if (string.IsNullOrWhiteSpace(modelProvider.BaseUrl) || string.IsNullOrWhiteSpace(modelProvider.ApiKey))
                 throw new InvalidOperationException("BaseUrl and ApiKey are required in AIModelProvider");
 

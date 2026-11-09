@@ -6,8 +6,8 @@ namespace saiflow.AI.Entity
     [SooTable(Name = "ai_activity_config", Caption = "AI 活动配置", Type = DBTableType.Table)]
     public class AiActivityConfigEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
         [SooColumn(Name = "process_id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "version")]
@@ -16,8 +16,8 @@ namespace saiflow.AI.Entity
         public string ActivityId { get; set; }
         [SooColumn(Name = "service_type")]
         public string ServiceType { get; set; }
-        [SooColumn(Name = "model_provider_id")]
-        public int? ModelProviderId { get; set; }
+        [SooColumn(Name = "model_provider_id", Length = 64)]
+        public string ModelProviderId { get; set; }
         [SooColumn(Name = "model_name")]
         public string ModelName { get; set; }
         [SooColumn(Name = "description")]
@@ -54,8 +54,8 @@ namespace saiflow.AI.Entity
         public string RagSearchMode { get; set; }
         [SooColumn(Name = "rag_function")]
         public string RagFunction { get; set; }
-        [SooColumn(Name = "rag_embedding_model_id")]
-        public int? RagEmbeddingModelId { get; set; }
+        [SooColumn(Name = "rag_embedding_model_id", Length = 64)]
+        public string RagEmbeddingModelId { get; set; }
         [SooColumn(Name = "rag_embedding_model")]
         public string RagEmbeddingModel { get; set; }
         [SooColumn(Name = "rag_embedding_dimensions")]

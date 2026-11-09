@@ -32,7 +32,7 @@ namespace saiflow.engine.Event
         /// <typeparam name="T"></typeparam>
         /// <param name="id"></param>
         /// <returns></returns>
-        public override T GetInstance<T>(int id)
+        public override T GetInstance<T>(string id)
         {
             var pim = Sail.ProcessInstances;
             var kit = Kit.useSQL();

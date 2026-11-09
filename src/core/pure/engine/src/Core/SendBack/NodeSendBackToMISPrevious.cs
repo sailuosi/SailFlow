@@ -49,7 +49,7 @@ namespace saiflow.engine.Runtime
 
             //更新主节点状态从完成状态->挂起状态
             //Update the status of the master node from completed state to suspended state
-            base.ActivityInstanceManager.Resuspend(Kit.useSQL(), previousActivityInstance.MainActivityInstanceId.Value, base.SendBackOperation.ActivityResource.AppRunner);
+            base.ActivityInstanceManager.Resuspend(Kit.useSQL(), previousActivityInstance.MainActivityInstanceId, base.SendBackOperation.ActivityResource.AppRunner);
         }
 
         /// <summary>
@@ -70,12 +70,12 @@ namespace saiflow.engine.Runtime
             var rollbackPreviousActivityInstance = base.ActivityInstanceManager.CreateBackwardActivityInstanceObject(processInstance.AppName,
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,
-                processInstance.Id.Value,
+                processInstance.Id,
                 processInstance.ProcessId,
                 this.SendBackOperation.BackwardToTaskActivity,
                 backwardType,
-                fromActivityInstance.Id.Value,
-                originalBackwardToActivityInstance.Id.Value,
+                fromActivityInstance.Id,
+                originalBackwardToActivityInstance.Id,
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;

@@ -31,18 +31,18 @@ namespace saiflow.engine.Manager
         /// Obtain process entity based on Id
         /// 根据ID获取流程实体
         /// </summary>
-        public ProcessEntity GetById(int id)
+        public ProcessEntity GetById(string id)
         {
-            return Sail.UseRunSQL().useRepo<ProcessEntity, int>().GetById(id);
+            return Sail.UseRunSQL().useRepo<ProcessEntity, string>().GetById(id);
         }
 
         /// <summary>
         /// Obtain process entity based on Id
         /// 根据ID获取流程实体
         /// </summary>
-        public ProcessEntity GetById(SQLBuilder kit, int id)
+        public ProcessEntity GetById(SQLBuilder kit, string id)
         {
-            return kit.useSQL().useRepo<ProcessEntity, int>().GetById(id);
+            return kit.useSQL().useRepo<ProcessEntity, string>().GetById(id);
         }
 
         /// <summary>
@@ -295,14 +295,14 @@ namespace saiflow.engine.Manager
         /// Insert process
         /// 新增流程记录
         /// </summary>
-        public int Insert(ProcessEntity entity)
+        public string Insert(ProcessEntity entity)
         {
             using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
                 {
-                    int processId = Insert(kit, entity);
+                    var processId = Insert(kit, entity);
                     kit.commit();
                     return processId;
                 }
@@ -317,7 +317,7 @@ namespace saiflow.engine.Manager
         /// Insert process
         /// 新增流程记录
         /// </summary>
-        public int Insert(SQLBuilder kit, ProcessEntity entity)
+        public string Insert(SQLBuilder kit, ProcessEntity entity)
         {
             var entityExisted = GetByVersionInternal(kit, entity.ProcessId, entity.Version);
             if (entityExisted != null)
@@ -326,7 +326,7 @@ namespace saiflow.engine.Manager
             }
 
             entity.Id = null;
-            return kit.useSQL().useRepo<ProcessEntity, int>().InsertReturnId(entity);
+            return kit.useSQL().useRepo<ProcessEntity, string>().InsertReturnId(entity);
         }
 
         /// <summary>
@@ -352,7 +352,7 @@ namespace saiflow.engine.Manager
                         clip.where(() => p.PackageId, entity.Id);
                         clip.doUpdate();
                     }
-                    kit.useSQL().useRepo<ProcessEntity, int>().Update(entity);
+                    kit.useSQL().useRepo<ProcessEntity, string>().Update(entity);
                     kit.commit();
                     Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);
                 }
@@ -369,7 +369,7 @@ namespace saiflow.engine.Manager
         /// </summary>
         public void Update(SQLBuilder kit, ProcessEntity entity)
         {
-            kit.useSQL().useRepo<ProcessEntity, int>().Update(entity);
+            kit.useSQL().useRepo<ProcessEntity, string>().Update(entity);
             Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);
         }
 
@@ -388,7 +388,7 @@ namespace saiflow.engine.Manager
                 {
                     var entity = GetByVersion(kit, processId, version, true);
                     entity.Status = usingState;
-                    kit.useSQL().useRepo<ProcessEntity, int>().Update(entity);
+                    kit.useSQL().useRepo<ProcessEntity, string>().Update(entity);
                     kit.commit();
                 }
                 catch
@@ -402,9 +402,9 @@ namespace saiflow.engine.Manager
         /// Upgrade process version
         /// 升级流程记录
         /// </summary>
-        public int Upgrade(string processId, string version, string newVersion)
+        public string Upgrade(string processId, string version, string newVersion)
         {
-            int newProcessId = 0;
+            string newProcessId = null;
             if (string.IsNullOrEmpty(newVersion))
             {
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("processmanager.upgrade.error"));
@@ -420,17 +420,17 @@ namespace saiflow.engine.Manager
 
                     entity.Version = newVersion;
                     entity.CreatedDateTime = System.DateTime.UtcNow;
-                    // 自增主键新建须 null，勿沿用旧版 Id（会进 INSERT 撞 UNIQUE）
+                    // 新建版本：清空 Id，由 AutoKey=Guid 重新发号（勿沿用旧版 Id）
                     entity.Id = null;
                     //升级主流程版本
                     //Upgrade package process version
-                    newProcessId = kit.useSQL().useRepo<ProcessEntity, int>().InsertReturnId(entity);
+                    newProcessId = kit.useSQL().useRepo<ProcessEntity, string>().InsertReturnId(entity);
 
                     if (entity.PackageType == (short)PackageTypeEnum.Package)
                     {
                         //升级泳道流程版本
                         //Upgrade pool process version
-                        UpgradePoolProcess(kit, originProcessId.Value, newProcessId, newVersion);
+                        UpgradePoolProcess(kit, originProcessId, newProcessId, newVersion);
                     }
                     kit.commit();
                 }
@@ -447,8 +447,8 @@ namespace saiflow.engine.Manager
         /// 升级泳道流程记录
         /// </summary>
         public void UpgradePoolProcess(SQLBuilder kit,
-            int originProcessId,
-            int newProcessId,
+            string originProcessId,
+            string newProcessId,
             string newVersion)
         {
             //升级泳道流程的使用状态信息
@@ -464,10 +464,10 @@ namespace saiflow.engine.Manager
         /// Delete process
         /// 删除流程记录
         /// </summary>
-        public void Delete(int id)
+        public void Delete(string id)
         {
-            var entity = Sail.UseRunSQL().useRepo<ProcessEntity, int>().GetById(id);
-            Sail.UseRunSQL().useRepo<ProcessEntity, int>().DeleteById(id);
+            var entity = Sail.UseRunSQL().useRepo<ProcessEntity, string>().GetById(id);
+            Sail.UseRunSQL().useRepo<ProcessEntity, string>().DeleteById(id);
             if (entity != null)
                 Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);
         }
@@ -485,7 +485,7 @@ namespace saiflow.engine.Manager
                 kit.beginTransaction();
                 try
                 {
-                    kit.useSQL().useRepo<ProcessEntity, int>().Delete(entity);
+                    kit.useSQL().useRepo<ProcessEntity, string>().Delete(entity);
                     kit.commit();
                     Sail.ProcessModelFactory.Invalidate( processId, version);
                 }
@@ -556,9 +556,9 @@ namespace saiflow.engine.Manager
         /// Process XML file operation
         /// 流程定义的创建方法
         /// </summary>
-        internal int CreateProcess(ProcessEntity entity)
+        internal string CreateProcess(ProcessEntity entity)
         {
-            int processId = 0;
+            string processId = null;
 
             using (var kit = Sail.UseRunSQL())
             {
@@ -697,7 +697,7 @@ namespace saiflow.engine.Manager
                     {
                         //删除泳道流程
                         //Delete pool process
-                        DeletePoolProcess(kit, processEntity.Id.Value);
+                        DeletePoolProcess(kit, processEntity.Id);
 
                         //更新主流程信息
                         //Update process info
@@ -709,7 +709,7 @@ namespace saiflow.engine.Manager
                         //数据库存储
                         //Update to database
                         processEntity.UpdatedDateTime = DateTime.UtcNow;
-                        kit.useSQL().useRepo<ProcessEntity, int>().Update(processEntity);
+                        kit.useSQL().useRepo<ProcessEntity, string>().Update(processEntity);
                     }
                     else
                     {
@@ -725,7 +725,7 @@ namespace saiflow.engine.Manager
 
                         //数据库存储
                         //Insert into database
-                        kit.useSQL().useRepo<ProcessEntity, int>().Insert(processEntity);
+                        kit.useSQL().useRepo<ProcessEntity, string>().Insert(processEntity);
                     }
                     kit.commit();
                     Sail.ProcessModelFactory.Invalidate( processEntity.ProcessId, processEntity.Version);
@@ -818,20 +818,20 @@ namespace saiflow.engine.Manager
                     }
                     else
                     {
-                        var poolProcessListDatabase = GetPoolProcessList(kit, packageDB.Id.Value);
-                        List<int> poolProcessIDs = new List<int>();
+                        var poolProcessListDatabase = GetPoolProcessList(kit, packageDB.Id);
+                        List<string> poolProcessIDs = new List<string>();
                         foreach (var pool in poolProcessListDatabase)
                         {
                             if (poolProcessListClient.Count() == 0)
                             {
-                                poolProcessIDs.Add(pool.Id.Value);
+                                poolProcessIDs.Add(pool.Id);
                             }
                             else
                             {
                                 var item = poolProcessListClient.Find(a=>a.ParticipantId == pool.ParticipantGUID);
                                 if (item == null)
                                 {
-                                    poolProcessIDs.Add(pool.Id.Value);
+                                    poolProcessIDs.Add(pool.Id);
                                 }
                             }
                         }
@@ -840,7 +840,7 @@ namespace saiflow.engine.Manager
                         //Delete lane processes that are not included in the flowchart
                         if (poolProcessIDs.Count() > 0)
                         {
-                            DeletePoolProcess(kit, packageDB.Id.Value, poolProcessIDs);
+                            DeletePoolProcess(kit, packageDB.Id, poolProcessIDs);
                         }
 
                         //如果是泳道流程变为单一流程，更新PackageType和PackageId
@@ -968,7 +968,7 @@ namespace saiflow.engine.Manager
         /// Obtain the list of lane processes under the main flow
         /// 获取主流程下的泳道流程列表
         /// </summary>
-        private List<ProcessEntity> GetPoolProcessList(SQLBuilder kit, int packageId)
+        private List<ProcessEntity> GetPoolProcessList(SQLBuilder kit, string packageId)
         {
             var clip = kit.useSQL().useClip();
             clip.from<ProcessEntity>(out var p);
@@ -1039,13 +1039,13 @@ namespace saiflow.engine.Manager
         /// 删除泳道流程记录
         /// </summary>
         private void DeletePoolProcess(SQLBuilder kit,
-            int packageId,
-            List<int> poolProcessIds)
+            string packageId,
+            List<string> poolProcessIds)
         {
             var clip = kit.useSQL().useClip();
             clip.setTable<ProcessEntity>(out var p);
             clip.where(() => p.PackageId, packageId);
-            clip.whereIn(() => p.Id, poolProcessIds.Cast<int?>().ToList());
+            clip.whereIn(() => p.Id, poolProcessIds);
             clip.doDelete();
         }
 
@@ -1053,7 +1053,7 @@ namespace saiflow.engine.Manager
         /// Delete pool process by package id
         /// 删除泳道流程记录
         /// </summary>
-        private void DeletePoolProcess(SQLBuilder kit, int packageId)
+        private void DeletePoolProcess(SQLBuilder kit, string packageId)
         {
             var clip = kit.useSQL().useClip();
             clip.setTable<ProcessEntity>(out var p);
@@ -1077,7 +1077,7 @@ namespace saiflow.engine.Manager
         /// Obtain process file entity based on Id
         /// 根据ID获取流程文件实体
         /// </summary>
-        internal ProcessFileEntity GetProcessFileById(int id, IXPDLStorage extStorage = null)
+        internal ProcessFileEntity GetProcessFileById(string id, IXPDLStorage extStorage = null)
         {
             var processEntity = GetById(id);
             var processFileEntity = FillProcessFileEntity(processEntity, extStorage);

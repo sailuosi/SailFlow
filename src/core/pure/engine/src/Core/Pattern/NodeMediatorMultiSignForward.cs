@@ -57,7 +57,7 @@ namespace saiflow.engine.Pattern
         /// <summary>
         /// 完成工作项
         /// </summary>     
-        internal bool CompleteWorkItem(int? taskId,
+        internal bool CompleteWorkItem(string taskId,
             ActivityResource activityResource,
             SQLBuilder kit)
         {
@@ -73,12 +73,12 @@ namespace saiflow.engine.Pattern
             {
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
-                base.TaskManager.Complete(kit.useSQL(), taskId.Value, activityResource.AppRunner);
+                base.TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
             }
 
             //设置活动节点的状态为完成状态
             //将活动节点状态设为完成
-            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.Id.Value, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
 
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 
@@ -102,7 +102,7 @@ namespace saiflow.engine.Pattern
                 && signforwardType != SignForwardTypeEnum.None)
             {
                 //获取主节点信息
-                var mainNodeIndex = base.LinkContext.FromActivityInstance.MainActivityInstanceId.Value;
+                var mainNodeIndex = base.LinkContext.FromActivityInstance.MainActivityInstanceId;
                 var mainActivityInstance = base.ActivityInstanceManager.GetById(mainNodeIndex);
 
                 //检查加签是否全部完成；完成则进入下一步，否则等待
@@ -112,7 +112,7 @@ namespace saiflow.engine.Pattern
                     //取出处于挂起状态的多实例节点列表
                     //获取挂起状态的多实例节点列表
                     var sqList = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithState(
-                        kit.useSQL(),mainNodeIndex,base.LinkContext.FromActivityInstance.ProcessInstanceId.Value,(short)ActivityStateEnum.Suspended).ToList<ActivityInstanceEntity>();
+                        kit.useSQL(),mainNodeIndex,base.LinkContext.FromActivityInstance.ProcessInstanceId,(short)ActivityStateEnum.Suspended).ToList<ActivityInstanceEntity>();
 
                     short maxOrder = 0;
                     if (sqList != null && sqList.Count > 0)
@@ -164,7 +164,7 @@ namespace saiflow.engine.Pattern
                                 base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                 //将未完成节点状态更新为取消
-                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id.Value, runner);
+                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id, runner);
                             }
                             else
                             {
@@ -190,7 +190,7 @@ namespace saiflow.engine.Pattern
                                 base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                 //将未完成节点状态更新为取消
-                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id.Value, runner);
+                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id, runner);
                             }
                             else
                             {
@@ -222,7 +222,7 @@ namespace saiflow.engine.Pattern
                     //取出多实例节点列表
                     //获取多实例节点列表
                     var sqList = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithState(
-                        kit.useSQL(),mainNodeIndex,base.LinkContext.FromActivityInstance.ProcessInstanceId.Value,null).ToList<ActivityInstanceEntity>();
+                        kit.useSQL(),mainNodeIndex,base.LinkContext.FromActivityInstance.ProcessInstanceId,null).ToList<ActivityInstanceEntity>();
 
                     //并行会签：按通过率判定当前节点是否完成
                     var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed).ToList().Count();
@@ -245,7 +245,7 @@ namespace saiflow.engine.Pattern
                                 mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
                                 base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
                                 //将未完成节点状态更新为取消
-                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id.Value, runner);
+                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id, runner);
                             }
                             else
                             {
@@ -292,7 +292,7 @@ namespace saiflow.engine.Pattern
                                 mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
                                 base.ActivityInstanceManager.Update(Kit.useSQL(), mainActivityInstance);
                                 //将未完成节点状态更新为取消
-                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id.Value, runner);
+                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id, runner);
                             }
                             else
                             {

@@ -37,14 +37,14 @@ namespace saiflow.engine.Runtime
             //Create a node record to undo to the previous step
             var psc = SailFactoryAccess.Managers(Sail).PreviousSteps;
             var previousAdjacentBrotherNode = psc.GetPreviousOfMultipleInstanceNode(
-                runningNode.MainActivityInstanceId.Value,
-                runningNode.Id.Value,
+                runningNode.MainActivityInstanceId,
+                runningNode.Id,
                 runningNode.CompleteOrder.Value);
 
             CreateBackwardActivityTaskOfInnerMultipleInstance(this.SendBackOperation.ProcessInstance,
                 previousAdjacentBrotherNode,
                 base.SendBackOperation.BackwardType,
-                base.SendBackOperation.BackwardFromActivityInstance.Id.Value,
+                base.SendBackOperation.BackwardFromActivityInstance.Id,
                 base.SendBackOperation.ActivityResource,
                 base.Kit);
 
@@ -73,14 +73,14 @@ namespace saiflow.engine.Runtime
         internal void CreateBackwardActivityTaskOfInnerMultipleInstance(ProcessInstanceEntity processInstance,
             ActivityInstanceEntity originalBackwardToActivityInstance,
             BackwardTypeEnum backwardType,
-            int backSrcActivityInstanceId,
+            string backSrcActivityInstanceId,
             ActivityResource activityResource,
             SQLBuilder kit)
         {
             var rollbackPreviousActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
                 backSrcActivityInstanceId,
-                originalBackwardToActivityInstance.Id.Value,
+                originalBackwardToActivityInstance.Id,
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;

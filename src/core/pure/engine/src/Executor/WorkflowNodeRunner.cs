@@ -123,7 +123,7 @@ namespace saiflow.engine.Executor
             var activityResource = new ActivityResource(context.Runner, null);
             return _processModel.GetNextActivityTreeListRuntime(
                 currentActivity.ActivityId,
-                0,
+                null,
                 context.Variables,
                 activityResource,
                 (a, b) => true,

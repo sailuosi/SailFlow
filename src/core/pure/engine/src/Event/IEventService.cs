@@ -17,13 +17,13 @@ namespace saiflow.engine.Event
     public interface IEventService
     {
         SailClient Sail { get; }
-        int GetProcessInstanceId();
+        string GetProcessInstanceId();
         SQLBuilder GetKit();
         string GetVariable(ProcessVariableScopeEnum variableType, string name);
         string GetVariableByScopePriority(string name);
         void SaveVariable(ProcessVariableScopeEnum variableType, string name, string value);
         string GetCondition(string name);
         void SetCondition(string name, string value);
-        T GetInstance<T>(int id) where T : class;
+        T GetInstance<T>(string id) where T : class;
     }
 }

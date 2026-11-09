@@ -21,7 +21,7 @@ namespace saiflow.engine.Event
         public SQLBuilder Kit { get; set; }
         public SailClient Sail { get; }
 
-        public abstract T GetInstance<T>(int id) where T : class;
+        public abstract T GetInstance<T>(string id) where T : class;
 
         public EventServiceBase(SQLBuilder kit,
             EventContext context,
@@ -38,7 +38,7 @@ namespace saiflow.engine.Event
         /// 读取实例主键Id
         /// </summary>
         /// <returns></returns>
-        public int GetProcessInstanceId()
+        public string GetProcessInstanceId()
         {
             return this.EventContext.ProcessInstanceId;
         }

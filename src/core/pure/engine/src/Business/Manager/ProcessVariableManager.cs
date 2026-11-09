@@ -32,10 +32,10 @@ namespace saiflow.engine.Manager
         ISailHotShardRouter Router => Sail.HotShard;
 
         /// <summary>同库同事务的新 kit，避免链式 select 状态互相污染。</summary>
-        internal ProcessVariableEntity GetVariableById(int variableId)
+        internal ProcessVariableEntity GetVariableById(string variableId)
             => GetVariableById(Sail.UseRunSQL(), variableId);
 
-        internal ProcessVariableEntity GetVariableById(SQLBuilder kit, int variableId)
+        internal ProcessVariableEntity GetVariableById(SQLBuilder kit, string variableId)
             => HotShardEntityAccess.GetByIdProbing<ProcessVariableEntity>(
                 kit.useSQL(), Router.VariableLookupTables, variableId);
 
@@ -95,7 +95,7 @@ namespace saiflow.engine.Manager
             TaskViewEntity taskView,
             IDictionary<string, string> condition)
         {
-            var variableList = GetVariableList(kit, taskView.ProcessInstanceId.Value, taskView.ActivityInstanceId.Value);
+            var variableList = GetVariableList(kit, taskView.ProcessInstanceId, taskView.ActivityInstanceId);
             if (variableList == null || variableList.Count == 0)
                 return condition;
 
@@ -107,13 +107,13 @@ namespace saiflow.engine.Manager
             return condition;
         }
 
-        internal IList<ProcessVariableEntity> GetVariableList(int processInstanceId)
+        internal IList<ProcessVariableEntity> GetVariableList(string processInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetVariableList(kit, processInstanceId);
         }
 
-        internal IList<ProcessVariableEntity> GetVariableList(SQLBuilder kit, int processInstanceId)
+        internal IList<ProcessVariableEntity> GetVariableList(SQLBuilder kit, string processInstanceId)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
@@ -127,7 +127,7 @@ namespace saiflow.engine.Manager
         }
 
         internal IList<ProcessVariableEntity> GetVariableList(
-            SQLBuilder kit, int processInstanceId, int activityInstanceId)
+            SQLBuilder kit, string processInstanceId, string activityInstanceId)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
@@ -168,13 +168,13 @@ namespace saiflow.engine.Manager
             return null;
         }
 
-        internal ProcessVariableEntity GetVariableByProcess(int processInstanceId, string name)
+        internal ProcessVariableEntity GetVariableByProcess(string processInstanceId, string name)
         {
             var kit = Sail.UseRunSQL();
             return GetVariableByProcess(kit, processInstanceId, name);
         }
 
-        internal ProcessVariableEntity GetVariableByProcess(SQLBuilder kit, int processInstanceId, string name)
+        internal ProcessVariableEntity GetVariableByProcess(SQLBuilder kit, string processInstanceId, string name)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
@@ -190,14 +190,14 @@ namespace saiflow.engine.Manager
         }
 
         internal ProcessVariableEntity GetVariableByActivity(
-            int processInstanceId, int activityInstanceId, string name)
+            string processInstanceId, string activityInstanceId, string name)
         {
             var kit = Sail.UseRunSQL();
             return GetVariableByActivity(kit, processInstanceId, activityInstanceId, name);
         }
 
         internal ProcessVariableEntity GetVariableByActivity(
-            SQLBuilder kit, int processInstanceId, int activityInstanceId, string name)
+            SQLBuilder kit, string processInstanceId, string activityInstanceId, string name)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
@@ -214,8 +214,8 @@ namespace saiflow.engine.Manager
         }
 
         internal IList<ProcessVariableEntity> GetVariableListByActivity(
-            int processInstanceId,
-            int activityInstanceId,
+            string processInstanceId,
+            string activityInstanceId,
             IList<string> variableNameList)
         {
             var kit = Sail.UseRunSQL();
@@ -224,8 +224,8 @@ namespace saiflow.engine.Manager
 
         internal IList<ProcessVariableEntity> GetVariableListByActivity(
             SQLBuilder kit,
-            int processInstanceId,
-            int activityInstanceId,
+            string processInstanceId,
+            string activityInstanceId,
             IList<string> variableNameList)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
@@ -252,8 +252,8 @@ namespace saiflow.engine.Manager
         /// </summary>
         internal async Task<IList<ProcessVariableEntity>> GetVariableListByActivityAsync(
             SQLBuilder kit,
-            int processInstanceId,
-            int activityInstanceId,
+            string processInstanceId,
+            string activityInstanceId,
             IList<string> variableNameList,
             CancellationToken cancellationToken = default)
         {
@@ -278,27 +278,27 @@ namespace saiflow.engine.Manager
             }, cancellationToken).ConfigureAwait(false);
         }
 
-        internal int SaveVariable(ProcessVariableEntity entity)
+        internal string SaveVariable(ProcessVariableEntity entity)
         {
             var kit = Sail.UseRunSQL();
             return SaveVariable(kit, entity);
         }
 
-        internal int SaveVariable(SQLBuilder kit, ProcessVariableEntity entity)
+        internal string SaveVariable(SQLBuilder kit, ProcessVariableEntity entity)
         {
             if (string.IsNullOrEmpty(entity.Name) || string.IsNullOrEmpty(entity.Value))
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("processvariablemanager.savevariable.error"));
 
-            if (string.IsNullOrWhiteSpace(entity.ProcessId) && entity.ProcessInstanceId.HasValue)
-                entity.ProcessId = ResolveProcessId(kit, entity.ProcessInstanceId.Value);
+            if (string.IsNullOrWhiteSpace(entity.ProcessId) && !string.IsNullOrWhiteSpace(entity.ProcessInstanceId))
+                entity.ProcessId = ResolveProcessId(kit, entity.ProcessInstanceId);
 
             ProcessVariableEntity existProcessVariable = null;
-            // Id 未赋值（null/0）视为新建；勿用 !=0（null!=0 为 true，会误走 GetById）
-            if (entity.Id is > 0)
+            // Id 未赋值（null/空）视为新建
+            if (!string.IsNullOrWhiteSpace(entity.Id))
             {
-                existProcessVariable = GetVariableById(kit, entity.Id.Value);
+                existProcessVariable = GetVariableById(kit, entity.Id);
             }
-            else if (entity.ProcessInstanceId is > 0)
+            else if (!string.IsNullOrWhiteSpace(entity.ProcessInstanceId))
             {
                 var isProcessScope = string.Equals(
                     entity.VariableScope,
@@ -306,12 +306,12 @@ namespace saiflow.engine.Manager
                     StringComparison.OrdinalIgnoreCase);
                 if (isProcessScope)
                 {
-                    existProcessVariable = GetVariableByProcess(kit, entity.ProcessInstanceId.Value, entity.Name);
+                    existProcessVariable = GetVariableByProcess(kit, entity.ProcessInstanceId, entity.Name);
                 }
-                else if (entity.ActivityInstanceId is > 0)
+                else if (!string.IsNullOrWhiteSpace(entity.ActivityInstanceId))
                 {
                     existProcessVariable = GetVariableByActivity(
-                        kit, entity.ProcessInstanceId.Value, entity.ActivityInstanceId.Value, entity.Name);
+                        kit, entity.ProcessInstanceId, entity.ActivityInstanceId, entity.Name);
                 }
             }
 
@@ -322,22 +322,22 @@ namespace saiflow.engine.Manager
                 if (string.IsNullOrWhiteSpace(existProcessVariable.ProcessId))
                     existProcessVariable.ProcessId = entity.ProcessId;
                 Update(kit, existProcessVariable);
-                return existProcessVariable.Id.Value;
+                return existProcessVariable.Id;
             }
 
-            // 新建：清空 Id，避免 INSERT 带 id=0 撞 UNIQUE
+            // 新建：清空 Id，由 AutoKey=Guid 发号
             entity.Id = null;
             entity.UpdatedDateTime = DateTime.UtcNow;
             return Insert(kit, entity);
         }
 
-        internal bool ValidateProcessVariable(int processInstanceId, string expression)
+        internal bool ValidateProcessVariable(string processInstanceId, string expression)
         {
             var kit = Sail.UseRunSQL();
             return ValidateProcessVariable(kit, processInstanceId, expression);
         }
 
-        internal bool ValidateProcessVariable(SQLBuilder kit, int processInstanceId, string expression)
+        internal bool ValidateProcessVariable(SQLBuilder kit, string processInstanceId, string expression)
         {
             var parsed = false;
             var keyValuePair = new Dictionary<string, string>();
@@ -358,7 +358,7 @@ namespace saiflow.engine.Manager
             return parsed;
         }
 
-        private int Insert(SQLBuilder kit, ProcessVariableEntity entity)
+        private string Insert(SQLBuilder kit, ProcessVariableEntity entity)
         {
             var table = Router.ResolveVariableTable(entity?.ProcessId);
             var newId = HotShardEntityAccess.InsertReturnId(kit.useSQL(), table, entity);
@@ -382,14 +382,14 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal void DeleteVariable(int variableId)
+        internal void DeleteVariable(string variableId)
             => DeleteVariable(Sail.UseRunSQL(), variableId);
 
-        internal void DeleteVariable(SQLBuilder kit, int variableId)
+        internal void DeleteVariable(SQLBuilder kit, string variableId)
             => HotShardEntityAccess.DeleteByIdProbing<ProcessVariableEntity>(
                 kit.useSQL(), Router.VariableLookupTables, variableId);
 
-        private string ResolveProcessId(SQLBuilder kit, int processInstanceId)
+        private string ResolveProcessId(SQLBuilder kit, string processInstanceId)
             => HotShardEntityAccess.ResolveProcessId(kit, processInstanceId);
 
         private List<ProcessVariableEntity> QueryWithFallback(
@@ -428,10 +428,10 @@ namespace saiflow.engine.Manager
             if (legacy.Count == 0)
                 return rows;
 
-            var seen = new HashSet<int>(rows.Where(x => x.Id.HasValue).Select(x => x.Id.Value));
+            var seen = new HashSet<string>(rows.Where(x => !string.IsNullOrWhiteSpace(x.Id)).Select(x => x.Id));
             foreach (var row in legacy)
             {
-                if (row.Id.HasValue && seen.Contains(row.Id.Value))
+                if (!string.IsNullOrWhiteSpace(row.Id) && seen.Contains(row.Id))
                     continue;
                 rows.Add(row);
             }
@@ -476,10 +476,10 @@ namespace saiflow.engine.Manager
             if (legacy.Count == 0)
                 return rows;
 
-            var seen = new HashSet<int>(rows.Where(x => x.Id.HasValue).Select(x => x.Id.Value));
+            var seen = new HashSet<string>(rows.Where(x => !string.IsNullOrWhiteSpace(x.Id)).Select(x => x.Id));
             foreach (var row in legacy)
             {
-                if (row.Id.HasValue && seen.Contains(row.Id.Value))
+                if (!string.IsNullOrWhiteSpace(row.Id) && seen.Contains(row.Id))
                     continue;
                 rows.Add(row);
             }

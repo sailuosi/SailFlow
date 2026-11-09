@@ -351,6 +351,25 @@ public partial class SailClient
             _serviceMethods = new ServiceMethodRegistry();
 
         BuiltinActionMethods.RegisterAll(_actionMethods, _scriptMethods, _serviceMethods);
+        EnsureGuidStringAutoKey();
+    }
+
+    /// <summary>
+    /// 实体主键为 string + AutoKey=Guid：注册返回 string 的发号（覆盖内置 Guid 对象路径，避免 .NET Core 上 Guid→string 强制转换失败）。
+    /// </summary>
+    void EnsureGuidStringAutoKey()
+    {
+        try
+        {
+            var moo = GetDB()?.Client;
+            if (moo == null)
+                return;
+            moo.RegisterKeyGenerator("Guid", () => Guid.NewGuid().ToString());
+        }
+        catch
+        {
+            // 装配期 DB 尚未就绪时忽略；首次 Insert 前宿主可再挂载
+        }
     }
 
     private ISooCache CreateDefaultCache()

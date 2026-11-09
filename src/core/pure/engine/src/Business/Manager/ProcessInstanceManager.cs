@@ -38,18 +38,18 @@ namespace saiflow.engine.Manager
             SQLBuilder kit, string appInstanceId, string processId, string version)
             => GetProcessInstanceCurrent(kit, appInstanceId, processId, version);
 
-        internal ProcessInstanceEntity GetById(int processInstanceId)
-            => Sail.UseRunSQL().useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
+        internal ProcessInstanceEntity GetById(string processInstanceId)
+            => Sail.UseRunSQL().useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
 
-        internal ProcessInstanceEntity GetById(SQLBuilder kit, int processInstanceId)
-            => kit.useSQL().useRepo<ProcessInstanceEntity, int>().GetById(processInstanceId);
+        internal ProcessInstanceEntity GetById(SQLBuilder kit, string processInstanceId)
+            => kit.useSQL().useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
 
         /// <summary>
         /// 异步按 Id 取流程实例（Clip take(1)，可取消）。
         /// </summary>
         internal async Task<ProcessInstanceEntity> GetByIdAsync(
             SQLBuilder kit,
-            int processInstanceId,
+            string processInstanceId,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -70,28 +70,28 @@ namespace saiflow.engine.Manager
             return clip.select(pi).take(1).queryList()?.FirstOrDefault();
         }
 
-        internal ProcessInstanceEntity GetByActivity(int activityInstanceId)
+        internal ProcessInstanceEntity GetByActivity(string activityInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetByActivity(kit, activityInstanceId);
         }
 
-        internal ProcessInstanceEntity GetByActivity(SQLBuilder kit, int activityInstanceId)
+        internal ProcessInstanceEntity GetByActivity(SQLBuilder kit, string activityInstanceId)
         {
-            var activityInstance = kit.useSQL().useRepo<ActivityInstanceEntity, int>().GetById(activityInstanceId);
-            return kit.useSQL().useRepo<ProcessInstanceEntity, int>().GetById(activityInstance.ProcessInstanceId);
+            var activityInstance = kit.useSQL().useRepo<ActivityInstanceEntity, string>().GetById(activityInstanceId);
+            return kit.useSQL().useRepo<ProcessInstanceEntity, string>().GetById(activityInstance.ProcessInstanceId);
         }
 
         internal bool IsSubProcess(ProcessInstanceEntity entity)
-            => entity.InvokedActivityInstanceId > 0 && !string.IsNullOrEmpty(entity.InvokedActivityId);
+            => !string.IsNullOrWhiteSpace(entity.InvokedActivityInstanceId) && !string.IsNullOrEmpty(entity.InvokedActivityId);
 
-        internal User GetProcessInitiator(int processInstanceId)
+        internal User GetProcessInitiator(string processInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetProcessInitiator(kit, processInstanceId);
         }
 
-        internal User GetProcessInitiator(SQLBuilder kit, int processInstanceId)
+        internal User GetProcessInitiator(SQLBuilder kit, string processInstanceId)
         {
             var entity = GetById(kit, processInstanceId);
             return new User { UserId = entity.CreatedUserId, UserName = entity.CreatedUserName };
@@ -173,7 +173,7 @@ namespace saiflow.engine.Manager
             return EnumHelper.GetFirst<ProcessInstanceEntity>(list);
         }
 
-        internal bool CheckSubProcessInstanceCompleted(SQLBuilder kit, int activityInstanceId, string activityId)
+        internal bool CheckSubProcessInstanceCompleted(SQLBuilder kit, string activityInstanceId, string activityId)
         {
             var clip = kit.useSQL().useClip();
             clip.from<ProcessInstanceEntity>(out var pi);
@@ -188,15 +188,15 @@ namespace saiflow.engine.Manager
         #endregion
 
         #region Write
-        internal int Insert(ProcessInstanceEntity entity)
+        internal string Insert(ProcessInstanceEntity entity)
         {
             var kit = Sail.UseRunSQL();
             return Insert(kit, entity);
         }
 
-        internal int Insert(SQLBuilder kit, ProcessInstanceEntity entity)
+        internal string Insert(SQLBuilder kit, ProcessInstanceEntity entity)
         {
-            var newId = kit.useSQL().useRepo<ProcessInstanceEntity, int>().InsertReturnId(entity);
+            var newId = kit.useSQL().useRepo<ProcessInstanceEntity, string>().InsertReturnId(entity);
             entity.Id = newId;
             return newId;
         }
@@ -268,13 +268,13 @@ namespace saiflow.engine.Manager
         #endregion
 
         #region Business rules
-        internal ProcessInstanceEntity Complete(int processInstanceId, FlowCommandContext runner)
+        internal ProcessInstanceEntity Complete(string processInstanceId, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             return Complete(kit, processInstanceId, runner);
         }
 
-        internal ProcessInstanceEntity Complete(SQLBuilder kit, int processInstanceId, FlowCommandContext runner)
+        internal ProcessInstanceEntity Complete(SQLBuilder kit, string processInstanceId, FlowCommandContext runner)
         {
             var processInstance = GetById(kit, processInstanceId);
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), processInstance.ProcessState.ToString());
@@ -293,13 +293,13 @@ namespace saiflow.engine.Manager
             return processInstance;
         }
 
-        internal void Suspend(int processInstanceId, FlowCommandContext runner)
+        internal void Suspend(string processInstanceId, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             Suspend(kit, processInstanceId, runner);
         }
 
-        internal void Suspend(SQLBuilder kit, int processInstanceId, FlowCommandContext runner)
+        internal void Suspend(SQLBuilder kit, string processInstanceId, FlowCommandContext runner)
         {
             var bEntity = GetById(kit, processInstanceId);
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), bEntity.ProcessState.ToString());
@@ -317,13 +317,13 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal void Resume(int processInstanceId, FlowCommandContext runner)
+        internal void Resume(string processInstanceId, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             Resume(kit, processInstanceId, runner);
         }
 
-        internal void Resume(SQLBuilder kit, int processInstanceId, FlowCommandContext runner)
+        internal void Resume(SQLBuilder kit, string processInstanceId, FlowCommandContext runner)
         {
             var bEntity = GetById(kit, processInstanceId);
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), bEntity.ProcessState.ToString());
@@ -341,13 +341,13 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal void RecallSubProcess(int invokedActivityInstanceId, FlowCommandContext runner)
+        internal void RecallSubProcess(string invokedActivityInstanceId, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             RecallSubProcess(kit, invokedActivityInstanceId, runner);
         }
 
-        internal void RecallSubProcess(SQLBuilder kit, int invokedActivityInstanceId, FlowCommandContext runner)
+        internal void RecallSubProcess(SQLBuilder kit, string invokedActivityInstanceId, FlowCommandContext runner)
         {
             var clip = kit.useSQL().useClip();
             clip.from<ProcessInstanceEntity>(out var pi);
@@ -371,13 +371,13 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal void Reverse(int processInstanceId, FlowCommandContext currentUser)
+        internal void Reverse(string processInstanceId, FlowCommandContext currentUser)
         {
             var kit = Sail.UseRunSQL();
             Reverse(kit, processInstanceId, currentUser);
         }
 
-        internal void Reverse(SQLBuilder kit, int processInstanceId, FlowCommandContext currentUser)
+        internal void Reverse(SQLBuilder kit, string processInstanceId, FlowCommandContext currentUser)
         {
             var bEntity = GetById(kit, processInstanceId);
             if (bEntity.ProcessState == (short)ProcessStateEnum.Completed)
@@ -502,13 +502,13 @@ namespace saiflow.engine.Manager
             throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error"));
         }
 
-        internal bool SetOverdue(int processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
+        internal bool SetOverdue(string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             return SetOverdue(kit, processInstanceId, overdueDateTime, runner);
         }
 
-        internal bool SetOverdue(SQLBuilder kit, int processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
+        internal bool SetOverdue(SQLBuilder kit, string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
         {
             var entity = GetById(kit, processInstanceId);
             if (entity.ProcessState == (int)ProcessStateEnum.Running
@@ -525,7 +525,7 @@ namespace saiflow.engine.Manager
             throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.setoverdue.error"));
         }
 
-        internal bool Delete(int processInstanceId, bool isForced = false)
+        internal bool Delete(string processInstanceId, bool isForced = false)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -543,7 +543,7 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal bool Delete(SQLBuilder kit, int processInstanceId, bool isForced = false)
+        internal bool Delete(SQLBuilder kit, string processInstanceId, bool isForced = false)
         {
             var entity = GetById(kit, processInstanceId);
             if (entity.ProcessState == (int)ProcessStateEnum.Canceled || isForced)
@@ -566,13 +566,13 @@ namespace saiflow.engine.Manager
                 if (Sail.HotShard.IsSharded(entity.ProcessId))
                     DeleteByProcessInstance(kit, Sail.HotShard.DefaultVariableTable, processInstanceId);
 
-                kit.useSQL().useRepo<ProcessInstanceEntity, int>().DeleteById(processInstanceId);
+                kit.useSQL().useRepo<ProcessInstanceEntity, string>().DeleteById(processInstanceId);
                 return true;
             }
             throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.delete.error"));
         }
 
-        static void DeleteByProcessInstance(SQLBuilder kit, string physicalTable, int processInstanceId)
+        static void DeleteByProcessInstance(SQLBuilder kit, string physicalTable, string processInstanceId)
         {
             try
             {
@@ -596,7 +596,7 @@ namespace saiflow.engine.Manager
                     var entity = GetByVersion(kit, processId, version);
                     if (entity == null)
                         return false;
-                    var ok = Delete(kit, entity.Id.Value, true);
+                    var ok = Delete(kit, entity.Id, true);
                     kit.commit();
                     return ok;
                 }

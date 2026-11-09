@@ -33,13 +33,13 @@ namespace saiflow.AI.Implementation
         {
             if (sail == null)
                 throw new ArgumentNullException(nameof(sail));
-            if (axConfig?.RagEmbeddingModelId == null || !axConfig.RagEmbeddingModelId.HasValue)
+            if (string.IsNullOrWhiteSpace(axConfig?.RagEmbeddingModelId))
                 throw new InvalidOperationException("QWen3 RAG 需要在节点配置 ai_activity_config 中设置 RagEmbeddingModelId，指向 ai_model_provider 中的向量模型 (model_type=vector_model)。");
 
             var modelManager = new AiModelProviderManager(sail);
-            var provider = modelManager.GetById(axConfig.RagEmbeddingModelId.Value);
+            var provider = modelManager.GetById(axConfig.RagEmbeddingModelId);
             if (provider == null)
-                throw new InvalidOperationException($"ai_model_provider 中未找到 Id={axConfig.RagEmbeddingModelId.Value} 的向量模型配置。");
+                throw new InvalidOperationException($"ai_model_provider 中未找到 Id={axConfig.RagEmbeddingModelId} 的向量模型配置。");
             if (!provider.IsActive)
                 throw new InvalidOperationException($"ai_model_provider Id={provider.Id} 已被禁用，请在节点配置中启用。");
 

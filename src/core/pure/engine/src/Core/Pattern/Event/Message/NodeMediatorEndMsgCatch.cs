@@ -41,7 +41,7 @@ namespace saiflow.engine.Pattern
             //将流程实例设为完成
             var pim = Sail.ProcessInstances;
             var kit = Kit.useSQL();
-            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id.Value,
+            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id,
                 ActivityForwardContext.ActivityResource.AppRunner);
 
             //如果当前流程是子流程，则子流程完成，主流程流转到下一节点
@@ -63,7 +63,7 @@ namespace saiflow.engine.Pattern
             SQLBuilder kit)
         {
             //读取流程下一步人员列表
-            var runner = FillNextActivityPerformersByRoleList(processInstance.InvokedActivityInstanceId.Value,
+            var runner = FillNextActivityPerformersByRoleList(processInstance.InvokedActivityInstanceId,
                 processInstance.InvokedActivityId,
                 kit);
 
@@ -94,7 +94,7 @@ namespace saiflow.engine.Pattern
         /// <summary>
         /// 使用流程定义资源添加角色用户
         /// </summary>
-        private FlowCommandContext FillNextActivityPerformersByRoleList(int mainActivityInstanceId,
+        private FlowCommandContext FillNextActivityPerformersByRoleList(string mainActivityInstanceId,
             string mainActivityId,
             SQLBuilder kit)
         {
@@ -104,7 +104,7 @@ namespace saiflow.engine.Pattern
             var nextSteps = processModel.GetNextActivityTreeView(mainActivityId);
 
             //获取主流程任务
-            var task = Sail.ManagerFactory.Tasks.GetTaskByActivity(kit.useSQL(), mainProcessInstance.Id.Value, mainActivityInstanceId);
+            var task = Sail.ManagerFactory.Tasks.GetTaskByActivity(kit.useSQL(), mainProcessInstance.Id, mainActivityInstanceId);
             var runner = new FlowCommandContext
             {
                 AppName = mainProcessInstance.AppName,
@@ -151,7 +151,7 @@ namespace saiflow.engine.Pattern
 
             ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
-            ActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance.Id.Value, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance.Id, activityResource.AppRunner);
 
             base.InsertTransitionInstance(processInstance,
                 transitionId,

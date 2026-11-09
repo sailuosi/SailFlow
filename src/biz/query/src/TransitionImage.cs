@@ -10,7 +10,7 @@ namespace saiflow.biz.query
         /// Transition Instance Id
         /// 转移实例Id
         /// </summary>
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Transition Id

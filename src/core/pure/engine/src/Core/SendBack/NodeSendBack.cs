@@ -53,15 +53,15 @@ namespace saiflow.engine.Runtime
         /// </summary>
         protected ActivityInstanceEntity CreateBackwardToActivityInstanceObject(ProcessInstanceEntity processInstance,
             BackwardTypeEnum backwardType,
-            int backSrcActivityInstanceId,
-            int backOrgActivityInstanceId,
+            string backSrcActivityInstanceId,
+            string backOrgActivityInstanceId,
             FlowCommandContext runner)
         {
             ActivityInstanceEntity entity = ActivityInstanceManager.CreateBackwardActivityInstanceObject(
                 processInstance.AppName,
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,
-                processInstance.Id.Value,
+                processInstance.Id,
                 processInstance.ProcessId,
                 this.SendBackOperation.BackwardToTaskActivity,
                 backwardType,
@@ -77,7 +77,7 @@ namespace saiflow.engine.Runtime
         /// Insert transition instance
         /// 插入连线实例的方法
         /// </summary>
-        internal virtual int InsertTransitionInstance(ProcessInstanceEntity processInstance,
+        internal virtual string InsertTransitionInstance(ProcessInstanceEntity processInstance,
             ActivityInstanceEntity fromActivityInstance,
             ActivityInstanceEntity toActivityInstance,
             TransitionTypeEnum transitionType,
@@ -125,12 +125,12 @@ namespace saiflow.engine.Runtime
                processInstance.AppName,
                processInstance.AppInstanceId,
                processInstance.AppInstanceCode,
-               processInstance.Id.Value,
+               processInstance.Id,
                processInstance.ProcessId,
                backwardToTaskActivity,
                backwardType,
-               fromActivityInstance.Id.Value,
-               previousActivityInstance.Id.Value,
+               fromActivityInstance.Id,
+               previousActivityInstance.Id,
                activityResource.AppRunner);
 
             toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;

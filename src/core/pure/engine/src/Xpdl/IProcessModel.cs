@@ -51,7 +51,7 @@ namespace saiflow.engine.Xpdl
         /// </summary>
         IList<NodeView> GetFirstActivityTreeView(saiflow.engine.Xpdl.Activity startActivity, IDictionary<string, string> conditions);
         NextActivityListViewResult GetNextActivityListView(string currentActivityId,
-            Nullable<int> activityInstanceId,
+            string activityInstanceId,
             IDictionary<string, string> conditions,
             SQLBuilder kit);
         /// <summary>
@@ -60,7 +60,7 @@ namespace saiflow.engine.Xpdl
         /// 对于常规下一步查询，推荐通过 WorkflowService.GetNextStepInfo / NextStepParser 使用统一入口。
         /// </summary>
         NextActivityMatchedResult GetNextActivityTreeListRuntime(string currentActivityId,
-            Nullable<int> activityInstanceId,
+            string activityInstanceId,
             IDictionary<string, string> conditionKeyValuePair,
             ActivityResource activityResource,
             Expression<Func<ActivityResource, saiflow.engine.Xpdl.Activity, bool>> expression,

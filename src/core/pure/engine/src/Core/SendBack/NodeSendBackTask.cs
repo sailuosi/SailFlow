@@ -65,11 +65,11 @@ namespace saiflow.engine.Runtime
 
             foreach (var activity in brothersList)
             {
-                var activityInstance = this.ActivityInstanceManager.GetActivityInstanceLatest(kit.useSQL(), fromActivityInstance.ProcessInstanceId.Value, activity.ActivityId);
+                var activityInstance = this.ActivityInstanceManager.GetActivityInstanceLatest(kit.useSQL(), fromActivityInstance.ProcessInstanceId, activity.ActivityId);
                 if (activityInstance != null 
                     && this.ActivityInstanceManager.IncludeRunningState(activityInstance) == true)
                 {
-                    this.ActivityInstanceManager.Cancel(kit.useSQL(), activityInstance.Id.Value, runner);
+                    this.ActivityInstanceManager.Cancel(kit.useSQL(), activityInstance.Id, runner);
                 }
             }
         }

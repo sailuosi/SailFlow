@@ -29,18 +29,17 @@ namespace saiflow.hub.Form
                 .ToList();
         }
 
-        internal FormEntity GetById(int formId)
-            => Sail.UseRunSQL().useRepo<FormEntity, int>().GetById(formId);
+        internal FormEntity GetById(string formId)
+            => Sail.UseRunSQL().useRepo<FormEntity, string>().GetById(formId);
 
-        internal int Insert(FormEntity entity)
+        internal string Insert(FormEntity entity)
         {
             entity.CreatedDate ??= DateTime.Now;
             entity.LastUpdatedDate = DateTime.Now;
             if (string.IsNullOrEmpty(entity.Version))
                 entity.Version = "1";
-            // Identity 列 Insert 会跳过 Id；须走 InsertReturnId 回填（依赖 INTEGER PRIMARY KEY AUTOINCREMENT）
-            var idObj = Sail.UseRunSQL().useRepo<FormEntity, int>().InsertReturnId(entity);
-            var id = Convert.ToInt32(idObj);
+            // AutoKey=Guid：Id 为 null 时由 InsertReturnId 回填
+            var id = Sail.UseRunSQL().useRepo<FormEntity, string>().InsertReturnId(entity);
             entity.Id = id;
             return id;
         }
@@ -51,15 +50,15 @@ namespace saiflow.hub.Form
             Sail.UseRunSQL().useRepo<FormEntity>().Update(entity);
         }
 
-        internal bool Delete(int formId)
+        internal bool Delete(string formId)
         {
             var entity = GetById(formId);
             if (entity == null) return false;
-            Sail.UseRunSQL().useRepo<FormEntity, int>().DeleteById(formId);
+            Sail.UseRunSQL().useRepo<FormEntity, string>().DeleteById(formId);
             return true;
         }
 
-        internal IList<FieldEntity> GetFieldSummaryList(int formId)
+        internal IList<FieldEntity> GetFieldSummaryList(string formId)
         {
             var list = new List<FieldEntity>();
             var entity = GetById(formId);

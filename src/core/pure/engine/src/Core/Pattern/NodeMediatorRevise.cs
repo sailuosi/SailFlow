@@ -52,7 +52,7 @@ namespace saiflow.engine.Pattern
                     if (canContinueForwardCurrentNode == true)
                     {
                         var aim = Sail.ManagerFactory.Activities;
-                        var backSrcActivityInstance = aim.GetById(backSrcActivityInstanceId.Value);
+                        var backSrcActivityInstance = aim.GetById(backSrcActivityInstanceId);
 
                         //获取下一步办理人信息
                         var nextStep = base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers;
@@ -65,7 +65,7 @@ namespace saiflow.engine.Pattern
                             //会签模式
                             //复制与会签子节点相同的活动实例和任务记录 
                             //加签模式：复制同出席子节点的活动实例与任务记录
-                            var mainActivityInstance = aim.GetById(mainActivityInstanceId.Value);
+                            var mainActivityInstance = aim.GetById(mainActivityInstanceId);
                             CloneChildNodeOfMI(performerList, mainActivityInstance, base.Kit);
                         }
                         else
@@ -81,7 +81,7 @@ namespace saiflow.engine.Pattern
                                 {
                                     //复制并行多实例分支
                                     var gatewayActivityInstance = base.ActivityInstanceManager.GetActivityInstanceLatest(Kit.useSQL(), 
-                                        backSrcActivityInstance.ProcessInstanceId.Value, gatewayNode.ActivityId);
+                                        backSrcActivityInstance.ProcessInstanceId, gatewayNode.ActivityId);
                                     CloneChildNodeOfAndSplitMI(performerList, transition.TransitionId, gatewayActivityInstance, backSrcActivityInstance, base.Kit);
                                 }
                                 else
@@ -115,7 +115,7 @@ namespace saiflow.engine.Pattern
         /// <summary>
         /// 完成工作项
         /// </summary>
-        internal bool CompleteWorkItem(int? taskId,
+        internal bool CompleteWorkItem(string taskId,
             ActivityResource activityResource,
             SQLBuilder kit)
         {
@@ -131,12 +131,12 @@ namespace saiflow.engine.Pattern
             {
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
-                base.TaskManager.Complete(kit.useSQL(), taskId.Value, activityResource.AppRunner);
+                base.TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
 
                 //设置活动节点的状态为完成状态
                 //将活动节点状态设为完成
-                var activityInstanceId = base.ActivityInstanceManager.GetByTask(taskId.Value).Id;
-                base.ActivityInstanceManager.Complete(kit.useSQL(), activityInstanceId.Value, activityResource.AppRunner);
+                var activityInstanceId = base.ActivityInstanceManager.GetByTask(taskId).Id;
+                base.ActivityInstanceManager.Complete(kit.useSQL(), activityInstanceId, activityResource.AppRunner);
             }
             return canContinueForwardCurrentNode;
         }
@@ -151,7 +151,7 @@ namespace saiflow.engine.Pattern
             ActivityInstanceEntity mainActivityInstance, 
             SQLBuilder kit)
         {
-            var childNodeListOfMI = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(kit.useSQL(), mainActivityInstance.Id.Value, mainActivityInstance.ProcessInstanceId.Value);
+            var childNodeListOfMI = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(kit.useSQL(), mainActivityInstance.Id, mainActivityInstance.ProcessInstanceId);
 
             ActivityInstanceEntity entity = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)
@@ -221,7 +221,7 @@ namespace saiflow.engine.Pattern
             ActivityInstanceEntity toActivityInstance, 
             SQLBuilder kit)
         {
-            var childNodeListOfAndSplitMI = base.ActivityInstanceManager.GetValidSplitedActivityInstanceList(kit.useSQL(), gatewayActivityInstance.ProcessInstanceId.Value, gatewayActivityInstance.Id.Value);
+            var childNodeListOfAndSplitMI = base.ActivityInstanceManager.GetValidSplitedActivityInstanceList(kit.useSQL(), gatewayActivityInstance.ProcessInstanceId, gatewayActivityInstance.Id);
 
             ActivityInstanceEntity newChildInstance = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)

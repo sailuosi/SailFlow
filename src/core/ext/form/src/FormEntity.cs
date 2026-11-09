@@ -7,8 +7,8 @@ namespace saiflow.hub.Form
     [SooTable(Name = "FbForm", Caption = "表单", Type = DBTableType.Table)]
     public class FormEntity
     {
-        [SooColumn(Name = "Id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
+        [SooColumn(Name = "Id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
 
         [SooColumn(Name = "FormName", Length = 200)]
         public string FormName { get; set; }

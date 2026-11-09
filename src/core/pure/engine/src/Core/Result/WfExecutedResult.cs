@@ -34,7 +34,7 @@ namespace saiflow.engine.Result
         /// New instance Id returned by process initiation
         /// 流程启动返回的新实例Id
         /// </summary>
-        public Int32 ProcessInstanceIdStarted { get; set; }
+        public string ProcessInstanceIdStarted { get; set; }
 
         /// <summary>
         /// When the process is rolled back, the recipient information of the returned task

@@ -12,14 +12,14 @@ namespace saiflow.hub.Form
     /// </summary>
     public class FieldActivityEditInfo
     {
-        public int Id { get; set; }
-        public int ProcessDefId { get; set; }
+        public string Id { get; set; }
+        public string ProcessDefId { get; set; }
         public string ProcessId { get; set; }
         public string ProcessName { get; set; }
         public string ProcessVersion { get; set; }
         public string ActivityId { get; set; }
         public string ActivityName { get; set; }
-        public int FormId { get; set; }
+        public string FormId { get; set; }
         public string FormVersion { get; set; }
         public string FormName { get; set; }
         public IList<FieldActivityEdit> FieldActivityEditList { get; set; } 

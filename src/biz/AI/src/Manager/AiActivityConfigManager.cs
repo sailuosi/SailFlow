@@ -23,8 +23,8 @@ namespace saiflow.AI.Manager
         private SQLBuilder Kit() => Sail.UseRunSQL();
         #region get
 
-        public AiActivityConfigEntity GetById(int id)
-            => Kit().useRepo<AiActivityConfigEntity, int>().GetById(id);
+        public AiActivityConfigEntity GetById(string id)
+            => Kit().useRepo<AiActivityConfigEntity, string>().GetById(id);
 
         public AiActivityConfigEntity GetByProcessVersionActivity(string processId, string version, string activityId)
             => GetByProcessVersionActivity(Kit(), processId, version, activityId);
@@ -51,14 +51,14 @@ namespace saiflow.AI.Manager
 
         #region insert / update / delete
 
-        public int Insert(AiActivityConfigEntity entity)
+        public string Insert(AiActivityConfigEntity entity)
         {
             using (var kit = Kit())
             {
                 kit.beginTransaction();
                 try
                 {
-                    int agentId = Insert(kit, entity);
+                    var agentId = Insert(kit, entity);
                     kit.commit();
                     return agentId;
                 }
@@ -69,7 +69,7 @@ namespace saiflow.AI.Manager
             }
         }
 
-        public int Insert(SQLBuilder kit, AiActivityConfigEntity entity)
+        public string Insert(SQLBuilder kit, AiActivityConfigEntity entity)
         {
             var entityExisted = GetByProcessVersionActivity(kit, entity.ProcessId, entity.Version, entity.ActivityId);
             if (entityExisted != null)
@@ -77,7 +77,7 @@ namespace saiflow.AI.Manager
                 throw new ApplicationException("AxConfigManager.Insert: A service record with the same process_id, version, and activity_id already exists!");
             }
 
-            if (!entity.ModelProviderId.HasValue)
+            if (string.IsNullOrWhiteSpace(entity.ModelProviderId))
             {
                 throw new ApplicationException("AxConfigManager.Insert: ModelProviderId is required and cannot be null.");
             }
@@ -88,7 +88,7 @@ namespace saiflow.AI.Manager
             }
 
             entity.CreatedDateTime = DateTime.UtcNow;
-            return kit.useSQL().useRepo<AiActivityConfigEntity, int>().InsertReturnId(entity);
+            return kit.useSQL().useRepo<AiActivityConfigEntity, string>().InsertReturnId(entity);
         }
 
         public void Update(AiActivityConfigEntity entity)
@@ -110,7 +110,7 @@ namespace saiflow.AI.Manager
 
         public void Update(SQLBuilder kit, AiActivityConfigEntity entity)
         {
-            if (!entity.ModelProviderId.HasValue)
+            if (string.IsNullOrWhiteSpace(entity.ModelProviderId))
             {
                 throw new ApplicationException("AxConfigManager.Update: ModelProviderId is required and cannot be null.");
             }
@@ -121,7 +121,7 @@ namespace saiflow.AI.Manager
             }
 
             entity.UpdatedDateTime = DateTime.UtcNow;
-            kit.useSQL().useRepo<AiActivityConfigEntity, int>().Update(entity);
+            kit.useSQL().useRepo<AiActivityConfigEntity, string>().Update(entity);
         }
 
         public void Delete(string processId, string version, string activityId)
@@ -163,7 +163,7 @@ namespace saiflow.AI.Manager
             foreach (var entity in list)
             {
                 entity.Version = newVersion;
-                // 自增主键新建须 null，勿写 0
+                // 新建：清空 Id，由 AutoKey=Guid 发号
                 entity.Id = null;
                 Insert(kit, entity);
             }

@@ -13,8 +13,8 @@ namespace saiflow.engine.Entity
     [SooTable(Name = "wf_process_instance", Caption = "流程实例", Type = DBTableType.Table)]
     public class ProcessInstanceEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
         [SooColumn(Name = "process_id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "process_name")]
@@ -31,12 +31,12 @@ namespace saiflow.engine.Entity
         public short? ProcessState { get; set; }
         [SooColumn(Name = "sub_process_type")]
         public short? SubProcessType { get; set; }
-        [SooColumn(Name = "sub_process_def_id")]
-        public int? SubProcessDefId { get; set; }
+        [SooColumn(Name = "sub_process_def_id", Length = 64)]
+        public string SubProcessDefId { get; set; }
         [SooColumn(Name = "sub_process_Id")]
         public string SubProcessId { get; set; }
-        [SooColumn(Name = "invoked_activity_instance_id")]
-        public int? InvokedActivityInstanceId { get; set; }
+        [SooColumn(Name = "invoked_activity_instance_id", Length = 64)]
+        public string InvokedActivityInstanceId { get; set; }
         [SooColumn(Name = "invoked_activity_id")]
         public string InvokedActivityId { get; set; }
         [SooColumn(Name = "job_timer_type")]

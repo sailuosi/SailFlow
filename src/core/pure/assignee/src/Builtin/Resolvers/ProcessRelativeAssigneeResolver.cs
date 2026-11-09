@@ -66,8 +66,8 @@ public class ProcessRelativeAssigneeResolver : IAssigneeResolver, IAssigneeResol
     {
         var sail = Sail;
         var piId = ctx.Request.ProcessInstanceId;
-        if (sail == null || piId == null || piId.Value <= 0)
+        if (sail == null || string.IsNullOrWhiteSpace(piId))
             return null;
-        return sail.UseRunSQL().useRepo<ProcessInstanceEntity, int>().GetById(piId.Value);
+        return sail.UseRunSQL().useRepo<ProcessInstanceEntity, string>().GetById(piId);
     }
 }

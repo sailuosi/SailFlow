@@ -71,7 +71,7 @@ namespace saiflow.engine.Pattern
 
             base.ActivityInstanceManager.Insert(kit.useSQL(), fromActivityInstance);
 
-            base.ActivityInstanceManager.Complete(kit.useSQL(), fromActivityInstance.Id.Value, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(kit.useSQL(), fromActivityInstance.Id, activityResource.AppRunner);
 
             fromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             base.LinkContext.FromActivityInstance = fromActivityInstance;

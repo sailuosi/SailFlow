@@ -76,7 +76,7 @@ namespace saiflow.biz.query
         public (IList<TaskViewEntity> Items, int Total) QueryRunningTasksPaged(TaskQuery query)
             => QueryTasksPaged(query, 2);
 
-        public TaskViewEntity? GetFirstRunningTask(int activityInstanceId)
+        public TaskViewEntity? GetFirstRunningTask(string activityInstanceId)
         {
             var clip = Sail.UseRunSQL().useClip();
             clip.from<TaskViewEntity>(out var t);
@@ -103,7 +103,7 @@ namespace saiflow.biz.query
             return clip.select(t).queryList().ToList();
         }
 
-        public bool SetTaskEMailSent(int taskId)
+        public bool SetTaskEMailSent(string taskId)
         {
             var tm = new TaskManager(Sail);
             using (var kit = Sail.UseRunSQL())
@@ -152,7 +152,7 @@ namespace saiflow.biz.query
         /// <summary>
         /// 判断当前任务是否是最后一个任务（会签/加签/单节点）。
         /// </summary>
-        public bool IsLastTask(int taskId)
+        public bool IsLastTask(string taskId)
         {
             var isLast = false;
             var tm = new TaskManager(Sail);
@@ -162,7 +162,7 @@ namespace saiflow.biz.query
 
             if (aim.IsMultipleInstanceChildren(activityInstance) == true)
             {
-                var mainActivityInstance = aim.GetById(activityInstance.MainActivityInstanceId.Value);
+                var mainActivityInstance = aim.GetById(activityInstance.MainActivityInstanceId);
                 var complexType = EnumHelper.ParseEnum<ComplexTypeEnum>(mainActivityInstance.ComplexType.Value.ToString());
 
                 if (complexType == ComplexTypeEnum.SignTogether)
@@ -171,8 +171,8 @@ namespace saiflow.biz.query
                     if (mergeType == MergeTypeEnum.Sequence)
                     {
                         var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.Id.Value,
-                            mainActivityInstance.ProcessInstanceId.Value,
+                            mainActivityInstance.Id,
+                            mainActivityInstance.ProcessInstanceId,
                             (short)ActivityStateEnum.Suspended).ToList();
                         short allNum = (short)mainActivityInstance.AssignedUserIds.Split(',').Length;
                         short maxOrder = 0;
@@ -208,8 +208,8 @@ namespace saiflow.biz.query
                     else if (mergeType == MergeTypeEnum.Parallel)
                     {
                         var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.Id.Value,
-                            mainActivityInstance.ProcessInstanceId.Value,
+                            mainActivityInstance.Id,
+                            mainActivityInstance.ProcessInstanceId,
                             null).ToList();
                         var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed).ToList().Count();
                         var completedCount = sqList
@@ -246,8 +246,8 @@ namespace saiflow.biz.query
                         || signforwardType == SignForwardTypeEnum.SignForwardBefore)
                     {
                         var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.Id.Value,
-                            mainActivityInstance.ProcessInstanceId.Value,
+                            mainActivityInstance.Id,
+                            mainActivityInstance.ProcessInstanceId,
                             (short)ActivityStateEnum.Suspended).ToList();
 
                         short maxOrder = 0;
@@ -282,8 +282,8 @@ namespace saiflow.biz.query
                     else if (signforwardType == SignForwardTypeEnum.SignForwardParallel)
                     {
                         var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.Id.Value,
-                            mainActivityInstance.ProcessInstanceId.Value,
+                            mainActivityInstance.Id,
+                            mainActivityInstance.ProcessInstanceId,
                             null).ToList();
 
                         var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed).ToList().Count();
@@ -395,7 +395,7 @@ namespace saiflow.biz.query
 
         /// <summary>热表优先；未命中则按 endedYear 或候选年查冷表。</summary>
         public ProcessInstanceEntity GetProcessInstanceHotOrArchive(
-            int processInstanceId,
+            string processInstanceId,
             int? endedYear = null,
             IEnumerable<int> candidateYears = null)
         {
@@ -445,7 +445,7 @@ namespace saiflow.biz.query
             return clip.count();
         }
 
-        public IList<NodeImage> GetActivityInstanceCompleted(int taskId)
+        public IList<NodeImage> GetActivityInstanceCompleted(string taskId)
         {
             var tm = new TaskManager(Sail);
             var task = tm.GetTaskView(taskId);
@@ -465,7 +465,7 @@ namespace saiflow.biz.query
             {
                 imageList.Add(new NodeImage
                 {
-                    Id = a.Id ?? 0,
+                    Id = a.Id,
                     ActivityName = a.ActivityName
                 });
             }
@@ -482,7 +482,7 @@ namespace saiflow.biz.query
             {
                 imageList.Add(new TransitionImage
                 {
-                    Id = t.Id ?? 0,
+                    Id = t.Id,
                     TransitionId = t.TransitionId
                 });
             }

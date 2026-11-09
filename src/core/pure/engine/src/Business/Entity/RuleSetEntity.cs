@@ -10,8 +10,8 @@ namespace saiflow.engine.Entity
     [SooTable(Name = "wf_rule_set", Caption = "规则集", Type = DBTableType.Table)]
     public class RuleSetEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
 
         [SooColumn(Name = "rule_set_code")]
         public string RuleSetCode { get; set; }

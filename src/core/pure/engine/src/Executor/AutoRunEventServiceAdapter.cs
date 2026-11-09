@@ -28,7 +28,7 @@ namespace saiflow.engine.Executor
         /// <summary>Non-persistent variables bag for rule input materialization (same assembly as RuleExecutor).</summary>
         internal IDictionary<string, string> VariablesSnapshot => _context?.Variables;
 
-        public int GetProcessInstanceId() => 0;
+        public string GetProcessInstanceId() => null;
 
         public SQLBuilder GetKit() => null;
 
@@ -54,6 +54,6 @@ namespace saiflow.engine.Executor
 
         public void SetCondition(string name, string value) { }
 
-        public T GetInstance<T>(int id) where T : class => null;
+        public T GetInstance<T>(string id) where T : class => null;
     }
 }

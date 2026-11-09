@@ -15,7 +15,7 @@ namespace saiflow.engine.Entity
         /// <summary>
         /// 被委托任务Id
         /// </summary>
-        public int? TaskId { get; set; }
+        public string TaskId { get; set; }
         public string RunnerId { get; set; }
         public string RunnerName { get; set; }
         public string EntrustToUserId { get; set; }

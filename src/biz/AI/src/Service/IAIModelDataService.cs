@@ -9,12 +9,12 @@ namespace saiflow.AI.Service
 {
     public interface IAiModelDataService
     {
-        AiModelProviderEntity GetModelById(int id);
+        AiModelProviderEntity GetModelById(string id);
         List<AiModelProviderEntity> GetModelListAll();
         List<AiModelProviderEntity> GetModelListByType(string modelType);
-        int CreateModel(AiModelProviderEntity modelEntity);
+        string CreateModel(AiModelProviderEntity modelEntity);
         Boolean UpdateModel(AiModelProviderEntity modelEntity);
-        void DeleteModel(int modelId);
+        void DeleteModel(string modelId);
         AiActivityConfigEntity GetAiActivityConfigByProcessVersionActivity(string processId, string version, string activityId);
         void SaveAiActivityConfigInfo(AiActivityConfigEntity axConfigEntity);
         void DeleteAiActivityConfig(string processId, string version, string activityId);

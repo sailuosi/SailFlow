@@ -32,7 +32,7 @@ namespace saiflow.data.Hosting
             new ProcessArchiveService(client, client.GetColdStore()).RunBatch(batchSize);
 
         /// <summary>归档单个终态实例（立刻模式 / Hook 可调）。</summary>
-        public static bool ArchiveProcessInstance(this SailClient client, int processInstanceId) =>
+        public static bool ArchiveProcessInstance(this SailClient client, string processInstanceId) =>
             new ProcessArchiveService(client, client.GetColdStore()).ArchiveOne(processInstanceId);
 
         /// <summary>冷表只读查询入口。</summary>

@@ -5,11 +5,11 @@ namespace saiflow.hub.Form
     [SooTable(Name = "FbFormFieldActivityEdit", Caption = "表单字段节点编辑", Type = DBTableType.Table)]
     public class FieldActivityEditEntity
     {
-        [SooColumn(Name = "Id", IsPrimaryKey = true, IsIdentity = true)]
-        public int? Id { get; set; }
+        [SooColumn(Name = "Id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        public string Id { get; set; }
 
-        [SooColumn(Name = "ProcessDefId")]
-        public int? ProcessDefId { get; set; }
+        [SooColumn(Name = "ProcessDefId", Length = 64)]
+        public string ProcessDefId { get; set; }
 
         [SooColumn(Name = "ProcessId", Length = 64)]
         public string ProcessId { get; set; }
@@ -26,8 +26,8 @@ namespace saiflow.hub.Form
         [SooColumn(Name = "ActivityName", Length = 255)]
         public string ActivityName { get; set; }
 
-        [SooColumn(Name = "FormId")]
-        public int? FormId { get; set; }
+        [SooColumn(Name = "FormId", Length = 64)]
+        public string FormId { get; set; }
 
         [SooColumn(Name = "FormName", Length = 200)]
         public string FormName { get; set; }

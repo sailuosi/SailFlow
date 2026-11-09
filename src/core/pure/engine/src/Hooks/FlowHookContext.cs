@@ -10,11 +10,11 @@ namespace saiflow.engine.Hooks
         public string ProcessId { get; set; }
         public string ProcessCode { get; set; }
         public string Version { get; set; }
-        public int ProcessInstanceId { get; set; }
+        public string ProcessInstanceId { get; set; }
         public string ActivityId { get; set; }
         public string ActivityCode { get; set; }
-        public int ActivityInstanceId { get; set; }
-        public int? TaskId { get; set; }
+        public string ActivityInstanceId { get; set; }
+        public string TaskId { get; set; }
         public string AssignedUserId { get; set; }
         public string AssignedUserName { get; set; }
         public FlowOperation Operation { get; set; }
@@ -29,11 +29,11 @@ namespace saiflow.engine.Hooks
         public string ProcessId { get; set; }
         public string ProcessCode { get; set; }
         public string Version { get; set; }
-        public int ProcessInstanceId { get; set; }
+        public string ProcessInstanceId { get; set; }
         public string ActivityId { get; set; }
         public string ActivityCode { get; set; }
-        public int ActivityInstanceId { get; set; }
-        public int TaskId { get; set; }
+        public string ActivityInstanceId { get; set; }
+        public string TaskId { get; set; }
         public string AssignedUserId { get; set; }
         public string AssignedUserName { get; set; }
         public TaskNotifyKind Kind { get; set; }

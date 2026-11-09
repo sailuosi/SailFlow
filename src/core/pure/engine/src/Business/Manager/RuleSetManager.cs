@@ -38,18 +38,18 @@ namespace saiflow.engine.Manager
                 .GetFirst(x => x.RuleSetCode == ruleSetCode);
         }
 
-        public int Insert(RuleSetEntity entity)
+        public string Insert(RuleSetEntity entity)
         {
             var kit = Sail.UseRunSQL();
             return Insert(kit, entity);
         }
 
-        public int Insert(SQLBuilder kit, RuleSetEntity entity)
+        public string Insert(SQLBuilder kit, RuleSetEntity entity)
         {
             entity.CreatedDateTime = DateTime.UtcNow;
             if (entity.IsEnabled == 0) { /* keep */ }
             else if (entity.IsEnabled != 1) entity.IsEnabled = 1;
-            var newId = kit.useRepo<RuleSetEntity, int>().InsertReturnId(entity);
+            var newId = kit.useRepo<RuleSetEntity, string>().InsertReturnId(entity);
             entity.Id = newId;
             return newId;
         }

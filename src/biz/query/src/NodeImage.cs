@@ -10,7 +10,7 @@ namespace saiflow.biz.query
         /// Activity Instance Id
         /// 节点实例Id
         /// </summary>
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Activity Name

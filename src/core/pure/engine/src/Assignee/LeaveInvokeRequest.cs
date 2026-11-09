@@ -7,8 +7,8 @@ namespace saiflow.engine.Assignee
     /// <summary>时刻 B：流出判定调用入参（engine 不解析 Type）。</summary>
     public class LeaveInvokeRequest
     {
-        public int ProcessInstanceId { get; set; }
-        public int ActivityInstanceId { get; set; }
+        public string ProcessInstanceId { get; set; }
+        public string ActivityInstanceId { get; set; }
         /// <summary>流程定义 Id（读 BPMN ConfigPair 用）。</summary>
         public string ProcessId { get; set; }
         /// <summary>流程版本（读 BPMN ConfigPair 用）。</summary>
