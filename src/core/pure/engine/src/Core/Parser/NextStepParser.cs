@@ -92,10 +92,16 @@ namespace saiflow.engine.Runtime
                 }
             }
 
-            //获取下一步信息
-            //Obtain the next step information
-            var processModel = Sail.ProcessModelFactory.CreateByTask( taskView);
-            var nextActivity = processModel.GetNextActivity(taskView.ActivityId);
+            // 预选办理人：仅当「唯一出边」时尝试从网关/中间 Timer 实例读取。
+            // 多出口不可调用 GetNextActivity（内部 SingleOrDefault），否则抛
+            // “Sequence contains more than one matching element”，导致整次下一跳查询失败。
+            // 多出口时由前端先选节点，再使用 StepList 上该节点的 Users。
+            var processModel = Sail.ProcessModelFactory.CreateByTask(taskView);
+            var forwardList = processModel.GetForwardTransitionList(taskView.ActivityId);
+            if (forwardList == null || forwardList.Count != 1)
+                return nextSteps;
+
+            var nextActivity = forwardList[0]?.ToActivity;
             if (nextActivity != null)
             {
                 if (nextActivity.ActivityType == ActivityTypeEnum.GatewayNode)
@@ -215,8 +221,10 @@ namespace saiflow.engine.Runtime
                         }
                         else
                         {
-                            var roleIDs = ns.Roles.Select(x => x.Id).ToArray();
-                            if (roleIDs.Count() > 0)
+                            var roleIDs = ns.Roles != null
+                                ? ns.Roles.Select(x => x.Id).ToArray()
+                                : Array.Empty<string>();
+                            if (roleIDs.Length > 0)
                             {
                                 ns.Users = resourceService.GetUserListByRoleReceiverType(roleIDs, runner.UserId, (int)ns.ReceiverType);     //增加转移前置过滤条件
                             }

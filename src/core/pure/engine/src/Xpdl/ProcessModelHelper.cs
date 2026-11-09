@@ -56,24 +56,29 @@ namespace saiflow.engine.Xpdl
         {
             var activityList = process.ActivityList.ToList();
             var activity = activityList.SingleOrDefault<Activity>(a => a.ActivityType == ActivityTypeEnum.StartNode);
+            if (activity == null)
+                return null;
 
-            var transitionList = process.TransitionList.ToList();
-            var transition = transitionList.SingleOrDefault<Transition>(t=>t.FromActivityId == activity.ActivityId);
-            var firstActivity = transition.ToActivity;
-
-            return firstActivity;
+            // 开始事件偶发多出边时取第一条，避免 SingleOrDefault 抛异常
+            var transition = process.TransitionList?
+                .FirstOrDefault(t => t != null && t.FromActivityId == activity.ActivityId);
+            return transition?.ToActivity;
         }
 
         /// <summary>
-        /// Get Next Activity by from
+        /// Get Next Activity by from（仅适用于唯一出边；多出口请用 GetForwardTransitionList）。
+        /// 多出边时返回 null，避免 SingleOrDefault 抛 “Sequence contains more than one matching element”。
         /// </summary>
         public static Activity GetNextActivity(Process process, string fromActivityId)
         {
-            var transitionList = process.TransitionList.ToList();
-            var transition = transitionList.SingleOrDefault<Transition>(t => t.FromActivityId == fromActivityId);
-            var nextActivity = transition.ToActivity;
-
-            return nextActivity;
+            if (process?.TransitionList == null || string.IsNullOrEmpty(fromActivityId))
+                return null;
+            var matches = process.TransitionList
+                .Where(t => t != null && t.FromActivityId == fromActivityId)
+                .ToList();
+            if (matches.Count != 1)
+                return null;
+            return matches[0].ToActivity;
         }
 
         /// <summary>

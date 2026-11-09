@@ -18,11 +18,15 @@ namespace saiflow.engine.Xpdl
         /// <summary>可读摘要（与 Issues 同源）。</summary>
         public string Message { get; set; }
 
+        /// <summary>结构化消息（下一跳演算 / Issue / Summary）。</summary>
+        public IList<ProcessValidateMessage> Messages { get; set; }
+
         public ProcessValidateResult()
         {
             ProcessValidatedResultType = ProcessValidateResultTypeEnum.None;
             Issues = new List<string>();
             Message = string.Empty;
+            Messages = new List<ProcessValidateMessage>();
         }
     }
 }

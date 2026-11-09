@@ -1,9 +1,11 @@
+using saiflow.engine.Common;
 using saiflow.engine.Entity;
 using saiflow.engine.Manager;
 using saiflow.engine.Storage;
 using saiflow.engine.Xpdl;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace saiflow.engine.Service
 {
@@ -241,7 +243,183 @@ namespace saiflow.engine.Service
         public ProcessValidateResult ValidateProcess(ProcessEntity entity)
         {
             var result = ProcessValidator.Validate(entity);
+            if (result.Messages == null)
+                result.Messages = new List<ProcessValidateMessage>();
+
+            SyncIssuesToMessages(result);
+            AppendNextHopMessages(entity, result);
+            AppendSummaryMessage(result);
             return result;
+        }
+
+        /// <summary>将 Issues 同步为结构化 Messages（Code=Issue）。</summary>
+        private static void SyncIssuesToMessages(ProcessValidateResult result)
+        {
+            if (result?.Issues == null || result.Issues.Count == 0)
+                return;
+
+            foreach (var issue in result.Issues)
+            {
+                if (string.IsNullOrWhiteSpace(issue))
+                    continue;
+                result.Messages.Add(new ProcessValidateMessage
+                {
+                    Level = "Error",
+                    Code = "Issue",
+                    Text = issue
+                });
+            }
+        }
+
+        /// <summary>
+        /// 对全部节点调用 GetNextActivityListWithoutCondition，写入 NextHop 消息并标注待办人规则。
+        /// </summary>
+        private void AppendNextHopMessages(ProcessEntity entity, ProcessValidateResult result)
+        {
+            if (entity == null || string.IsNullOrWhiteSpace(entity.XmlContent) || result == null)
+                return;
+
+            try
+            {
+                var model = Sail.ProcessModelFactory.CreateByProcess(entity);
+                if (model == null)
+                    return;
+
+                var activities = model.GetActivityList();
+                if (activities == null || activities.Count == 0)
+                    return;
+
+                foreach (var activity in activities)
+                {
+                    if (activity == null || string.IsNullOrWhiteSpace(activity.ActivityId))
+                        continue;
+
+                    IList<Activity> nextList;
+                    try
+                    {
+                        nextList = model.GetNextActivityListWithoutCondition(activity.ActivityId)
+                                   ?? Array.Empty<Activity>();
+                    }
+                    catch
+                    {
+                        nextList = Array.Empty<Activity>();
+                    }
+
+                    var nextIds = new List<string>();
+                    var nextNames = new List<string>();
+                    var nextAssigneeParts = new List<string>();
+                    foreach (var n in nextList)
+                    {
+                        if (n == null || string.IsNullOrWhiteSpace(n.ActivityId))
+                            continue;
+                        nextIds.Add(n.ActivityId);
+                        var nLabel = string.IsNullOrWhiteSpace(n.ActivityName) ? n.ActivityId : n.ActivityName;
+                        nextNames.Add(nLabel);
+                        if (n.ActivityType == ActivityTypeEnum.TaskNode
+                            || n.ActivityType == ActivityTypeEnum.MultiSignNode)
+                        {
+                            var resolve = string.IsNullOrWhiteSpace(n.AssigneeResolveType) ? "(未配置)" : n.AssigneeResolveType;
+                            var leave = string.IsNullOrWhiteSpace(n.LeaveJudgeType) ? "(未配置)" : n.LeaveJudgeType;
+                            nextAssigneeParts.Add(nLabel + ":" + resolve + "/" + leave);
+                        }
+                    }
+
+                    var selfLabel = string.IsNullOrWhiteSpace(activity.ActivityName)
+                        ? activity.ActivityId
+                        : activity.ActivityName + "(" + activity.ActivityId + ")";
+                    var typeName = activity.ActivityType.ToString();
+
+                    var text = new StringBuilder();
+                    text.Append('[').Append(typeName).Append("] ").Append(selfLabel);
+
+                    var isTaskLike = activity.ActivityType == ActivityTypeEnum.TaskNode
+                                     || activity.ActivityType == ActivityTypeEnum.MultiSignNode;
+                    var resolveType = activity.AssigneeResolveType;
+                    var leaveType = activity.LeaveJudgeType;
+                    if (isTaskLike)
+                    {
+                        var resolveDisp = string.IsNullOrWhiteSpace(resolveType) ? "(未配置)" : resolveType;
+                        var leaveDisp = string.IsNullOrWhiteSpace(leaveType) ? "(未配置)" : leaveType;
+                        text.Append(" · Resolve=").Append(resolveDisp)
+                            .Append(" / Leave=").Append(leaveDisp);
+                    }
+
+                    if (nextNames.Count == 0)
+                        text.Append(" → (无后续节点)");
+                    else
+                        text.Append(" → ").Append(string.Join(", ", nextNames));
+
+                    var level = "Info";
+                    if (isTaskLike
+                        && (string.IsNullOrWhiteSpace(resolveType) || string.IsNullOrWhiteSpace(leaveType)))
+                    {
+                        level = "Warning";
+                    }
+
+                    result.Messages.Add(new ProcessValidateMessage
+                    {
+                        Level = level,
+                        Code = "NextHop",
+                        Text = text.ToString(),
+                        ActivityId = activity.ActivityId,
+                        ActivityName = activity.ActivityName,
+                        ActivityType = typeName,
+                        AssigneeResolveType = resolveType,
+                        LeaveJudgeType = leaveType,
+                        NextActivityIds = nextIds,
+                        NextActivityNames = nextNames,
+                        NextAssigneeSummary = string.Join("; ", nextAssigneeParts)
+                    });
+                }
+            }
+            catch
+            {
+                // 演算失败不影响基础校验结果
+            }
+        }
+
+        private static void AppendSummaryMessage(ProcessValidateResult result)
+        {
+            if (result == null)
+                return;
+
+            var code = result.ProcessValidatedResultType;
+            string text;
+            string level;
+            switch (code)
+            {
+                case ProcessValidateResultTypeEnum.Successed:
+                    text = "校验通过：存在开始/结束事件，且有通路；用户任务 Resolve/Leave 已配置";
+                    level = "Info";
+                    break;
+                case ProcessValidateResultTypeEnum.WithoutStartEvent:
+                    text = "校验未通过：缺少开始事件";
+                    level = "Error";
+                    break;
+                case ProcessValidateResultTypeEnum.WithoutEndEvent:
+                    text = "校验未通过：缺少结束事件";
+                    level = "Error";
+                    break;
+                case ProcessValidateResultTypeEnum.WithoutStartEndPath:
+                    text = "校验未通过：开始到结束无连通路径";
+                    level = "Error";
+                    break;
+                case ProcessValidateResultTypeEnum.AssigneeConfigIncomplete:
+                    text = "校验未通过：用户任务缺少 AssigneeResolve 或 LeaveJudge Type（发布前须配置）";
+                    level = "Error";
+                    break;
+                default:
+                    text = "未得到校验结果";
+                    level = "Warning";
+                    break;
+            }
+
+            result.Messages.Add(new ProcessValidateMessage
+            {
+                Level = level,
+                Code = "Summary",
+                Text = text
+            });
         }
 
         /// <summary>
