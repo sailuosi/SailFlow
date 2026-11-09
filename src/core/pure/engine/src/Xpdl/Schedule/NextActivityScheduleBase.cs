@@ -53,6 +53,11 @@ namespace saiflow.engine.Xpdl
             out NextActivityMatchedType resultType)
         {
             NextActivityComponent child = null;
+            if (forwardTransition?.ToActivity == null)
+            {
+                resultType = NextActivityMatchedType.NoneTransitionFilteredByCondition;
+                return null;
+            }
             if (XPDLHelper.IsSimpleComponentNode(forwardTransition.ToActivity.ActivityType) == true)       //可流转简单类型节点
             {
                 child = NextActivityComponents.CreateNextActivityComponent(forwardTransition, forwardTransition.ToActivity);

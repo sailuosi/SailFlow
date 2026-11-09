@@ -42,6 +42,8 @@ namespace saiflow.engine.Xpdl
         /// </summary>
         public static Activity GetActivity(Process process, string activityId)
         {
+            if (process?.ActivityList == null || string.IsNullOrEmpty(activityId))
+                return null;
             var activityList = process.ActivityList.ToList();
             var activity = activityList.SingleOrDefault<Activity>(a => a.ActivityId == activityId);
             return activity;

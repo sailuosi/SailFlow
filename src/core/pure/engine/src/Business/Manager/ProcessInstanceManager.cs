@@ -474,7 +474,11 @@ namespace saiflow.engine.Manager
                 kit.beginTransaction();
                 try
                 {
-                    var entity = GetProcessInstanceLatest(kit, runner.AppInstanceId, runner.ProcessId, runner.Version);
+                    ProcessInstanceEntity entity;
+                    if (!string.IsNullOrWhiteSpace(runner.ProcessInstanceId))
+                        entity = GetById(kit, runner.ProcessInstanceId);
+                    else
+                        entity = GetProcessInstanceLatest(kit, runner.AppInstanceId, runner.ProcessId, runner.Version);
                     var ok = Terminate(kit, entity, runner.UserId, runner.UserName);
                     kit.commit();
                     return ok;
@@ -488,6 +492,9 @@ namespace saiflow.engine.Manager
 
         internal bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, string userId, string userName)
         {
+            if (entity == null)
+                throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error"));
+
             if (entity.ProcessState == (int)ProcessStateEnum.Running
                 || entity.ProcessState == (int)ProcessStateEnum.Ready
                 || entity.ProcessState == (int)ProcessStateEnum.Suspended)
@@ -497,6 +504,38 @@ namespace saiflow.engine.Manager
                 entity.EndedUserName = userName;
                 entity.EndedDateTime = DateTime.UtcNow;
                 Update(kit, entity);
+
+                // 级联收口未完结活动与待办，避免实例已终止但待办仍可办
+                var aiClip = kit.useSQL().useClip();
+                aiClip.setTable<ActivityInstanceEntity>(out var ai);
+                aiClip.set(() => ai.ActivityState, (short)ActivityStateEnum.Terminated);
+                aiClip.set(() => ai.EndedDateTime, DateTime.UtcNow);
+                aiClip.set(() => ai.EndedUserId, userId);
+                aiClip.set(() => ai.EndedUserName, userName);
+                aiClip.where(() => ai.ProcessInstanceId, entity.Id);
+                aiClip.whereIn(() => ai.ActivityState, new short?[]
+                {
+                    (short)ActivityStateEnum.Ready,
+                    (short)ActivityStateEnum.Running,
+                    (short)ActivityStateEnum.Suspended
+                });
+                aiClip.doUpdate();
+
+                var taskClip = kit.useSQL().useClip();
+                taskClip.setTable<TaskEntity>(out var t);
+                taskClip.set(() => t.TaskState, (short)TaskStateEnum.Canceled);
+                taskClip.set(() => t.RecordStatusInvalid, (byte)1);
+                taskClip.set(() => t.EndedDateTime, DateTime.UtcNow);
+                taskClip.set(() => t.EndedUserId, userId);
+                taskClip.set(() => t.EndedUserName, userName);
+                taskClip.where(() => t.ProcessInstanceId, entity.Id);
+                taskClip.whereIn(() => t.TaskState, new short?[]
+                {
+                    (short)TaskStateEnum.Waiting,
+                    (short)TaskStateEnum.Reading
+                });
+                taskClip.doUpdate();
+
                 return true;
             }
             throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error"));

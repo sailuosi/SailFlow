@@ -49,6 +49,10 @@ namespace saiflow.engine.Xpdl
                     NextActivityComponent child = null;
                     foreach (Transition transition in transitionList)
                     {
+                        // 残缺连线（无 targetRef / 目标活动不存在）：跳过，避免 ToActivity NRE
+                        if (transition?.ToActivity == null)
+                            continue;
+
                         if (XPDLHelper.IsSimpleComponentNode(transition.ToActivity.ActivityType) == true)
                         {
                             child = NextActivityComponents.CreateNextActivityComponent(transition, transition.ToActivity);

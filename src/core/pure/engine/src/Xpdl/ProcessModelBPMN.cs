@@ -233,7 +233,9 @@ namespace saiflow.engine.Xpdl
             var transitionList = GetForwardTransitionList(fromActivityId);
             foreach (var transition in transitionList)
             {
-                toActivity = transition.ToActivity;
+                toActivity = transition?.ToActivity;
+                if (toActivity == null)
+                    continue;
                 if (toActivity.ActivityType == ActivityTypeEnum.EndNode)
                 {
                     break;
@@ -291,7 +293,9 @@ namespace saiflow.engine.Xpdl
             var transitionNodeList = GetForwardTransitionList(fromActivityId);
             foreach (var transition in transitionNodeList)
             {
-                toActivity = transition.ToActivity;
+                toActivity = transition?.ToActivity;
+                if (toActivity == null)
+                    continue;
                 if (toActivity.ActivityType == ActivityTypeEnum.GatewayNode
                     && toActivity.ActivityId == finalActivityId)
                 {

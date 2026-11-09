@@ -244,24 +244,52 @@ namespace saiflow.biz.Bootstrap
 
         private static string MinimalBpmnXml()
         {
-            // bpmn-js 可解析的最小 BPMN 2.0（勿用旧 Package/XPDL 壳）
+            // 可发布的最小 BPMN：Start → UserTask(R6) → End（sf 命名空间须为 saiflow）
             return
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<bpmn:definitions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                 "xmlns:bpmn=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" " +
                 "xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" " +
                 "xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\" " +
-                "xmlns:sf=\"http://www.slickflow.com/schema/sf\" " +
+                "xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\" " +
+                "xmlns:sf=\"http://www.saiflow.com/schema/sf\" " +
                 "id=\"Definitions_SailSeed\" targetNamespace=\"http://bpmn.io/schema/bpmn\">" +
                 "<bpmn:process id=\"Process_1\" name=\"Sail Seed Hello\" isExecutable=\"true\" " +
                 "sf:code=\"SEED_HELLO\" sf:version=\"1\">" +
-                "<bpmn:startEvent id=\"StartEvent_1\" name=\"Start\" />" +
+                "<bpmn:startEvent id=\"StartEvent_1\" name=\"Start\">" +
+                "<bpmn:outgoing>Flow_start_task</bpmn:outgoing>" +
+                "</bpmn:startEvent>" +
+                "<bpmn:userTask id=\"UserTask_1\" name=\"Hello Task\">" +
+                "<bpmn:incoming>Flow_start_task</bpmn:incoming>" +
+                "<bpmn:outgoing>Flow_task_end</bpmn:outgoing>" +
+                "<bpmn:extensionElements>" +
+                "<sf:assigneeResolve type=\"ApproverPick\" params=\"\" />" +
+                "<sf:leaveJudge type=\"Collaborate\" params=\"{&quot;completeRate&quot;:1}\" />" +
+                "</bpmn:extensionElements>" +
+                "</bpmn:userTask>" +
+                "<bpmn:endEvent id=\"EndEvent_1\" name=\"End\">" +
+                "<bpmn:incoming>Flow_task_end</bpmn:incoming>" +
+                "</bpmn:endEvent>" +
+                "<bpmn:sequenceFlow id=\"Flow_start_task\" sourceRef=\"StartEvent_1\" targetRef=\"UserTask_1\" />" +
+                "<bpmn:sequenceFlow id=\"Flow_task_end\" sourceRef=\"UserTask_1\" targetRef=\"EndEvent_1\" />" +
                 "</bpmn:process>" +
                 "<bpmndi:BPMNDiagram id=\"BPMNDiagram_1\">" +
                 "<bpmndi:BPMNPlane id=\"BPMNPlane_1\" bpmnElement=\"Process_1\">" +
                 "<bpmndi:BPMNShape id=\"StartEvent_1_di\" bpmnElement=\"StartEvent_1\">" +
                 "<dc:Bounds x=\"180\" y=\"160\" width=\"36\" height=\"36\" />" +
                 "</bpmndi:BPMNShape>" +
+                "<bpmndi:BPMNShape id=\"UserTask_1_di\" bpmnElement=\"UserTask_1\">" +
+                "<dc:Bounds x=\"280\" y=\"138\" width=\"100\" height=\"80\" />" +
+                "</bpmndi:BPMNShape>" +
+                "<bpmndi:BPMNShape id=\"EndEvent_1_di\" bpmnElement=\"EndEvent_1\">" +
+                "<dc:Bounds x=\"450\" y=\"160\" width=\"36\" height=\"36\" />" +
+                "</bpmndi:BPMNShape>" +
+                "<bpmndi:BPMNEdge id=\"Flow_start_task_di\" bpmnElement=\"Flow_start_task\">" +
+                "<di:waypoint x=\"216\" y=\"178\" /><di:waypoint x=\"280\" y=\"178\" />" +
+                "</bpmndi:BPMNEdge>" +
+                "<bpmndi:BPMNEdge id=\"Flow_task_end_di\" bpmnElement=\"Flow_task_end\">" +
+                "<di:waypoint x=\"380\" y=\"178\" /><di:waypoint x=\"450\" y=\"178\" />" +
+                "</bpmndi:BPMNEdge>" +
                 "</bpmndi:BPMNPlane>" +
                 "</bpmndi:BPMNDiagram>" +
                 "</bpmn:definitions>";

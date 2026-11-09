@@ -48,11 +48,26 @@ namespace saiflow.engine.Xpdl
             //检验开始到结束的关键路径是否存在
             //Check if there is a critical path from start to finish
             var process = ProcessModelHelper.ConvertToXPDLProcess(xmlDoc);
+            if (process == null)
+            {
+                result.ProcessValidatedResultType = ProcessValidateResultTypeEnum.WithoutStartEndPath;
+                result.Message = "BPMN process node missing or unreadable.";
+                return result;
+            }
+
+            var dangling = FindDanglingTransitionTargets(process);
+            if (dangling.Count > 0)
+            {
+                result.ProcessValidatedResultType = ProcessValidateResultTypeEnum.WithoutStartEndPath;
+                result.Issues = dangling;
+                result.Message = string.Join("; ", dangling);
+                return result;
+            }
 
             var startActivityId = XMLHelper.GetXmlAttribute(startEvent, "id");
-            var activityList = process.ActivityList;
-            var transitionList = process.TransitionList;
-            activityList = activityList.Where(a => a.ActivityId != startActivityId).ToList();
+            var activityList = process.ActivityList?.ToList() ?? new List<Activity>();
+            var transitionList = process.TransitionList?.ToList() ?? new List<Transition>();
+            activityList = activityList.Where(a => a != null && a.ActivityId != startActivityId).ToList();
 
             var isExistedStartEndPath = TranverseTransitonList(process, activityList, transitionList, startActivityId);
             if (isExistedStartEndPath == false)
@@ -101,6 +116,35 @@ namespace saiflow.engine.Xpdl
         }
 
         /// <summary>
+        /// 连线 targetRef 指向未在 process 中声明的活动（仅有 BPMNDI 形状、无 bpmn:task 等）。
+        /// </summary>
+        internal static IList<string> FindDanglingTransitionTargets(Process process)
+        {
+            var issues = new List<string>();
+            if (process?.TransitionList == null)
+                return issues;
+
+            var known = new HashSet<string>(
+                (process.ActivityList ?? Array.Empty<Activity>())
+                    .Where(a => a != null && !string.IsNullOrWhiteSpace(a.ActivityId))
+                    .Select(a => a.ActivityId),
+                StringComparer.Ordinal);
+
+            foreach (var t in process.TransitionList)
+            {
+                if (t == null || string.IsNullOrWhiteSpace(t.ToActivityId))
+                    continue;
+                if (known.Contains(t.ToActivityId))
+                    continue;
+                issues.Add(
+                    "Transition '" + (t.TransitionId ?? "?")
+                    + "' targetRef='" + t.ToActivityId
+                    + "' has no matching activity element in process.");
+            }
+            return issues;
+        }
+
+        /// <summary>
         /// Iterative verification method
         /// 迭代验证方法
         /// </summary>
@@ -109,16 +153,24 @@ namespace saiflow.engine.Xpdl
             IList<Transition> transitionList,
             string activityId)
         {
-            var list = transitionList.Where(t => t.FromActivityId == activityId).ToList();
+            if (process == null || transitionList == null || string.IsNullOrEmpty(activityId))
+                return false;
+
+            var list = transitionList.Where(t => t != null && t.FromActivityId == activityId).ToList();
             foreach (var t in list)
             {
                 var toActivityId = t.ToActivityId;
                 var activity = ProcessModelHelper.GetActivity(process, toActivityId);
+                // 断链 / 仅 DI 无元素：跳过该边，避免 NRE
+                if (activity == null)
+                    continue;
                 if (activity.ActivityType == ActivityTypeEnum.EndNode)
                 {
                     return true;
                 }
-                activityList = activityList.Where(a => a.ActivityId != toActivityId).ToList();
+                activityList = (activityList ?? Array.Empty<Activity>())
+                    .Where(a => a != null && a.ActivityId != toActivityId)
+                    .ToList();
                 var isStartEndExisted = TranverseTransitonList(process, activityList, transitionList, toActivityId);
                 if (isStartEndExisted == true)
                 {

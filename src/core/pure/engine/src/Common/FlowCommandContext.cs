@@ -92,6 +92,12 @@ namespace saiflow.engine.Common
         public string TaskId { get; set; }
 
         /// <summary>
+        /// Process data: Process instance Id
+        /// 流程数据：流程实例Id（管理端强制结束等按 Id 精准定位时使用）
+        /// </summary>
+        public string ProcessInstanceId { get; set; }
+
+        /// <summary>
         /// Process data: Activity instance Id
         /// 流程数据：活动实例Id
         /// </summary>
