@@ -1097,7 +1097,8 @@ namespace saiflow.engine.Manager
             processFileEntity.ProcessName = processEntity.ProcessName;
             processFileEntity.ProcessCode = processEntity.ProcessCode;
             processFileEntity.Version = processEntity.Version;
-            processFileEntity.StartType = processEntity.StartType.Value;
+            // 新建流程未写 StartType 时为 null，不可直接 .Value
+            processFileEntity.StartType = processEntity.StartType ?? (byte)ProcessStartTypeEnum.None;
             processFileEntity.StartExpression = processEntity.StartExpression;
             processFileEntity.Description = processEntity.Description;
 
