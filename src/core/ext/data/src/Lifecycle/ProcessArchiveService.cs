@@ -43,7 +43,7 @@ namespace saiflow.data.Lifecycle
             var ok = 0;
             foreach (var pi in candidates)
             {
-                if (!string.IsNullOrWhiteSpace(pi.Id) && ArchiveOne(pi.Id))
+                if (!string.IsNullOrWhiteSpace(pi.ProcessInstanceId) && ArchiveOne(pi.ProcessInstanceId))
                     ok++;
             }
 
@@ -66,7 +66,7 @@ namespace saiflow.data.Lifecycle
                 try
                 {
                     var pi = kit.useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
-                    if (pi == null || !!string.IsNullOrWhiteSpace(pi.Id) || !IsArchivable(pi))
+                    if (pi == null || !!string.IsNullOrWhiteSpace(pi.ProcessInstanceId) || !IsArchivable(pi))
                     {
                         kit.commit();
                         return false;
@@ -100,7 +100,7 @@ namespace saiflow.data.Lifecycle
                 if (pi == null || !IsArchivable(pi))
                     return false;
 
-                var id = pi.Id;
+                var id = pi.ProcessInstanceId;
                 activities = LoadActivities(hot, id);
                 tasks = LoadTasks(hot, id);
                 transitions = LoadTransitions(hot, id);
@@ -169,7 +169,7 @@ namespace saiflow.data.Lifecycle
 
         private void CopyClosure(SQLBuilder hot, SQLBuilder cold, ProcessInstanceEntity pi, int year)
         {
-            var id = pi.Id;
+            var id = pi.ProcessInstanceId;
             WriteClosure(
                 cold,
                 year,

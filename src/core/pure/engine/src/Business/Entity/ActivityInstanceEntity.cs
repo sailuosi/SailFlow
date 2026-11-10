@@ -14,7 +14,7 @@ namespace saiflow.engine.Entity
     public class ActivityInstanceEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
-        public string Id { get; set; }
+        public string ActivityInstanceId { get; set; }
         [SooColumn(Name = "process_instance_id", Length = 64)]
         public string ProcessInstanceId { get; set; }
         [SooColumn(Name = "app_name")]

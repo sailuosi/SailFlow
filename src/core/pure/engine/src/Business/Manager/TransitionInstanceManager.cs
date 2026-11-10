@@ -42,16 +42,16 @@ namespace saiflow.engine.Manager
                 AppName = processInstance.AppName,
                 AppInstanceId = processInstance.AppInstanceId,
                 ProcessId = processInstance.ProcessId,
-                ProcessInstanceId = processInstance.Id,
+                ProcessInstanceId = processInstance.ProcessInstanceId,
                 TransitionId = transitionId,
                 TransitionType = (byte)transitionType,
                 FlyingType = (byte)flyingType,
                 FromActivityId = fromActivityInstance.ActivityId,
-                FromActivityInstanceId = fromActivityInstance.Id,
+                FromActivityInstanceId = fromActivityInstance.ActivityInstanceId,
                 FromActivityType = fromActivityInstance.ActivityType,
                 FromActivityName = fromActivityInstance.ActivityName,
                 ToActivityId = toActivityInstance.ActivityId,
-                ToActivityInstanceId = toActivityInstance.Id,
+                ToActivityInstanceId = toActivityInstance.ActivityInstanceId,
                 ToActivityType = toActivityInstance.ActivityType,
                 ToActivityName = toActivityInstance.ActivityName,
                 ConditionParsedResult = conditionParseResult,
@@ -74,7 +74,7 @@ namespace saiflow.engine.Manager
         {
             var table = Router.ResolveTransitionTable(entity?.ProcessId);
             var newId = HotShardEntityAccess.InsertReturnId(kit, table, entity);
-            entity.Id = newId;
+            entity.TransitionInstanceId = newId;
             return newId;
         }
 
@@ -123,7 +123,7 @@ namespace saiflow.engine.Manager
             {
                 var clip = kit.useSQL().useClip();
                 clip.from<TransitionInstanceEntity>(table, out var t);
-                clip.InnerJoin<ActivityInstanceEntity>(out var a).on(() => t.ToActivityInstanceId == a.Id);
+                clip.InnerJoin<ActivityInstanceEntity>(out var a).on(() => t.ToActivityInstanceId == a.ActivityInstanceId);
                 clip.where(() => t.AppInstanceId, appInstanceId);
                 clip.where(() => t.ProcessId, processId);
                 clip.sinkOR();
@@ -157,7 +157,7 @@ namespace saiflow.engine.Manager
                 clip.where(() => t.AppInstanceId, appInstanceId);
                 clip.where(() => t.ProcessId, processId);
                 clip.where(() => t.ToActivityType, (short)toActivityType);
-                clip.orderByDesc(() => t.Id);
+                clip.orderByDesc(() => t.CreatedDateTime);
                 return clip.select(t).queryList().ToList();
             });
         }
@@ -169,7 +169,7 @@ namespace saiflow.engine.Manager
             var pim = Sail.ProcessInstances;
             var pi = pim.GetProcessInstanceCurrent(appInstanceId, processId, version);
             if (pi != null)
-                list = GetTransitionInstanceListByProcessInstance(appInstanceId, processId, pi.Id);
+                list = GetTransitionInstanceListByProcessInstance(appInstanceId, processId, pi.ProcessInstanceId);
             return list;
         }
 
@@ -190,7 +190,7 @@ namespace saiflow.engine.Manager
                 clip.where(() => t.AppInstanceId, appInstanceId);
                 clip.where(() => t.ProcessId, processId);
                 clip.where(() => t.ProcessInstanceId, processInstanceId);
-                clip.orderByDesc(() => t.Id);
+                clip.orderByDesc(() => t.CreatedDateTime);
                 return clip.select(t).queryList().ToList();
             });
         }
@@ -284,10 +284,10 @@ namespace saiflow.engine.Manager
             if (legacy.Count == 0)
                 return rows;
 
-            var seen = new HashSet<string>(rows.Where(x => !string.IsNullOrWhiteSpace(x.Id)).Select(x => x.Id));
+            var seen = new HashSet<string>(rows.Where(x => !string.IsNullOrWhiteSpace(x.TransitionInstanceId)).Select(x => x.TransitionInstanceId));
             foreach (var row in legacy)
             {
-                if (!string.IsNullOrWhiteSpace(row.Id) && seen.Contains(row.Id))
+                if (!string.IsNullOrWhiteSpace(row.TransitionInstanceId) && seen.Contains(row.TransitionInstanceId))
                     continue;
                 rows.Add(row);
             }

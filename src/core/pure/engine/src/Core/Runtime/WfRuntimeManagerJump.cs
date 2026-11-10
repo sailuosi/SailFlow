@@ -26,7 +26,7 @@ namespace saiflow.engine.Runtime
             WfExecutedResult result = base.WfExecutedResult;
 
             var aim = Sail.ManagerFactory.Activities;
-            aim.Complete(kit.useSQL(), base.RunningActivityInstance.Id, this.AppRunner);
+            aim.Complete(kit.useSQL(), base.RunningActivityInstance.ActivityInstanceId, this.AppRunner);
 
             //构建跳转上下文
             //Build jump context
@@ -39,7 +39,7 @@ namespace saiflow.engine.Runtime
                     base.ActivityResource,
                     true,
                     kit, Sail);
-            jumpforwardExecutionContext.TaskId = this.TaskView.Id;
+            jumpforwardExecutionContext.TaskId = this.TaskView.TaskId;
             jumpforwardExecutionContext.FromActivityInstance = base.RunningActivityInstance;
 
             NodeMediator mediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediator(jumpforwardExecutionContext, kit);

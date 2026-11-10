@@ -94,7 +94,7 @@ namespace saiflow.engine.Runtime
                 AppRunner,
                 RunningActivityInstance.ProcessInstanceId,
                 RunningActivityInstance,
-                TaskView?.Id,
+                TaskView?.TaskId,
                 EventFireTypeEnum.OnProcessCompleted,
                 FlowOperation.Run);
             FlowCapabilityPipeline.AfterSuccess(

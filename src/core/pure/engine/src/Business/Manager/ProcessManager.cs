@@ -325,7 +325,7 @@ namespace saiflow.engine.Manager
                 throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.insert.error"));
             }
 
-            entity.Id = null;
+            entity.ProcessDefId = null;
             return kit.useSQL().useRepo<ProcessEntity, string>().InsertReturnId(entity);
         }
 
@@ -349,7 +349,7 @@ namespace saiflow.engine.Manager
                         var clip = kit.useSQL().useClip();
                         clip.setTable<ProcessEntity>(out var p);
                         clip.set(() => p.Status, entity.Status);
-                        clip.where(() => p.PackageId, entity.Id);
+                        clip.where(() => p.PackageId, entity.ProcessDefId);
                         clip.doUpdate();
                     }
                     kit.useSQL().useRepo<ProcessEntity, string>().Update(entity);
@@ -416,12 +416,12 @@ namespace saiflow.engine.Manager
                 try
                 {
                     var entity = GetByVersion(kit, processId, version, true);
-                    var originProcessId = entity.Id;
+                    var originProcessId = entity.ProcessDefId;
 
                     entity.Version = newVersion;
                     entity.CreatedDateTime = System.DateTime.UtcNow;
                     // 新建版本：清空 Id，由 AutoKey=Guid 重新发号（勿沿用旧版 Id）
-                    entity.Id = null;
+                    entity.ProcessDefId = null;
                     //升级主流程版本
                     //Upgrade package process version
                     newProcessId = kit.useSQL().useRepo<ProcessEntity, string>().InsertReturnId(entity);
@@ -528,7 +528,7 @@ namespace saiflow.engine.Manager
                         //Delete pool process
                         var poolClip = kit.useSQL().useClip();
                         poolClip.setTable<ProcessEntity>(out var pool);
-                        poolClip.where(() => pool.PackageId, entity.Id);
+                        poolClip.where(() => pool.PackageId, entity.ProcessDefId);
                         poolClip.doDelete();
                     }
 
@@ -697,7 +697,7 @@ namespace saiflow.engine.Manager
                     {
                         //删除泳道流程
                         //Delete pool process
-                        DeletePoolProcess(kit, processEntity.Id);
+                        DeletePoolProcess(kit, processEntity.ProcessDefId);
 
                         //更新主流程信息
                         //Update process info
@@ -818,20 +818,20 @@ namespace saiflow.engine.Manager
                     }
                     else
                     {
-                        var poolProcessListDatabase = GetPoolProcessList(kit, packageDB.Id);
+                        var poolProcessListDatabase = GetPoolProcessList(kit, packageDB.ProcessDefId);
                         List<string> poolProcessIDs = new List<string>();
                         foreach (var pool in poolProcessListDatabase)
                         {
                             if (poolProcessListClient.Count() == 0)
                             {
-                                poolProcessIDs.Add(pool.Id);
+                                poolProcessIDs.Add(pool.ProcessDefId);
                             }
                             else
                             {
                                 var item = poolProcessListClient.Find(a=>a.ParticipantId == pool.ParticipantGUID);
                                 if (item == null)
                                 {
-                                    poolProcessIDs.Add(pool.Id);
+                                    poolProcessIDs.Add(pool.ProcessDefId);
                                 }
                             }
                         }
@@ -840,7 +840,7 @@ namespace saiflow.engine.Manager
                         //Delete lane processes that are not included in the flowchart
                         if (poolProcessIDs.Count() > 0)
                         {
-                            DeletePoolProcess(kit, packageDB.Id, poolProcessIDs);
+                            DeletePoolProcess(kit, packageDB.ProcessDefId, poolProcessIDs);
                         }
 
                         //如果是泳道流程变为单一流程，更新PackageType和PackageId
@@ -872,7 +872,7 @@ namespace saiflow.engine.Manager
                                 processChild.PackageType = (byte)PackageTypeEnum.Pool;
                                 processChild.ProcessName = pool.Name;
                                 processChild.ProcessCode = pool.Code;
-                                processChild.PackageId = packageDB.Id;
+                                processChild.PackageId = packageDB.ProcessDefId;
                                 processChild.Version = packageDB.Version;
                                 processChild.XmlContent = entity.XmlContent;
                                 processChild.CreatedDateTime = DateTime.UtcNow;
@@ -1045,7 +1045,7 @@ namespace saiflow.engine.Manager
             var clip = kit.useSQL().useClip();
             clip.setTable<ProcessEntity>(out var p);
             clip.where(() => p.PackageId, packageId);
-            clip.whereIn(() => p.Id, poolProcessIds);
+            clip.whereIn(() => p.ProcessDefId, poolProcessIds);
             clip.doDelete();
         }
 

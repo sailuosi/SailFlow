@@ -40,7 +40,7 @@ namespace saiflow.engine.Pattern
             SQLBuilder kit)
         {
             //检查是否已有运行中的合并节点实例
-            ActivityInstanceEntity joinNode = base.ActivityInstanceManager.GetActivityRunning(kit.useSQL(), processInstance.Id, base.GatewayActivity.ActivityId);
+            ActivityInstanceEntity joinNode = base.ActivityInstanceManager.GetActivityRunning(kit.useSQL(), processInstance.ProcessInstanceId, base.GatewayActivity.ActivityId);
 
             int tokensRequired = 0;
             int tokensHad = 0;
@@ -79,7 +79,7 @@ namespace saiflow.engine.Pattern
                 tokensHad = base.GatewayActivityInstance.TokensHad.Value;
 
                 //累加已到达令牌数
-                base.ActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.Id, runner);
+                base.ActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.ActivityInstanceId, runner);
                 base.InsertTransitionInstance(processInstance,
                     transitionId,
                     fromActivityInstance,
@@ -92,7 +92,7 @@ namespace saiflow.engine.Pattern
             if ((tokensHad + 1) == tokensRequired)
             {
                 //达到完成所需令牌数时，将节点状态设为完成
-                base.CompleteActivityInstance(base.GatewayActivityInstance.Id,
+                base.CompleteActivityInstance(base.GatewayActivityInstance.ActivityInstanceId,
                     runner,
                     kit);
                 base.GatewayActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;

@@ -48,7 +48,7 @@ namespace saiflow.engine.Pattern
                     var pim = Sail.ProcessInstances;
                     var kit = Kit.useSQL();
                     var newId = pim.Insert(kit, ActivityForwardContext.ProcessInstance);
-                    ActivityForwardContext.ProcessInstance.Id = newId;
+                    ActivityForwardContext.ProcessInstance.ProcessInstanceId = newId;
 
                     //工作项执行前
                     OnBeforeExecuteWorkItem();
@@ -89,7 +89,7 @@ namespace saiflow.engine.Pattern
 
             ActivityInstanceManager.Insert(kit.useSQL(), fromActivityInstance);
 
-            ActivityInstanceManager.Complete(kit.useSQL(), fromActivityInstance.Id, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(kit.useSQL(), fromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
 
             fromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             LinkContext.FromActivityInstance = fromActivityInstance;

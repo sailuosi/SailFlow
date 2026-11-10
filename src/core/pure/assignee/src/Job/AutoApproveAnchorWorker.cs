@@ -75,7 +75,7 @@ public sealed class AutoApproveAnchorWorker
             }
             catch (Exception ex)
             {
-                Trace.TraceWarning("[Assignee.AutoApprove] row={0} failed: {1}", row.Id, ex.Message);
+                Trace.TraceWarning("[Assignee.AutoApprove] row={0} failed: {1}", row.TaskId, ex.Message);
                 using var kit = Sail.UseRunSQL();
                 kit.beginTransaction();
                 try
@@ -213,7 +213,7 @@ public sealed class AutoApproveAnchorWorker
             if (task != null)
             {
                 var stillWaiting = FindWaitingTask(sibling, anchor);
-                if (stillWaiting == null || stillWaiting.Id != task.Id)
+                if (stillWaiting == null || stillWaiting.TaskId != task.TaskId)
                 {
                     if (IsAnchorTargetAlreadyLeft(sibling, anchor))
                         MarkDone(om, row, alreadyDone: true);
@@ -226,7 +226,7 @@ public sealed class AutoApproveAnchorWorker
             else if (readyAct != null)
             {
                 var stillReady = FindReadyActivity(sibling, anchor);
-                if (stillReady == null || stillReady.Id != readyAct.Id)
+                if (stillReady == null || stillReady.ActivityInstanceId != readyAct.ActivityInstanceId)
                 {
                     if (IsAnchorTargetAlreadyLeft(sibling, anchor))
                         MarkDone(om, row, alreadyDone: true);
@@ -248,7 +248,7 @@ public sealed class AutoApproveAnchorWorker
                 UserName = anchor.PreferUserName ?? task.AssignedUserName ?? userId,
                 ProcessId = anchor.ProcessId ?? task.ProcessId,
                 Version = string.IsNullOrWhiteSpace(anchor.Version) ? versionHint : anchor.Version,
-                TaskId = task.Id,
+                TaskId = task.TaskId,
                 AppName = task.AppName,
                 AppInstanceId = task.AppInstanceId,
                 DynamicVariables = dyn
@@ -264,7 +264,7 @@ public sealed class AutoApproveAnchorWorker
                 UserName = anchor.PreferUserName ?? userId,
                 ProcessId = anchor.ProcessId ?? readyAct!.ProcessId,
                 Version = string.IsNullOrWhiteSpace(anchor.Version) ? versionHint : anchor.Version,
-                ActivityInstanceId = readyAct!.Id,
+                ActivityInstanceId = readyAct!.ActivityInstanceId,
                 AppName = readyAct.AppName,
                 AppInstanceId = readyAct.AppInstanceId,
                 DynamicVariables = dyn
@@ -327,7 +327,7 @@ public sealed class AutoApproveAnchorWorker
         {
             Trace.TraceInformation(
                 "[Assignee.AutoApprove] row={0} already advanced → MarkSucceeded (idempotent)",
-                row.Id);
+                row.TaskId);
         }
     }
 
@@ -358,7 +358,7 @@ public sealed class AutoApproveAnchorWorker
             return null;
 
         if (!string.IsNullOrWhiteSpace(anchor.TaskId))
-            return list.FirstOrDefault(x => x.Id == anchor.TaskId);
+            return list.FirstOrDefault(x => x.TaskId == anchor.TaskId);
 
         if (!string.IsNullOrWhiteSpace(anchor.PreferUserId))
         {
@@ -415,7 +415,7 @@ public sealed class AutoApproveAnchorWorker
             {
                 var clip = kit.useClip();
                 clip.from<ActivityInstanceEntity>(out var a);
-                clip.where(() => a.Id, anchor.ActivityInstanceId);
+                clip.where(() => a.ActivityInstanceId, anchor.ActivityInstanceId);
                 var act = clip.select(a).queryList()?.FirstOrDefault();
                 if (act == null)
                     return false;
@@ -460,7 +460,7 @@ public sealed class AutoApproveAnchorWorker
         {
             var clip = kit.useClip();
             clip.from<ActivityInstanceEntity>(out var a);
-            clip.where(() => a.Id, task.ActivityInstanceId);
+            clip.where(() => a.ActivityInstanceId, task.ActivityInstanceId);
             var act = clip.select(a).queryList()?.FirstOrDefault();
             if (act == null)
                 return false;
@@ -485,7 +485,7 @@ public sealed class AutoApproveAnchorWorker
         if (list.Count == 0)
             return null;
         if (!string.IsNullOrWhiteSpace(anchor.ActivityInstanceId))
-            return list.FirstOrDefault(x => x.Id == anchor.ActivityInstanceId);
+            return list.FirstOrDefault(x => x.ActivityInstanceId == anchor.ActivityInstanceId);
         // 无 AI Id 且多 Ready：拒绝自动，避免误挑（勿 OrderByDescending）
         return list.Count == 1 ? list[0] : null;
     }
@@ -522,7 +522,7 @@ public sealed class AutoApproveAnchorWorker
     {
         var clip = kit.useClip();
         clip.from<ProcessInstanceEntity>(out var p);
-        clip.where(() => p.Id, processInstanceId);
+        clip.where(() => p.ProcessInstanceId, processInstanceId);
         return clip.select(p).queryList()?.FirstOrDefault();
     }
 

@@ -152,7 +152,7 @@ namespace saiflow.engine.Service
                     Sail, kit, runner,
                     startedResult.ProcessInstanceIdStarted,
                     runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.Id,
+                    runtimeInstance.TaskView?.TaskId,
                     EventFireTypeEnum.OnProcessStarted,
                     FlowOperation.Start);
                 FlowCapabilityPipeline.AfterSuccess(
@@ -306,7 +306,7 @@ namespace saiflow.engine.Service
                 runner,
                 runtimeInstance.ProcessInstanceId,
                 runtimeInstance.RunningActivityInstance,
-                runtimeInstance.TaskView?.Id,
+                runtimeInstance.TaskView?.TaskId,
                 FlowOperation.Run);
             if (!FlowCapabilityPipeline.TryGate(Sail, kit, gateCtx, runAppResult))
                 return runAppResult;
@@ -319,7 +319,7 @@ namespace saiflow.engine.Service
                     Sail, kit, runner,
                     runtimeInstance.ProcessInstanceId,
                     runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.Id,
+                    runtimeInstance.TaskView?.TaskId,
                     EventFireTypeEnum.OnProcessContinued,
                     FlowOperation.Run);
                 FlowCapabilityPipeline.AfterSuccess(
@@ -441,7 +441,7 @@ namespace saiflow.engine.Service
                     Sail, kit, runner,
                     runtimeInstance.ProcessInstanceId,
                     runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.Id,
+                    runtimeInstance.TaskView?.TaskId,
                     EventFireTypeEnum.OnProcessContinued,
                     FlowOperation.Run);
                 FlowCapabilityPipeline.AfterSuccess(
@@ -502,7 +502,7 @@ namespace saiflow.engine.Service
                     runner,
                     runtimeInstance.ProcessInstanceId,
                     runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.Id,
+                    runtimeInstance.TaskView?.TaskId,
                     FlowOperation.Withdraw);
                 if (!FlowCapabilityPipeline.TryGate(Sail, kit, withdrawGateCtx, withdrawedResult))
                     return withdrawedResult;
@@ -515,7 +515,7 @@ namespace saiflow.engine.Service
                             Sail, kit, runner,
                             runtimeInstance.ProcessInstanceId,
                             runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.Id,
+                            runtimeInstance.TaskView?.TaskId,
                             EventFireTypeEnum.OnProcessWithdrawn,
                             FlowOperation.Withdraw);
                         FlowCapabilityPipeline.AfterSuccess(
@@ -580,7 +580,7 @@ namespace saiflow.engine.Service
                     runner,
                     runtimeInstance.ProcessInstanceId,
                     runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.Id,
+                    runtimeInstance.TaskView?.TaskId,
                     FlowOperation.SendBack);
                 if (!FlowCapabilityPipeline.TryGate(Sail, kit, sendBackGateCtx, sendbackResult))
                     return sendbackResult;
@@ -593,7 +593,7 @@ namespace saiflow.engine.Service
                             Sail, kit, runner,
                             runtimeInstance.ProcessInstanceId,
                             runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.Id,
+                            runtimeInstance.TaskView?.TaskId,
                             EventFireTypeEnum.OnProcessSendBacked,
                             FlowOperation.SendBack);
                         FlowCapabilityPipeline.AfterSuccess(
@@ -658,7 +658,7 @@ namespace saiflow.engine.Service
                     runner,
                     runtimeInstance.ProcessInstanceId,
                     runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.Id,
+                    runtimeInstance.TaskView?.TaskId,
                     FlowOperation.Resend);
                 if (!FlowCapabilityPipeline.TryGate(Sail, kit, resendGateCtx, resendResult))
                     return resendResult;
@@ -671,7 +671,7 @@ namespace saiflow.engine.Service
                             Sail, kit, runner,
                             runtimeInstance.ProcessInstanceId,
                             runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.Id,
+                            runtimeInstance.TaskView?.TaskId,
                             EventFireTypeEnum.OnProcessResent,
                             FlowOperation.Resend);
                         FlowCapabilityPipeline.AfterSuccess(
@@ -761,7 +761,7 @@ namespace saiflow.engine.Service
                     runner,
                     runtimeInstance.ProcessInstanceId,
                     runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.Id,
+                    runtimeInstance.TaskView?.TaskId,
                     FlowOperation.Revise);
                 if (!FlowCapabilityPipeline.TryGate(Sail, kit, reviseGateCtx, reviseResult))
                     return reviseResult;
@@ -774,7 +774,7 @@ namespace saiflow.engine.Service
                             Sail, kit, runner,
                             runtimeInstance.ProcessInstanceId,
                             runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.Id,
+                            runtimeInstance.TaskView?.TaskId,
                             EventFireTypeEnum.OnProcessRevised,
                             FlowOperation.Revise);
                         FlowCapabilityPipeline.AfterSuccess(
@@ -841,7 +841,7 @@ namespace saiflow.engine.Service
                     runner,
                     runtimeInstance.ProcessInstanceId,
                     runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.Id,
+                    runtimeInstance.TaskView?.TaskId,
                     FlowOperation.Reverse);
                 if (!FlowCapabilityPipeline.TryGate(Sail, kit, reverseGateCtx, reversedResult))
                     return reversedResult;
@@ -854,7 +854,7 @@ namespace saiflow.engine.Service
                             Sail, kit, runner,
                             runtimeInstance.ProcessInstanceId,
                             runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.Id,
+                            runtimeInstance.TaskView?.TaskId,
                             EventFireTypeEnum.OnProcessReversed,
                             FlowOperation.Reverse);
                         FlowCapabilityPipeline.AfterSuccess(
@@ -919,7 +919,7 @@ namespace saiflow.engine.Service
                     runner,
                     runtimeInstance.ProcessInstanceId,
                     runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.Id,
+                    runtimeInstance.TaskView?.TaskId,
                     FlowOperation.Reject);
                 if (!FlowCapabilityPipeline.TryGate(Sail, kit, rejectGateCtx, rejectedResult))
                     return rejectedResult;
@@ -932,7 +932,7 @@ namespace saiflow.engine.Service
                             Sail, kit, runner,
                             runtimeInstance.ProcessInstanceId,
                             runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.Id,
+                            runtimeInstance.TaskView?.TaskId,
                             EventFireTypeEnum.OnProcessRejected,
                             FlowOperation.Reject);
                         FlowCapabilityPipeline.AfterSuccess(
@@ -992,7 +992,7 @@ namespace saiflow.engine.Service
                     runner,
                     runtimeInstance.ProcessInstanceId,
                     runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.Id,
+                    runtimeInstance.TaskView?.TaskId,
                     FlowOperation.Close);
                 if (!FlowCapabilityPipeline.TryGate(Sail, kit, closeGateCtx, closedResult))
                     return closedResult;
@@ -1005,7 +1005,7 @@ namespace saiflow.engine.Service
                         Sail, kit, runner,
                         runtimeInstance.ProcessInstanceId,
                         runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
+                        runtimeInstance.TaskView?.TaskId,
                         EventFireTypeEnum.OnProcessClosed,
                         FlowOperation.Close);
                     FlowCapabilityPipeline.AfterSuccess(
@@ -1066,7 +1066,7 @@ namespace saiflow.engine.Service
                     runner,
                     runtimeInstance.ProcessInstanceId,
                     runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.Id,
+                    runtimeInstance.TaskView?.TaskId,
                     FlowOperation.Jump);
                 if (!FlowCapabilityPipeline.TryGate(Sail, kit, jumpGateCtx, jumpResult))
                     return jumpResult;
@@ -1079,7 +1079,7 @@ namespace saiflow.engine.Service
                         Sail, kit, runner,
                         runtimeInstance.ProcessInstanceId,
                         runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.Id,
+                        runtimeInstance.TaskView?.TaskId,
                         EventFireTypeEnum.OnProcessJumped,
                         FlowOperation.Jump);
                     FlowCapabilityPipeline.AfterSuccess(
@@ -1180,7 +1180,7 @@ namespace saiflow.engine.Service
                     runner,
                     runtimeInstance.ProcessInstanceId,
                     runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.Id,
+                    runtimeInstance.TaskView?.TaskId,
                     FlowOperation.SignForward);
                 if (!FlowCapabilityPipeline.TryGate(Sail, kit, signForwardGateCtx, signforwardResult))
                     return signforwardResult;
@@ -1193,7 +1193,7 @@ namespace saiflow.engine.Service
                             Sail, kit, runner,
                             runtimeInstance.ProcessInstanceId,
                             runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.Id,
+                            runtimeInstance.TaskView?.TaskId,
                             EventFireTypeEnum.OnProcessSignForwarded,
                             FlowOperation.SignForward);
                         FlowCapabilityPipeline.AfterSuccess(

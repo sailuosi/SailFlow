@@ -930,7 +930,7 @@ namespace saiflow.engine.Runtime
                 using (var kit = _sail.UseRunSQL())
                 {
                     var aim = _sail.ManagerFactory.Activities;
-                    var childList = aim.GetActivityMulitipleInstanceWithStateBatch(kit.useSQL(), runningNode.ProcessInstanceId, runningNode.Id, (short)ActivityStateEnum.Ready);
+                    var childList = aim.GetActivityMulitipleInstanceWithStateBatch(kit.useSQL(), runningNode.ProcessInstanceId, runningNode.ActivityInstanceId, (short)ActivityStateEnum.Ready);
                     runningNode = childList.FirstOrDefault();
                 }
             }
@@ -955,7 +955,7 @@ namespace saiflow.engine.Runtime
                 return rmins;
             }
 
-            var taskToDo = tm.GetTaskViewByActivity(runningNode.ProcessInstanceId, runningNode.Id);
+            var taskToDo = tm.GetTaskViewByActivity(runningNode.ProcessInstanceId, runningNode.ActivityInstanceId);
             runner.UserId = taskToDo.AssignedUserId;
             runner.UserName = taskToDo.AssignedUserName;
 
@@ -1177,7 +1177,7 @@ namespace saiflow.engine.Runtime
 
             //用于注册事件时候的流程Id
             //Process Id used for registering events
-            rmins.ProcessInstanceId = processInstance.Id;
+            rmins.ProcessInstanceId = processInstance.ProcessInstanceId;
 
             var tim = _sail.ManagerFactory.Transitions;
             var endTransitionInstance = tim.GetEndTransition(runner.AppName, runner.AppInstanceId, runner.ProcessId);

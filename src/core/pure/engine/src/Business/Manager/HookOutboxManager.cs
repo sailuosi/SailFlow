@@ -45,7 +45,7 @@ namespace saiflow.engine.Manager
                 clip.where(() => o.Kind, kind);
             else
                 clip.where(() => o.Kind != HookOutboxKinds.AssigneeAutoApprove);
-            clip.orderBy(() => o.Id);
+            clip.orderBy(() => o.CreatedAt);
             return clip.select(o).take(take).queryList()?.ToList()
                    ?? new List<HookOutboxEntity>();
         }
@@ -79,10 +79,10 @@ namespace saiflow.engine.Manager
                 if (candidate.NextRetryAt != null && candidate.NextRetryAt > now)
                     continue;
 
-                if (string.IsNullOrWhiteSpace(candidate.Id))
+                if (string.IsNullOrWhiteSpace(candidate.HookOutboxId))
                     continue;
 
-                if (TryClaimOne(kit, candidate.Id, leaseSeconds, out var row))
+                if (TryClaimOne(kit, candidate.HookOutboxId, leaseSeconds, out var row))
                     claimed.Add(row);
             }
 
@@ -102,14 +102,14 @@ namespace saiflow.engine.Manager
             clip.where(() =>
                 (o.LeasedUntil != null && o.LeasedUntil < now)
                 || (o.LeasedUntil == null && o.UpdatedAt != null && o.UpdatedAt < staleBeforeUtc));
-            clip.orderBy(() => o.Id);
+            clip.orderBy(() => o.CreatedAt);
             // 单次回收上限，避免极端积压时一次事务过大
             var rows = clip.select(o).take(200).queryList() ?? new List<HookOutboxEntity>();
             var reclaimed = 0;
 
             foreach (var row in rows)
             {
-                if (string.IsNullOrWhiteSpace(row.Id))
+                if (string.IsNullOrWhiteSpace(row.HookOutboxId))
                     continue;
 
                 var update = kit.useSQL().useClip();
@@ -117,7 +117,7 @@ namespace saiflow.engine.Manager
                 update.set(() => u.Status, HookOutboxStatus.Pending);
                 update.setToNull(() => u.LeasedUntil);
                 update.set(() => u.UpdatedAt, now);
-                update.where(() => u.Id, row.Id);
+                update.where(() => u.HookOutboxId, row.HookOutboxId);
                 update.where(() => u.Status, HookOutboxStatus.Processing);
                 if (update.doUpdate() > 0)
                     reclaimed++;
@@ -180,7 +180,7 @@ namespace saiflow.engine.Manager
             clip.where(() => o.ProcessInstanceId, processInstanceId);
             clip.where(() => o.Status, HookOutboxStatus.Pending);
             clip.where(() => o.ActivityInstanceId == null);
-            clip.orderBy(() => o.Id);
+            clip.orderBy(() => o.CreatedAt);
             var candidates = clip.select(o).take(50).queryList() ?? new List<HookOutboxEntity>();
             var n = 0;
             var repo = kit.useSQL().useRepo<HookOutboxEntity>();
@@ -249,7 +249,7 @@ namespace saiflow.engine.Manager
             var clip = kit.useSQL().useClip();
             clip.from<HookOutboxEntity>(out var o);
             clip.where(() => o.Status, status);
-            clip.orderBy(() => o.Id);
+            clip.orderBy(() => o.CreatedAt);
             return clip.select(o).take(take).queryList()?.ToList()
                    ?? new List<HookOutboxEntity>();
         }
@@ -271,7 +271,7 @@ namespace saiflow.engine.Manager
                 clip.where(() => o.ProcessCode, processCode);
             if (!string.IsNullOrEmpty(handlerName))
                 clip.where(() => o.HandlerName, handlerName);
-            clip.orderBy(() => o.Id);
+            clip.orderBy(() => o.CreatedAt);
             return clip.select(o).take(take).queryList()?.ToList()
                    ?? new List<HookOutboxEntity>();
         }
@@ -305,7 +305,7 @@ namespace saiflow.engine.Manager
             var count = 0;
             foreach (var row in dead)
             {
-                if (ResetDeadIfDead(kit, row.Id))
+                if (ResetDeadIfDead(kit, row.HookOutboxId))
                     count++;
             }
 
@@ -367,7 +367,7 @@ namespace saiflow.engine.Manager
             clip.where(() =>
                 (o.UpdatedAt != null && o.UpdatedAt < olderThanUtc)
                 || (o.UpdatedAt == null && o.CreatedAt != null && o.CreatedAt < olderThanUtc));
-            clip.orderBy(() => o.Id);
+            clip.orderBy(() => o.CreatedAt);
             var candidates = clip.select(o).take(limit).queryList()
                              ?? new List<HookOutboxEntity>();
 
@@ -375,9 +375,9 @@ namespace saiflow.engine.Manager
             var repo = kit.useSQL().useRepo<HookOutboxEntity, string>();
             foreach (var row in candidates)
             {
-                if (!!string.IsNullOrWhiteSpace(row.Id))
+                if (!!string.IsNullOrWhiteSpace(row.HookOutboxId))
                     continue;
-                repo.DeleteById(row.Id);
+                repo.DeleteById(row.HookOutboxId);
                 n++;
             }
 
@@ -410,7 +410,7 @@ namespace saiflow.engine.Manager
             clip.set(() => o.Status, HookOutboxStatus.Processing);
             clip.set(() => o.UpdatedAt, now);
             clip.set(() => o.LeasedUntil, leasedUntil);
-            clip.where(() => o.Id, id);
+            clip.where(() => o.HookOutboxId, id);
             clip.where(() => o.Status, HookOutboxStatus.Pending);
             if (clip.doUpdate() <= 0)
                 return false;

@@ -113,7 +113,7 @@ namespace saiflow.engine.Runtime
                             //Serial countersignature nodes read the previous step in descending order of Completed Order
                             var previousAdjacentBrotherNode = GetPreviousOfMultipleInstanceNode(
                                 runningNode.MainActivityInstanceId,
-                                runningNode.Id,
+                                runningNode.ActivityInstanceId,
                                 runningNode.CompleteOrder.Value);
                             if (previousAdjacentBrotherNode != null)
                             {
@@ -263,7 +263,7 @@ namespace saiflow.engine.Runtime
                 //已经是中间节点，只能退回到上一步多实例子节点
                 //It is already an intermediate node and can only be reverted back to the previous step of the multi instance node
                 var entity = GetPreviousOfMultipleInstanceNode(runningNode.MainActivityInstanceId,
-                    runningNode.Id,
+                    runningNode.ActivityInstanceId,
                     runningNode.CompleteOrder.Value);
                 var activity = processModel.GetActivity(entity.ActivityId);
 
@@ -290,7 +290,7 @@ namespace saiflow.engine.Runtime
             clip.where(() => a.MainActivityInstanceId, mainActivityInstanceId);
             clip.where(() => a.CompleteOrder, completeOrder - 1);
             clip.where(() => a.ActivityState, (short)ActivityStateEnum.Completed);
-            clip.orderByDesc(() => a.Id);
+            clip.orderByDesc(() => a.CreatedDateTime);
             return clip.select(a).queryUnique();
         }
 
@@ -328,12 +328,12 @@ namespace saiflow.engine.Runtime
                 }
                 else
                 {
-                    backSrcActivityInstanceId = runningNode.Id;
+                    backSrcActivityInstanceId = runningNode.ActivityInstanceId;
                 }
             }
             else
             {
-                backSrcActivityInstanceId = runningNode.Id;
+                backSrcActivityInstanceId = runningNode.ActivityInstanceId;
             }
 
             var aim = Sail.ManagerFactory.Activities;

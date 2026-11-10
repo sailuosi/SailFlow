@@ -15,7 +15,7 @@ namespace saiflow.engine.Entity
     public class JobInfoEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
-        public string Id { get; set; }
+        public string JobInfoId { get; set; }
         [SooColumn(Name = "job_name")]
         public string JobName { get; set; }
         [SooColumn(Name = "topic")]

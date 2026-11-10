@@ -15,7 +15,7 @@ namespace saiflow.engine.Entity
     public class TaskEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
-        public string Id { get; set; }
+        public string TaskId { get; set; }
         [SooColumn(Name = "activity_instance_id", Length = 64)]
         public string ActivityInstanceId { get; set; }
         [SooColumn(Name = "process_instance_id", Length = 64)]

@@ -92,7 +92,7 @@ namespace saiflow.engine.Pattern
                 TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
             }
 
-            ActivityInstanceManager.Complete(kit.useSQL(), LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(kit.useSQL(), LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
 
             LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             bool canContinueForwardCurrentNode = LinkContext.FromActivityInstance.CanNotRenewInstance == 0;
@@ -143,7 +143,7 @@ namespace saiflow.engine.Pattern
                     entity.UnitName = plist[i].UnitName;
                     entity.ActivityState = (short)ActivityStateEnum.Ready;
 
-                    entity.Id = ActivityInstanceManager.Insert(kit.useSQL(), entity);
+                    entity.ActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), entity);
 
                     TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
 

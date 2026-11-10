@@ -56,7 +56,7 @@ namespace saiflow.engine.Pattern
                     AppInstanceId = processInstance?.AppInstanceId,
                     ProcessId = processInstance?.ProcessId,
                     ProcessInstanceId = processInstanceId,
-                    ActivityInstanceId = currentActivityInstance.Id,
+                    ActivityInstanceId = currentActivityInstance.ActivityInstanceId,
                     ActivityId = currentActivity.ActivityId,
                     ActivityName = currentActivity.ActivityName,
                     Name = workflowVarName,
@@ -95,7 +95,7 @@ namespace saiflow.engine.Pattern
                 return dict;
             var pvm = SailFactoryAccess.Managers(client).ProcessVariables;
             var processInstanceId = eventService.GetProcessInstanceId();
-            var activityInstanceId = activityInstance.Id;
+            var activityInstanceId = activityInstance.ActivityInstanceId;
             var processScope = ProcessVariableScopeEnum.Process.ToString();
             var activityScope = ProcessVariableScopeEnum.Activity.ToString();
 
@@ -136,7 +136,7 @@ namespace saiflow.engine.Pattern
                             var sourceInst = ResolveSourceActivityInstance(activityInstance, def.SourceRef.Trim(), kit, aim);
                             if (sourceInst != null)
                             {
-                                var srcEntity = pvm.GetVariableByActivity(kit, processInstanceId, sourceInst.Id,
+                                var srcEntity = pvm.GetVariableByActivity(kit, processInstanceId, sourceInst.ActivityInstanceId,
                                     def.SourceVariableName.Trim());
                                 raw = srcEntity?.Value;
                             }

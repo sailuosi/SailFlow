@@ -8,7 +8,7 @@ namespace saiflow.engine.Entity
     public class HookOutboxEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
-        public string Id { get; set; }
+        public string HookOutboxId { get; set; }
 
         [SooColumn(Name = "kind")]
         public string Kind { get; set; }

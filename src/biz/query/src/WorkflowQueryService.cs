@@ -36,7 +36,7 @@ namespace saiflow.biz.query
             clip.where(() => t.ActivityType == 4 || t.WorkItemType == 1);
             clip.where(() => t.ActivityState, (short)1);
             clip.where(() => t.TaskState, (short)32, "<>");
-            clip.orderByDesc(() => t.Id);
+            clip.orderByDesc(() => t.ActivatedDateTime);
             clip.top(10);
             return clip.select(t).queryList().ToList();
         }
@@ -50,7 +50,7 @@ namespace saiflow.biz.query
             clip.where(() => t.ActivityType == 4 || t.WorkItemType == 1);
             clip.where(() => t.ActivityState, (short)4);
             clip.where(() => t.TaskState, (short)32, "<>");
-            clip.orderByDesc(() => t.Id);
+            clip.orderByDesc(() => t.EndedDateTime);
             clip.top(10);
             return clip.select(t).queryList().ToList();
         }
@@ -145,7 +145,7 @@ namespace saiflow.biz.query
             clip.where(() => t.ProcessState, (short)2);
             clip.where(() => t.ActivityType == 4 || t.WorkItemType == 1);
             clip.where(() => t.ActivityState, (short)1);
-            clip.orderByDesc(() => t.Id);
+            clip.orderByDesc(() => t.ActivatedDateTime);
             return clip.select(t).queryList();
         }
 
@@ -171,7 +171,7 @@ namespace saiflow.biz.query
                     if (mergeType == MergeTypeEnum.Sequence)
                     {
                         var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.Id,
+                            mainActivityInstance.ActivityInstanceId,
                             mainActivityInstance.ProcessInstanceId,
                             (short)ActivityStateEnum.Suspended).ToList();
                         short allNum = (short)mainActivityInstance.AssignedUserIds.Split(',').Length;
@@ -208,7 +208,7 @@ namespace saiflow.biz.query
                     else if (mergeType == MergeTypeEnum.Parallel)
                     {
                         var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.Id,
+                            mainActivityInstance.ActivityInstanceId,
                             mainActivityInstance.ProcessInstanceId,
                             null).ToList();
                         var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed).ToList().Count();
@@ -246,7 +246,7 @@ namespace saiflow.biz.query
                         || signforwardType == SignForwardTypeEnum.SignForwardBefore)
                     {
                         var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.Id,
+                            mainActivityInstance.ActivityInstanceId,
                             mainActivityInstance.ProcessInstanceId,
                             (short)ActivityStateEnum.Suspended).ToList();
 
@@ -282,7 +282,7 @@ namespace saiflow.biz.query
                     else if (signforwardType == SignForwardTypeEnum.SignForwardParallel)
                     {
                         var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.Id,
+                            mainActivityInstance.ActivityInstanceId,
                             mainActivityInstance.ProcessInstanceId,
                             null).ToList();
 
@@ -363,7 +363,10 @@ namespace saiflow.biz.query
             if (!string.IsNullOrEmpty(query.AppName))
                 clip.whereLike(() => t.AppName, query.AppName);
 
-            clip.orderByDesc(() => t.Id);
+            if (activityState == (short)ActivityStateEnum.Completed)
+                clip.orderByDesc(() => t.EndedDateTime);
+            else
+                clip.orderByDesc(() => t.ActivatedDateTime);
             // 库端分页（禁止全量 queryList 再内存切页）
             var page = clip.select(t).setPage(pageSize, pageIndex).queryPage();
             var items = (IList<TaskViewEntity>)(page.Items?.ToList() ?? new List<TaskViewEntity>());
@@ -387,7 +390,7 @@ namespace saiflow.biz.query
             if (query.ProcessState.HasValue)
                 clip.where(() => pi.ProcessState, query.ProcessState.Value);
 
-            clip.orderByDesc(() => pi.Id);
+            clip.orderByDesc(() => pi.CreatedDateTime);
             var page = clip.select(pi).setPage(pageSize, pageIndex).queryPage();
             var items = (IList<ProcessInstanceEntity>)(page.Items?.ToList() ?? new List<ProcessInstanceEntity>());
             return (items, page.Total);
@@ -401,7 +404,7 @@ namespace saiflow.biz.query
         {
             var clip = Sail.UseRunSQL().useClip();
             clip.from<ProcessInstanceEntity>(out var pi);
-            clip.where(() => pi.Id, processInstanceId);
+            clip.where(() => pi.ProcessInstanceId, processInstanceId);
             var hot = clip.select(pi).queryList().FirstOrDefault();
             if (hot != null)
                 return hot;
@@ -465,7 +468,7 @@ namespace saiflow.biz.query
             {
                 imageList.Add(new NodeImage
                 {
-                    Id = a.Id,
+                    Id = a.ActivityInstanceId,
                     ActivityName = a.ActivityName
                 });
             }
@@ -482,7 +485,7 @@ namespace saiflow.biz.query
             {
                 imageList.Add(new TransitionImage
                 {
-                    Id = t.Id,
+                    Id = t.TransitionInstanceId,
                     TransitionId = t.TransitionId
                 });
             }

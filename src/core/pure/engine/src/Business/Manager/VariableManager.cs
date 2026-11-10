@@ -48,7 +48,7 @@ namespace saiflow.engine.Manager
         {
             entity.CreatedDateTime = DateTime.UtcNow;
             var newId = kit.useRepo<VariableEntity, string>().InsertReturnId(entity);
-            entity.Id = newId;
+            entity.VariableId = newId;
             return newId;
         }
 
@@ -118,7 +118,7 @@ namespace saiflow.engine.Manager
                 item.ActivityId = activityId;
                 item.SortOrder = order++;
                 // 新建：清空 Id，由 AutoKey=Guid 发号
-                item.Id = null;
+                item.VariableId = null;
                 Insert(kit, item);
             }
         }

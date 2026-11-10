@@ -81,7 +81,7 @@ namespace saiflow.engine.Pattern
                 if (outputVariableNameList != null && fromActivityInstance != null)
                 {
                     var inputVariableValueList = pvm.GetVariableListByActivity(
-                        kit, processInstanceId, fromActivityInstance.Id, outputVariableNameList);
+                        kit, processInstanceId, fromActivityInstance.ActivityInstanceId, outputVariableNameList);
 
                     foreach (var item in inputVariableValueList)
                         variables[item.Name] = item.Value ?? string.Empty;
@@ -128,7 +128,7 @@ namespace saiflow.engine.Pattern
                     ProcessInstanceId = processInstanceId,
                     ProcessId = processId,
                     AppInstanceId = appInstanceId,
-                    ActivityInstanceId = currentActivityInstance.Id,
+                    ActivityInstanceId = currentActivityInstance.ActivityInstanceId,
                     ActivityId = currentActivityInstance.ActivityId,
                     ActivityName = currentActivityInstance.ActivityName,
                     Name = currentOutputVariable?.Name
@@ -150,7 +150,7 @@ namespace saiflow.engine.Pattern
                             ProcessInstanceId = processInstanceId,
                             ProcessId = processId,
                             AppInstanceId = appInstanceId,
-                            ActivityInstanceId = currentActivityInstance.Id,
+                            ActivityInstanceId = currentActivityInstance.ActivityInstanceId,
                             ActivityId = currentActivityInstance.ActivityId,
                             ActivityName = currentActivityInstance.ActivityName,
                             Name = kv.Key,

@@ -158,7 +158,7 @@ namespace saiflow.engine.Pattern
                 string fromActivityName = string.Empty;
                 if (IsNotNodeMediatorStart(this) == true && ActivityForwardContext.FromActivityInstance != null)
                 {
-                    fromActivityInstanceId = ActivityForwardContext.FromActivityInstance.Id;
+                    fromActivityInstanceId = ActivityForwardContext.FromActivityInstance.ActivityInstanceId;
                     fromActivityId = ActivityForwardContext.FromActivityInstance.ActivityId;
                     fromActivityName = ActivityForwardContext.FromActivityInstance.ActivityName;
                 }
@@ -167,7 +167,7 @@ namespace saiflow.engine.Pattern
                 {
                     AppInstanceId = ActivityForwardContext.ProcessInstance.AppInstanceId,
                     ProcessId = ActivityForwardContext.ProcessInstance.ProcessId,
-                    ProcessInstanceId = ActivityForwardContext.ProcessInstance.Id,
+                    ProcessInstanceId = ActivityForwardContext.ProcessInstance.ProcessInstanceId,
                     ActivityId = fromActivityId,
                     ActivityName = fromActivityName
                 };
@@ -234,7 +234,7 @@ namespace saiflow.engine.Pattern
         {
             var runner = ActivityForwardContext?.ActivityResource?.AppRunner;
             var processInstance = ActivityForwardContext?.ProcessInstance;
-            if (runner == null || processInstance?.Id == null)
+            if (runner == null || processInstance?.ProcessInstanceId == null)
                 return;
 
             var ai = activityInstance
@@ -245,7 +245,7 @@ namespace saiflow.engine.Pattern
                 Sail,
                 Kit,
                 runner,
-                processInstance.Id,
+                processInstance.ProcessInstanceId,
                 ai,
                 ActivityForwardContext.TaskId,
                 eventType,
@@ -319,7 +319,7 @@ namespace saiflow.engine.Pattern
                 {
                     var nextActivityMatchedResult = this.ActivityForwardContext.ProcessModel.GetNextActivityTreeListRuntime(
                         this.LinkContext.FromActivityInstance.ActivityId,
-                        this.LinkContext.FromActivityInstance.Id,
+                        this.LinkContext.FromActivityInstance.ActivityInstanceId,
                         activityResource.ConditionKeyValuePair,
                         activityResource,
                         (a, b) => a.NextActivityPerformers.ContainsKey(b.ActivityId),
@@ -673,13 +673,13 @@ namespace saiflow.engine.Pattern
 
                 var kit = Kit.useSQL();
                 var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
-                var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id, currentActivityInstance.Id,
+                var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.ProcessInstanceId, currentActivityInstance.ActivityInstanceId,
                     outputVariableNameList);
 
                 var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
 
                 var processModelBPMNCore = new ProcessModelBPMNCore();
-                var aiServiceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId, currentActivityInstance.Id, newConditionKeyValuePair, Kit);
+                var aiServiceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId, currentActivityInstance.ActivityInstanceId, newConditionKeyValuePair, Kit);
 
                 if (aiServiceNextMatchedResult.MatchedType != NextActivityMatchedType.Successed
                     || aiServiceNextMatchedResult.Root == null
@@ -751,12 +751,12 @@ namespace saiflow.engine.Pattern
 
                 var kit = Kit.useSQL();
                 var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
-                var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.Id, currentActivityInstance.Id,
+                var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.ProcessInstanceId, currentActivityInstance.ActivityInstanceId,
                     outputVariableNameList);
                 var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
 
                 var processModelBPMNCore = new ProcessModelBPMNCore();
-                var serviceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId, currentActivityInstance.Id, newConditionKeyValuePair, Kit);
+                var serviceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId, currentActivityInstance.ActivityInstanceId, newConditionKeyValuePair, Kit);
 
                 if (serviceNextMatchedResult.MatchedType != NextActivityMatchedType.Successed
                     || serviceNextMatchedResult.Root == null
@@ -1062,7 +1062,7 @@ namespace saiflow.engine.Pattern
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,
                 processInstance.ProcessId,
-                processInstance.Id,
+                processInstance.ProcessInstanceId,
                 activity,
                 runner);
 
@@ -1164,7 +1164,7 @@ namespace saiflow.engine.Pattern
                 entity.UnitId = plist[i].UnitId;
                 entity.UnitCode = plist[i].UnitCode;
                 entity.UnitName = plist[i].UnitName;
-                entity.MainActivityInstanceId = toActivityInstance.Id;
+                entity.MainActivityInstanceId = toActivityInstance.ActivityInstanceId;
 
                 // 设置多实例子节点执行顺序（串行 / 并行）
                 if (toActivityInstance.MergeType == (short)MergeTypeEnum.Sequence)
@@ -1183,7 +1183,7 @@ namespace saiflow.engine.Pattern
                     entity.ActivityState = (short)ActivityStateEnum.Suspended;
                 }
 
-                entity.Id = ActivityInstanceManager.Insert(kit.useSQL(), entity);
+                entity.ActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), entity);
                 TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
                 FireActivityLifecycle(kit, processInstance, entity, activityResource.AppRunner,
                     EventFireTypeEnum.OnActivityCreated);
@@ -1200,14 +1200,14 @@ namespace saiflow.engine.Pattern
             FlowCommandContext runner,
             EventFireTypeEnum eventType)
         {
-            if (runner == null || processInstance?.Id == null || activityInstance == null)
+            if (runner == null || processInstance?.ProcessInstanceId == null || activityInstance == null)
                 return;
 
             var hookCtx = FlowCapabilityPipeline.BuildHookContext(
                 Sail,
                 kit,
                 runner,
-                processInstance.Id,
+                processInstance.ProcessInstanceId,
                 activityInstance,
                 null,
                 eventType,
@@ -1241,7 +1241,7 @@ namespace saiflow.engine.Pattern
                 processInstance.AppName,
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,
-                processInstance.Id,
+                processInstance.ProcessInstanceId,
                 processInstance.ProcessId,
                 this.BackwardContext.BackwardToTaskActivity,
                 backwardType,
@@ -1407,7 +1407,7 @@ namespace saiflow.engine.Pattern
         /// </summary>
         protected void BindAutoApproveAnchorActivityInstance(SQLBuilder kit, ActivityInstanceEntity activityInstance)
         {
-            if (string.IsNullOrWhiteSpace(activityInstance?.Id)
+            if (string.IsNullOrWhiteSpace(activityInstance?.ActivityInstanceId)
                 || string.IsNullOrWhiteSpace(activityInstance.ProcessInstanceId)
                 || string.IsNullOrWhiteSpace(activityInstance.ActivityId))
                 return;
@@ -1418,13 +1418,13 @@ namespace saiflow.engine.Pattern
                     kit.useSQL(),
                     activityInstance.ProcessInstanceId,
                     activityInstance.ActivityId,
-                    activityInstance.Id);
+                    activityInstance.ActivityInstanceId);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Trace.TraceWarning(
                     "[Assignee] BindAutoApproveAnchorActivityInstance failed AI={0}: {1}",
-                    activityInstance.Id, ex.Message);
+                    activityInstance.ActivityInstanceId, ex.Message);
             }
         }
         #endregion

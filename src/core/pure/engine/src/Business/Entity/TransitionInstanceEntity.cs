@@ -14,7 +14,7 @@ namespace saiflow.engine.Entity
     public class TransitionInstanceEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
-        public string Id { get; set; }
+        public string TransitionInstanceId { get; set; }
         [SooColumn(Name = "transition_id")]
         public string TransitionId { get; set; }
         [SooColumn(Name = "app_name")]

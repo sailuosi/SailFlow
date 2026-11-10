@@ -38,13 +38,13 @@ namespace saiflow.engine.Runtime
             var psc = SailFactoryAccess.Managers(Sail).PreviousSteps;
             var previousAdjacentBrotherNode = psc.GetPreviousOfMultipleInstanceNode(
                 runningNode.MainActivityInstanceId,
-                runningNode.Id,
+                runningNode.ActivityInstanceId,
                 runningNode.CompleteOrder.Value);
 
             CreateBackwardActivityTaskOfInnerMultipleInstance(this.SendBackOperation.ProcessInstance,
                 previousAdjacentBrotherNode,
                 base.SendBackOperation.BackwardType,
-                base.SendBackOperation.BackwardFromActivityInstance.Id,
+                base.SendBackOperation.BackwardFromActivityInstance.ActivityInstanceId,
                 base.SendBackOperation.ActivityResource,
                 base.Kit);
 
@@ -80,7 +80,7 @@ namespace saiflow.engine.Runtime
             var rollbackPreviousActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
                 backSrcActivityInstanceId,
-                originalBackwardToActivityInstance.Id,
+                originalBackwardToActivityInstance.ActivityInstanceId,
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;

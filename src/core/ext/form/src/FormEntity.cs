@@ -8,7 +8,7 @@ namespace saiflow.hub.Form
     public class FormEntity
     {
         [SooColumn(Name = "Id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
-        public string Id { get; set; }
+        public string FormId { get; set; }
 
         [SooColumn(Name = "FormName", Length = 200)]
         public string FormName { get; set; }

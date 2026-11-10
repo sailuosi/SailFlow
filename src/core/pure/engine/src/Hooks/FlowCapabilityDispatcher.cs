@@ -321,7 +321,7 @@ namespace saiflow.engine.Hooks
                 {
                     Sail.CapabilityMetrics?.IncrementOutboxDead();
                     Trace.TraceWarning(
-                        $"[saiflow] Hook outbox dead-letter id={row.Id} kind={row.Kind} handler={row.HandlerName}: {ex.Message}");
+                        $"[saiflow] Hook outbox dead-letter id={row.TaskId} kind={row.Kind} handler={row.HandlerName}: {ex.Message}");
                 }
 
                 return false;
@@ -389,7 +389,7 @@ namespace saiflow.engine.Hooks
                 ProcessInstanceId = processInstanceId,
                 ActivityId = activityInstance?.ActivityId,
                 ActivityCode = activityInstance?.ActivityCode,
-                ActivityInstanceId = activityInstance?.Id,
+                ActivityInstanceId = activityInstance?.ActivityInstanceId,
                 TaskId = taskId,
                 AssignedUserId = runner?.UserId,
                 AssignedUserName = runner?.UserName,
@@ -456,7 +456,7 @@ namespace saiflow.engine.Hooks
                 ActivityId = task.ActivityId,
                 ActivityCode = activityInstance?.ActivityCode,
                 ActivityInstanceId = task.ActivityInstanceId,
-                TaskId = task.Id,
+                TaskId = task.TaskId,
                 AssignedUserId = task.AssignedUserId,
                 AssignedUserName = task.AssignedUserName,
                 EventType = eventType,
@@ -476,7 +476,7 @@ namespace saiflow.engine.Hooks
                 ActivityId = task.ActivityId,
                 ActivityCode = activityInstance?.ActivityCode,
                 ActivityInstanceId = task.ActivityInstanceId,
-                TaskId = task.Id,
+                TaskId = task.TaskId,
                 AssignedUserId = task.AssignedUserId,
                 AssignedUserName = task.AssignedUserName,
                 Kind = kind,

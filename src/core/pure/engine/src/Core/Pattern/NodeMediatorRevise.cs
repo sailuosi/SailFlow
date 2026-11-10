@@ -135,7 +135,7 @@ namespace saiflow.engine.Pattern
 
                 //设置活动节点的状态为完成状态
                 //将活动节点状态设为完成
-                var activityInstanceId = base.ActivityInstanceManager.GetByTask(taskId).Id;
+                var activityInstanceId = base.ActivityInstanceManager.GetByTask(taskId).ActivityInstanceId;
                 base.ActivityInstanceManager.Complete(kit.useSQL(), activityInstanceId, activityResource.AppRunner);
             }
             return canContinueForwardCurrentNode;
@@ -151,7 +151,7 @@ namespace saiflow.engine.Pattern
             ActivityInstanceEntity mainActivityInstance, 
             SQLBuilder kit)
         {
-            var childNodeListOfMI = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(kit.useSQL(), mainActivityInstance.Id, mainActivityInstance.ProcessInstanceId);
+            var childNodeListOfMI = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(kit.useSQL(), mainActivityInstance.ActivityInstanceId, mainActivityInstance.ProcessInstanceId);
 
             ActivityInstanceEntity entity = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)
@@ -169,7 +169,7 @@ namespace saiflow.engine.Pattern
                 entity = ActivityInstanceManager.CreateActivityInstanceObject(mainActivityInstance);
                 entity.AssignedUserIds = userId;
                 entity.AssignedUserNames = userName;
-                entity.MainActivityInstanceId = mainActivityInstance.Id;
+                entity.MainActivityInstanceId = mainActivityInstance.ActivityInstanceId;
 
                 //设置多实例子节点串行/并行执行顺序
                 if (mainActivityInstance.MergeType == (short)MergeTypeEnum.Sequence)
@@ -188,7 +188,7 @@ namespace saiflow.engine.Pattern
                     entity.ActivityState = (short)ActivityStateEnum.Suspended;
                 }
 
-                entity.Id = ActivityInstanceManager.Insert(kit.useSQL(), entity);
+                entity.ActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), entity);
 
                 base.TaskManager.Insert(kit.useSQL(), entity, plist[i], base.ActivityForwardContext.ActivityResource.AppRunner);
             }
@@ -221,7 +221,7 @@ namespace saiflow.engine.Pattern
             ActivityInstanceEntity toActivityInstance, 
             SQLBuilder kit)
         {
-            var childNodeListOfAndSplitMI = base.ActivityInstanceManager.GetValidSplitedActivityInstanceList(kit.useSQL(), gatewayActivityInstance.ProcessInstanceId, gatewayActivityInstance.Id);
+            var childNodeListOfAndSplitMI = base.ActivityInstanceManager.GetValidSplitedActivityInstanceList(kit.useSQL(), gatewayActivityInstance.ProcessInstanceId, gatewayActivityInstance.ActivityInstanceId);
 
             ActivityInstanceEntity newChildInstance = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)
@@ -239,7 +239,7 @@ namespace saiflow.engine.Pattern
                 newChildInstance.AssignedUserIds = userId;
                 newChildInstance.AssignedUserNames = userName;
 
-                newChildInstance.Id = ActivityInstanceManager.Insert(kit.useSQL(), newChildInstance);
+                newChildInstance.ActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), newChildInstance);
 
                 base.InsertTransitionInstance(base.ActivityForwardContext.ProcessInstance,
                     transitionId,

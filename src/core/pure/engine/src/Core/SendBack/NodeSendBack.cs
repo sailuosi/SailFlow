@@ -61,7 +61,7 @@ namespace saiflow.engine.Runtime
                 processInstance.AppName,
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,
-                processInstance.Id,
+                processInstance.ProcessInstanceId,
                 processInstance.ProcessId,
                 this.SendBackOperation.BackwardToTaskActivity,
                 backwardType,
@@ -125,12 +125,12 @@ namespace saiflow.engine.Runtime
                processInstance.AppName,
                processInstance.AppInstanceId,
                processInstance.AppInstanceCode,
-               processInstance.Id,
+               processInstance.ProcessInstanceId,
                processInstance.ProcessId,
                backwardToTaskActivity,
                backwardType,
-               fromActivityInstance.Id,
-               previousActivityInstance.Id,
+               fromActivityInstance.ActivityInstanceId,
+               previousActivityInstance.ActivityInstanceId,
                activityResource.AppRunner);
 
             toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;

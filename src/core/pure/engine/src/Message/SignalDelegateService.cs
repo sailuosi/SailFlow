@@ -203,7 +203,7 @@ namespace saiflow.engine.Message
             runner.AppInstanceId = activityInstance.AppInstanceId;
             runner.AppInstanceCode = activityInstance.AppInstanceCode;
             //using activityinstanceid to call RunProcessAuto() method
-            runner.ActivityInstanceId = activityInstance.Id;
+            runner.ActivityInstanceId = activityInstance.ActivityInstanceId;
             runner.UserId = signalRunner.CommandContext.UserId;
             runner.UserName = signalRunner.CommandContext.UserName;
 

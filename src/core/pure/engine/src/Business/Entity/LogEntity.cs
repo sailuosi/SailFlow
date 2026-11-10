@@ -14,7 +14,7 @@ namespace saiflow.engine.Entity
     public class LogEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
-        public string Id { get; set; }
+        public string LogId { get; set; }
         [SooColumn(Name = "event_type_id")]
         public int? EventTypeId { get; set; }
         [SooColumn(Name = "priority")]

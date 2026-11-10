@@ -103,7 +103,7 @@ namespace saiflow.engine.Pattern
             var newActivityInstance = base.ActivityInstanceManager.CreateActivityInstanceObject(base.ActivityForwardContext.FromActivityInstance);
             newActivityInstance.AssignedUserIds = activityResource.AppRunner.UserId;
             newActivityInstance.AssignedUserNames = activityResource.AppRunner.UserName;
-            newActivityInstance.MainActivityInstanceId = base.ActivityForwardContext.FromActivityInstance.Id;
+            newActivityInstance.MainActivityInstanceId = base.ActivityForwardContext.FromActivityInstance.ActivityInstanceId;
             newActivityInstance.SignForwardType = (short)signForwardType;
 
             if (signForwardType == SignForwardTypeEnum.SignForwardParallel)
@@ -164,7 +164,7 @@ namespace saiflow.engine.Pattern
                 signforwardActivityInstance.UnitId = plist[i].UnitId;
                 signforwardActivityInstance.UnitCode = plist[i].UnitCode;
                 signforwardActivityInstance.UnitName = plist[i].UnitName;
-                signforwardActivityInstance.MainActivityInstanceId = base.ActivityForwardContext.FromActivityInstance.Id;
+                signforwardActivityInstance.MainActivityInstanceId = base.ActivityForwardContext.FromActivityInstance.ActivityInstanceId;
                 
                 if (signForwardType == SignForwardTypeEnum.SignForwardBefore)
                 {

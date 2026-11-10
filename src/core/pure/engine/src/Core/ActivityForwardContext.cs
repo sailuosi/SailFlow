@@ -49,7 +49,7 @@ namespace saiflow.engine.Core
             SailClient client)
         {
             Sail = client ?? throw new ArgumentNullException(nameof(client));
-            TaskId = taskView.Id;
+            TaskId = taskView.TaskId;
 
             FromActivityInstance = Sail.ManagerFactory.Activities.GetById(kit.useSQL(), taskView.ActivityInstanceId);
             ProcessInstance = Sail.ProcessInstances.GetById(kit, taskView.ProcessInstanceId);
@@ -68,7 +68,7 @@ namespace saiflow.engine.Core
         {
             Sail = client ?? throw new ArgumentNullException(nameof(client));
 
-            FromActivityInstance = Sail.ManagerFactory.Activities.GetById(kit.useSQL(), activityInstance.Id);
+            FromActivityInstance = Sail.ManagerFactory.Activities.GetById(kit.useSQL(), activityInstance.ActivityInstanceId);
             ProcessInstance = Sail.ProcessInstances.GetById(kit, activityInstance.ProcessInstanceId);
             CurrentActivity = processModel.GetActivity(activityInstance.ActivityId);
             ProcessModel = processModel;

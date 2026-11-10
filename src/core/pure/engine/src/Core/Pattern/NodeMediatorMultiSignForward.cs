@@ -78,7 +78,7 @@ namespace saiflow.engine.Pattern
 
             //设置活动节点的状态为完成状态
             //将活动节点状态设为完成
-            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
 
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 
@@ -164,7 +164,7 @@ namespace saiflow.engine.Pattern
                                 base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                 //将未完成节点状态更新为取消
-                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id, runner);
+                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
                             }
                             else
                             {
@@ -190,7 +190,7 @@ namespace saiflow.engine.Pattern
                                 base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                 //将未完成节点状态更新为取消
-                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id, runner);
+                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
                             }
                             else
                             {
@@ -245,7 +245,7 @@ namespace saiflow.engine.Pattern
                                 mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
                                 base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
                                 //将未完成节点状态更新为取消
-                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id, runner);
+                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
                             }
                             else
                             {
@@ -292,7 +292,7 @@ namespace saiflow.engine.Pattern
                                 mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
                                 base.ActivityInstanceManager.Update(Kit.useSQL(), mainActivityInstance);
                                 //将未完成节点状态更新为取消
-                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.Id, runner);
+                                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
                             }
                             else
                             {

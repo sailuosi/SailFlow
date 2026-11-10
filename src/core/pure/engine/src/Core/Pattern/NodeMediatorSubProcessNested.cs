@@ -50,7 +50,7 @@ namespace saiflow.engine.Pattern
                     var pim = Sail.ProcessInstances;
                     var kit = Kit.useSQL();
                     bool isCompleted = pim.CheckSubProcessInstanceCompleted(kit,
-                        base.LinkContext.FromActivityInstance.Id,
+                        base.LinkContext.FromActivityInstance.ActivityInstanceId,
                         base.LinkContext.FromActivityInstance.ActivityId);
                     if (isCompleted == false)
                     {
@@ -96,7 +96,7 @@ namespace saiflow.engine.Pattern
 
             //设置活动节点的状态为完成状态
             //将活动节点状态设为完成
-            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 
             //先判断是否是多实例类型的任务
@@ -132,7 +132,7 @@ namespace saiflow.engine.Pattern
                         //设置下一个任务对应的子流程进入运行状态
                         //将下一任务对应子流程设为运行
                         base.ProcessInstanceManager.RecallSubProcess(Kit.useSQL(),
-                            nextActivityInstance.Id,
+                            nextActivityInstance.ActivityInstanceId,
                             activityResource.AppRunner);
 
                         canContinueForwardCurrentNode = false;
@@ -374,7 +374,7 @@ namespace saiflow.engine.Pattern
                 entity.UnitId = plist[i].UnitId;
                 entity.UnitCode = plist[i].UnitCode;
                 entity.UnitName = plist[i].UnitName;
-                entity.MainActivityInstanceId = toActivityInstance.Id;
+                entity.MainActivityInstanceId = toActivityInstance.ActivityInstanceId;
                 entity.CompleteOrder = (short)(i + 1);
 
                 //只有第一个节点处于运行状态，其它节点挂起
@@ -384,7 +384,7 @@ namespace saiflow.engine.Pattern
                     entity.ActivityState = (short)ActivityStateEnum.Suspended;
                 }
 
-                entity.Id = base.ActivityInstanceManager.Insert(kit.useSQL(), entity);
+                entity.ActivityInstanceId = base.ActivityInstanceManager.Insert(kit.useSQL(), entity);
 
                 base.TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
 
@@ -437,43 +437,7 @@ namespace saiflow.engine.Pattern
             subRunner.UserId = performer.UserId;
             subRunner.UserName = performer.UserName;
 
-            #region Dynamic sub process called
-            //如果是动态调用子流程，则需要获取具体子流程实体对象
-            //{
-            //    var subProcessId = runner.DynamicVariables[subProcessNode.SubVarName];
-            //    if (!string.IsNullOrEmpty(subProcessId))
-            //    {
-            //        int processId = 0;
-            //        int.TryParse(subProcessId, out processId);
-            //        if (processId > 0)
-            //        {
-            //            var pm = Sail.ManagerFactory.Processes;
-            //            var process = pm.GetById(kit.useSQL(), processId);
-            //            if (process != null)
-            //            {
-            //                subProcessNode.SubProcessId = process.ProcessId;
-            //            }
-            //            else
-            //            {
-            //                isSubProcessNotExisted = true;
-            //            }
-            //        }
-            //        else
-            //        {
-            //            isSubProcessNotExisted = true;
-            //        }
-            //    }
-            //    else
-            //    {
-            //        isSubProcessNotExisted = true;
-            //    }
-            //}
-
-            //if (isSubProcessNotExisted == true)
-            //{
-            //    throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorsubprocess.CreateSubProcessRunner.nonevariableparamsvalue.warn"));
-            //}
-            #endregion
+            // 动态子流程（按变量解析定义）另案；勿再使用 int.TryParse 旧主键路径。
 
             return subRunner;
         }

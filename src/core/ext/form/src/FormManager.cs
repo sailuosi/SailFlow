@@ -40,7 +40,7 @@ namespace saiflow.hub.Form
                 entity.Version = "1";
             // AutoKey=Guid：Id 为 null 时由 InsertReturnId 回填
             var id = Sail.UseRunSQL().useRepo<FormEntity, string>().InsertReturnId(entity);
-            entity.Id = id;
+            entity.FormId = id;
             return id;
         }
 

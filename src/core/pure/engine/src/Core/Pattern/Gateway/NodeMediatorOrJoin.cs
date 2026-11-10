@@ -35,7 +35,7 @@ namespace saiflow.engine.Pattern
             Activity splitActivity = this.ProcessModel.GetBackwardGatewayActivity(gatewayActivity, ref joinCount, ref splitCount);
             ActivityInstanceEntity splitActivityInstance = base.ActivityInstanceManager.GetActivityInstanceLatest(kit.useSQL(), processInstanceId, splitActivity.ActivityId);
 
-            return base.ActivityInstanceManager.GetGatewayInstanceCountByTransition(kit.useSQL(), splitActivity.ActivityId, splitActivityInstance.Id, processInstanceId);
+            return base.ActivityInstanceManager.GetGatewayInstanceCountByTransition(kit.useSQL(), splitActivity.ActivityId, splitActivityInstance.ActivityInstanceId, processInstanceId);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace saiflow.engine.Pattern
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Unknown);
 
             //检查是否已有运行中的合并节点实例
-            ActivityInstanceEntity joinNode = base.ActivityInstanceManager.GetActivityRunning(kit.useSQL(), processInstance.Id, base.GatewayActivity.ActivityId);
+            ActivityInstanceEntity joinNode = base.ActivityInstanceManager.GetActivityRunning(kit.useSQL(), processInstance.ProcessInstanceId, base.GatewayActivity.ActivityId);
 
             if (joinNode == null)
             {
@@ -60,7 +60,7 @@ namespace saiflow.engine.Pattern
                     processInstance, runner);
 
                 //计算所需令牌总数
-                joinNode.TokensRequired = GetTokensRequired(processInstance.Id, base.GatewayActivity, kit);
+                joinNode.TokensRequired = GetTokensRequired(processInstance.ProcessInstanceId, base.GatewayActivity, kit);
                 joinNode.TokensHad = 1;
 
                 joinNode.ActivityState = (short)ActivityStateEnum.Running;
@@ -86,7 +86,7 @@ namespace saiflow.engine.Pattern
                 base.GatewayActivityInstance = joinNode;
 
                 //增加令牌计数
-                base.ActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.Id, runner);
+                base.ActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.ActivityInstanceId, runner);
                 base.InsertTransitionInstance(processInstance,
                     transitionId,
                     fromActivityInstance,
@@ -101,7 +101,7 @@ namespace saiflow.engine.Pattern
             if (joinNode.TokensHad == joinNode.TokensRequired)
             {
                 //达到完成所需令牌数时，将节点状态设为完成
-                base.CompleteActivityInstance(base.GatewayActivityInstance.Id,
+                base.CompleteActivityInstance(base.GatewayActivityInstance.ActivityInstanceId,
                     runner,
                     kit);
                 base.GatewayActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;

@@ -69,7 +69,7 @@ namespace saiflow.engine.Runtime
                 if (activityInstance != null 
                     && this.ActivityInstanceManager.IncludeRunningState(activityInstance) == true)
                 {
-                    this.ActivityInstanceManager.Cancel(kit.useSQL(), activityInstance.Id, runner);
+                    this.ActivityInstanceManager.Cancel(kit.useSQL(), activityInstance.ActivityInstanceId, runner);
                 }
             }
         }

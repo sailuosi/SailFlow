@@ -40,7 +40,7 @@ namespace saiflow.engine.Pattern
 
             var pim = Sail.ProcessInstances;
             var kit = Kit.useSQL();
-            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id,
+            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.ProcessInstanceId,
                 ActivityForwardContext.ActivityResource.AppRunner);
 
             //如果当前流程是子流程，则子流程完成，主流程流转到下一节点
@@ -82,7 +82,7 @@ namespace saiflow.engine.Pattern
                     Sail, kit, runner,
                     runtimeInstance.ProcessInstanceId,
                     runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.Id,
+                    runtimeInstance.TaskView?.TaskId,
                     EventFireTypeEnum.OnProcessContinued,
                     FlowOperation.Run);
                 FlowCapabilityPipeline.AfterSuccess(
@@ -103,7 +103,7 @@ namespace saiflow.engine.Pattern
             var nextSteps = processModel.GetNextActivityTreeView(mainActivityId);
 
             //获取主流程任务
-            var task = Sail.ManagerFactory.Tasks.GetTaskByActivity(kit.useSQL(), mainProcessInstance.Id, mainActivityInstanceId);
+            var task = Sail.ManagerFactory.Tasks.GetTaskByActivity(kit.useSQL(), mainProcessInstance.ProcessInstanceId, mainActivityInstanceId);
             var runner = new FlowCommandContext
             {
                 AppName = mainProcessInstance.AppName,
@@ -150,7 +150,7 @@ namespace saiflow.engine.Pattern
 
             ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
-            ActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance.Id, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance.ActivityInstanceId, activityResource.AppRunner);
 
             base.InsertTransitionInstance(processInstance,
                 transitionId,

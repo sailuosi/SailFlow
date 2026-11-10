@@ -45,8 +45,8 @@ namespace saiflow.engine.Pattern
         {
             var toActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
-                fromActivityInstance.Id,
-                base.BackwardContext.BackwardToTaskActivityInstance.Id,
+                fromActivityInstance.ActivityInstanceId,
+                base.BackwardContext.BackwardToTaskActivityInstance.ActivityInstanceId,
                 activityResource.AppRunner);
 
             toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
@@ -54,7 +54,7 @@ namespace saiflow.engine.Pattern
 
             base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
-            base.ReturnDataContext.ActivityInstanceId = toActivityInstance.Id;
+            base.ReturnDataContext.ActivityInstanceId = toActivityInstance.ActivityInstanceId;
             base.ReturnDataContext.ProcessInstanceId = toActivityInstance.ProcessInstanceId;
 
             base.CreateNewTask(toActivityInstance, activityResource, kit);
@@ -114,7 +114,7 @@ namespace saiflow.engine.Pattern
             var rollbackPreviousActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
                 backSrcActivityInstanceId,
-                originalBackwardToActivityInstance.Id,
+                originalBackwardToActivityInstance.ActivityInstanceId,
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
@@ -127,7 +127,7 @@ namespace saiflow.engine.Pattern
 
             base.ActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
 
-            base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.Id;
+            base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.ActivityInstanceId;
             base.ReturnDataContext.ProcessInstanceId = rollbackPreviousActivityInstance.ProcessInstanceId;
 
             base.CreateNewTask(rollbackPreviousActivityInstance, activityResource, kit);
@@ -149,8 +149,8 @@ namespace saiflow.engine.Pattern
             //创建退回目标节点信息
             var rollbackPreviousActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
-                fromActivityInstance.Id,
-                originalBackwardToActivityInstance.Id,
+                fromActivityInstance.ActivityInstanceId,
+                originalBackwardToActivityInstance.ActivityInstanceId,
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
@@ -162,7 +162,7 @@ namespace saiflow.engine.Pattern
             rollbackPreviousActivityInstance.AssignedUserNames = originalBackwardToActivityInstance.AssignedUserNames;
 
             base.ActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
-            base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.Id;
+            base.ReturnDataContext.ActivityInstanceId = rollbackPreviousActivityInstance.ActivityInstanceId;
             base.ReturnDataContext.ProcessInstanceId = rollbackPreviousActivityInstance.ProcessInstanceId;
             base.CreateNewTask(rollbackPreviousActivityInstance, activityResource, kit);
 

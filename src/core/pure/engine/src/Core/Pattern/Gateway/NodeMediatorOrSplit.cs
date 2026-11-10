@@ -39,7 +39,7 @@ namespace saiflow.engine.Pattern
             base.InsertActivityInstance(gatewayActivityInstance,
                 kit);
 
-            base.CompleteActivityInstance(gatewayActivityInstance.Id,
+            base.CompleteActivityInstance(gatewayActivityInstance.ActivityInstanceId,
                 runner,
                 kit);
 

@@ -56,8 +56,8 @@ namespace saiflow.hub.Form
             }
             else
             {
-                entity = fm.GetById(form.FormId) ?? new FormEntity { Id = form.FormId };
-                isNew = string.IsNullOrWhiteSpace(entity.Id);
+                entity = fm.GetById(form.FormId) ?? new FormEntity { FormId = form.FormId };
+                isNew = string.IsNullOrWhiteSpace(entity.FormId);
             }
 
             entity.FormName = form.FormName;
@@ -75,7 +75,7 @@ namespace saiflow.hub.Form
             }
 
             fm.Update(entity);
-            return entity.Id ?? form.FormId;
+            return entity.FormId ?? form.FormId;
         }
 
         public bool DeleteForm(string formId)
@@ -89,7 +89,7 @@ namespace saiflow.hub.Form
         {
             var form = new Form
             {
-                FormId = item.Id,
+                FormId = item.FormId,
                 FormCode = item.FormCode,
                 FormName = item.FormName,
                 Version = item.Version,
@@ -239,7 +239,7 @@ namespace saiflow.hub.Form
 
                 var entity = new FieldActivityEditEntity();
                 entity.FormId = info.FormId;
-                entity.ProcessDefId = info.ProcessDefId;
+                entity.FormId = info.ProcessDefId;
                 entity.ProcessId = info.ProcessId; 
                 entity.ProcessName = info.ProcessName;
                 entity.ProcessVersion = info.ProcessVersion;

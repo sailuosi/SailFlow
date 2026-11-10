@@ -40,7 +40,7 @@ namespace saiflow.engine.Xpdl
         {
             if (entity == null) return;
             RuleSetResolved = true;
-            RuleSetId = entity.Id;
+            RuleSetId = entity.RuleSetId;
             RuleSetCode = entity.RuleSetCode;
             RuleSetName = entity.RuleSetName;
             Description = entity.Description;

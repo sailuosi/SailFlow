@@ -145,7 +145,7 @@ namespace saiflow.engine.Service
         {
             string newProcessId = null;
             var pm = Sail.ManagerFactory.Processes;
-            var entityDB = pm.GetById(entity.Id);
+            var entityDB = pm.GetById(entity.ProcessDefId);
             if (entity != null)
             {
                 newProcessId = pm.Upgrade(entityDB.ProcessId, entityDB.Version, entity.Version);
@@ -217,10 +217,10 @@ namespace saiflow.engine.Service
         }
 
         /// <summary>
-        /// Delete instance internal
-        /// 删除流程实例包括其关联数据
+        /// Delete all process instances (and related runtime rows) for a process definition version.
+        /// 删除指定流程设计定义键+版本下的全部运转实例及关联数据。
         /// </summary>
-        public bool DeleteInstanceInt(string processId, string version)
+        public bool DeleteProcessInstances(string processId, string version)
         {
             var pim = Managers.ProcessInstances;
             return pim.Delete(processId, version);

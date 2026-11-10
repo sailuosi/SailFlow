@@ -23,7 +23,8 @@ namespace saiflow.engine.Service
         Activity GetActivityEntity(string processId, string version, string actvityId);
         Activity GetNextActivity(string processId, string version, string activityId);
         IList<Activity> GetTaskActivityList(string processId, string version);
-        IList<Activity> GetTaskActivityList(string processId);
+        /// <summary>按定义行主键取任务节点列表（非流程设计定义键 ProcessId）。</summary>
+        IList<Activity> GetTaskActivityListByProcessDefId(string processDefId);
 		IList<Activity> GetAllTaskActivityList(string processId, string version);
         IList<Role> GetActivityRoles(string processId, string version, string activityId);
         NodeView GetNextActivity(string taskId, IDictionary<string, string> condition = null);
@@ -220,7 +221,8 @@ namespace saiflow.engine.Service
         void UpgradeProcess(string processId, string version, string newVersion);
         void DeleteProcess(string processId, string version);
 		void DeleteProcess(string id);
-        bool DeleteInstanceInt(string processId, string version);
+        /// <summary>按流程设计定义键 + 版本删除该定义下全部运转实例及关联数据。</summary>
+        bool DeleteProcessInstances(string processId, string version);
         void ImportProcess(string xmlContent);
         ProcessValidateResult ValidateProcess(ProcessEntity processValidateEntity);
         

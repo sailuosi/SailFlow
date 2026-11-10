@@ -174,12 +174,12 @@ namespace saiflow.engine.Runtime
             //更新当前任务记录为退回状态
             //Update the current task record to sendback status
             var tm = Sail.ManagerFactory.Tasks;
-            tm.SendBack(kit.useSQL(), base.TaskView.Id, base.SendBackOperation.ActivityResource.AppRunner);
+            tm.SendBack(kit.useSQL(), base.TaskView.TaskId, base.SendBackOperation.ActivityResource.AppRunner);
 
             //更新当前办理节点的状态（从准备或运行状态更新为退回状态）
             //Update the status of the current processing node (from ready or running status to sendback status)
             var aim = Sail.ManagerFactory.Activities;
-            aim.SendBack(kit.useSQL(), base.SendBackOperation.BackwardFromActivityInstance.Id, base.SendBackOperation.ActivityResource.AppRunner);
+            aim.SendBack(kit.useSQL(), base.SendBackOperation.BackwardFromActivityInstance.ActivityInstanceId, base.SendBackOperation.ActivityResource.AppRunner);
         }
     }
 }

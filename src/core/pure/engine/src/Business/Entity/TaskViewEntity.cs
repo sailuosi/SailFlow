@@ -16,7 +16,7 @@ namespace saiflow.engine.Entity
     public class TaskViewEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
-        public string Id { get; set; }
+        public string TaskId { get; set; }
 
         [SooColumn(Name = "app_name")]
         public string AppName { get; set; }

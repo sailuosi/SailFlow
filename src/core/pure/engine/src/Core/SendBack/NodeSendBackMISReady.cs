@@ -70,8 +70,8 @@ namespace saiflow.engine.Runtime
         {
             var rollbackPreviousActivityInstance = base.CreateBackwardToActivityInstanceObject(processInstance,
                 backwardType,
-                fromActivityInstance.Id,
-                originalBackwardToActivityInstance.Id,
+                fromActivityInstance.ActivityInstanceId,
+                originalBackwardToActivityInstance.ActivityInstanceId,
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;

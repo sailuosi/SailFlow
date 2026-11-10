@@ -76,7 +76,7 @@ namespace saiflow.engine.Pattern
             }
 
             //将活动节点状态设为完成
-            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
+            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
 
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             Boolean canContinueForwardCurrentNode = base.LinkContext.FromActivityInstance.CanNotRenewInstance == 0;
@@ -125,7 +125,7 @@ namespace saiflow.engine.Pattern
                     entity.UnitName = plist[i].UnitName;
                     entity.ActivityState = (short)ActivityStateEnum.Ready;
 
-                    entity.Id = base.ActivityInstanceManager.Insert(kit.useSQL(), entity);
+                    entity.ActivityInstanceId = base.ActivityInstanceManager.Insert(kit.useSQL(), entity);
 
                     base.TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
 
@@ -164,13 +164,13 @@ namespace saiflow.engine.Pattern
                     kit);
 
                 var runner = activityResource?.AppRunner;
-                if (runner != null && processInstance?.Id != null)
+                if (runner != null && processInstance?.ProcessInstanceId != null)
                 {
                     var hookCtx = FlowCapabilityPipeline.BuildHookContext(
                         Sail,
                         kit,
                         runner,
-                        processInstance.Id,
+                        processInstance.ProcessInstanceId,
                         toActivityInstance,
                         null,
                         EventFireTypeEnum.OnActivityCreated,

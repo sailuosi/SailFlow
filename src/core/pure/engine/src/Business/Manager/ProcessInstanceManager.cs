@@ -55,7 +55,7 @@ namespace saiflow.engine.Manager
             cancellationToken.ThrowIfCancellationRequested();
             var clip = kit.useSQL().useClip();
             clip.from<ProcessInstanceEntity>(out var pi);
-            clip.where(() => pi.Id, processInstanceId);
+            clip.where(() => pi.ProcessInstanceId, processInstanceId);
             var list = await clip.select(pi).take(1).queryListAsync(cancellationToken).ConfigureAwait(false);
             return list?.FirstOrDefault();
         }
@@ -66,7 +66,7 @@ namespace saiflow.engine.Manager
             clip.from<ProcessInstanceEntity>(out var pi);
             clip.where(() => pi.ProcessId, processId);
             clip.where(() => pi.Version, version);
-            clip.orderByDesc(() => pi.Id);
+            clip.orderByDesc(() => pi.CreatedDateTime);
             return clip.select(pi).take(1).queryList()?.FirstOrDefault();
         }
 
@@ -112,7 +112,7 @@ namespace saiflow.engine.Manager
             clip.where(() => pi.ProcessId, processId);
             clip.where(() => pi.Version, version);
             clip.where(() => pi.RecordStatusInvalid, (byte)0);
-            clip.orderByDesc(() => pi.Id);
+            clip.orderByDesc(() => pi.CreatedDateTime);
             return clip.select(pi).take(1).queryList()?.FirstOrDefault();
         }
 
@@ -123,7 +123,7 @@ namespace saiflow.engine.Manager
             clip.from<ProcessInstanceEntity>(out var pi);
             clip.where(() => pi.AppInstanceId, appInstanceId);
             clip.where(() => pi.RecordStatusInvalid, (byte)0);
-            clip.orderByDesc(() => pi.Id);
+            clip.orderByDesc(() => pi.CreatedDateTime);
             return clip.select(pi).queryList();
         }
 
@@ -136,7 +136,7 @@ namespace saiflow.engine.Manager
             clip.where(() => pi.ProcessId, processId);
             clip.where(() => pi.Version, version);
             clip.where(() => pi.RecordStatusInvalid, (byte)0);
-            clip.orderByDesc(() => pi.Id);
+            clip.orderByDesc(() => pi.CreatedDateTime);
             return clip.select(pi).queryList();
         }
 
@@ -149,7 +149,7 @@ namespace saiflow.engine.Manager
             clip.where(() => pi.ProcessId, processId);
             clip.where(() => pi.SubProcessId, subProcessId);
             clip.where(() => pi.RecordStatusInvalid, (byte)0);
-            clip.orderByDesc(() => pi.Id);
+            clip.orderByDesc(() => pi.CreatedDateTime);
             var list = clip.select(pi).queryList().ToList();
 
             if (list.Count == 1)
@@ -168,7 +168,7 @@ namespace saiflow.engine.Manager
             clip.where(() => pi.ProcessId, processId);
             clip.where(() => pi.RecordStatusInvalid, (byte)0);
             clip.where(() => pi.ProcessState == (short)ProcessStateEnum.Ready || pi.ProcessState == (short)ProcessStateEnum.Running);
-            clip.orderByDesc(() => pi.Id);
+            clip.orderByDesc(() => pi.CreatedDateTime);
             var list = clip.select(pi).queryList().ToList();
             return EnumHelper.GetFirst<ProcessInstanceEntity>(list);
         }
@@ -197,7 +197,7 @@ namespace saiflow.engine.Manager
         internal string Insert(SQLBuilder kit, ProcessInstanceEntity entity)
         {
             var newId = kit.useSQL().useRepo<ProcessInstanceEntity, string>().InsertReturnId(entity);
-            entity.Id = newId;
+            entity.ProcessInstanceId = newId;
             return newId;
         }
 
@@ -241,7 +241,7 @@ namespace saiflow.engine.Manager
             {
                 entity.SubProcessId = subProcessNode.SubProcessId;
                 entity.InvokedActivityId = subProcessNode.ActivityInstance.ActivityId;
-                entity.InvokedActivityInstanceId = subProcessNode.ActivityInstance.Id;
+                entity.InvokedActivityInstanceId = subProcessNode.ActivityInstance.ActivityInstanceId;
                 if (subProcessNode.SubProcessNested != null)
                 {
                     entity.ProcessId = subProcessNode.ActivityInstance.ProcessId;
@@ -353,7 +353,7 @@ namespace saiflow.engine.Manager
             clip.from<ProcessInstanceEntity>(out var pi);
             clip.where(() => pi.InvokedActivityInstanceId, invokedActivityInstanceId);
             clip.where(() => pi.ProcessState, (short)ProcessStateEnum.Suspended);
-            clip.orderByDesc(() => pi.Id);
+            clip.orderByDesc(() => pi.CreatedDateTime);
             var list = clip.select(pi).queryList().ToList();
 
             if (list != null && list.Count == 1)
@@ -512,7 +512,7 @@ namespace saiflow.engine.Manager
                 aiClip.set(() => ai.EndedDateTime, DateTime.UtcNow);
                 aiClip.set(() => ai.EndedUserId, userId);
                 aiClip.set(() => ai.EndedUserName, userName);
-                aiClip.where(() => ai.ProcessInstanceId, entity.Id);
+                aiClip.where(() => ai.ProcessInstanceId, entity.ProcessInstanceId);
                 aiClip.whereIn(() => ai.ActivityState, new short?[]
                 {
                     (short)ActivityStateEnum.Ready,
@@ -528,7 +528,7 @@ namespace saiflow.engine.Manager
                 taskClip.set(() => t.EndedDateTime, DateTime.UtcNow);
                 taskClip.set(() => t.EndedUserId, userId);
                 taskClip.set(() => t.EndedUserName, userName);
-                taskClip.where(() => t.ProcessInstanceId, entity.Id);
+                taskClip.where(() => t.ProcessInstanceId, entity.ProcessInstanceId);
                 taskClip.whereIn(() => t.TaskState, new short?[]
                 {
                     (short)TaskStateEnum.Waiting,
@@ -635,7 +635,7 @@ namespace saiflow.engine.Manager
                     var entity = GetByVersion(kit, processId, version);
                     if (entity == null)
                         return false;
-                    var ok = Delete(kit, entity.Id, true);
+                    var ok = Delete(kit, entity.ProcessInstanceId, true);
                     kit.commit();
                     return ok;
                 }

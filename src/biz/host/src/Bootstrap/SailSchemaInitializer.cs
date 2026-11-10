@@ -98,15 +98,15 @@ namespace saiflow.biz.Bootstrap
         {
             clip.from<TaskEntity>(out var t);
             clip.InnerJoin<ActivityInstanceEntity>(out var ai)
-                .on(() => t.ActivityInstanceId == ai.Id);
+                .on(() => t.ActivityInstanceId == ai.ActivityInstanceId);
             clip.InnerJoin<ProcessInstanceEntity>(out var pi)
-                .on(() => t.ProcessInstanceId == pi.Id);
+                .on(() => t.ProcessInstanceId == pi.ProcessInstanceId);
             clip.LeftJoin<ActivityInstanceEntity>(out var mai)
-                .on(() => ai.MainActivityInstanceId == mai.Id);
+                .on(() => ai.MainActivityInstanceId == mai.ActivityInstanceId);
 
             clip.select(() => new
             {
-                t.Id,
+                t.TaskId,
                 t.AppName,
                 t.AppInstanceId,
                 ai.AppInstanceCode,

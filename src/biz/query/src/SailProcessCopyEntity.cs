@@ -8,7 +8,7 @@ namespace saiflow.biz.query
     public class SailProcessCopyEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
-        public string Id { get; set; }
+        public string ProcessCopyId { get; set; }
 
         [SooColumn(Name = "user_id", Length = 64)]
         public string UserId { get; set; }

@@ -171,7 +171,7 @@ namespace saiflow.engine.Message
             var runningActivityInstance = aim.GetActivityInstanceLatest(runner.AppInstanceId, runner.ProcessId, msgRunnerView.ActivityEntity.ActivityId);
             if (runningActivityInstance != null)
             {
-                runner.ActivityInstanceId = runningActivityInstance.Id;
+                runner.ActivityInstanceId = runningActivityInstance.ActivityInstanceId;
                 if (!string.IsNullOrEmpty(runningActivityInstance.NextStepPerformers))
                 {
                     runner.NextActivityPerformers = NextStepUtility.DeserializeNextStepPerformers(

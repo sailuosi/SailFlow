@@ -26,7 +26,7 @@ namespace saiflow.engine.Manager
                 .useRepo<RuleSetEntity>()
                 .GetList()
                 .OrderBy(x => x.RuleSetCode)
-                .ThenBy(x => x.Id)
+                .ThenBy(x => x.RuleSetId)
                 .ToList();
 
         public RuleSetEntity GetByCode(string ruleSetCode)
@@ -50,7 +50,7 @@ namespace saiflow.engine.Manager
             if (entity.IsEnabled == 0) { /* keep */ }
             else if (entity.IsEnabled != 1) entity.IsEnabled = 1;
             var newId = kit.useRepo<RuleSetEntity, string>().InsertReturnId(entity);
-            entity.Id = newId;
+            entity.RuleSetId = newId;
             return newId;
         }
 

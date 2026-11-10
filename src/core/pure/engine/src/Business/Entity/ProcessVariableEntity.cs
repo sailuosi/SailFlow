@@ -15,7 +15,7 @@ namespace saiflow.engine.Entity
     public class ProcessVariableEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
-        public string Id { get; set; }
+        public string ProcessVariableId { get; set; }
         [SooColumn(Name = "variable_scope")]
         public string VariableScope { get; set; }
         [SooColumn(Name = "app_instance_id")]

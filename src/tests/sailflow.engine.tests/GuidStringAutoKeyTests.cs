@@ -13,7 +13,7 @@ namespace saiflow.engine.tests
         [Fact]
         public void ProcessEntity_Id_Is_String_With_AutoKey_Guid()
         {
-            var prop = typeof(ProcessEntity).GetProperty(nameof(ProcessEntity.Id));
+            var prop = typeof(ProcessEntity).GetProperty(nameof(ProcessEntity.ProcessDefId));
             Assert.NotNull(prop);
             Assert.Equal(typeof(string), prop.PropertyType);
 

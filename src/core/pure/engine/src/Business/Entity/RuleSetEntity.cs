@@ -11,7 +11,7 @@ namespace saiflow.engine.Entity
     public class RuleSetEntity
     {
         [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
-        public string Id { get; set; }
+        public string RuleSetId { get; set; }
 
         [SooColumn(Name = "rule_set_code")]
         public string RuleSetCode { get; set; }

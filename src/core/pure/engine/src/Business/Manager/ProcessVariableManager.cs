@@ -294,9 +294,9 @@ namespace saiflow.engine.Manager
 
             ProcessVariableEntity existProcessVariable = null;
             // Id 未赋值（null/空）视为新建
-            if (!string.IsNullOrWhiteSpace(entity.Id))
+            if (!string.IsNullOrWhiteSpace(entity.ProcessVariableId))
             {
-                existProcessVariable = GetVariableById(kit, entity.Id);
+                existProcessVariable = GetVariableById(kit, entity.ProcessVariableId);
             }
             else if (!string.IsNullOrWhiteSpace(entity.ProcessInstanceId))
             {
@@ -322,11 +322,11 @@ namespace saiflow.engine.Manager
                 if (string.IsNullOrWhiteSpace(existProcessVariable.ProcessId))
                     existProcessVariable.ProcessId = entity.ProcessId;
                 Update(kit, existProcessVariable);
-                return existProcessVariable.Id;
+                return existProcessVariable.ProcessVariableId;
             }
 
             // 新建：清空 Id，由 AutoKey=Guid 发号
-            entity.Id = null;
+            entity.ProcessVariableId = null;
             entity.UpdatedDateTime = DateTime.UtcNow;
             return Insert(kit, entity);
         }
@@ -362,7 +362,7 @@ namespace saiflow.engine.Manager
         {
             var table = Router.ResolveVariableTable(entity?.ProcessId);
             var newId = HotShardEntityAccess.InsertReturnId(kit.useSQL(), table, entity);
-            entity.Id = newId;
+            entity.ProcessVariableId = newId;
             return newId;
         }
 
@@ -428,10 +428,10 @@ namespace saiflow.engine.Manager
             if (legacy.Count == 0)
                 return rows;
 
-            var seen = new HashSet<string>(rows.Where(x => !string.IsNullOrWhiteSpace(x.Id)).Select(x => x.Id));
+            var seen = new HashSet<string>(rows.Where(x => !string.IsNullOrWhiteSpace(x.ProcessVariableId)).Select(x => x.ProcessVariableId));
             foreach (var row in legacy)
             {
-                if (!string.IsNullOrWhiteSpace(row.Id) && seen.Contains(row.Id))
+                if (!string.IsNullOrWhiteSpace(row.ProcessVariableId) && seen.Contains(row.ProcessVariableId))
                     continue;
                 rows.Add(row);
             }
@@ -476,10 +476,10 @@ namespace saiflow.engine.Manager
             if (legacy.Count == 0)
                 return rows;
 
-            var seen = new HashSet<string>(rows.Where(x => !string.IsNullOrWhiteSpace(x.Id)).Select(x => x.Id));
+            var seen = new HashSet<string>(rows.Where(x => !string.IsNullOrWhiteSpace(x.ProcessVariableId)).Select(x => x.ProcessVariableId));
             foreach (var row in legacy)
             {
-                if (!string.IsNullOrWhiteSpace(row.Id) && seen.Contains(row.Id))
+                if (!string.IsNullOrWhiteSpace(row.ProcessVariableId) && seen.Contains(row.ProcessVariableId))
                     continue;
                 rows.Add(row);
             }

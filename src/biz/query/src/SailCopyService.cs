@@ -26,8 +26,8 @@ namespace saiflow.biz.query
             {
                 if (string.IsNullOrWhiteSpace(row.UserId)) continue;
                 // Id 留 null，由 AutoKey=Guid 在 Insert 时发号写回
-                if (string.IsNullOrWhiteSpace(row.Id))
-                    row.Id = null;
+                if (string.IsNullOrWhiteSpace(row.ProcessCopyId))
+                    row.ProcessCopyId = null;
                 row.CreateTime ??= DateTime.Now;
                 repo.Insert(row);
                 n++;

@@ -34,7 +34,7 @@ namespace saiflow.engine.Pattern
 
             var pim = Sail.ProcessInstances;
             var kit = Kit.useSQL();
-            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.Id,
+            var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.ProcessInstanceId,
                 ActivityForwardContext.ActivityResource.AppRunner);
 
             //在执行节点发布信号
@@ -62,7 +62,7 @@ namespace saiflow.engine.Pattern
 
             ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
-            ActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance.Id, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance.ActivityInstanceId, activityResource.AppRunner);
 
             base.InsertTransitionInstance(processInstance,
                 transitionId,

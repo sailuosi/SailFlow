@@ -103,7 +103,7 @@ namespace saiflow.engine.Pattern
 
             //设置活动节点的状态为完成状态
             //将活动节点状态设为完成
-            ActivityInstanceManager.Complete(kit.useSQL(), LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(kit.useSQL(), LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
 
             LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             bool canContinueForwardCurrentNode = LinkContext.FromActivityInstance.CanNotRenewInstance == 0;
@@ -154,7 +154,7 @@ namespace saiflow.engine.Pattern
                     entity.ActivityState = (short)ActivityStateEnum.Ready;
                     //插入活动实例数据
                     //插入活动实例
-                    entity.Id = ActivityInstanceManager.Insert(kit.useSQL(), entity);
+                    entity.ActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), entity);
                     //插入任务
                     TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
                     //插入转移数据

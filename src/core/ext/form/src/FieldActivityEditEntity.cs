@@ -6,7 +6,7 @@ namespace saiflow.hub.Form
     public class FieldActivityEditEntity
     {
         [SooColumn(Name = "Id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
-        public string Id { get; set; }
+        public string FieldActivityEditId { get; set; }
 
         [SooColumn(Name = "ProcessDefId", Length = 64)]
         public string ProcessDefId { get; set; }

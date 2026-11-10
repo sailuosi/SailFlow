@@ -66,7 +66,7 @@ namespace saiflow.engine.Pattern
                 UserName = activityResource.AppRunner.UserName
             };
 
-            ActivityInstanceManager.Complete(kit.useSQL(), LinkContext.FromActivityInstance.Id, activityResource.AppRunner);
+            ActivityInstanceManager.Complete(kit.useSQL(), LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
 
             LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             ActivityForwardContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;

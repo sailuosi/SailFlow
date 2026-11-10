@@ -56,7 +56,7 @@ namespace saiflow.engine.Manager
             cancellationToken.ThrowIfCancellationRequested();
             var clip = kit.useSQL().useClip();
             clip.from<TaskViewEntity>(out var t);
-            clip.where(() => t.Id, taskId);
+            clip.where(() => t.TaskId, taskId);
             var list = await clip.select(t).take(1).queryListAsync(cancellationToken).ConfigureAwait(false);
             return list?.FirstOrDefault();
         }
@@ -168,7 +168,7 @@ namespace saiflow.engine.Manager
             clip.where(() => t.ProcessState, (short)2);
             clip.where(() => t.ActivityType == 4 || t.ActivityType == 5 || t.ActivityType == 6);
             clip.whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 });
-            clip.orderByDesc(() => t.Id);
+            clip.orderByDesc(() => t.ActivatedDateTime);
             clip.top(1);
             var list = clip.select(t).queryList().ToList();
 
@@ -192,7 +192,7 @@ namespace saiflow.engine.Manager
             clip.where(() => t.ProcessState, (short)2);
             clip.where(() => t.ActivityType == 4 || t.ActivityType == 5 || t.ActivityType == 6);
             clip.whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 });
-            clip.orderByDesc(() => t.Id);
+            clip.orderByDesc(() => t.ActivatedDateTime);
             clip.top(1);
             var list = (await clip.select(t).queryListAsync(cancellationToken).ConfigureAwait(false)).ToList();
             return ResolveTaskOfMineByActivityInstance(list, activityInstanceId);
@@ -241,7 +241,7 @@ namespace saiflow.engine.Manager
             clip.where(() => t.WorkItemType, (short)1);
             clip.rise();
             clip.whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 });
-            clip.orderByDesc(() => t.Id);
+            clip.orderByDesc(() => t.ActivatedDateTime);
             clip.top(1);
             var list = clip.select(t).queryList().ToList();
 
@@ -325,7 +325,7 @@ namespace saiflow.engine.Manager
         private string Insert(SQLBuilder kit, TaskEntity entity)
         {
             string newTaskId = kit.useSQL().useRepo<TaskEntity, string>().InsertReturnId(entity);
-            entity.Id = newTaskId;
+            entity.TaskId = newTaskId;
             return newTaskId;
         }
 
@@ -376,7 +376,7 @@ namespace saiflow.engine.Manager
             {
                 AppName = activityInstance.AppName,
                 AppInstanceId = activityInstance.AppInstanceId,
-                ActivityInstanceId = activityInstance.Id,
+                ActivityInstanceId = activityInstance.ActivityInstanceId,
                 ProcessInstanceId = activityInstance.ProcessInstanceId,
                 ActivityId = activityInstance.ActivityId,
                 ActivityName = activityInstance.ActivityName,
@@ -402,7 +402,7 @@ namespace saiflow.engine.Manager
                 entity.EntrustedTaskId = entrustedTaskId;
 
             string taskId = Insert(kit, entity);
-            entity.Id = taskId;
+            entity.TaskId = taskId;
             Sail.CapabilityDispatcher.FireTaskLifecycle(kit, entity, activityInstance, runner, TaskNotifyKind.Created);
             return taskId;
         }
@@ -557,7 +557,7 @@ namespace saiflow.engine.Manager
                     kit, task, activityInstance, null, TaskNotifyKind.Cancelled);
             }
 
-            var taskList = GetTaskListByActivity(kit, activityInstance.ProcessInstanceId, activityInstance.Id);
+            var taskList = GetTaskListByActivity(kit, activityInstance.ProcessInstanceId, activityInstance.ActivityInstanceId);
             if (taskList.Where(t => t.AssignedUserId == entity.EntrustToUserId).Any())
             {
                 return WfDataManagedResult.Exception(Sail.Messages.GetEngineMessage("taskmanager.entrust.notagain.warn"));
@@ -612,7 +612,7 @@ namespace saiflow.engine.Manager
             var existing = GetTaskListByActivity(
                 kit,
                 activityInstance.ProcessInstanceId,
-                activityInstance.Id);
+                activityInstance.ActivityInstanceId);
 
             foreach (var target in targets)
             {
@@ -646,7 +646,7 @@ namespace saiflow.engine.Manager
             var open = GetTaskListByActivity(
                     kit,
                     activityInstance.ProcessInstanceId,
-                    activityInstance.Id)
+                    activityInstance.ActivityInstanceId)
                 .Where(t => t.TaskState == (short)TaskStateEnum.Waiting
                     || t.TaskState == (short)TaskStateEnum.Reading)
                 .ToList();

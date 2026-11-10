@@ -69,7 +69,7 @@ namespace saiflow.engine.Pattern
                 processInstance.AppInstanceId,
                 processInstance.AppInstanceCode,
                 processInstance.ProcessId,
-                processInstance.Id,
+                processInstance.ProcessInstanceId,
                 activity,
                 runner);
 

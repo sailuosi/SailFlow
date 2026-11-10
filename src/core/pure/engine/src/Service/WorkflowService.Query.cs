@@ -47,13 +47,13 @@ namespace saiflow.engine.Service
         }
 
         /// <summary>
-        /// Get the node list of task types
-        /// 获取任务类型的节点列表
+        /// Get the node list of task types by definition-row primary key.
+        /// 按定义行主键获取任务类型节点列表（勿传入流程设计定义键 ProcessId）。
         /// </summary>
-        public IList<Activity> GetTaskActivityList(string processId)
+        public IList<Activity> GetTaskActivityListByProcessDefId(string processDefId)
         {
             var pm = Sail.ManagerFactory.Processes;
-            var entity = pm.GetById(processId);
+            var entity = pm.GetById(processDefId);
             var processModel = Sail.ProcessModelFactory.CreateByProcess(entity);
             var activityList = processModel.GetTaskActivityList();
 
@@ -738,10 +738,10 @@ namespace saiflow.engine.Service
         public string SaveVariableDefinition(VariableEntity entity)
         {
             var vm = Managers.Variables;
-            if (!string.IsNullOrWhiteSpace(entity.Id))
+            if (!string.IsNullOrWhiteSpace(entity.VariableId))
             {
                 vm.Update(entity);
-                return entity.Id;
+                return entity.VariableId;
             }
             return vm.Insert(entity);
         }
@@ -791,9 +791,9 @@ namespace saiflow.engine.Service
             var exist = rm.GetByCode(entity?.RuleSetCode ?? "");
             if (exist != null)
             {
-                entity.Id = exist.Id;
+                entity.RuleSetId = exist.RuleSetId;
                 rm.Update(entity);
-                return entity.Id;
+                return entity.RuleSetId;
             }
             return rm.Insert(entity);
         }
