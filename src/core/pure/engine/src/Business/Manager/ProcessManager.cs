@@ -33,7 +33,7 @@ namespace saiflow.engine.Manager
         /// </summary>
         public ProcessEntity GetById(string id)
         {
-            return Sail.UseRunSQL().useRepo<ProcessEntity, string>().GetById(id);
+            return Sail.UseRunSQL().findRowById<ProcessEntity>(id);
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace saiflow.engine.Manager
         /// </summary>
         public ProcessEntity GetById(SQLBuilder kit, string id)
         {
-            return kit.useSQL().useRepo<ProcessEntity, string>().GetById(id);
+            return kit.findRowById<ProcessEntity>(id);
         }
 
         /// <summary>
