@@ -1382,27 +1382,6 @@ namespace saiflow.engine.Pattern
         }
 
         /// <summary>
-        /// 根据活动实例已分配人员信息反构 PerformerList
-        /// </summary>
-        protected PerformerList AntiGenerateActivityPerformerList(ActivityInstanceEntity activityInstance)
-        {
-            var performerList = new PerformerList();
-
-            if (!string.IsNullOrEmpty(activityInstance.AssignedUserIds)
-                && !string.IsNullOrEmpty(activityInstance.AssignedUserNames))
-            {
-                var assignedUserIDs = activityInstance.AssignedUserIds.Split(',');
-                var assignedUserNames = activityInstance.AssignedUserNames.Split(',');
-
-                for (var i = 0; i < assignedUserIDs.Count(); i++)
-                {
-                    performerList.Add(new Performer(assignedUserIDs[i], assignedUserNames[i]));
-                }
-            }
-            return performerList;
-        }
-
-        /// <summary>
         /// R10：零 Performer 锚点入队时尚无 AI Id；活动插入后回写 Outbox 列供 Job 精确认领。
         /// </summary>
         protected void BindAutoApproveAnchorActivityInstance(SQLBuilder kit, ActivityInstanceEntity activityInstance)

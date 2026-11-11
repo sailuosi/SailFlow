@@ -46,8 +46,8 @@ namespace saiflow.engine.Pattern
         {
             try
             {
-                //完成节点绑定的外部程序逻辑或服务
-                OnExecutingServiceItem();
+                //完成节点绑定的脚本逻辑
+                OnExecutingScriptItem();
             }
             catch (Exception ex)
             {
