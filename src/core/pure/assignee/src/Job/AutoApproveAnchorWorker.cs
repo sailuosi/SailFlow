@@ -349,10 +349,10 @@ public sealed class AutoApproveAnchorWorker
     static TaskEntity? FindWaitingTask(SQLBuilder kit, AutoApproveAnchor anchor)
     {
         var clip = kit.useClip();
-        clip.from<TaskEntity>(out var t);
-        clip.where(() => t.ProcessInstanceId, anchor.ProcessInstanceId);
-        clip.where(() => t.ActivityId, anchor.ActivityId);
-        clip.where(() => t.TaskState, (short)TaskStateEnum.Waiting);
+        clip.from<TaskEntity>(out var t)
+            .where(() => t.ProcessInstanceId, anchor.ProcessInstanceId)
+            .where(() => t.ActivityId, anchor.ActivityId)
+            .where(() => t.TaskState, (short)TaskStateEnum.Waiting);
         var list = clip.select(t).queryList()?.ToList() ?? new List<TaskEntity>();
         if (list.Count == 0)
             return null;
@@ -414,8 +414,8 @@ public sealed class AutoApproveAnchorWorker
             if (!string.IsNullOrWhiteSpace(anchor.ActivityInstanceId))
             {
                 var clip = kit.useClip();
-                clip.from<ActivityInstanceEntity>(out var a);
-                clip.where(() => a.ActivityInstanceId, anchor.ActivityInstanceId);
+                clip.from<ActivityInstanceEntity>(out var a)
+                    .where(() => a.ActivityInstanceId, anchor.ActivityInstanceId);
                 var act = clip.select(a).queryList()?.FirstOrDefault();
                 if (act == null)
                     return false;
@@ -423,9 +423,9 @@ public sealed class AutoApproveAnchorWorker
             }
 
             var listClip = kit.useClip();
-            listClip.from<ActivityInstanceEntity>(out var ai);
-            listClip.where(() => ai.ProcessInstanceId, anchor.ProcessInstanceId);
-            listClip.where(() => ai.ActivityId, anchor.ActivityId);
+            listClip.from<ActivityInstanceEntity>(out var ai)
+                .where(() => ai.ProcessInstanceId, anchor.ProcessInstanceId)
+                .where(() => ai.ActivityId, anchor.ActivityId);
             var list = listClip.select(ai).queryList()?.ToList() ?? new List<ActivityInstanceEntity>();
             if (list.Count == 0)
                 return false;
@@ -459,8 +459,8 @@ public sealed class AutoApproveAnchorWorker
         try
         {
             var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var a);
-            clip.where(() => a.ActivityInstanceId, task.ActivityInstanceId);
+            clip.from<ActivityInstanceEntity>(out var a)
+                .where(() => a.ActivityInstanceId, task.ActivityInstanceId);
             var act = clip.select(a).queryList()?.FirstOrDefault();
             if (act == null)
                 return false;
@@ -477,10 +477,10 @@ public sealed class AutoApproveAnchorWorker
     static ActivityInstanceEntity? FindReadyActivity(SQLBuilder kit, AutoApproveAnchor anchor)
     {
         var clip = kit.useClip();
-        clip.from<ActivityInstanceEntity>(out var a);
-        clip.where(() => a.ProcessInstanceId, anchor.ProcessInstanceId);
-        clip.where(() => a.ActivityId, anchor.ActivityId);
-        clip.where(() => a.ActivityState, (short)ActivityStateEnum.Ready);
+        clip.from<ActivityInstanceEntity>(out var a)
+            .where(() => a.ProcessInstanceId, anchor.ProcessInstanceId)
+            .where(() => a.ActivityId, anchor.ActivityId)
+            .where(() => a.ActivityState, (short)ActivityStateEnum.Ready);
         var list = clip.select(a).queryList()?.ToList() ?? new List<ActivityInstanceEntity>();
         if (list.Count == 0)
             return null;
@@ -521,8 +521,8 @@ public sealed class AutoApproveAnchorWorker
     static ProcessInstanceEntity? LoadProcessInstance(SQLBuilder kit, string processInstanceId)
     {
         var clip = kit.useClip();
-        clip.from<ProcessInstanceEntity>(out var p);
-        clip.where(() => p.ProcessInstanceId, processInstanceId);
+        clip.from<ProcessInstanceEntity>(out var p)
+            .where(() => p.ProcessInstanceId, processInstanceId);
         return clip.select(p).queryList()?.FirstOrDefault();
     }
 

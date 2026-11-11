@@ -286,11 +286,11 @@ namespace saiflow.engine.Runtime
         {
             _ = activityInstanceId; // 历史参数保留；原 SQL 未使用
             var clip = Kit().useClip();
-            clip.from<ActivityInstanceEntity>(out var a);
-            clip.where(() => a.MainActivityInstanceId, mainActivityInstanceId);
-            clip.where(() => a.CompleteOrder, completeOrder - 1);
-            clip.where(() => a.ActivityState, (short)ActivityStateEnum.Completed);
-            clip.orderByDesc(() => a.CreatedDateTime);
+            clip.from<ActivityInstanceEntity>(out var a)
+                .where(() => a.MainActivityInstanceId, mainActivityInstanceId)
+                .where(() => a.CompleteOrder, completeOrder - 1)
+                .where(() => a.ActivityState, (short)ActivityStateEnum.Completed)
+                .orderByDesc(() => a.CreatedDateTime);
             return clip.select(a).queryUnique();
         }
 

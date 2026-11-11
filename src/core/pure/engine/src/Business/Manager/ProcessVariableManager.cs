@@ -118,10 +118,10 @@ namespace saiflow.engine.Manager
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = kit.useSQL().useClip();
-                clip.from<ProcessVariableEntity>(table, out var v);
-                clip.where(() => v.ProcessInstanceId, processInstanceId);
-                clip.orderBy(() => v.ActivityId);
+                var clip = kit.useClip();
+                clip.from<ProcessVariableEntity>(table, out var v)
+                    .where(() => v.ProcessInstanceId, processInstanceId)
+                    .orderBy(() => v.ActivityId);
                 return clip.select(v).queryList().ToList();
             });
         }
@@ -132,11 +132,11 @@ namespace saiflow.engine.Manager
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = kit.useSQL().useClip();
-                clip.from<ProcessVariableEntity>(table, out var v);
-                clip.where(() => v.ProcessInstanceId, processInstanceId);
-                clip.where(() => v.ActivityInstanceId, activityInstanceId);
-                clip.orderBy(() => v.ActivityId);
+                var clip = kit.useClip();
+                clip.from<ProcessVariableEntity>(table, out var v)
+                    .where(() => v.ProcessInstanceId, processInstanceId)
+                    .where(() => v.ActivityInstanceId, activityInstanceId)
+                    .orderBy(() => v.ActivityId);
                 return clip.select(v).queryList().ToList();
             });
         }
@@ -179,12 +179,12 @@ namespace saiflow.engine.Manager
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = kit.useSQL().useClip();
-                clip.from<ProcessVariableEntity>(table, out var v);
-                clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Process.ToString());
-                clip.where(() => v.ProcessInstanceId, processInstanceId);
-                clip.where(() => v.Name, name);
-                clip.orderBy(() => v.ActivityId);
+                var clip = kit.useClip();
+                clip.from<ProcessVariableEntity>(table, out var v)
+                    .where(() => v.VariableScope, ProcessVariableScopeEnum.Process.ToString())
+                    .where(() => v.ProcessInstanceId, processInstanceId)
+                    .where(() => v.Name, name)
+                    .orderBy(() => v.ActivityId);
                 return clip.select(v).queryList().ToList();
             }).FirstOrDefault();
         }
@@ -202,13 +202,13 @@ namespace saiflow.engine.Manager
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = kit.useSQL().useClip();
-                clip.from<ProcessVariableEntity>(table, out var v);
-                clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString());
-                clip.where(() => v.ProcessInstanceId, processInstanceId);
-                clip.where(() => v.ActivityInstanceId, activityInstanceId);
-                clip.where(() => v.Name, name);
-                clip.orderBy(() => v.Name);
+                var clip = kit.useClip();
+                clip.from<ProcessVariableEntity>(table, out var v)
+                    .where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString())
+                    .where(() => v.ProcessInstanceId, processInstanceId)
+                    .where(() => v.ActivityInstanceId, activityInstanceId)
+                    .where(() => v.Name, name)
+                    .orderBy(() => v.Name);
                 return clip.select(v).queryList().ToList();
             }).FirstOrDefault();
         }
@@ -231,11 +231,11 @@ namespace saiflow.engine.Manager
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = kit.useSQL().useClip();
-                clip.from<ProcessVariableEntity>(table, out var v);
-                clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString());
-                clip.where(() => v.ProcessInstanceId, processInstanceId);
-                clip.where(() => v.ActivityInstanceId, activityInstanceId);
+                var clip = kit.useClip();
+                clip.from<ProcessVariableEntity>(table, out var v)
+                    .where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString())
+                    .where(() => v.ProcessInstanceId, processInstanceId)
+                    .where(() => v.ActivityInstanceId, activityInstanceId);
 
                 if (variableNameList != null && variableNameList.Count == 1)
                     clip.where(() => v.Name, variableNameList[0]);
@@ -262,11 +262,11 @@ namespace saiflow.engine.Manager
             return await QueryWithFallbackAsync(kit, processId, async table =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var clip = kit.useSQL().useClip();
-                clip.from<ProcessVariableEntity>(table, out var v);
-                clip.where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString());
-                clip.where(() => v.ProcessInstanceId, processInstanceId);
-                clip.where(() => v.ActivityInstanceId, activityInstanceId);
+                var clip = kit.useClip();
+                clip.from<ProcessVariableEntity>(table, out var v)
+                    .where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString())
+                    .where(() => v.ProcessInstanceId, processInstanceId)
+                    .where(() => v.ActivityInstanceId, activityInstanceId);
 
                 if (variableNameList != null && variableNameList.Count == 1)
                     clip.where(() => v.Name, variableNameList[0]);

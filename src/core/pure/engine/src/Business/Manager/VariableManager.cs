@@ -27,11 +27,11 @@ namespace saiflow.engine.Manager
                 return new List<VariableEntity>();
 
             var clip = Sail.UseRunSQL().useClip();
-            clip.from<VariableEntity>(out var v);
-            clip.where(() => v.ProcessId, processId);
-            clip.where(() => v.Version, version);
-            clip.where(() => v.ActivityId, activityId);
-            clip.orderBy("sort_order, id");
+            clip.from<VariableEntity>(out var v)
+                .where(() => v.ProcessId, processId)
+                .where(() => v.Version, version)
+                .where(() => v.ActivityId, activityId)
+                .orderBy("sort_order, id");
             return clip.select(v).queryList().ToList();
         }
 
@@ -126,11 +126,11 @@ namespace saiflow.engine.Manager
         private static void DeleteByProcessActivity(SQLBuilder kit, string processId, string version, string activityId)
         {
             var clip = kit.useClip();
-            clip.setTable<VariableEntity>(out var v);
-            clip.where(() => v.ProcessId, processId);
-            clip.where(() => v.Version, version);
-            clip.where(() => v.ActivityId, activityId);
-            clip.doDelete();
+            clip.setTable<VariableEntity>(out var v)
+                .where(() => v.ProcessId, processId)
+                .where(() => v.Version, version)
+                .where(() => v.ActivityId, activityId)
+                .doDelete();
         }
     }
 }

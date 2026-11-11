@@ -31,11 +31,11 @@ namespace saiflow.AI.Manager
 
         public AiActivityConfigEntity GetByProcessVersionActivity(SQLBuilder kit, string processId, string version, string activityId)
         {
-            var clip = kit.useSQL().useClip();
-            clip.from<AiActivityConfigEntity>(out var p);
-            clip.where(() => p.ProcessId, processId);
-            clip.where(() => p.Version, version);
-            clip.where(() => p.ActivityId, activityId);
+            var clip = kit.useClip();
+            clip.from<AiActivityConfigEntity>(out var p)
+                .where(() => p.ProcessId, processId)
+                .where(() => p.Version, version)
+                .where(() => p.ActivityId, activityId);
             var list = clip.select(p).queryList().ToList();
             return list.Count == 1 ? list[0] : null;
         }
@@ -153,10 +153,10 @@ namespace saiflow.AI.Manager
             string originVersion,
             string newVersion)
         {
-            var clip = kit.useSQL().useClip();
-            clip.from<AiActivityConfigEntity>(out var p);
-            clip.where(() => p.ProcessId, processId);
-            clip.where(() => p.Version, originVersion);
+            var clip = kit.useClip();
+            clip.from<AiActivityConfigEntity>(out var p)
+                .where(() => p.ProcessId, processId)
+                .where(() => p.Version, originVersion);
             var list = clip.select(p).queryList().ToList();
             if (list.Count == 0) return;
 

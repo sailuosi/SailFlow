@@ -54,9 +54,9 @@ namespace saiflow.engine.Manager
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var clip = kit.useSQL().useClip();
-            clip.from<TaskViewEntity>(out var t);
-            clip.where(() => t.TaskId, taskId);
+            var clip = kit.useClip();
+            clip.from<TaskViewEntity>(out var t)
+                .where(() => t.TaskId, taskId);
             var list = await clip.select(t).take(1).queryListAsync(cancellationToken).ConfigureAwait(false);
             return list?.FirstOrDefault();
         }
@@ -83,10 +83,10 @@ namespace saiflow.engine.Manager
 
         internal List<TaskEntity> GetTaskListByActivity(SQLBuilder kit, string processInstanceId, string activityInstanceId)
         {
-            var clip = kit.useSQL().useClip();
-            clip.from<TaskEntity>(out var t);
-            clip.where(() => t.ActivityInstanceId, activityInstanceId);
-            clip.where(() => t.ProcessInstanceId, processInstanceId);
+            var clip = kit.useClip();
+            clip.from<TaskEntity>(out var t)
+                .where(() => t.ActivityInstanceId, activityInstanceId)
+                .where(() => t.ProcessInstanceId, processInstanceId);
             return clip.select(t).queryList().ToList();
         }
 
@@ -118,10 +118,10 @@ namespace saiflow.engine.Manager
 
         internal TaskViewEntity GetTaskViewByActivity(SQLBuilder kit, string processInstanceId, string activityInstanceId)
         {
-            var clip = kit.useSQL().useClip();
-            clip.from<TaskViewEntity>(out var t);
-            clip.where(() => t.ActivityInstanceId, activityInstanceId);
-            clip.where(() => t.ProcessInstanceId, processInstanceId);
+            var clip = kit.useClip();
+            clip.from<TaskViewEntity>(out var t)
+                .where(() => t.ActivityInstanceId, activityInstanceId)
+                .where(() => t.ProcessInstanceId, processInstanceId);
             var list = clip.select(t).queryList().ToList();
             return list.Count > 0 ? list[0] : null;
         }
@@ -136,10 +136,10 @@ namespace saiflow.engine.Manager
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var clip = kit.useSQL().useClip();
-            clip.from<TaskViewEntity>(out var t);
-            clip.where(() => t.ActivityInstanceId, activityInstanceId);
-            clip.where(() => t.ProcessInstanceId, processInstanceId);
+            var clip = kit.useClip();
+            clip.from<TaskViewEntity>(out var t)
+                .where(() => t.ActivityInstanceId, activityInstanceId)
+                .where(() => t.ProcessInstanceId, processInstanceId);
             var list = (await clip.select(t).queryListAsync(cancellationToken).ConfigureAwait(false)).ToList();
             return list.Count > 0 ? list[0] : null;
         }
@@ -161,15 +161,15 @@ namespace saiflow.engine.Manager
             string activityInstanceId,
             string userId)
         {
-            var clip = kit.useSQL().useClip();
-            clip.from<TaskViewEntity>(out var t);
-            clip.where(() => t.ActivityInstanceId, activityInstanceId);
-            clip.where(() => t.AssignedUserId, userId);
-            clip.where(() => t.ProcessState, (short)2);
-            clip.where(() => t.ActivityType == 4 || t.ActivityType == 5 || t.ActivityType == 6);
-            clip.whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 });
-            clip.orderByDesc(() => t.ActivatedDateTime);
-            clip.top(1);
+            var clip = kit.useClip();
+            clip.from<TaskViewEntity>(out var t)
+                .where(() => t.ActivityInstanceId, activityInstanceId)
+                .where(() => t.AssignedUserId, userId)
+                .where(() => t.ProcessState, (short)2)
+                .where(() => t.ActivityType == 4 || t.ActivityType == 5 || t.ActivityType == 6)
+                .whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 })
+                .orderByDesc(() => t.ActivatedDateTime)
+                .top(1);
             var list = clip.select(t).queryList().ToList();
 
             return ResolveTaskOfMineByActivityInstance(list, activityInstanceId);
@@ -185,15 +185,15 @@ namespace saiflow.engine.Manager
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var clip = kit.useSQL().useClip();
-            clip.from<TaskViewEntity>(out var t);
-            clip.where(() => t.ActivityInstanceId, activityInstanceId);
-            clip.where(() => t.AssignedUserId, userId);
-            clip.where(() => t.ProcessState, (short)2);
-            clip.where(() => t.ActivityType == 4 || t.ActivityType == 5 || t.ActivityType == 6);
-            clip.whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 });
-            clip.orderByDesc(() => t.ActivatedDateTime);
-            clip.top(1);
+            var clip = kit.useClip();
+            clip.from<TaskViewEntity>(out var t)
+                .where(() => t.ActivityInstanceId, activityInstanceId)
+                .where(() => t.AssignedUserId, userId)
+                .where(() => t.ProcessState, (short)2)
+                .where(() => t.ActivityType == 4 || t.ActivityType == 5 || t.ActivityType == 6)
+                .whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 })
+                .orderByDesc(() => t.ActivatedDateTime)
+                .top(1);
             var list = (await clip.select(t).queryListAsync(cancellationToken).ConfigureAwait(false)).ToList();
             return ResolveTaskOfMineByActivityInstance(list, activityInstanceId);
         }
@@ -230,19 +230,19 @@ namespace saiflow.engine.Manager
             string processId,
             string userId)
         {
-            var clip = kit.useSQL().useClip();
-            clip.from<TaskViewEntity>(out var t);
-            clip.where(() => t.AppInstanceId, appInstanceId);
-            clip.where(() => t.ProcessId, processId);
-            clip.where(() => t.AssignedUserId, userId);
-            clip.where(() => t.ProcessState, (short)2);
-            clip.sinkOR();
-            clip.whereIn(() => t.ActivityType, new short?[] { (short)4, (short)5, (short)6 });
-            clip.where(() => t.WorkItemType, (short)1);
-            clip.rise();
-            clip.whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 });
-            clip.orderByDesc(() => t.ActivatedDateTime);
-            clip.top(1);
+            var clip = kit.useClip();
+            clip.from<TaskViewEntity>(out var t)
+                .where(() => t.AppInstanceId, appInstanceId)
+                .where(() => t.ProcessId, processId)
+                .where(() => t.AssignedUserId, userId)
+                .where(() => t.ProcessState, (short)2)
+                .sinkOR()
+                .whereIn(() => t.ActivityType, new short?[] { (short)4, (short)5, (short)6 })
+                .where(() => t.WorkItemType, (short)1)
+                .rise()
+                .whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 })
+                .orderByDesc(() => t.ActivatedDateTime)
+                .top(1);
             var list = clip.select(t).queryList().ToList();
 
             if (list.Count == 0)
@@ -684,9 +684,9 @@ namespace saiflow.engine.Manager
 
         internal void CancelEntrustedTask(SQLBuilder kit, string taskId)
         {
-            var clip = kit.useSQL().useClip();
-            clip.from<TaskEntity>(out var t);
-            clip.where(() => t.EntrustedTaskId, taskId);
+            var clip = kit.useClip();
+            clip.from<TaskEntity>(out var t)
+                .where(() => t.EntrustedTaskId, taskId);
             var entrustedTaskEntity = clip.select(t).queryList().FirstOrDefault();
             entrustedTaskEntity.TaskState = (short)TaskStateEnum.Canceled;
             entrustedTaskEntity.UpdatedDateTime = DateTime.UtcNow;
@@ -778,12 +778,12 @@ namespace saiflow.engine.Manager
 
         private void CancelTask(SQLBuilder kit, string activityInstanceId)
         {
-            var clip = kit.useSQL().useClip();
-            clip.setTable<TaskEntity>(out var t);
-            clip.set(() => t.TaskState, (short)48);
-            clip.set(() => t.RecordStatusInvalid, (byte)1);
-            clip.where(() => t.ActivityInstanceId, activityInstanceId);
-            clip.doUpdate();
+            var clip = kit.useClip();
+            clip.setTable<TaskEntity>(out var t)
+                .set(() => t.TaskState, (short)48)
+                .set(() => t.RecordStatusInvalid, (byte)1)
+                .where(() => t.ActivityInstanceId, activityInstanceId)
+                .doUpdate();
         }
 
         internal bool Delete(string taskId)

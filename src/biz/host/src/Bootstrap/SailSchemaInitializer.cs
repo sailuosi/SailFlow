@@ -96,12 +96,12 @@ namespace saiflow.biz.Bootstrap
         /// </summary>
         static void BuildTaskDetailsViewSelect(SQLClip clip)
         {
-            clip.from<TaskEntity>(out var t);
-            clip.InnerJoin<ActivityInstanceEntity>(out var ai)
-                .on(() => t.ActivityInstanceId == ai.ActivityInstanceId);
-            clip.InnerJoin<ProcessInstanceEntity>(out var pi)
-                .on(() => t.ProcessInstanceId == pi.ProcessInstanceId);
-            clip.LeftJoin<ActivityInstanceEntity>(out var mai)
+            clip.from<TaskEntity>(out var t)
+                .InnerJoin<ActivityInstanceEntity>(out var ai)
+                .on(() => t.ActivityInstanceId == ai.ActivityInstanceId)
+                .InnerJoin<ProcessInstanceEntity>(out var pi)
+                .on(() => t.ProcessInstanceId == pi.ProcessInstanceId)
+                .LeftJoin<ActivityInstanceEntity>(out var mai)
                 .on(() => ai.MainActivityInstanceId == mai.ActivityInstanceId);
 
             clip.select(() => new

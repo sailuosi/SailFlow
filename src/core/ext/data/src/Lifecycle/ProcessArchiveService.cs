@@ -142,18 +142,18 @@ namespace saiflow.data.Lifecycle
 
         private static List<ProcessInstanceEntity> LoadCandidates(SQLBuilder hot, DateTime cutoff, int limit)
         {
-            var clip = hot.useSQL().useClip();
-            clip.from<ProcessInstanceEntity>(out var pi);
-            clip.whereIn(() => pi.ProcessState, new short?[]
-            {
-                (short)ProcessStateEnum.Completed,
-                (short)ProcessStateEnum.Canceled,
-                (short)ProcessStateEnum.Discarded,
-                (short)ProcessStateEnum.Terminated
-            });
-            clip.whereIsNotNull(() => pi.EndedDateTime);
-            clip.where(() => pi.EndedDateTime, cutoff, "<");
-            clip.orderBy(() => pi.EndedDateTime);
+            var clip = hot.useClip();
+            clip.from<ProcessInstanceEntity>(out var pi)
+                .whereIn(() => pi.ProcessState, new short?[]
+                {
+                    (short)ProcessStateEnum.Completed,
+                    (short)ProcessStateEnum.Canceled,
+                    (short)ProcessStateEnum.Discarded,
+                    (short)ProcessStateEnum.Terminated
+                })
+                .whereIsNotNull(() => pi.EndedDateTime)
+                .where(() => pi.EndedDateTime, cutoff, "<")
+                .orderBy(() => pi.EndedDateTime);
             return clip.select(pi).queryList().Take(limit).ToList();
         }
 
@@ -212,17 +212,17 @@ namespace saiflow.data.Lifecycle
 
         private static List<ActivityInstanceEntity> LoadActivities(SQLBuilder kit, string processInstanceId)
         {
-            var clip = kit.useSQL().useClip();
-            clip.from<ActivityInstanceEntity>(out var a);
-            clip.where(() => a.ProcessInstanceId, processInstanceId);
+            var clip = kit.useClip();
+            clip.from<ActivityInstanceEntity>(out var a)
+                .where(() => a.ProcessInstanceId, processInstanceId);
             return clip.select(a).queryList().ToList();
         }
 
         private static List<TaskEntity> LoadTasks(SQLBuilder kit, string processInstanceId)
         {
-            var clip = kit.useSQL().useClip();
-            clip.from<TaskEntity>(out var t);
-            clip.where(() => t.ProcessInstanceId, processInstanceId);
+            var clip = kit.useClip();
+            clip.from<TaskEntity>(out var t)
+                .where(() => t.ProcessInstanceId, processInstanceId);
             return clip.select(t).queryList().ToList();
         }
 
@@ -252,19 +252,19 @@ namespace saiflow.data.Lifecycle
         {
             var processId = ResolveProcessId(kit, processInstanceId);
 
-            var clip = kit.useSQL().useClip();
-            clip.setTable<TaskEntity>(out var t);
-            clip.where(() => t.ProcessInstanceId, processInstanceId);
-            clip.doDelete();
+            var clip = kit.useClip();
+            clip.setTable<TaskEntity>(out var t)
+                .where(() => t.ProcessInstanceId, processInstanceId)
+                .doDelete();
 
             DeleteByProcessInstance(kit, Sail.HotShard.ResolveTransitionTable(processId), processInstanceId);
             if (Sail.HotShard.IsSharded(processId))
                 DeleteByProcessInstance(kit, Sail.HotShard.DefaultTransitionTable, processInstanceId);
 
-            clip = kit.useSQL().useClip();
-            clip.setTable<ActivityInstanceEntity>(out var ai);
-            clip.where(() => ai.ProcessInstanceId, processInstanceId);
-            clip.doDelete();
+            clip = kit.useClip();
+            clip.setTable<ActivityInstanceEntity>(out var ai)
+                .where(() => ai.ProcessInstanceId, processInstanceId)
+                .doDelete();
 
             DeleteByProcessInstance(kit, Sail.HotShard.ResolveVariableTable(processId), processInstanceId);
             if (Sail.HotShard.IsSharded(processId))
@@ -322,9 +322,9 @@ namespace saiflow.data.Lifecycle
         {
             try
             {
-                var clip = kit.useSQL().useClip();
-                clip.from<T>(table, out var row);
-                clip.where("process_instance_id", processInstanceId);
+                var clip = kit.useClip();
+                clip.from<T>(table, out var row)
+                    .where("process_instance_id", processInstanceId);
                 return clip.select(row).queryList().ToList();
             }
             catch

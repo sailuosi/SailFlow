@@ -121,21 +121,21 @@ namespace saiflow.engine.Manager
         {
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = kit.useSQL().useClip();
-                clip.from<TransitionInstanceEntity>(table, out var t);
-                clip.InnerJoin<ActivityInstanceEntity>(out var a).on(() => t.ToActivityInstanceId == a.ActivityInstanceId);
-                clip.where(() => t.AppInstanceId, appInstanceId);
-                clip.where(() => t.ProcessId, processId);
-                clip.sinkOR();
-                clip.whereIn(() => t.ToActivityType, new short?[]
-                {
-                    (short)ActivityTypeEnum.TaskNode,
-                    (short)ActivityTypeEnum.SubProcessNode,
-                    (short)ActivityTypeEnum.MultiSignNode
-                });
-                clip.where(() => a.WorkItemType, (short)1);
-                clip.rise();
-                clip.orderByDesc(() => t.CreatedDateTime);
+                var clip = kit.useClip();
+                clip.from<TransitionInstanceEntity>(table, out var t)
+                    .InnerJoin<ActivityInstanceEntity>(out var a).on(() => t.ToActivityInstanceId == a.ActivityInstanceId)
+                    .where(() => t.AppInstanceId, appInstanceId)
+                    .where(() => t.ProcessId, processId)
+                    .sinkOR()
+                    .whereIn(() => t.ToActivityType, new short?[]
+                    {
+                        (short)ActivityTypeEnum.TaskNode,
+                        (short)ActivityTypeEnum.SubProcessNode,
+                        (short)ActivityTypeEnum.MultiSignNode
+                    })
+                    .where(() => a.WorkItemType, (short)1)
+                    .rise()
+                    .orderByDesc(() => t.CreatedDateTime);
                 return clip.select(t).queryList().ToList();
             });
         }
@@ -152,12 +152,12 @@ namespace saiflow.engine.Manager
         {
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = kit.useSQL().useClip();
-                clip.from<TransitionInstanceEntity>(table, out var t);
-                clip.where(() => t.AppInstanceId, appInstanceId);
-                clip.where(() => t.ProcessId, processId);
-                clip.where(() => t.ToActivityType, (short)toActivityType);
-                clip.orderByDesc(() => t.CreatedDateTime);
+                var clip = kit.useClip();
+                clip.from<TransitionInstanceEntity>(table, out var t)
+                    .where(() => t.AppInstanceId, appInstanceId)
+                    .where(() => t.ProcessId, processId)
+                    .where(() => t.ToActivityType, (short)toActivityType)
+                    .orderByDesc(() => t.CreatedDateTime);
                 return clip.select(t).queryList().ToList();
             });
         }
@@ -185,12 +185,12 @@ namespace saiflow.engine.Manager
         {
             return QueryWithFallback(kit, processId, table =>
             {
-                var clip = kit.useSQL().useClip();
-                clip.from<TransitionInstanceEntity>(table, out var t);
-                clip.where(() => t.AppInstanceId, appInstanceId);
-                clip.where(() => t.ProcessId, processId);
-                clip.where(() => t.ProcessInstanceId, processInstanceId);
-                clip.orderByDesc(() => t.CreatedDateTime);
+                var clip = kit.useClip();
+                clip.from<TransitionInstanceEntity>(table, out var t)
+                    .where(() => t.AppInstanceId, appInstanceId)
+                    .where(() => t.ProcessId, processId)
+                    .where(() => t.ProcessInstanceId, processInstanceId)
+                    .orderByDesc(() => t.CreatedDateTime);
                 return clip.select(t).queryList().ToList();
             });
         }
@@ -215,9 +215,9 @@ namespace saiflow.engine.Manager
             var processId = ResolveProcessIdFromActivity(kit, fromActivityInstanceId);
             var transitions = QueryWithFallback(kit, processId, table =>
             {
-                var clip = kit.useSQL().useClip();
-                clip.from<TransitionInstanceEntity>(table, out var t);
-                clip.where(() => t.FromActivityInstanceId, fromActivityInstanceId);
+                var clip = kit.useClip();
+                clip.from<TransitionInstanceEntity>(table, out var t)
+                    .where(() => t.FromActivityInstanceId, fromActivityInstanceId);
                 return clip.select(t).queryList().ToList();
             });
 

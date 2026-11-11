@@ -77,9 +77,9 @@ namespace saiflow.data.Lifecycle
             {
                 using (var kit = Cold.UseColdSQL())
                 {
-                    var clip = kit.useSQL().useClip();
-                    clip.from<T>(table, out var row);
-                    clip.where("id", id);
+                    var clip = kit.useClip();
+                    clip.from<T>(table, out var row)
+                        .where("id", id);
                     return clip.select(row).queryList().FirstOrDefault();
                 }
             }
@@ -95,9 +95,9 @@ namespace saiflow.data.Lifecycle
             {
                 using (var kit = Cold.UseColdSQL())
                 {
-                    var clip = kit.useSQL().useClip();
-                    clip.from<T>(table, out var row);
-                    clip.where("process_instance_id", processInstanceId);
+                    var clip = kit.useClip();
+                    clip.from<T>(table, out var row)
+                        .where("process_instance_id", processInstanceId);
                     return clip.select(row).queryList().ToList();
                 }
             }

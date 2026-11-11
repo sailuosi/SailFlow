@@ -37,10 +37,10 @@ namespace saiflow.engine.Manager
         {
             var now = DateTime.UtcNow;
             var take = Math.Max(1, limit);
-            var clip = kit.useSQL().useClip();
-            clip.from<HookOutboxEntity>(out var o);
-            clip.where(() => o.Status, HookOutboxStatus.Pending);
-            clip.where(() => o.NextRetryAt == null || o.NextRetryAt <= now);
+            var clip = kit.useClip();
+            clip.from<HookOutboxEntity>(out var o)
+                .where(() => o.Status, HookOutboxStatus.Pending)
+                .where(() => o.NextRetryAt == null || o.NextRetryAt <= now);
             if (!string.IsNullOrEmpty(kind))
                 clip.where(() => o.Kind, kind);
             else
@@ -96,13 +96,13 @@ namespace saiflow.engine.Manager
         public int ReclaimStaleProcessing(SQLBuilder kit, DateTime staleBeforeUtc, DateTime? nowUtc = null)
         {
             var now = nowUtc ?? DateTime.UtcNow;
-            var clip = kit.useSQL().useClip();
-            clip.from<HookOutboxEntity>(out var o);
-            clip.where(() => o.Status, HookOutboxStatus.Processing);
-            clip.where(() =>
+            var clip = kit.useClip();
+            clip.from<HookOutboxEntity>(out var o)
+                .where(() => o.Status, HookOutboxStatus.Processing)
+                .where(() =>
                 (o.LeasedUntil != null && o.LeasedUntil < now)
-                || (o.LeasedUntil == null && o.UpdatedAt != null && o.UpdatedAt < staleBeforeUtc));
-            clip.orderBy(() => o.CreatedAt);
+                || (o.LeasedUntil == null && o.UpdatedAt != null && o.UpdatedAt < staleBeforeUtc))
+                .orderBy(() => o.CreatedAt);
             // 单次回收上限，避免极端积压时一次事务过大
             var rows = clip.select(o).take(200).queryList() ?? new List<HookOutboxEntity>();
             var reclaimed = 0;
@@ -112,13 +112,13 @@ namespace saiflow.engine.Manager
                 if (string.IsNullOrWhiteSpace(row.HookOutboxId))
                     continue;
 
-                var update = kit.useSQL().useClip();
-                update.setTable<HookOutboxEntity>(out var u);
-                update.set(() => u.Status, HookOutboxStatus.Pending);
-                update.setToNull(() => u.LeasedUntil);
-                update.set(() => u.UpdatedAt, now);
-                update.where(() => u.HookOutboxId, row.HookOutboxId);
-                update.where(() => u.Status, HookOutboxStatus.Processing);
+                var update = kit.useClip();
+                update.setTable<HookOutboxEntity>(out var u)
+                    .set(() => u.Status, HookOutboxStatus.Pending)
+                    .setToNull(() => u.LeasedUntil)
+                    .set(() => u.UpdatedAt, now)
+                    .where(() => u.HookOutboxId, row.HookOutboxId)
+                    .where(() => u.Status, HookOutboxStatus.Processing);
                 if (update.doUpdate() > 0)
                     reclaimed++;
             }
@@ -174,13 +174,13 @@ namespace saiflow.engine.Manager
             if (string.IsNullOrWhiteSpace(processInstanceId) || string.IsNullOrWhiteSpace(activityInstanceId) || string.IsNullOrWhiteSpace(activityId))
                 return 0;
 
-            var clip = kit.useSQL().useClip();
-            clip.from<HookOutboxEntity>(out var o);
-            clip.where(() => o.Kind, HookOutboxKinds.AssigneeAutoApprove);
-            clip.where(() => o.ProcessInstanceId, processInstanceId);
-            clip.where(() => o.Status, HookOutboxStatus.Pending);
-            clip.where(() => o.ActivityInstanceId == null);
-            clip.orderBy(() => o.CreatedAt);
+            var clip = kit.useClip();
+            clip.from<HookOutboxEntity>(out var o)
+                .where(() => o.Kind, HookOutboxKinds.AssigneeAutoApprove)
+                .where(() => o.ProcessInstanceId, processInstanceId)
+                .where(() => o.Status, HookOutboxStatus.Pending)
+                .where(() => o.ActivityInstanceId == null)
+                .orderBy(() => o.CreatedAt);
             var candidates = clip.select(o).take(50).queryList() ?? new List<HookOutboxEntity>();
             var n = 0;
             var repo = kit.useSQL().useRepo<HookOutboxEntity>();
@@ -246,10 +246,10 @@ namespace saiflow.engine.Manager
         public IList<HookOutboxEntity> QueryByStatus(SQLBuilder kit, string status, int limit = 100)
         {
             var take = Math.Max(1, limit);
-            var clip = kit.useSQL().useClip();
-            clip.from<HookOutboxEntity>(out var o);
-            clip.where(() => o.Status, status);
-            clip.orderBy(() => o.CreatedAt);
+            var clip = kit.useClip();
+            clip.from<HookOutboxEntity>(out var o)
+                .where(() => o.Status, status)
+                .orderBy(() => o.CreatedAt);
             return clip.select(o).take(take).queryList()?.ToList()
                    ?? new List<HookOutboxEntity>();
         }
@@ -264,9 +264,9 @@ namespace saiflow.engine.Manager
             string handlerName)
         {
             var take = Math.Max(1, limit);
-            var clip = kit.useSQL().useClip();
-            clip.from<HookOutboxEntity>(out var o);
-            clip.where(() => o.Status, HookOutboxStatus.Dead);
+            var clip = kit.useClip();
+            clip.from<HookOutboxEntity>(out var o)
+                .where(() => o.Status, HookOutboxStatus.Dead);
             if (!string.IsNullOrEmpty(processCode))
                 clip.where(() => o.ProcessCode, processCode);
             if (!string.IsNullOrEmpty(handlerName))
@@ -278,9 +278,9 @@ namespace saiflow.engine.Manager
 
         public int CountByStatus(SQLBuilder kit, string status)
         {
-            var clip = kit.useSQL().useClip();
-            clip.from<HookOutboxEntity>(out var o);
-            clip.where(() => o.Status, status);
+            var clip = kit.useClip();
+            clip.from<HookOutboxEntity>(out var o)
+                .where(() => o.Status, status);
             return clip.select(o).count();
         }
 
@@ -360,14 +360,14 @@ namespace saiflow.engine.Manager
             if (limit <= 0)
                 return 0;
 
-            var clip = kit.useSQL().useClip();
-            clip.from<HookOutboxEntity>(out var o);
-            clip.where(() => o.Status, status);
+            var clip = kit.useClip();
+            clip.from<HookOutboxEntity>(out var o)
+                .where(() => o.Status, status);
             // UpdatedAt 优先；空则用 CreatedAt
             clip.where(() =>
                 (o.UpdatedAt != null && o.UpdatedAt < olderThanUtc)
-                || (o.UpdatedAt == null && o.CreatedAt != null && o.CreatedAt < olderThanUtc));
-            clip.orderBy(() => o.CreatedAt);
+                || (o.UpdatedAt == null && o.CreatedAt != null && o.CreatedAt < olderThanUtc))
+                .orderBy(() => o.CreatedAt);
             var candidates = clip.select(o).take(limit).queryList()
                              ?? new List<HookOutboxEntity>();
 
@@ -405,13 +405,13 @@ namespace saiflow.engine.Manager
             row = null;
             var now = DateTime.UtcNow;
             var leasedUntil = now.AddSeconds(Math.Max(1, leaseSeconds));
-            var clip = kit.useSQL().useClip();
-            clip.setTable<HookOutboxEntity>(out var o);
-            clip.set(() => o.Status, HookOutboxStatus.Processing);
-            clip.set(() => o.UpdatedAt, now);
-            clip.set(() => o.LeasedUntil, leasedUntil);
-            clip.where(() => o.HookOutboxId, id);
-            clip.where(() => o.Status, HookOutboxStatus.Pending);
+            var clip = kit.useClip();
+            clip.setTable<HookOutboxEntity>(out var o)
+                .set(() => o.Status, HookOutboxStatus.Processing)
+                .set(() => o.UpdatedAt, now)
+                .set(() => o.LeasedUntil, leasedUntil)
+                .where(() => o.HookOutboxId, id)
+                .where(() => o.Status, HookOutboxStatus.Pending);
             if (clip.doUpdate() <= 0)
                 return false;
 

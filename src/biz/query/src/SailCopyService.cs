@@ -42,9 +42,9 @@ namespace saiflow.biz.query
             var skip = (pageIndex - 1) * pageSize;
 
             var clip = Sail.UseRunSQL().useClip();
-            clip.from<SailProcessCopyEntity>(out var c);
-            clip.whereIf(!string.IsNullOrEmpty(userId), () => c.UserId, userId);
-            clip.orderByDesc(() => c.CreateTime);
+            clip.from<SailProcessCopyEntity>(out var c)
+                .whereIf(!string.IsNullOrEmpty(userId), () => c.UserId, userId)
+                .orderByDesc(() => c.CreateTime);
             var all = clip.select(c).queryList().ToList();
             return (all.Skip(skip).Take(pageSize).ToList(), all.Count);
         }

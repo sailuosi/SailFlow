@@ -42,9 +42,9 @@ namespace saiflow.AI.Manager
                 return new List<AiModelProviderEntity>();
 
             var clip = Kit().useClip();
-            clip.from<AiModelProviderEntity>(out var p);
-            clip.where(() => p.ModelType, modelType);
-            clip.where(() => p.IsActive, true);
+            clip.from<AiModelProviderEntity>(out var p)
+                .where(() => p.ModelType, modelType)
+                .where(() => p.IsActive, true);
             return clip.select(p).queryList().ToList();
         }
 
