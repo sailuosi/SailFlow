@@ -352,7 +352,7 @@ namespace saiflow.engine.Manager
                             .where(() => p.PackageId, entity.ProcessDefId)
                             .doUpdate();
                     }
-                    kit.useSQL().useRepo<ProcessEntity, string>().Update(entity);
+                    kit.update(entity);
                     kit.commit();
                     Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);
                 }
@@ -369,7 +369,7 @@ namespace saiflow.engine.Manager
         /// </summary>
         public void Update(SQLBuilder kit, ProcessEntity entity)
         {
-            kit.useSQL().useRepo<ProcessEntity, string>().Update(entity);
+            kit.update(entity);
             Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);
         }
 

@@ -83,8 +83,8 @@ namespace saiflow.biz.query
                 .where(() => t.ProcessState, (short)2)
                 .where(() => t.ActivityInstanceId, activityInstanceId)
                 .where(() => t.ActivityType == 4 || t.WorkItemType == 1)
-                .where(() => t.ActivityState == 1 || t.ActivityState == 2)
-                .where(() => t.TaskState == 1 || t.TaskState == 2)
+                .whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 })
+                .whereIn(() => t.TaskState, new short?[] { (short)1, (short)2 })
                 .orderByDesc(() => t.TaskState);
             var list = clip.select(t).queryList().ToList();
 

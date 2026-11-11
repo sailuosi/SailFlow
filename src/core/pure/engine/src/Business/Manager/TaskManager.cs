@@ -166,7 +166,7 @@ namespace saiflow.engine.Manager
                 .where(() => t.ActivityInstanceId, activityInstanceId)
                 .where(() => t.AssignedUserId, userId)
                 .where(() => t.ProcessState, (short)2)
-                .where(() => t.ActivityType == 4 || t.ActivityType == 5 || t.ActivityType == 6)
+                .whereIn(() => t.ActivityType, new short?[] { (short)4, (short)5, (short)6 })
                 .whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 })
                 .orderByDesc(() => t.ActivatedDateTime)
                 .top(1);
@@ -190,7 +190,7 @@ namespace saiflow.engine.Manager
                 .where(() => t.ActivityInstanceId, activityInstanceId)
                 .where(() => t.AssignedUserId, userId)
                 .where(() => t.ProcessState, (short)2)
-                .where(() => t.ActivityType == 4 || t.ActivityType == 5 || t.ActivityType == 6)
+                .whereIn(() => t.ActivityType, new short?[] { (short)4, (short)5, (short)6 })
                 .whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 })
                 .orderByDesc(() => t.ActivatedDateTime)
                 .top(1);

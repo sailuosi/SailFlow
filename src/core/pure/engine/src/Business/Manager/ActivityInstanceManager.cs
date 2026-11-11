@@ -346,8 +346,11 @@ namespace saiflow.engine.Manager
                 .where(() => pi.ProcessId, processId)
                 .where(() => pi.Version, version)
                 .where(() => ai.ActivityId, activityId)
-                .where(() => ai.ActivityState == (short)ActivityStateEnum.Ready
-                || ai.ActivityState == (short)ActivityStateEnum.Running);
+                .whereIn(() => ai.ActivityState, new short?[]
+                {
+                    (short)ActivityStateEnum.Ready,
+                    (short)ActivityStateEnum.Running
+                });
             return clip.select(ai).queryList().ToList();
         }
 
@@ -531,8 +534,11 @@ namespace saiflow.engine.Manager
             var clip = kit.useClip();
             clip.from<ActivityInstanceEntity>(out var ai)
                 .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
-                .where(() => ai.ActivityState == (short)ActivityStateEnum.Ready
-                || ai.ActivityState == (short)ActivityStateEnum.Running)
+                .whereIn(() => ai.ActivityState, new short?[]
+                {
+                    (short)ActivityStateEnum.Ready,
+                    (short)ActivityStateEnum.Running
+                })
                 .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
                 .where(() => pi.Version, version)
                 .where(() => ai.AppInstanceId, appInstanceId)
@@ -555,8 +561,11 @@ namespace saiflow.engine.Manager
             var clip = kit.useClip();
             clip.from<ActivityInstanceEntity>(out var ai)
                 .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
-                .where(() => ai.ActivityState == (short)ActivityStateEnum.Ready
-                || ai.ActivityState == (short)ActivityStateEnum.Running)
+                .whereIn(() => ai.ActivityState, new short?[]
+                {
+                    (short)ActivityStateEnum.Ready,
+                    (short)ActivityStateEnum.Running
+                })
                 .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
                 .where(() => pi.Version, version)
                 .where(() => ai.AppInstanceId, appInstanceId)
@@ -757,10 +766,13 @@ namespace saiflow.engine.Manager
             var clip = kit.useClip();
             clip.from<ActivityInstanceEntity>(out var ai)
                 .InnerJoin<TransitionInstanceEntity>(out var ti).on(() => ai.ActivityInstanceId == ti.ToActivityInstanceId)
-                .where(() => ai.ActivityState == (short)ActivityStateEnum.Ready
-                || ai.ActivityState == (short)ActivityStateEnum.Running
-                || ai.ActivityState == (short)ActivityStateEnum.Completed
-                || ai.ActivityState == (short)ActivityStateEnum.Suspended)
+                .whereIn(() => ai.ActivityState, new short?[]
+                {
+                    (short)ActivityStateEnum.Ready,
+                    (short)ActivityStateEnum.Running,
+                    (short)ActivityStateEnum.Completed,
+                    (short)ActivityStateEnum.Suspended
+                })
                 .where(() => ti.FromActivityInstanceId, splitGatewayInstanceId);
             return clip.select(ai).queryList().ToList();
         }
@@ -785,10 +797,13 @@ namespace saiflow.engine.Manager
         {
             var clip = kit.useClip();
             clip.from<ActivityInstanceEntity>(out var ai)
-                .where(() => ai.ActivityState == (short)ActivityStateEnum.Ready
-                || ai.ActivityState == (short)ActivityStateEnum.Running
-                || ai.ActivityState == (short)ActivityStateEnum.Completed
-                || ai.ActivityState == (short)ActivityStateEnum.Suspended)
+                .whereIn(() => ai.ActivityState, new short?[]
+                {
+                    (short)ActivityStateEnum.Ready,
+                    (short)ActivityStateEnum.Running,
+                    (short)ActivityStateEnum.Completed,
+                    (short)ActivityStateEnum.Suspended
+                })
                 .where(() => ai.MainActivityInstanceId, mainActivityInstanceId)
                 .where(() => ai.ProcessInstanceId, processInstanceId);
             var list = clip.select(ai).queryList().ToList();
@@ -1177,9 +1192,12 @@ namespace saiflow.engine.Manager
                 .set(() => ai.UpdatedUserName, runner.UserName)
                 .set(() => ai.UpdatedDateTime, System.DateTime.UtcNow)
                 .where(() => ai.ActivityInstanceId, activityInstanceId)
-                .where(() => ai.ActivityState == (short)ActivityStateEnum.Ready
-                || ai.ActivityState == (short)ActivityStateEnum.Running
-                || ai.ActivityState == (short)ActivityStateEnum.Suspended)
+                .whereIn(() => ai.ActivityState, new short?[]
+                {
+                    (short)ActivityStateEnum.Ready,
+                    (short)ActivityStateEnum.Running,
+                    (short)ActivityStateEnum.Suspended
+                })
                 .doUpdate();
         }
 
@@ -1196,9 +1214,12 @@ namespace saiflow.engine.Manager
                 .set(() => ai.UpdatedUserName, runner.UserName)
                 .set(() => ai.UpdatedDateTime, System.DateTime.UtcNow)
                 .where(() => ai.MainActivityInstanceId, mainActivityInstanceId)
-                .where(() => ai.ActivityState == (short)ActivityStateEnum.Ready
-                || ai.ActivityState == (short)ActivityStateEnum.Running
-                || ai.ActivityState == (short)ActivityStateEnum.Suspended)
+                .whereIn(() => ai.ActivityState, new short?[]
+                {
+                    (short)ActivityStateEnum.Ready,
+                    (short)ActivityStateEnum.Running,
+                    (short)ActivityStateEnum.Suspended
+                })
                 .doUpdate();
         }
 
@@ -1225,8 +1246,11 @@ namespace saiflow.engine.Manager
                 .set(() => ai.UpdatedUserName, runner.UserName)
                 .set(() => ai.UpdatedDateTime, System.DateTime.UtcNow)
                 .where(() => ai.MainActivityInstanceId, mainActivityInstanceId)
-                .where(() => ai.ActivityState == (short)ActivityStateEnum.Ready
-                || ai.ActivityState == (short)ActivityStateEnum.Suspended)
+                .whereIn(() => ai.ActivityState, new short?[]
+                {
+                    (short)ActivityStateEnum.Ready,
+                    (short)ActivityStateEnum.Suspended
+                })
                 .doUpdate();
         }
 

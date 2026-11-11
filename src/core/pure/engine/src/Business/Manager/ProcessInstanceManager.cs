@@ -167,7 +167,11 @@ namespace saiflow.engine.Manager
                 .where(() => pi.AppInstanceId, appInstanceId)
                 .where(() => pi.ProcessId, processId)
                 .where(() => pi.RecordStatusInvalid, (byte)0)
-                .where(() => pi.ProcessState == (short)ProcessStateEnum.Ready || pi.ProcessState == (short)ProcessStateEnum.Running)
+                .whereIn(() => pi.ProcessState, new short?[]
+                {
+                    (short)ProcessStateEnum.Ready,
+                    (short)ProcessStateEnum.Running
+                })
                 .orderByDesc(() => pi.CreatedDateTime);
             var list = clip.select(pi).queryList().ToList();
             return EnumHelper.GetFirst<ProcessInstanceEntity>(list);
