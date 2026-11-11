@@ -361,7 +361,7 @@ namespace saiflow.engine.Manager
         private string Insert(SQLBuilder kit, ProcessVariableEntity entity)
         {
             var table = Router.ResolveVariableTable(entity?.ProcessId);
-            var newId = HotShardEntityAccess.InsertReturnId(kit.useSQL(), table, entity);
+            var newId = kit.insertReturnId<ProcessVariableEntity,string>( entity, table);
             entity.ProcessVariableId = newId;
             return newId;
         }
@@ -372,13 +372,13 @@ namespace saiflow.engine.Manager
             // 旧行可能仍在默认表：先试解析表，失败再探测
             try
             {
-                HotShardEntityAccess.Update(kit.useSQL(), table, entity);
+                kit.update(entity, table);
             }
             catch
             {
                 if (!Router.IsSharded(entity?.ProcessId))
                     throw;
-                HotShardEntityAccess.Update(kit.useSQL(), Router.DefaultVariableTable, entity);
+                kit.update(entity, Router.DefaultVariableTable);
             }
         }
 

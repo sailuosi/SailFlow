@@ -42,7 +42,7 @@ namespace saiflow.engine.Manager
             => Sail.UseRunSQL().findRowById<ProcessInstanceEntity>(processInstanceId);
 
         internal ProcessInstanceEntity GetById(SQLBuilder kit, string processInstanceId)
-            => kit.useSQL().findRowById<ProcessInstanceEntity>(processInstanceId);
+            => kit.findRowById<ProcessInstanceEntity>(processInstanceId);
 
         /// <summary>
         /// 异步按 Id 取流程实例（Clip take(1)，可取消）。
@@ -78,8 +78,8 @@ namespace saiflow.engine.Manager
 
         internal ProcessInstanceEntity GetByActivity(SQLBuilder kit, string activityInstanceId)
         {
-            var activityInstance = kit.useSQL().useRepo<ActivityInstanceEntity, string>().GetById(activityInstanceId);
-            return kit.useSQL().useRepo<ProcessInstanceEntity, string>().GetById(activityInstance.ProcessInstanceId);
+            var activityInstance = kit.useRepo<ActivityInstanceEntity, string>().GetById(activityInstanceId);
+            return kit.useRepo<ProcessInstanceEntity, string>().GetById(activityInstance.ProcessInstanceId);
         }
 
         internal bool IsSubProcess(ProcessInstanceEntity entity)
@@ -200,7 +200,7 @@ namespace saiflow.engine.Manager
 
         internal string Insert(SQLBuilder kit, ProcessInstanceEntity entity)
         {
-            var newId = kit.useSQL().useRepo<ProcessInstanceEntity, string>().InsertReturnId(entity);
+            var newId = kit.useRepo<ProcessInstanceEntity, string>().InsertReturnId(entity);
             entity.ProcessInstanceId = newId;
             return newId;
         }
@@ -212,7 +212,7 @@ namespace saiflow.engine.Manager
         }
 
         internal void Update(SQLBuilder kit, ProcessInstanceEntity entity)
-            => kit.useSQL().useRepo<ProcessInstanceEntity>().Update(entity);
+            => kit.useRepo<ProcessInstanceEntity>().Update(entity);
 
         internal ProcessInstanceEntity CreateNewProcessInstanceObject(
             FlowCommandContext runner,
@@ -609,7 +609,7 @@ namespace saiflow.engine.Manager
                 if (Sail.HotShard.IsSharded(entity.ProcessId))
                     DeleteByProcessInstance(kit, Sail.HotShard.DefaultVariableTable, processInstanceId);
 
-                kit.useSQL().useRepo<ProcessInstanceEntity, string>().DeleteById(processInstanceId);
+                kit.useRepo<ProcessInstanceEntity, string>().DeleteById(processInstanceId);
                 return true;
             }
             throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.delete.error"));

@@ -204,9 +204,7 @@ namespace saiflow.engine.Manager
         internal IList<ActivityInstanceEntity> GetTargetActivityInstanceList(SQLBuilder kit, string fromActivityInstanceId)
         {
             var targetIDs = GetTargetActivityInstanceIDs(kit, fromActivityInstanceId);
-            return kit.useSQL().useRepo<ActivityInstanceEntity>()
-                .GetByIds(targetIDs)
-                .ToList();
+            return kit.findListByIds<ActivityInstanceEntity>(targetIDs);
         }
 
         /// <summary>同库同事务的新 kit，避免链式 select 状态互相污染。</summary>
@@ -236,8 +234,11 @@ namespace saiflow.engine.Manager
         {
             try
             {
-                var ai = kit.useSQL().useRepo<ActivityInstanceEntity, string>().GetById(activityInstanceId);
-                return ai?.ProcessId;
+                var ai = kit.useClip().from<ActivityInstanceEntity>(out var a)
+                    .where(()=>a.ActivityInstanceId,activityInstanceId)
+                    .select(()=>a.ProcessId)
+                    .queryUnique();
+                return ai;
             }
             catch
             {
@@ -294,18 +295,6 @@ namespace saiflow.engine.Manager
             return rows;
         }
 
-        internal bool IsTransiionInstancedAndConditionParsedOK(
-            string transitionId,
-            IList<TransitionInstanceEntity> transitionInstanceList)
-        {
-            foreach (var transitionInstance in transitionInstanceList)
-            {
-                if (transitionId == transitionInstance.TransitionId
-                    && transitionInstance.ConditionParsedResult == (byte)ConditionParseResultEnum.Passed)
-                    return true;
-            }
-            return false;
-        }
         #endregion
     }
 }

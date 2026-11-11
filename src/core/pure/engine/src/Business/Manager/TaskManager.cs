@@ -43,7 +43,7 @@ namespace saiflow.engine.Manager
         }
 
         internal TaskViewEntity GetTaskView(SQLBuilder kit, string taskId)
-            => kit.useSQL().useRepo<TaskViewEntity, string>().GetById(taskId);
+            => kit.useRepo<TaskViewEntity, string>().GetById(taskId);
 
         /// <summary>
         /// 异步按任务 Id 取任务视图（Clip，可取消）。
@@ -69,7 +69,7 @@ namespace saiflow.engine.Manager
             => Sail.UseRunSQL().useRepo<TaskEntity, string>().GetById(taskId);
 
         public TaskEntity GetTask(SQLBuilder kit, string taskId)
-            => kit.useSQL().useRepo<TaskEntity, string>().GetById(taskId);
+            => kit.useRepo<TaskEntity, string>().GetById(taskId);
 
         /// <summary>
         /// Obtain tasks based on process information
@@ -324,7 +324,7 @@ namespace saiflow.engine.Manager
         #region TaskManager 任务数据基本操作
         private string Insert(SQLBuilder kit, TaskEntity entity)
         {
-            string newTaskId = kit.useSQL().useRepo<TaskEntity, string>().InsertReturnId(entity);
+            string newTaskId = kit.useRepo<TaskEntity, string>().InsertReturnId(entity);
             entity.TaskId = newTaskId;
             return newTaskId;
         }
@@ -435,7 +435,7 @@ namespace saiflow.engine.Manager
         }
 
         public void Update(SQLBuilder kit, TaskEntity entity)
-            => kit.useSQL().useRepo<TaskEntity>().Update(entity);
+            => kit.useRepo<TaskEntity>().Update(entity);
 
         internal void SetTaskType(SQLBuilder kit, string taskId, TaskTypeEnum taskType)
         {
@@ -794,7 +794,7 @@ namespace saiflow.engine.Manager
 
         internal bool Delete(SQLBuilder kit, string taskId)
         {
-            kit.useSQL().useRepo<TaskEntity, string>().DeleteById(taskId);
+            kit.useRepo<TaskEntity, string>().DeleteById(taskId);
             return true;
         }
         #endregion

@@ -326,7 +326,7 @@ namespace saiflow.engine.Manager
             }
 
             entity.ProcessDefId = null;
-            return kit.useSQL().useRepo<ProcessEntity, string>().InsertReturnId(entity);
+            return kit.useRepo<ProcessEntity, string>().InsertReturnId(entity);
         }
 
         /// <summary>
@@ -388,7 +388,7 @@ namespace saiflow.engine.Manager
                 {
                     var entity = GetByVersion(kit, processId, version, true);
                     entity.Status = usingState;
-                    kit.useSQL().useRepo<ProcessEntity, string>().Update(entity);
+                    kit.useRepo<ProcessEntity, string>().Update(entity);
                     kit.commit();
                 }
                 catch
@@ -424,7 +424,7 @@ namespace saiflow.engine.Manager
                     entity.ProcessDefId = null;
                     //升级主流程版本
                     //Upgrade package process version
-                    newProcessId = kit.useSQL().useRepo<ProcessEntity, string>().InsertReturnId(entity);
+                    newProcessId = kit.insertReturnId<ProcessEntity, string>(entity);
 
                     if (entity.PackageType == (short)PackageTypeEnum.Package)
                     {
@@ -485,7 +485,7 @@ namespace saiflow.engine.Manager
                 kit.beginTransaction();
                 try
                 {
-                    kit.useSQL().useRepo<ProcessEntity, string>().Delete(entity);
+                    kit.useRepo<ProcessEntity, string>().Delete(entity);
                     kit.commit();
                     Sail.ProcessModelFactory.Invalidate( processId, version);
                 }
@@ -709,7 +709,7 @@ namespace saiflow.engine.Manager
                         //数据库存储
                         //Update to database
                         processEntity.UpdatedDateTime = DateTime.UtcNow;
-                        kit.useSQL().useRepo<ProcessEntity, string>().Update(processEntity);
+                        kit.useRepo<ProcessEntity, string>().Update(processEntity);
                     }
                     else
                     {
@@ -725,7 +725,7 @@ namespace saiflow.engine.Manager
 
                         //数据库存储
                         //Insert into database
-                        kit.useSQL().useRepo<ProcessEntity, string>().Insert(processEntity);
+                        kit.useRepo<ProcessEntity, string>().Insert(processEntity);
                     }
                     kit.commit();
                     Sail.ProcessModelFactory.Invalidate( processEntity.ProcessId, processEntity.Version);

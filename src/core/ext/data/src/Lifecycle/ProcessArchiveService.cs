@@ -277,7 +277,7 @@ namespace saiflow.data.Lifecycle
         {
             try
             {
-                var pi = kit.useSQL().useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
+                var pi = kit.useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
                 return pi?.ProcessId;
             }
             catch

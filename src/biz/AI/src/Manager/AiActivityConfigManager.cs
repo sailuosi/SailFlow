@@ -88,7 +88,7 @@ namespace saiflow.AI.Manager
             }
 
             entity.CreatedDateTime = DateTime.UtcNow;
-            return kit.useSQL().useRepo<AiActivityConfigEntity, string>().InsertReturnId(entity);
+            return kit.useRepo<AiActivityConfigEntity, string>().InsertReturnId(entity);
         }
 
         public void Update(AiActivityConfigEntity entity)
@@ -121,7 +121,7 @@ namespace saiflow.AI.Manager
             }
 
             entity.UpdatedDateTime = DateTime.UtcNow;
-            kit.useSQL().useRepo<AiActivityConfigEntity, string>().Update(entity);
+            kit.useRepo<AiActivityConfigEntity, string>().Update(entity);
         }
 
         public void Delete(string processId, string version, string activityId)

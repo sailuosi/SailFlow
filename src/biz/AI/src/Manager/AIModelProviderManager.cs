@@ -71,7 +71,7 @@ namespace saiflow.AI.Manager
         }
 
         public string Insert(SQLBuilder kit, AiModelProviderEntity entity)
-            => kit.useSQL().useRepo<AiModelProviderEntity, string>().InsertReturnId(entity);
+            => kit.useRepo<AiModelProviderEntity, string>().InsertReturnId(entity);
 
         public void Update(AiModelProviderEntity entity)
         {
@@ -93,7 +93,7 @@ namespace saiflow.AI.Manager
         public void Update(SQLBuilder kit, AiModelProviderEntity entity)
         {
             entity.UpdatedDateTime = DateTime.UtcNow;
-            kit.useSQL().useRepo<AiModelProviderEntity, string>().Update(entity);
+            kit.useRepo<AiModelProviderEntity, string>().Update(entity);
         }
 
         public void DeleteAgent(string modelId)

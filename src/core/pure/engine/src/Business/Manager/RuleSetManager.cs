@@ -33,9 +33,11 @@ namespace saiflow.engine.Manager
         {
             if (string.IsNullOrEmpty(ruleSetCode))
                 return null;
-            return Sail.UseRunSQL()
-                .useRepo<RuleSetEntity>()
-                .GetFirst(x => x.RuleSetCode == ruleSetCode);
+            return Sail.useRunClip()
+                .from<RuleSetEntity>(out var r)
+                .where(()=> r.RuleSetCode ,ruleSetCode)
+                .select(r)
+                .queryUnique();
         }
 
         public string Insert(RuleSetEntity entity)
@@ -49,7 +51,7 @@ namespace saiflow.engine.Manager
             entity.CreatedDateTime = DateTime.UtcNow;
             if (entity.IsEnabled == 0) { /* keep */ }
             else if (entity.IsEnabled != 1) entity.IsEnabled = 1;
-            var newId = kit.useRepo<RuleSetEntity, string>().InsertReturnId(entity);
+            var newId = kit.insertReturnId<RuleSetEntity, string>(entity);
             entity.RuleSetId = newId;
             return newId;
         }
@@ -63,7 +65,7 @@ namespace saiflow.engine.Manager
         public void Update(SQLBuilder kit, RuleSetEntity entity)
         {
             entity.UpdatedDateTime = DateTime.UtcNow;
-            kit.useRepo<RuleSetEntity>().Update(entity);
+            kit.update(entity);
         }
 
         public void DeleteByCode(string ruleSetCode)

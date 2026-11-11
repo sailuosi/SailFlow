@@ -23,7 +23,7 @@ namespace saiflow.engine.Manager
             entity.Status = HookOutboxStatus.Pending;
             entity.Attempt = 0;
             entity.CreatedAt = DateTime.UtcNow;
-            kit.useSQL().useRepo<HookOutboxEntity>().Insert(entity);
+            kit.useRepo<HookOutboxEntity>().Insert(entity);
         }
 
         public IList<HookOutboxEntity> GetPending(SQLBuilder kit, int limit = 50) =>
@@ -128,7 +128,7 @@ namespace saiflow.engine.Manager
 
         public void ResetProcessing(SQLBuilder kit, string id)
         {
-            var repo = kit.useSQL().useRepo<HookOutboxEntity>();
+            var repo = kit.useRepo<HookOutboxEntity>();
             var row = repo.GetById(id);
             if (row == null || row.Status != HookOutboxStatus.Processing)
                 return;
@@ -144,7 +144,7 @@ namespace saiflow.engine.Manager
             row.Status = HookOutboxStatus.Succeeded;
             row.UpdatedAt = DateTime.UtcNow;
             row.LeasedUntil = null;
-            kit.useSQL().useRepo<HookOutboxEntity>().Update(row);
+            kit.useRepo<HookOutboxEntity>().Update(row);
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace saiflow.engine.Manager
             row.UpdatedAt = DateTime.UtcNow;
             if (!string.IsNullOrEmpty(note))
                 row.LastError = Truncate(note, 2000);
-            kit.useSQL().useRepo<HookOutboxEntity>().Update(row);
+            kit.useRepo<HookOutboxEntity>().Update(row);
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace saiflow.engine.Manager
                 .orderBy(() => o.CreatedAt);
             var candidates = clip.select(o).take(50).queryList() ?? new List<HookOutboxEntity>();
             var n = 0;
-            var repo = kit.useSQL().useRepo<HookOutboxEntity>();
+            var repo = kit.useRepo<HookOutboxEntity>();
             foreach (var row in candidates)
             {
                 if (!PayloadActivityIdMatches(row.PayloadJson, activityId))
@@ -207,7 +207,7 @@ namespace saiflow.engine.Manager
             row.UpdatedAt = DateTime.UtcNow;
             if (!string.IsNullOrEmpty(note))
                 row.LastError = Truncate(note, 2000);
-            kit.useSQL().useRepo<HookOutboxEntity>().Update(row);
+            kit.useRepo<HookOutboxEntity>().Update(row);
         }
 
         public void MarkFailed(SQLBuilder kit, HookOutboxEntity row, string error, int maxAttempts = HookOutboxOptions.DefaultMaxAttempts)
@@ -225,12 +225,12 @@ namespace saiflow.engine.Manager
                 row.NextRetryAt = DateTime.UtcNow.AddMinutes(Math.Pow(2, Math.Min(row.Attempt.Value, 6)));
             }
 
-            kit.useSQL().useRepo<HookOutboxEntity>().Update(row);
+            kit.useRepo<HookOutboxEntity>().Update(row);
         }
 
         public void ResetDead(SQLBuilder kit, string id)
         {
-            var repo = kit.useSQL().useRepo<HookOutboxEntity>();
+            var repo = kit.useRepo<HookOutboxEntity>();
             var row = repo.GetById(id);
             if (row == null || row.Status != HookOutboxStatus.Dead)
                 return;
@@ -372,7 +372,7 @@ namespace saiflow.engine.Manager
                              ?? new List<HookOutboxEntity>();
 
             var n = 0;
-            var repo = kit.useSQL().useRepo<HookOutboxEntity, string>();
+            var repo = kit.useRepo<HookOutboxEntity, string>();
             foreach (var row in candidates)
             {
                 if (!!string.IsNullOrWhiteSpace(row.HookOutboxId))
@@ -386,7 +386,7 @@ namespace saiflow.engine.Manager
 
         private bool ResetDeadIfDead(SQLBuilder kit, string id)
         {
-            var repo = kit.useSQL().useRepo<HookOutboxEntity>();
+            var repo = kit.useRepo<HookOutboxEntity>();
             var row = repo.GetById(id);
             if (row == null || row.Status != HookOutboxStatus.Dead)
                 return false;
@@ -415,7 +415,7 @@ namespace saiflow.engine.Manager
             if (clip.doUpdate() <= 0)
                 return false;
 
-            row = kit.useSQL().useRepo<HookOutboxEntity>().GetById(id);
+            row = kit.useRepo<HookOutboxEntity>().GetById(id);
             return row != null && row.Status == HookOutboxStatus.Processing;
         }
         private static string Truncate(string value, int max)

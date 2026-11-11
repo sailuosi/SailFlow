@@ -47,7 +47,7 @@ namespace saiflow.engine.Manager
         }
 
         internal ActivityInstanceEntity GetById(SQLBuilder kit, string activityInstanceId)
-            => kit.useSQL().useRepo<ActivityInstanceEntity, string>().GetById(activityInstanceId);
+            => kit.useRepo<ActivityInstanceEntity, string>().GetById(activityInstanceId);
 
         /// <summary>
         /// 异步按 Id 取活动实例（Clip take(1)，可取消）。与同步 Repo.GetById 双轨。
@@ -1159,7 +1159,7 @@ namespace saiflow.engine.Manager
                 entity.ActivityName = "GATEWAY";
             }
 
-            string newId = kit.useSQL().useRepo<ActivityInstanceEntity, string>().InsertReturnId(entity);
+            string newId = kit.useRepo<ActivityInstanceEntity, string>().InsertReturnId(entity);
             entity.ActivityInstanceId = newId;
 
             return newId;
@@ -1176,7 +1176,7 @@ namespace saiflow.engine.Manager
         }
 
         internal void Update(SQLBuilder kit, ActivityInstanceEntity entity)
-            => kit.useSQL().useRepo<ActivityInstanceEntity>().Update(entity);
+            => kit.useRepo<ActivityInstanceEntity>().Update(entity);
 
         /// <summary>
         /// Cancel activity instance
@@ -1283,7 +1283,7 @@ namespace saiflow.engine.Manager
         }
 
         internal void Delete(SQLBuilder kit, string activityInstanceId)
-            => kit.useSQL().useRepo<ActivityInstanceEntity, string>().DeleteById(activityInstanceId);
+            => kit.useRepo<ActivityInstanceEntity, string>().DeleteById(activityInstanceId);
         #endregion
 
         #region Activity Instance Approval Status 活动实例审批状态
