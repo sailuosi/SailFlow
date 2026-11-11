@@ -91,7 +91,7 @@ namespace saiflow.engine.Runtime
             var hookCtx = FlowCapabilityPipeline.BuildHookContext(
                 Sail,
                 kit,
-                AppRunner,
+                CmdContext,
                 RunningActivityInstance.ProcessInstanceId,
                 RunningActivityInstance,
                 TaskView?.TaskId,

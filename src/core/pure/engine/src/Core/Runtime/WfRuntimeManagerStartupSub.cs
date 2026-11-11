@@ -25,7 +25,7 @@ namespace saiflow.engine.Runtime
         {
             var subProcessNode = (SubProcessNode)base.InvokedSubProcessNode;
             var pim = Sail.ProcessInstances;
-            var processInstance = pim.CreateNewProcessInstanceObject(base.AppRunner,
+            var processInstance = pim.CreateNewProcessInstanceObject(base.CmdContext,
                 base.ProcessModel.ProcessEntity,
                 subProcessNode);
 

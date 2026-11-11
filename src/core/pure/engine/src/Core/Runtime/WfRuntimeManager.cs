@@ -25,7 +25,7 @@ namespace saiflow.engine.Runtime
 
         #region Property and Basic Method
         /// <summary>本命令入参袋（B）；通常来自 RunBuilder.Build。</summary>
-        internal FlowCommandContext AppRunner { get; set; }
+        internal FlowCommandContext CmdContext { get; set; }
         internal IProcessModel ProcessModel { get; set; }
         internal ProcessInstanceEntity ParentProcessInstance { get; set; }
         internal NodeBase InvokedSubProcessNode { get; set; }
@@ -44,7 +44,7 @@ namespace saiflow.engine.Runtime
 
         internal WfRuntimeManager()
         {
-            AppRunner = new FlowCommandContext();
+            CmdContext = new FlowCommandContext();
             BackwardContext = new BackwardContext();
         }
         #endregion
@@ -65,18 +65,18 @@ namespace saiflow.engine.Runtime
             {
                 // R4：办理人拒绝写进结果供 API 读 ReasonCode，不再向外抛（事务由上层按 Status 决定是否 commit）
                 WfExecutedResult.ApplyAssigneeException(ax);
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, AppRunner, ax);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, CmdContext, ax);
             }
             catch (WfRuntimeException rx)
             {
                 WfExecutedResult.Status = WfExecutedStatus.Exception;
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, AppRunner, rx);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, CmdContext, rx);
                 throw;
             }
             catch (System.Exception e)
             {
                 WfExecutedResult.Status = WfExecutedStatus.Failed;
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, AppRunner, e);
+                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, CmdContext, e);
                 throw;
             }
             finally

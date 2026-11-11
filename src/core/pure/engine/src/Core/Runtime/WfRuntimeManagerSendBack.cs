@@ -28,7 +28,7 @@ namespace saiflow.engine.Runtime
         {
             WfExecutedResult result = base.WfExecutedResult;
 
-            var runner = this.AppRunner;
+            var runner = this.CmdContext;
             var runningNode = this.RunningActivityInstance;
             var sendbackOperation = base.SendBackOperation;
 

@@ -68,7 +68,7 @@ namespace saiflow.engine.Runtime
                 return rmins;
             }
 
-            rmins.AppRunner = runner;
+            rmins.CmdContext = runner;
 
             //获取流程第一个可办理节点
             //Obtain the first available processing node in the process
@@ -83,7 +83,7 @@ namespace saiflow.engine.Runtime
             // 禁止默认把发起人塞进下一跳（会掩盖未选人却“发起成功、待办归属错误”）
             if (runner.NextActivityPerformers != null && runner.NextActivityPerformers.Count > 0)
             {
-                rmins.AppRunner.NextActivityPerformers = runner.NextActivityPerformers;
+                rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
             }
             else if (startActivity.TriggerDetail != null
                 && (startActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Timer
@@ -92,13 +92,13 @@ namespace saiflow.engine.Runtime
                     || startActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Conditional)
                 && string.IsNullOrEmpty(runner.UserId))
             {
-                rmins.AppRunner.NextActivityPerformers = rmins.ProcessModel.GetActivityPerformers(nextActivityTree);
+                rmins.CmdContext.NextActivityPerformers = rmins.ProcessModel.GetActivityPerformers(nextActivityTree);
             }
             else
             {
-                rmins.AppRunner.NextActivityPerformers = new Dictionary<string, PerformerList>();
+                rmins.CmdContext.NextActivityPerformers = new Dictionary<string, PerformerList>();
             }
-            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.AppRunner.NextActivityPerformers, runner.Conditions);
+            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers, runner.Conditions);
 
             return rmins;
         }
@@ -135,7 +135,7 @@ namespace saiflow.engine.Runtime
                 return rmins;
             }
 
-            rmins.AppRunner = runner;
+            rmins.CmdContext = runner;
             rmins.ProcessInstance = subProcessInstance;
             rmins.InvokedSubProcessNode = subProcessNode;
             rmins.ProcessModel = _sail.ProcessModelFactory.CreateSubByNode(kit.useSQL(), subProcessNode);
@@ -146,9 +146,9 @@ namespace saiflow.engine.Runtime
 
             //子流程自动获取第一个办理节点上的人员列表
             //The subprocess automatically retrieves the list of performers on the first processing node
-            rmins.AppRunner.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(subFirstActivity.ActivityId, 
+            rmins.CmdContext.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(subFirstActivity.ActivityId, 
                 performerList);
-            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.AppRunner.NextActivityPerformers);
+            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
 
             return rmins;
         }
@@ -178,7 +178,7 @@ namespace saiflow.engine.Runtime
                 result.Message = _sail.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
                 return rmins;
             }
-            rmins.AppRunner = runner;
+            rmins.CmdContext = runner;
 
             var aim = _sail.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
@@ -262,7 +262,7 @@ namespace saiflow.engine.Runtime
                 result.Message = _sail.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
                 return (rmins, result);
             }
-            rmins.AppRunner = runner;
+            rmins.CmdContext = runner;
 
             var aim = _sail.ManagerFactory.Activities;
             var (runningNode, taskView) = await aim.GetRunningNodeAsync(kit, runner, cancellationToken)
@@ -340,7 +340,7 @@ namespace saiflow.engine.Runtime
                 result.Message = _sail.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
                 return rmins;
             }
-            rmins.AppRunner = runner;
+            rmins.CmdContext = runner;
 
             var aim = _sail.ManagerFactory.Activities;
             var runningNode = aim.GetById(runner.ActivityInstanceId);
@@ -383,7 +383,7 @@ namespace saiflow.engine.Runtime
                 result.Message = _sail.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
                 return (rmins, result);
             }
-            rmins.AppRunner = runner;
+            rmins.CmdContext = runner;
 
             var aim = _sail.ManagerFactory.Activities;
             var runningNode = await aim.GetByIdAsync(kit, runner.ActivityInstanceId, cancellationToken)
@@ -447,18 +447,18 @@ namespace saiflow.engine.Runtime
             var runningNode = aim.GetRunningNode(runner, out taskView);
 
             rmins.TaskView = taskView;
-            rmins.AppRunner.AppName = runner.AppName;
-            rmins.AppRunner.AppInstanceId = runner.AppInstanceId;
-            rmins.AppRunner.ProcessId = runner.ProcessId;
-            rmins.AppRunner.UserId = runner.UserId;
-            rmins.AppRunner.UserName = runner.UserName;
-            rmins.AppRunner.NextActivityPerformers = runner.NextActivityPerformers;
+            rmins.CmdContext.AppName = runner.AppName;
+            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.ProcessId = runner.ProcessId;
+            rmins.CmdContext.UserId = runner.UserId;
+            rmins.CmdContext.UserName = runner.UserName;
+            rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
 
             //用于流程注册时间调用时候的流程实例ID提供
             //Provide process instance Id for process registration events
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
             rmins.RunningActivityInstance = runningNode;
-            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.AppRunner.NextActivityPerformers);
+            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
 
             var processModel = _sail.ProcessModelFactory.CreateByTask( taskView);
             rmins.ProcessModel = processModel;
@@ -506,12 +506,12 @@ namespace saiflow.engine.Runtime
             var runningNode = aim.GetRunningNode(runner, out taskView);
 
             rmins.TaskView = taskView;
-            rmins.AppRunner = runner;
-            rmins.AppRunner.AppName = runner.AppName;
-            rmins.AppRunner.AppInstanceId = runner.AppInstanceId;
-            rmins.AppRunner.ProcessId = runner.ProcessId;
-            rmins.AppRunner.UserId = runner.UserId;
-            rmins.AppRunner.UserName = runner.UserName;
+            rmins.CmdContext = runner;
+            rmins.CmdContext.AppName = runner.AppName;
+            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.ProcessId = runner.ProcessId;
+            rmins.CmdContext.UserId = runner.UserId;
+            rmins.CmdContext.UserName = runner.UserName;
 
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
 
@@ -557,7 +557,7 @@ namespace saiflow.engine.Runtime
                     previousActivityInstance.EndedUserId,
                     previousActivityInstance.EndedUserName);
 
-                rmins.AppRunner.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(
+                rmins.CmdContext.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(
                     previousActivityInstance.ActivityId,
                     previousActivityInstance.EndedUserId,
                     previousActivityInstance.EndedUserName);
@@ -589,14 +589,14 @@ namespace saiflow.engine.Runtime
                     jumpBackActivityInstance.EndedUserId,
                     jumpBackActivityInstance.EndedUserName);
 
-                rmins.AppRunner.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(
+                rmins.CmdContext.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(
                     jumpBackActivityInstance.ActivityId,
                     jumpBackActivityInstance.EndedUserId,
                     jumpBackActivityInstance.EndedUserName);
             }
 
-            var activityResourceBack = SailFactoryAccess.Runtime(_sail).CreateActivityResource(rmins.AppRunner,
-                rmins.AppRunner.NextActivityPerformers,
+            var activityResourceBack = SailFactoryAccess.Runtime(_sail).CreateActivityResource(rmins.CmdContext,
+                rmins.CmdContext.NextActivityPerformers,
                 runner.Conditions);
             rmins.ActivityResource = activityResourceBack;
 
@@ -645,12 +645,12 @@ namespace saiflow.engine.Runtime
             var runningNode = aim.GetRunningNode(runner, out taskView);
 
             rmins.TaskView = taskView;
-            rmins.AppRunner = runner;
-            rmins.AppRunner.AppName = runner.AppName;
-            rmins.AppRunner.AppInstanceId = runner.AppInstanceId;
-            rmins.AppRunner.ProcessId = runner.ProcessId;
-            rmins.AppRunner.UserId = runner.UserId;
-            rmins.AppRunner.UserName = runner.UserName;
+            rmins.CmdContext = runner;
+            rmins.CmdContext.AppName = runner.AppName;
+            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.ProcessId = runner.ProcessId;
+            rmins.CmdContext.UserId = runner.UserId;
+            rmins.CmdContext.UserName = runner.UserName;
 
             //用于流程注册时间调用时候的流程实例ID提供
             //Provide process instance Id for process registration time call
@@ -799,11 +799,11 @@ namespace saiflow.engine.Runtime
             rmins.ProcessInstance = processInstance;
             rmins.ProcessModel = processModel;
 
-            rmins.AppRunner.AppName = runner.AppName;
-            rmins.AppRunner.AppInstanceId = runner.AppInstanceId;
-            rmins.AppRunner.UserId = runner.UserId;
-            rmins.AppRunner.UserName = runner.UserName;
-            rmins.AppRunner.NextActivityPerformers = runner.NextActivityPerformers;
+            rmins.CmdContext.AppName = runner.AppName;
+            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.UserId = runner.UserId;
+            rmins.CmdContext.UserName = runner.UserName;
+            rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
 
             //设置退回选项类
             //Set sendback options
@@ -812,7 +812,7 @@ namespace saiflow.engine.Runtime
             sendbackOperation.ProcessInstance = processInstance;
             sendbackOperation.BackwardFromActivityInstance = runningNode;
             sendbackOperation.HasGatewayPassed = hasGatewayPassed;
-            sendbackOperation.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.AppRunner.NextActivityPerformers);
+            sendbackOperation.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
             sendbackOperation.ProcessModel = processModel;
             sendbackOperation.IsCancellingBrothersNode = (runner.ControlParameterSheet != null 
                     && runner.ControlParameterSheet.IsCancellingBrothersNode == 1) ? true : false;
@@ -1011,11 +1011,11 @@ namespace saiflow.engine.Runtime
             rmins.ProcessInstance = processInstance;
             rmins.ProcessModel = processModel;
 
-            rmins.AppRunner.AppName = runner.AppName;
-            rmins.AppRunner.AppInstanceId = runner.AppInstanceId;
-            rmins.AppRunner.UserId = runner.UserId;
-            rmins.AppRunner.UserName = runner.UserName;
-            rmins.AppRunner.NextActivityPerformers = runner.NextActivityPerformers;
+            rmins.CmdContext.AppName = runner.AppName;
+            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.UserId = runner.UserId;
+            rmins.CmdContext.UserName = runner.UserName;
+            rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
 
             //设置退回选项类
             //Set return option class
@@ -1024,7 +1024,7 @@ namespace saiflow.engine.Runtime
             sendbackOperation.ProcessInstance = processInstance;
             sendbackOperation.BackwardFromActivityInstance = runningNode;
             sendbackOperation.HasGatewayPassed = hasGatewayPassed;
-            sendbackOperation.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.AppRunner.NextActivityPerformers);
+            sendbackOperation.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
             sendbackOperation.ProcessModel = processModel;
 
             //撤销时默认撤销各个并行分支
@@ -1079,25 +1079,25 @@ namespace saiflow.engine.Runtime
             rmins.RunningActivityInstance = aim.GetById(taskView.ActivityInstanceId);
             rmins.ProcessModel = _sail.ProcessModelFactory.CreateByTask( taskView);
 
-            rmins.AppRunner.AppName = runner.AppName;
-            rmins.AppRunner.AppInstanceId = runner.AppInstanceId;
-            rmins.AppRunner.UserId = runner.UserId;
-            rmins.AppRunner.UserName = runner.UserName;
+            rmins.CmdContext.AppName = runner.AppName;
+            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.UserId = runner.UserId;
+            rmins.CmdContext.UserName = runner.UserName;
             if (runner.ControlParameterSheet != null
                 && runner.ControlParameterSheet.RecreatedMultipleInstanceWhenResending == 1)
             {
-                rmins.AppRunner.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(
+                rmins.CmdContext.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(
                     backSrcActivityInstance.ActivityId,
                     runner.NextActivityPerformers[backSrcActivityInstance.ActivityId]);
             }
             else
             {
-                rmins.AppRunner.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(
+                rmins.CmdContext.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(
                     backSrcActivityInstance.ActivityId,
                     runningActivityInstance.CreatedUserId,
                     runningActivityInstance.CreatedUserName);
             }
-            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.AppRunner.NextActivityPerformers);
+            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
 
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
@@ -1139,12 +1139,12 @@ namespace saiflow.engine.Runtime
             rmins.RunningActivityInstance = aim.GetById(taskView.ActivityInstanceId);
             rmins.ProcessModel = _sail.ProcessModelFactory.CreateByTask( taskView);
 
-            rmins.AppRunner.AppName = runner.AppName;
-            rmins.AppRunner.AppInstanceId = runner.AppInstanceId;
-            rmins.AppRunner.UserId = runner.UserId;
-            rmins.AppRunner.UserName = runner.UserName;
-            rmins.AppRunner.NextActivityPerformers = runner.NextActivityPerformers;
-            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.AppRunner.NextActivityPerformers);
+            rmins.CmdContext.AppName = runner.AppName;
+            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.UserId = runner.UserId;
+            rmins.CmdContext.UserName = runner.UserName;
+            rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
+            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
 
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
@@ -1196,16 +1196,16 @@ namespace saiflow.engine.Runtime
 
             //封装返签结束点之前办理节点的任务接收人
             //The recipient of the task to handle the node before the end point of the encapsulated return signature
-            rmins.AppRunner.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(lastTaskActivityInstance.ActivityId,
+            rmins.CmdContext.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(lastTaskActivityInstance.ActivityId,
                 lastTaskActivityInstance.EndedUserId,
                 lastTaskActivityInstance.EndedUserName);
 
-            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.AppRunner.NextActivityPerformers);
-            rmins.AppRunner.AppName = runner.AppName;
-            rmins.AppRunner.AppInstanceId = runner.AppInstanceId;
-            rmins.AppRunner.ProcessId = runner.ProcessId;
-            rmins.AppRunner.UserId = runner.UserId;
-            rmins.AppRunner.UserName = runner.UserName;
+            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            rmins.CmdContext.AppName = runner.AppName;
+            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.ProcessId = runner.ProcessId;
+            rmins.CmdContext.UserId = runner.UserId;
+            rmins.CmdContext.UserName = runner.UserName;
 
             rmins.BackwardContext.ProcessInstance = processInstance;
             rmins.BackwardContext.BackwardToTaskActivity = lastTaskActivity;
@@ -1254,7 +1254,7 @@ namespace saiflow.engine.Runtime
                 return rmins;
             }
 
-            rmins.AppRunner = runner;
+            rmins.CmdContext = runner;
 
             var aim = _sail.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
