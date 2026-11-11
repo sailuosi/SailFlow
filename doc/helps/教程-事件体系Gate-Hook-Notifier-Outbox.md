@@ -463,15 +463,19 @@ builder.UseTaskNotifier(new DingTalkTaskNotifier(), o =>
 ### 运维 API
 
 ```csharp
-var admin = new HookOutboxAdmin(client);
+var outbox = client.ManagerFactory.HookOutbox;
 using var kit = client.UseRunSQL();
 
-var dead = admin.QueryDead(kit, limit: 50, processCode: "EXPENSE", handlerName: "dingtalk.todo");
-admin.ResetDeadBatch(kit, dead.Select(d => d.Id.Value)); // Dead → Pending
-// 或 admin.ResetAllDead(kit, limit: 500);
+var dead = outbox.QueryDead(kit, limit: 50, processCode: "EXPENSE", handlerName: "dingtalk.todo");
+outbox.ResetDeadBatch(kit, dead.Select(d => d.Id.Value)); // Dead → Pending
+// 或 outbox.ResetAllDead(kit, limit: 500);
 
-admin.CountByStatus(kit, HookOutboxStatus.Pending);
-admin.PurgeExpired(kit, client.HookOutboxOptions); // TTL 清理 Succeeded/Dead
+outbox.CountByStatus(kit, HookOutboxStatus.Pending);
+outbox.PurgeExpiredTerminal(
+    kit,
+    client.HookOutboxOptions.SucceededRetentionDays,
+    client.HookOutboxOptions.DeadRetentionDays,
+    client.HookOutboxOptions.PurgeBatchSize); // TTL 清理 Succeeded/Dead
 ```
 
 手动 drain（无后台循环时）：
@@ -581,7 +585,7 @@ o.Mode = HookMode.Sync;                  // 仅 Hook 有意义
 |------|------|
 | `WfExecutedResult.IsValidationReject()` | Gate 业务拒绝 |
 | `wf_hook_outbox` | Async 队列、重试、死信 |
-| `HookOutboxAdmin` | 查询 Dead、批量复活、按状态计数、TTL 清理 |
+| `HookOutboxManager` | 查询 Dead、批量复活、按状态计数、TTL 清理 |
 | `IFlowCapabilityMetrics` | GateReject / SyncHook / OutboxEnqueue / Succeeded / Failed / Dead / NotifierDispatch 等 |
 | `FlowSyncHookTimeoutException` | Sync Hook 超时 |
 
@@ -629,7 +633,7 @@ o.Mode = HookMode.Sync;                  // 仅 Hook 有意义
 | 默认邮件 | `UseDefaultTaskMail` / `UseBizTaskMail` |
 | Outbox Drain | `UseHookOutboxDrain` / `UseBizHookOutboxDrain` |
 | 结果 | `HookResult` · `WfExecutedResult.ApplyGateReject` · `IsValidationReject` |
-| 运维 | `HookOutboxAdmin` · `HookOutboxManager` · `HookOutboxWorker` · `HookOutboxDrainLoop` |
+| 运维 | `HookOutboxManager` · `HookOutboxWorker` · `HookOutboxDrainLoop` |
 | 选项 | `HookRegistrationOptions` · `HookOutboxOptions` · `FlowCapabilityOptions` |
 
 ## 附录 B · 可续写专题

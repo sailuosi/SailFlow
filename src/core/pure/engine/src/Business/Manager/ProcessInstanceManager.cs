@@ -345,11 +345,6 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal void RecallSubProcess(string invokedActivityInstanceId, FlowCommandContext runner)
-        {
-            var kit = Sail.UseRunSQL();
-            RecallSubProcess(kit, invokedActivityInstanceId, runner);
-        }
 
         internal void RecallSubProcess(SQLBuilder kit, string invokedActivityInstanceId, FlowCommandContext runner)
         {
@@ -375,11 +370,6 @@ namespace saiflow.engine.Manager
             }
         }
 
-        internal void Reverse(string processInstanceId, FlowCommandContext currentUser)
-        {
-            var kit = Sail.UseRunSQL();
-            Reverse(kit, processInstanceId, currentUser);
-        }
 
         internal void Reverse(SQLBuilder kit, string processInstanceId, FlowCommandContext currentUser)
         {

@@ -41,8 +41,6 @@ builder.UseHookOutboxDrain(o => o.PollInterval = TimeSpan.FromSeconds(3), autoSt
 | `QueryDead(kit, limit, processCode?, handlerName?)` | 可选内存过滤 |
 | `CountByStatus(kit, status)` | 按状态计数 |
 
-**`HookOutboxAdmin`**：同上方法的薄门面。
-
 ### 4. 单元测试
 
 - 工程：**`src/tests/sailflow.engine.tests/`**（net8.0, xunit），已加入 **`Sailflow.sln`**（`tests` 文件夹）。
@@ -77,7 +75,7 @@ dotnet test  src\tests\sailflow.engine.tests\sailflow.engine.tests.csproj -f net
 |------|--------|
 | Sync timeout | `FlowCapabilityOptions.cs`, `FlowSyncHookTimeoutException.cs`, `FlowCapabilityDispatcher.cs`, `IFlowCapabilityMetrics.cs`, `SlickClient.cs` |
 | Outbox drain hosting | `SailHookOutboxDrainExtensions.cs`, `SailBuilderKeys.cs`, `HookOutboxWorker.cs`, `HookOutboxDrainLoop.cs`, `BizHookOutboxSailExtensions.cs` |
-| Dead-letter ops | `HookOutboxManager.cs`, `HookOutboxAdmin.cs` |
+| Dead-letter ops | `HookOutboxManager.cs` |
 | Tests | `src/tests/sailflow.engine.tests/*`, `sailflow.engine.csproj`, `Sailflow.sln` |
 | Docs | `doc/sail/特性设计-回调与事件.md`, this file |
 
@@ -85,7 +83,7 @@ dotnet test  src\tests\sailflow.engine.tests\sailflow.engine.tests.csproj -f net
 
 | Item | Notes |
 |------|--------|
-| **死信 UI / 管理台** | 设计文档仍列为待办；API 已有 `HookOutboxAdmin` / Manager 批量方法 |
+| **死信 UI / 管理台** | 设计文档仍列为待办；API 已有 `HookOutboxManager` 批量方法 |
 | **Sync Hook 超时后线程** | Thread 超时后仍可能在后台跑完（未 Abort）；文档化；若需强杀需另行设计 |
 | **Sync 超时单测** | 需可控慢 Hook + 短超时（易 flaky）；未加 |
 | **Outbox 集成测** | 仍无 DB 夹具；Manager 批量方法未做 DB 测试 |
