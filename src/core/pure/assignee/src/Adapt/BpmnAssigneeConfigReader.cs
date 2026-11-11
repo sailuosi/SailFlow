@@ -71,7 +71,7 @@ public static class BpmnAssigneeConfigReader
         {
             if (string.IsNullOrEmpty(version) && !string.IsNullOrWhiteSpace(processInstanceId))
             {
-                var pi = sail.UseRunSQL().useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
+                var pi = sail.UseRunSQL().findRowById<ProcessInstanceEntity>(processInstanceId);
                 version = pi?.Version;
                 processId ??= pi?.ProcessId;
             }

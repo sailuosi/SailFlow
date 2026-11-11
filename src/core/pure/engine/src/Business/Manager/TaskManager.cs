@@ -39,11 +39,11 @@ namespace saiflow.engine.Manager
         /// </summary>
         public TaskViewEntity GetTaskView(string taskId)
         {
-            return Sail.UseRunSQL().useRepo<TaskViewEntity, string>().GetById(taskId);
+            return Sail.UseRunSQL().findRowById<TaskViewEntity>(taskId);
         }
 
         internal TaskViewEntity GetTaskView(SQLBuilder kit, string taskId)
-            => kit.useRepo<TaskViewEntity, string>().GetById(taskId);
+            => kit.findRowById<TaskViewEntity>(taskId);
 
         /// <summary>
         /// 异步按任务 Id 取任务视图（Clip，可取消）。
@@ -66,10 +66,10 @@ namespace saiflow.engine.Manager
         /// 获取任务
         /// </summary>
         public TaskEntity GetTask(string taskId)
-            => Sail.UseRunSQL().useRepo<TaskEntity, string>().GetById(taskId);
+            => Sail.UseRunSQL().findRowById<TaskEntity>(taskId);
 
         public TaskEntity GetTask(SQLBuilder kit, string taskId)
-            => kit.useRepo<TaskEntity, string>().GetById(taskId);
+            => kit.findRowById<TaskEntity>(taskId);
 
         /// <summary>
         /// Obtain tasks based on process information

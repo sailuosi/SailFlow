@@ -78,8 +78,8 @@ namespace saiflow.engine.Manager
 
         internal ProcessInstanceEntity GetByActivity(SQLBuilder kit, string activityInstanceId)
         {
-            var activityInstance = kit.useRepo<ActivityInstanceEntity, string>().GetById(activityInstanceId);
-            return kit.useRepo<ProcessInstanceEntity, string>().GetById(activityInstance.ProcessInstanceId);
+            var activityInstance = kit.findRowById<ActivityInstanceEntity>(activityInstanceId);
+            return kit.findRowById<ProcessInstanceEntity>(activityInstance.ProcessInstanceId);
         }
 
         internal bool IsSubProcess(ProcessInstanceEntity entity)

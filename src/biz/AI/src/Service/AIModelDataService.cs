@@ -61,7 +61,7 @@ namespace saiflow.AI.Service
                 kit.beginTransaction();
                 try
                 {
-                    var existedModelEntity = kit.useRepo<AiModelProviderEntity, string>().GetById(modelEntity.Id);
+                    var existedModelEntity = kit.findRowById<AiModelProviderEntity>(modelEntity.Id);
                     if (modelEntity.ApiKey != existedModelEntity.ApiKey)
                     {
                         modelEntity.ApiKey = ApiKeyCryptoHelper.Encrypt(modelEntity.ApiKey, modelEntity.ApiUUID);

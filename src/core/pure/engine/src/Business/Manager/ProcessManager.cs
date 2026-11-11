@@ -466,7 +466,7 @@ namespace saiflow.engine.Manager
         /// </summary>
         public void Delete(string id)
         {
-            var entity = Sail.UseRunSQL().useRepo<ProcessEntity, string>().GetById(id);
+            var entity = Sail.UseRunSQL().findRowById<ProcessEntity>(id);
             Sail.UseRunSQL().useRepo<ProcessEntity, string>().DeleteById(id);
             if (entity != null)
                 Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);

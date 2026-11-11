@@ -415,7 +415,7 @@ namespace saiflow.engine.Manager
             if (clip.doUpdate() <= 0)
                 return false;
 
-            row = kit.useRepo<HookOutboxEntity>().GetById(id);
+            row = kit.findRowById<HookOutboxEntity>(id);
             return row != null && row.Status == HookOutboxStatus.Processing;
         }
         private static string Truncate(string value, int max)

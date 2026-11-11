@@ -24,7 +24,7 @@ namespace saiflow.AI.Manager
         #region get
 
         public AiModelProviderEntity GetById(string id)
-            => Kit().useRepo<AiModelProviderEntity, string>().GetById(id);
+            => Kit().findRowById<AiModelProviderEntity>(id);
 
         public List<AiModelProviderEntity> GetAll()
         {

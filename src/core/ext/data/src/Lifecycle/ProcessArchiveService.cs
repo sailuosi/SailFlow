@@ -65,7 +65,7 @@ namespace saiflow.data.Lifecycle
                 kit.beginTransaction();
                 try
                 {
-                    var pi = kit.useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
+                    var pi = kit.findRowById<ProcessInstanceEntity>(processInstanceId);
                     if (pi == null || !!string.IsNullOrWhiteSpace(pi.ProcessInstanceId) || !IsArchivable(pi))
                     {
                         kit.commit();
@@ -96,7 +96,7 @@ namespace saiflow.data.Lifecycle
 
             using (var hot = Cold.UseHotSQL())
             {
-                pi = hot.useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
+                pi = hot.findRowById<ProcessInstanceEntity>(processInstanceId);
                 if (pi == null || !IsArchivable(pi))
                     return false;
 
@@ -277,7 +277,7 @@ namespace saiflow.data.Lifecycle
         {
             try
             {
-                var pi = kit.useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
+                var pi = kit.findRowById<ProcessInstanceEntity>(processInstanceId);
                 return pi?.ProcessId;
             }
             catch

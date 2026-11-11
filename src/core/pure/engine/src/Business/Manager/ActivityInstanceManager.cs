@@ -37,7 +37,7 @@ namespace saiflow.engine.Manager
         {
             try
             {
-                return Sail.UseRunSQL().useRepo<ActivityInstanceEntity, string>().GetById(activityInstanceId);
+                return Sail.UseRunSQL().findRowById<ActivityInstanceEntity>(activityInstanceId);
             }
             catch (System.Exception e)
             {
@@ -47,7 +47,7 @@ namespace saiflow.engine.Manager
         }
 
         internal ActivityInstanceEntity GetById(SQLBuilder kit, string activityInstanceId)
-            => kit.useRepo<ActivityInstanceEntity, string>().GetById(activityInstanceId);
+            => kit.findRowById<ActivityInstanceEntity>(activityInstanceId);
 
         /// <summary>
         /// 异步按 Id 取活动实例（Clip take(1)，可取消）。与同步 Repo.GetById 双轨。

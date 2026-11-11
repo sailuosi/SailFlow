@@ -36,7 +36,7 @@ namespace saiflow.engine.Manager
         }
 
         public VariableEntity GetById(string id)
-            => Sail.UseRunSQL().useRepo<VariableEntity, string>().GetById(id);
+            => Sail.UseRunSQL().findRowById<VariableEntity>(id);
 
         public string Insert(VariableEntity entity)
         {

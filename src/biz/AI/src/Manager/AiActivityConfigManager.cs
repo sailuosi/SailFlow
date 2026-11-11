@@ -24,7 +24,7 @@ namespace saiflow.AI.Manager
         #region get
 
         public AiActivityConfigEntity GetById(string id)
-            => Kit().useRepo<AiActivityConfigEntity, string>().GetById(id);
+            => Kit().findRowById<AiActivityConfigEntity>(id);
 
         public AiActivityConfigEntity GetByProcessVersionActivity(string processId, string version, string activityId)
             => GetByProcessVersionActivity(Kit(), processId, version, activityId);

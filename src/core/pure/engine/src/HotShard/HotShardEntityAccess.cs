@@ -88,7 +88,7 @@ namespace saiflow.engine.HotShard
                 return null;
             try
             {
-                var pi = kit.useRepo<ProcessInstanceEntity, string>().GetById(processInstanceId);
+                var pi = kit.findRowById<ProcessInstanceEntity>(processInstanceId);
                 return pi?.ProcessId;
             }
             catch

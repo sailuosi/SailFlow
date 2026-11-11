@@ -30,7 +30,7 @@ namespace saiflow.hub.Form
         }
 
         internal FormEntity GetById(string formId)
-            => Sail.UseRunSQL().useRepo<FormEntity, string>().GetById(formId);
+            => Sail.UseRunSQL().findRowById<FormEntity>(formId);
 
         internal string Insert(FormEntity entity)
         {
