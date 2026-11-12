@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using saiflow.data;
+using sailflow.data;
 using mooSQL.data;
-using saiflow.engine.Xpdl;
+using sailflow.engine.Xpdl;
 
-namespace saiflow.engine.Xpdl
+namespace sailflow.engine.Xpdl
 {
     /// <summary>
     /// Merge types to obtain the next node list

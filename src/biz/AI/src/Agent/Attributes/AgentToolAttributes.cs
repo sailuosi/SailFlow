@@ -1,6 +1,6 @@
 using System;
 
-namespace saiflow.AI.Agent
+namespace sailflow.AI.Agent
 {
     /// <summary>
     /// Marks a class as a named tool set for an Agent node.

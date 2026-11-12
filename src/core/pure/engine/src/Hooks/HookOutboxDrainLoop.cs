@@ -2,9 +2,9 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using saiflow.engine.Client;
+using sailflow.engine.Client;
 
-namespace saiflow.engine.Hooks
+namespace sailflow.engine.Hooks
 {
     /// <summary>Outbox 后台 drain 循环（宿主自行 StartBackground / RunAsync，无 MS Hosting 硬依赖）。</summary>
     public static class HookOutboxDrainLoop
@@ -32,7 +32,7 @@ namespace saiflow.engine.Hooks
                 }
                 catch (Exception ex)
                 {
-                    Trace.TraceWarning($"[saiflow] Hook outbox drain iteration failed: {ex.Message}");
+                    Trace.TraceWarning($"[sailflow] Hook outbox drain iteration failed: {ex.Message}");
                 }
 
                 cycle++;
@@ -42,7 +42,7 @@ namespace saiflow.engine.Hooks
                     {
                         var purged = worker.PurgeExpiredTerminal(cancellationToken);
                         if (purged > 0)
-                            Trace.TraceInformation($"[saiflow] Hook outbox TTL purged {purged} row(s).");
+                            Trace.TraceInformation($"[sailflow] Hook outbox TTL purged {purged} row(s).");
                     }
                     catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                     {
@@ -50,7 +50,7 @@ namespace saiflow.engine.Hooks
                     }
                     catch (Exception ex)
                     {
-                        Trace.TraceWarning($"[saiflow] Hook outbox TTL purge failed: {ex.Message}");
+                        Trace.TraceWarning($"[sailflow] Hook outbox TTL purge failed: {ex.Message}");
                     }
                 }
 

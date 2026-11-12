@@ -1,6 +1,6 @@
-using saiflow.engine.Common;
+using sailflow.engine.Common;
 
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>时刻 A：按 Type 查找待办人。内置实现禁止 sealed。</summary>
 public interface IAssigneeResolver

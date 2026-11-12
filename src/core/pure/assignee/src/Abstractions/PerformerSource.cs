@@ -1,4 +1,4 @@
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>R10：当前 Performer 列表来源（供 Filter 自决是否改写；F1 可追踪）。</summary>
 public static class PerformerSources

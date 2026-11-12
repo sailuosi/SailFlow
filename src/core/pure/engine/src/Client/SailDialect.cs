@@ -1,6 +1,6 @@
 using System;
 
-namespace saiflow.engine.Client;
+namespace sailflow.engine.Client;
 
 /// <summary>
 /// 主方言：起步插槽为「数据库工厂」「事件」。禁止业务向本类型无限继承；扩展用 Register/Mount。

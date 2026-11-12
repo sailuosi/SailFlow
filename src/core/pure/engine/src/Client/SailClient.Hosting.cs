@@ -1,6 +1,6 @@
-using saiflow.engine.Hosting;
+using sailflow.engine.Hosting;
 
-namespace saiflow.engine.Client;
+namespace sailflow.engine.Client;
 
 public partial class SailClient
 {

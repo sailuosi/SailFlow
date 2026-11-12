@@ -1,7 +1,7 @@
-using saiflow.engine.Common;
-using saiflow.engine.Xpdl;
+using sailflow.engine.Common;
+using sailflow.engine.Xpdl;
 
-namespace saiflow.assignee.Adapt;
+namespace sailflow.assignee.Adapt;
 
 /// <summary>
 /// 旧 sf:Performers / sf:MultiSignDetail → ConfigPair（无显式 assigneeResolve/leaveJudge 时）。

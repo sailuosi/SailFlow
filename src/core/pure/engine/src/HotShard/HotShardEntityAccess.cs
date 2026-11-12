@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using mooSQL.data;
-using saiflow.data;
-using saiflow.engine.Client;
-using saiflow.engine.Entity;
+using sailflow.data;
+using sailflow.engine.Client;
+using sailflow.engine.Entity;
 
-namespace saiflow.engine.HotShard
+namespace sailflow.engine.HotShard
 {
     /// <summary>按物理表名对实体做 CRUD（热分表路由后使用）。</summary>
     public static class HotShardEntityAccess

@@ -1,11 +1,11 @@
-using saiflow.assignee.Adapt;
-using saiflow.assignee.Builtin;
-using saiflow.engine.Assignee;
-using saiflow.engine.Client;
-using saiflow.engine.Hosting;
-using saiflow.engine.Common;
+using sailflow.assignee.Adapt;
+using sailflow.assignee.Builtin;
+using sailflow.engine.Assignee;
+using sailflow.engine.Client;
+using sailflow.engine.Hosting;
+using sailflow.engine.Common;
 
-namespace saiflow.assignee.Hosting;
+namespace sailflow.assignee.Hosting;
 
 /// <summary>挂载办理人管道与内置 Type（后注册可覆盖）。</summary>
 public static class SailAssigneeExtensions

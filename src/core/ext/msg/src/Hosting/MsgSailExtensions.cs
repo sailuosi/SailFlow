@@ -1,8 +1,8 @@
 using System;
-using saiflow.engine.Client;
-using saiflow.engine.Hosting;
+using sailflow.engine.Client;
+using sailflow.engine.Hosting;
 
-namespace saiflow.msg.Hosting
+namespace sailflow.msg.Hosting
 {
     /// <summary>
     /// 注册 sailflow.msg RabbitMQ 实现到 SailClient / Builder。

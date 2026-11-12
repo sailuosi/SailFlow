@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace saiflow.engine.Entity
+namespace sailflow.engine.Entity
 {
     /// <summary>
     /// 流程变量定义实体（对应 BPMN sf:variables 中 Variable 属性）

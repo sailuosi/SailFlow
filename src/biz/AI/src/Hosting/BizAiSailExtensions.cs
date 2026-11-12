@@ -1,8 +1,8 @@
 using System;
-using saiflow.AI.Runtime;
-using saiflow.engine.Hosting;
+using sailflow.AI.Runtime;
+using sailflow.engine.Hosting;
 
-namespace saiflow.AI.Hosting;
+namespace sailflow.AI.Hosting;
 
 public static class BizAiSailExtensions
 {

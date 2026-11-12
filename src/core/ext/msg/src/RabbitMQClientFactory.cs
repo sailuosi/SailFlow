@@ -1,7 +1,7 @@
 using System;
 using RabbitMQ.Client;
 
-namespace saiflow.msg
+namespace sailflow.msg
 {
     /// <summary>
     /// RabbitMQ 通道工厂（懒连接，按实例配置）。

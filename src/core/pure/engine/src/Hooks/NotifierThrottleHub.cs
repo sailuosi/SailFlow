@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace saiflow.engine.Hooks
+namespace sailflow.engine.Hooks
 {
     /// <summary>
     /// Client 级 Notifier 限流枢纽：按 handler 名一车道（Channel + MaxDegree workers）。
@@ -53,7 +53,7 @@ namespace saiflow.engine.Hooks
                 }
                 catch (Exception ex)
                 {
-                    Trace.TraceWarning($"[saiflow] NotifierThrottleLane dispose failed: {ex.Message}");
+                    Trace.TraceWarning($"[sailflow] NotifierThrottleLane dispose failed: {ex.Message}");
                 }
             }
 
@@ -186,7 +186,7 @@ namespace saiflow.engine.Hooks
             catch (Exception ex)
             {
                 Trace.TraceWarning(
-                    $"[saiflow] NotifierThrottleLane '{Name}' worker stopped: {ex.Message}");
+                    $"[sailflow] NotifierThrottleLane '{Name}' worker stopped: {ex.Message}");
             }
         }
 

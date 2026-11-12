@@ -1,4 +1,4 @@
-namespace saiflow.msg
+namespace sailflow.msg
 {
     /// <summary>
     /// 默认待办邮件 SMTP 与模板选项（在 <c>UseDefaultTaskMail</c> 时刻成型；不进引擎 <c>SailConfig</c>）。

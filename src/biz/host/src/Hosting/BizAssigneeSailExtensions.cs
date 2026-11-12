@@ -1,11 +1,11 @@
-using saiflow.assignee;
-using saiflow.assignee.Hosting;
-using saiflow.biz.Assignee;
-using saiflow.engine.Client;
-using saiflow.engine.Hosting;
-using saiflow.engine.Common;
+using sailflow.assignee;
+using sailflow.assignee.Hosting;
+using sailflow.biz.Assignee;
+using sailflow.engine.Client;
+using sailflow.engine.Hosting;
+using sailflow.engine.Common;
 
-namespace saiflow.biz.Hosting;
+namespace sailflow.biz.Hosting;
 
 /// <summary>Biz 组合：默认启用办理人管道 + S4 业务样例注册。</summary>
 public static class BizAssigneeSailExtensions

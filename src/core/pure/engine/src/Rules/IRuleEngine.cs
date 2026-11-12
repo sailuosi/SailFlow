@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using saiflow.engine.Entity;
+using sailflow.engine.Entity;
 
-namespace saiflow.engine.Rules
+namespace sailflow.engine.Rules
 {
     /// <summary>
     /// 规则引擎契约：按 <see cref="Mode"/>（对应 <c>wf_rule_set.mode</c>）执行与校验。

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace saiflow.engine.Event
+namespace sailflow.engine.Event
 {
     /// <summary>
     /// Event Scope Type

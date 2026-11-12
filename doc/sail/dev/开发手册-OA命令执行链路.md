@@ -29,7 +29,7 @@ Host API / ButtonsOperation
 
 | 层 | 落点 | 职责 |
 |----|------|------|
-| **Host 调度** | `sleveen-admin/backend/saiflow` | HTTP、码表按钮 → Handler、鉴权绑 Runner |
+| **Host 调度** | `sleveen-admin/backend/__KEEP_sailflow__` | HTTP、码表按钮 → Handler、鉴权绑 Runner |
 | **命令入口** | `WorkflowService`（`Service/WorkflowService.ProcessExecution.cs`） | 事务、实例锁、Gate/Hook、调 Factory |
 | **运行时装配** | `DefaultRuntimeFactory` → `RuntimeInstanceCreator` | 查当前节点/任务/模型，构造具体 `WfRuntimeManager`* |
 | **运行时执行** | `WfRuntimeManager`* | `Execute` → `ExecuteInstanceImp` |
@@ -69,7 +69,7 @@ Manager 经 `Sail.ManagerFactory` / `SailFactoryAccess.Managers`；模型经 `Sa
 
 ## 3. Host 外层调度入口
 
-仓：`sleveen-admin/backend/saiflow`
+仓：`sleveen-admin/backend/__KEEP_sailflow__`
 
 | 入口 | 类·方法 | 说明 |
 |------|---------|------|
@@ -543,7 +543,7 @@ FlowCapabilityPipeline.AfterSuccess(/* OnActivityCreated */);
 | Mediator | `src/Core/Pattern/NodeMediator*.cs` · `MediatorInstanceCreator` |
 | Manager | `src/Business/Manager/*.cs` |
 | Gate/Hook | `src/Hooks/FlowCapabilityPipeline` / `FlowCapabilityDispatcher` |
-| Host | `sleveen-admin/backend/saiflow/src/Controller/Wf2XmlController.Runtime.cs` · `Operations/` |
+| Host | `sleveen-admin/backend/__KEEP_sailflow__/src/Controller/Wf2XmlController.Runtime.cs` · `Operations/` |
 
 ---
 

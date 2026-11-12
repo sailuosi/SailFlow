@@ -1,4 +1,4 @@
-namespace saiflow.engine.Factories;
+namespace sailflow.engine.Factories;
 
 /// <summary>
 /// 寿命用例标签（见 doc/sail/dev/专题-对象生命周期与复用边界.md）。

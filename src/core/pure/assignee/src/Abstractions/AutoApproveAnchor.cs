@@ -1,4 +1,4 @@
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>
 /// R10：自动审批意图锚点。时刻 A 只记录；发送成功后由普通 Job 苛刻复核并代办。

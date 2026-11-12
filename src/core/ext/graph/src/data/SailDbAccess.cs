@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace saiflow.data
+namespace sailflow.data
 {
     /// <summary>
     /// 宿主装配时注入 <see cref="DBInstance"/> 的入口（非业务 Cash）。

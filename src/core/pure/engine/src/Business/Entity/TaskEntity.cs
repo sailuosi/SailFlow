@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using saiflow.engine.Common;
+using sailflow.engine.Common;
 using mooSQL.data;
 
-namespace saiflow.engine.Entity
+namespace sailflow.engine.Entity
 {
     /// <summary>
     /// Task Entity
@@ -56,7 +56,7 @@ namespace saiflow.engine.Entity
         public string UnitName { get; set; }
         /// <summary>
         /// 业务侧待办邮件发送标记（非引擎主路径语义）。
-        /// 取值见 <c>saiflow.biz.query.TaskEMailSentStatusEnum</c>；创建时写 0=未发送，由查询/补发路径回写。
+        /// 取值见 <c>sailflow.biz.query.TaskEMailSentStatusEnum</c>；创建时写 0=未发送，由查询/补发路径回写。
         /// </summary>
         [SooColumn(Name = "is_email_sent")]
         public byte? IsEMailSent { get; set; }

@@ -1,8 +1,8 @@
 using NRules.Fluent.Dsl;
-using saiflow.engine.Entity;
+using sailflow.engine.Entity;
 using System.Globalization;
 
-namespace saiflow.hub.BusinessRule
+namespace sailflow.hub.BusinessRule
 {
     public class LeaveApproveRule : Rule
     {

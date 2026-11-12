@@ -6,18 +6,18 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using mooSQL.data;
-using saiflow.data;
-using saiflow.hub.Localize;
-using saiflow.engine.Common;
-using saiflow.engine.Hooks;
-using saiflow.engine.Entity;
-using saiflow.engine.Xpdl;
-using saiflow.engine.Result;
-using saiflow.engine.Client;
-using saiflow.WebUtility;
+using sailflow.data;
+using sailflow.hub.Localize;
+using sailflow.engine.Common;
+using sailflow.engine.Hooks;
+using sailflow.engine.Entity;
+using sailflow.engine.Xpdl;
+using sailflow.engine.Result;
+using sailflow.engine.Client;
+using sailflow.WebUtility;
 
 
-namespace saiflow.engine.Manager
+namespace sailflow.engine.Manager
 {
     /// <summary>
     /// Task manager: including tasks and task view objects
@@ -391,7 +391,7 @@ namespace saiflow.engine.Manager
                 UnitCode = !string.IsNullOrEmpty(performer?.UnitCode) ? performer.UnitCode : activityInstance.UnitCode,
                 UnitName = !string.IsNullOrEmpty(performer?.UnitName) ? performer.UnitName : activityInstance.UnitName,
                 TaskState = 1,
-                // 业务邮件标记：未发送（saiflow.biz.query.TaskEMailSentStatusEnum.UnSent）
+                // 业务邮件标记：未发送（sailflow.biz.query.TaskEMailSentStatusEnum.UnSent）
                 IsEMailSent = 0,
                 CreatedUserId = runnerId,
                 CreatedUserName = runnerName,

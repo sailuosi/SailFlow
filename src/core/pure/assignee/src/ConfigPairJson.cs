@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>ConfigPair.Params JSON 解析（BPMN @params 属性）。</summary>
 public static class ConfigPairJson

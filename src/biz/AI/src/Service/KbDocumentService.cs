@@ -1,9 +1,9 @@
-using saiflow.AI.Entity;
-using saiflow.AI.Manager;
-using saiflow.AI.Configuration;
+using sailflow.AI.Entity;
+using sailflow.AI.Manager;
+using sailflow.AI.Configuration;
 using System.Collections.Generic;
 
-namespace saiflow.AI.Service
+namespace sailflow.AI.Service
 {
     /// <summary>
     /// Knowledge Base Document Service

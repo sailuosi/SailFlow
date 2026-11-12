@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace saiflow.biz.query
+namespace sailflow.biz.query
 {
     /// <summary>流程抄送（产品表，非引擎表）。</summary>
     [SooTable(Name = "sf_process_instance_copy", Caption = "流程抄送", Type = DBTableType.Table)]

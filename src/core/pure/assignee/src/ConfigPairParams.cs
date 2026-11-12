@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>ConfigPair.Params 读取辅助。</summary>
 public static class ConfigPairParams

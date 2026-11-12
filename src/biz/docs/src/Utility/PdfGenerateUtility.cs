@@ -5,7 +5,7 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using PdfDocument = iTextSharp.text.Document;
 
-namespace saiflow.biz.Utility
+namespace sailflow.biz.Utility
 {
     /// <summary>
     /// PDF document generation utility for workflow process documents

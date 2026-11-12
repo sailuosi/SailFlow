@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace saiflow.engine.Xpdl
+namespace sailflow.engine.Xpdl
 {
     public class ProcessNamespaceDefine
     {
@@ -19,7 +19,7 @@ namespace saiflow.engine.Xpdl
         public static readonly string m_namespace_uri_bpmndi = "http://www.omg.org/spec/BPMN/20100524/DI";
         public static readonly string m_namespace_uri_di = "http://www.omg.org/spec/DD/20100524/DI";
         public static readonly string m_namespace_uri_dc = "http://www.omg.org/spec/DD/20100524/DC";
-        public static readonly string m_namespace_uri_sf = "http://www.saiflow.com/schema/sf";
+        public static readonly string m_namespace_uri_sf = "http://www.sailflow.com/schema/sf";
         public static readonly string m_namespace_uri_target = "http://bpmn.io/schema/bpmn";
         public static readonly string m_namespace_uri_xsi = "http://www.w3.org/2001/XMLSchema-instance";
 

@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace saiflow.AI.Entity
+namespace sailflow.AI.Entity
 {
     /// <summary>
     /// Entity for Supabase table biz_document_usage_log.

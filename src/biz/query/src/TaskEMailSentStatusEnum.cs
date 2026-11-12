@@ -1,4 +1,4 @@
-namespace saiflow.biz.query
+namespace sailflow.biz.query
 {
     /// <summary>
     /// Task Email Sent Status

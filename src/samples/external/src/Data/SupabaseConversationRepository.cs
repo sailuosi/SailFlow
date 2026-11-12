@@ -5,9 +5,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using saiflow.hub.External;
+using sailflow.hub.External;
 
-namespace saiflow.hub.External
+namespace sailflow.hub.External
 {
     /// <summary>
     /// Inserts and queries biz_conversation table in Supabase via REST API.

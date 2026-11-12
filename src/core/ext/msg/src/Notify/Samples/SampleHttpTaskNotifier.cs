@@ -4,10 +4,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using saiflow.engine.Hooks;
-using saiflow.msg.Notify;
+using sailflow.engine.Hooks;
+using sailflow.msg.Notify;
 
-namespace saiflow.msg.Samples
+namespace sailflow.msg.Samples
 {
     /// <summary>
     /// 业务继承样例：仅实现 <see cref="SendCoreAsync"/>，POST JSON 到配置的回调 URL。

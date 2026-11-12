@@ -1,6 +1,6 @@
-using saiflow.engine.Assignee;
+using sailflow.engine.Assignee;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>组内抢办 + 组间 AND/OR（Params.groupJoin）。禁止 sealed。</summary>
 public class GroupRaceLeaveJudge : IActivityLeaveJudge

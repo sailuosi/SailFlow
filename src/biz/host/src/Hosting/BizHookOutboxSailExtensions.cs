@@ -1,8 +1,8 @@
 using System;
-using saiflow.engine.Hosting;
-using saiflow.engine.Hooks;
+using sailflow.engine.Hosting;
+using sailflow.engine.Hooks;
 
-namespace saiflow.biz.Hosting;
+namespace sailflow.biz.Hosting;
 
 public static class BizHookOutboxSailExtensions
 {

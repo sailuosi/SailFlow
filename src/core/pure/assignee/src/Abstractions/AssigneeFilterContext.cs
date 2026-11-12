@@ -1,7 +1,7 @@
-using saiflow.engine.Assignee;
-using saiflow.engine.Common;
+using sailflow.engine.Assignee;
+using sailflow.engine.Common;
 
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>R10：Resolve 后置 Filter / EmptyAction 上下文。</summary>
 public sealed class AssigneeFilterContext

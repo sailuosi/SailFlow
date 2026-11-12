@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <!-- Layer assemblies → packed into this nupkg
-       Note: host AssemblyName is saiflow.biz; pack facade uses sailflow.biz.pack to avoid collision. -->
+       Note: host AssemblyName is sailflow.biz; pack facade uses sailflow.biz.pack to avoid collision. -->
   <ItemGroup>
     <ProjectReference Include="..\src\biz\host\sailflow.biz.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\src\biz\AI\sailflow.biz.AI.csproj" PrivateAssets="all" />

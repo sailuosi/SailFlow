@@ -1,6 +1,6 @@
 using System;
 
-namespace saiflow.AI.Entity
+namespace sailflow.AI.Entity
 {
     /// <summary>
     /// Single chat history message (role + content) for multi-turn RAG context.

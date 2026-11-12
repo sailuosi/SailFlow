@@ -1,8 +1,8 @@
 using System;
 using mooSQL.data;
-using saiflow.data;
+using sailflow.data;
 
-namespace saiflow.data.Lifecycle
+namespace sailflow.data.Lifecycle
 {
     /// <summary>将实体行写入指定物理表（保留主键值，供归档幂等）。</summary>
     public static class ArchiveRowCopier

@@ -1,9 +1,9 @@
 using System;
-using saiflow.data;
-using saiflow.engine.Entity;
-using saiflow.engine.Client;
+using sailflow.data;
+using sailflow.engine.Entity;
+using sailflow.engine.Client;
 
-namespace saiflow.data.Lifecycle
+namespace sailflow.data.Lifecycle
 {
     /// <summary>流程归档闭包涉及的热表 → 逻辑基名（供 <see cref="SailDataLifecycleOptions.FormatHistTableName"/>）。</summary>
     public static class HistTableCatalog

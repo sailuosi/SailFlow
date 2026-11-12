@@ -3,7 +3,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace saiflow.AI.Utility
+namespace sailflow.AI.Utility
 {
     internal class EmbeddingGenUtility
     {

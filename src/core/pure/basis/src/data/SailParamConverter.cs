@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using mooSQL.data;
 
-namespace saiflow.data
+namespace sailflow.data
 {
     /// <summary>
     /// 业务侧用 <see cref="IDictionary{TKey,TValue}"/> / 匿名对象传参，转成 mooSQL <see cref="Paras"/>。

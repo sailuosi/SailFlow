@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using saiflow.WebUtility;
-using saiflow.AI.Entity;
-using saiflow.engine.Client;
+using sailflow.WebUtility;
+using sailflow.AI.Entity;
+using sailflow.engine.Client;
 
-namespace saiflow.AI.Implementation
+namespace sailflow.AI.Implementation
 {
     public interface IAiLlmService
     {

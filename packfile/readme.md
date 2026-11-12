@@ -51,7 +51,7 @@ Host → sailflow.biz → sailflow.ext → sailflow.pure → mooSQL.Ext
 
 **未纳入本轮发包**：`sailflow.graph`、`samples/external`、测试项目。
 
-> 注意：叶子 csproj 上可能仍残留历史 `PackageId`（含 `saiflow.data` 冲突）。全仓默认 `IsPackable=false`，请勿对叶子工程执行 `dotnet pack`。
+> 注意：全仓默认 `IsPackable=false`，请勿对叶子工程执行 `dotnet pack`。
 
 ## Pack (maintainers) / 打包
 

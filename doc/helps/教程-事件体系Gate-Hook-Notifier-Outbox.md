@@ -1,6 +1,6 @@
 # SailFlow 事件体系完整使用教程（Gate / Hook / Notifier / Outbox）
 
-> 状态：对照 **Phase 1–3b 已落地代码**（`saiflow.engine.Hooks` + `saiflow.msg`）整理的使用教程，非设计草案。  
+> 状态：对照 **Phase 1–3b 已落地代码**（`sailflow.engine.Hooks` + `sailflow.msg`）整理的使用教程，非设计草案。  
 > 设计全文：[特性设计-回调与事件.md](../sail/特性设计-回调与事件.md) · 能力基线：[特性说明-引擎能力基线.md](../sail/特性说明-引擎能力基线.md)  
 > 源码主目录：`src/core/pure/engine/src/Hooks/` · Outbox 表实体：`HookOutboxEntity`（`wf_hook_outbox`）
 
@@ -9,7 +9,7 @@
 ## 前置说明
 
 - **按需开启**：不调用 `UseFlowGate` / `UseFlowHook` / `UseTaskNotifier`（或总包 `UseFlowAspects`）时，主路径不跑业务回调；默认邮件须显式 `UseDefaultTaskMail()`。
-- **分层**：契约与分发在 **pure 引擎**（`saiflow.engine`）；待办推送骨架与默认 SMTP 在 **ext/msg**（`saiflow.msg`）。不是「整套事件只在 ext」——扩展实现挂在引擎插槽上。
+- **分层**：契约与分发在 **pure 引擎**（`sailflow.engine`）；待办推送骨架与默认 SMTP 在 **ext/msg**（`sailflow.msg`）。不是「整套事件只在 ext」——扩展实现挂在引擎插槽上。
 - **执行顺序（主路径）**：
 
 ```
@@ -52,11 +52,11 @@ Gate（推进落库前，可 Reject）
 ### 2.1 `Use*` 显式实例（可带构造参数）
 
 ```csharp
-using saiflow.engine.Client;
-using saiflow.engine.Event;
-using saiflow.engine.Hosting;
-using saiflow.engine.Hooks;
-using saiflow.msg.Hosting;
+using sailflow.engine.Client;
+using sailflow.engine.Event;
+using sailflow.engine.Hosting;
+using sailflow.engine.Hooks;
+using sailflow.msg.Hosting;
 
 var client = SailClient.CreateBuilder(configuration)
     .UseDatabase(/* ... */)
@@ -280,7 +280,7 @@ public sealed class AmountLimitGate : IFlowGate
 }
 ```
 
-引擎内置文档样例：`saiflow.engine.Samples.FinancePreSendGate`。
+引擎内置文档样例：`sailflow.engine.Samples.FinancePreSendGate`。
 
 **适合**：Start / Run / Reject / SendBack / Transfer 等推进前规则。  
 **不要**：Gate 内打慢外部 HTTP / MQ（会阻塞审批；超时体验差）。  
@@ -388,7 +388,7 @@ public interface ITaskNotifier
 
 引擎在待办创建/完成等路径调用 `FireTaskLifecycle` → `EnqueueTaskNotifiers`（写入 Outbox）。注册时若写 `Mode = Sync`，注册表会**强制改回** `AsyncOutbox`。
 
-### 推荐：继承 `TaskNotifyChannelBase`（`saiflow.msg`）
+### 推荐：继承 `TaskNotifyChannelBase`（`sailflow.msg`）
 
 ```csharp
 public sealed class DingTalkTaskNotifier : TaskNotifyChannelBase

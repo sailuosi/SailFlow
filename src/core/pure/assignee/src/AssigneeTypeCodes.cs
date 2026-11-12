@@ -1,4 +1,4 @@
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>内置 Resolve Type 码（静态 string，禁止改成 enum）。</summary>
 public static class AssigneeResolveTypeCodes

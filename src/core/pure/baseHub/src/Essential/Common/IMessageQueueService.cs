@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using saiflow.hub.Essential;
+using sailflow.hub.Essential;
 
-namespace saiflow.hub.Essential
+namespace sailflow.hub.Essential
 {
     /// <summary>
     /// Message Queue Service Interface

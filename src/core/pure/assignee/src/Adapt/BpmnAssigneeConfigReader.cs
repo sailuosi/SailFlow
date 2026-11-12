@@ -1,11 +1,11 @@
-using saiflow.data;
-using saiflow.engine.Assignee;
-using saiflow.engine.Entity;
-using saiflow.engine.Client;
-using saiflow.engine.Xpdl;
+using sailflow.data;
+using sailflow.engine.Assignee;
+using sailflow.engine.Entity;
+using sailflow.engine.Client;
+using sailflow.engine.Xpdl;
 using mooSQL.data;
 
-namespace saiflow.assignee.Adapt;
+namespace sailflow.assignee.Adapt;
 
 /// <summary>
 /// 从流程定义 Activity 读取显式 BPMN ConfigPair（优先于 Legacy 推断）。

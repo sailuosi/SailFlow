@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using saiflow.engine.Hooks;
-using saiflow.engine.Client;
+using sailflow.engine.Hooks;
+using sailflow.engine.Client;
 
-namespace saiflow.engine.Hosting;
+namespace sailflow.engine.Hosting;
 
 /// <summary>
 /// Gate / Hook / Notifier 三轨注册扩展（对齐 <c>UseRuleEngine</c> 等 Client 管道语言）。

@@ -1,7 +1,7 @@
-using saiflow.engine.Entity;
-using saiflow.engine.Common;
+using sailflow.engine.Entity;
+using sailflow.engine.Common;
 
-namespace saiflow.engine.Xpdl
+namespace sailflow.engine.Xpdl
 {
     /// <summary>
     /// Rule task config: <see cref="RuleSetCode"/> from BPMN; rule body and mode from <see cref="MergeFrom"/> / <c>wf_rule_set</c>.

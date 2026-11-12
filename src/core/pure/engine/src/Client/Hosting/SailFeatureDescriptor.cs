@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using saiflow.engine.Client;
+using sailflow.engine.Client;
 
-namespace saiflow.engine.Hosting;
+namespace sailflow.engine.Hosting;
 
 public enum SailFeaturePhase
 {

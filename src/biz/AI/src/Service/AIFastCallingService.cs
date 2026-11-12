@@ -1,11 +1,11 @@
-using saiflow.AI.Entity;
-using saiflow.AI.Implementation;
-using saiflow.AI.Manager;
-using saiflow.AI.Configuration;
-using saiflow.WebUtility;
-using saiflow.engine.Client;
+using sailflow.AI.Entity;
+using sailflow.AI.Implementation;
+using sailflow.AI.Manager;
+using sailflow.AI.Configuration;
+using sailflow.WebUtility;
+using sailflow.engine.Client;
 
-namespace saiflow.AI.Service
+namespace sailflow.AI.Service
 {
     /// <summary>
     /// AI 大模型调用服务。严格区分两种配置来源：

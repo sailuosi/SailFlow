@@ -1,6 +1,6 @@
-using saiflow.engine.Assignee;
+using sailflow.engine.Assignee;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>
 /// 队长模式：Params.gateRoles 默认 Leader；组内关卡身份同意即组完成；组间 groupJoin。

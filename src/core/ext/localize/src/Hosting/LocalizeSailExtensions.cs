@@ -1,8 +1,8 @@
 using System;
-using saiflow.engine.Hosting;
-using saiflow.hub.Localize;
+using sailflow.engine.Hosting;
+using sailflow.hub.Localize;
 
-namespace saiflow.hub.Hosting
+namespace sailflow.hub.Hosting
 {
     /// <summary>
     /// Localize 插槽：默认 JSON 文案实现；宿主可用 <see cref="UseLocalize(ISailCollection, ILocalizeMessages)"/> 覆盖。
@@ -43,7 +43,7 @@ namespace saiflow.hub.Hosting
             });
         }
 
-        static void Apply(saiflow.engine.Client.SailClient client, ISailCollection coll, ILocalizeMessages messages)
+        static void Apply(sailflow.engine.Client.SailClient client, ISailCollection coll, ILocalizeMessages messages)
         {
             coll.Properties[SailBuilderKeys.LocalizeMessages] = messages;
             client.Messages = messages;

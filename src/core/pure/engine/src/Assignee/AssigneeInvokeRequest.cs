@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using mooSQL.data;
-using saiflow.engine.Common;
+using sailflow.engine.Common;
 
-namespace saiflow.engine.Assignee
+namespace sailflow.engine.Assignee
 {
     /// <summary>时刻 A：查找待办人调用入参（engine 不解析 Type）。</summary>
     public class AssigneeInvokeRequest

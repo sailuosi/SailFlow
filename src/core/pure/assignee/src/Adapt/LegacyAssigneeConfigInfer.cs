@@ -1,9 +1,9 @@
-using saiflow.engine.Assignee;
-using saiflow.engine.Entity;
-using saiflow.engine.Common;
-using saiflow.engine.Xpdl;
+using sailflow.engine.Assignee;
+using sailflow.engine.Entity;
+using sailflow.engine.Common;
+using sailflow.engine.Xpdl;
 
-namespace saiflow.assignee.Adapt;
+namespace sailflow.assignee.Adapt;
 
 /// <summary>
 /// 无显式 BPMN ConfigPair 时，从既有 runner / 会签主活动推断 Type（旧数据双轨适配）。

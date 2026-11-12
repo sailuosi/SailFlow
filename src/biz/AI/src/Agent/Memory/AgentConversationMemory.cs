@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace saiflow.AI.Agent
+namespace sailflow.AI.Agent
 {
     /// <summary>
     /// Shared in-memory store for agent outputs within the same process instance.

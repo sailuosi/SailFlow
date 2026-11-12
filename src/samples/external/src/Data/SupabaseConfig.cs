@@ -1,7 +1,7 @@
-using saiflow.hub.External;
+using sailflow.hub.External;
 using System;
 
-namespace saiflow.hub.External
+namespace sailflow.hub.External
 {
     /// <summary>
     /// Supabase connection config. Reads from host appsettings.json (sfdapi) first:

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace saiflow.data
+namespace sailflow.data
 {
     /// <summary>
     /// 读取实体映射：优先 mooSQL <c>[SooTable]</c>/<c>[SooColumn]</c>（属性 Name / IsPrimaryKey），

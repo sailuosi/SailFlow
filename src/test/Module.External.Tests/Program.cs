@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
-using saiflow.engine.External;
-using saiflow.hub.External.Customer;
-using saiflow.hub.External.Customer.Entity;
-using saiflow.hub.External.Data;
+using sailflow.engine.External;
+using sailflow.hub.External.Customer;
+using sailflow.hub.External.Customer.Entity;
+using sailflow.hub.External.Data;
 
-namespace saiflow.hub.External.Tests
+namespace sailflow.hub.External.Tests
 {
     /// <summary>
     /// Simulates a customer–AI chat: sets user_message and ai_response,
@@ -62,7 +62,7 @@ namespace saiflow.hub.External.Tests
                 Console.WriteLine("--- Running CustomerSaveService ---");
                 var saveService = new ContactSaveService();
                 saveService.Executable(eventService);
-                var customerId = eventService.GetVariable(saiflow.engine.Common.ProcessVariableScopeEnum.Process, "customer_id");
+                var customerId = eventService.GetVariable(sailflow.engine.Common.ProcessVariableScopeEnum.Process, "customer_id");
                 Console.WriteLine("CustomerSaveService done. customer_id = {0}\n", customerId ?? "(none)");
 
                 // 5. Run MessageService: save user_message + ai_response → biz_conversation (with customer_id if set)

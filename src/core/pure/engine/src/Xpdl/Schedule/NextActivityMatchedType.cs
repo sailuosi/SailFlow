@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace saiflow.engine.Xpdl
+namespace sailflow.engine.Xpdl
 {
     /// <summary>
     /// Next Activity Matched Type

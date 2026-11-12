@@ -1,7 +1,7 @@
 using System.Globalization;
-using saiflow.engine.Common;
+using sailflow.engine.Common;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>
 /// 缺省/兜底：先跑 primary ConfigPair，空结果再跑 fallback。

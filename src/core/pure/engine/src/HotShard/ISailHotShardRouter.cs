@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 
-namespace saiflow.engine.HotShard
+namespace sailflow.engine.HotShard
 {
     /// <summary>
-    /// 轨迹 / 变量热表白名单分表路由。默认实现恒返回默认表名；白名单实现由 saiflow.data 挂载。
+    /// 轨迹 / 变量热表白名单分表路由。默认实现恒返回默认表名；白名单实现由 sailflow.data 挂载。
     /// </summary>
     public interface ISailHotShardRouter
     {

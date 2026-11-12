@@ -1,4 +1,4 @@
-namespace saiflow.engine.Hosting;
+namespace sailflow.engine.Hosting;
 
 /// <summary>
 /// 已约定的能力名（<see cref="SailFeatureDescriptor.Name"/> / <see cref="SailFeatureDescriptor.DependsOn"/>）。
@@ -22,7 +22,7 @@ public static class SailFeatureNames
     public const string Schema = "Schema";
     public const string SailData = "sail.data";
     public const string ImmediateArchive = "sail.lifecycle.archive.immediate";
-    public const string RabbitMq = "saiflow.msg.RabbitMq";
-    public const string DefaultTaskMail = "saiflow.msg.DefaultMail";
+    public const string RabbitMq = "sailflow.msg.RabbitMq";
+    public const string DefaultTaskMail = "sailflow.msg.DefaultMail";
     public const string BizAssigneeSamples = "biz-assignee-samples";
 }

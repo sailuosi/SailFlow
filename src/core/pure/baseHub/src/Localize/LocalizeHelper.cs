@@ -1,6 +1,6 @@
 using System;
 
-namespace saiflow.hub.Localize
+namespace sailflow.hub.Localize
 {
     /// <summary>
     /// Obsolete facade over <see cref="LocalizeMessagesLocator.Current"/>.

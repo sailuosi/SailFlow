@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using saiflow.engine;
-using saiflow.hub.Resource;
+using sailflow.engine;
+using sailflow.hub.Resource;
 
 
-namespace saiflow.engine.Common
+namespace sailflow.engine.Common
 {
     /// <summary>
     /// Resources related to activity

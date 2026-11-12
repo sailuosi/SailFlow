@@ -4,7 +4,7 @@ using System.Data;
 using System.Linq;
 using mooSQL.data;
 
-namespace saiflow.data
+namespace sailflow.data
 {
     /// <summary>
     /// 动态/裸 SQL 与存储过程：走 mooSQL <see cref="SQLCmd"/> + <see cref="DBInstance"/>，

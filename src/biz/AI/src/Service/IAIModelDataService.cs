@@ -1,11 +1,11 @@
-using saiflow.AI.Entity;
+using sailflow.AI.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace saiflow.AI.Service
+namespace sailflow.AI.Service
 {
     public interface IAiModelDataService
     {

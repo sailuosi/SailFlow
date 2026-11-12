@@ -1,7 +1,7 @@
 using mooSQL.data;
-using saiflow.engine.Client;
+using sailflow.engine.Client;
 
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>R10：自动审批锚点持久化（推荐与发送同库；可用 HookOutbox Kind=AssigneeAutoApprove）。</summary>
 public interface IAutoApproveAnchorStore

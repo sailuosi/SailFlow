@@ -1,6 +1,6 @@
-using saiflow.engine.Common;
+using sailflow.engine.Common;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>透传 runner / NextActivityPerformers 中已指定的办理人。禁止 sealed。</summary>
 public class SpecificAssigneeResolver : IAssigneeResolver

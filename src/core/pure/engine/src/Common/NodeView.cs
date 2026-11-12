@@ -1,11 +1,11 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using saiflow.hub.Resource;
+using sailflow.hub.Resource;
 
-namespace saiflow.engine.Common
+namespace sailflow.engine.Common
 {
     /// <summary>
     /// View objects of workflow flow nodes

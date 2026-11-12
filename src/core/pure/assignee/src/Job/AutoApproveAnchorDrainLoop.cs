@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using saiflow.engine.Client;
+using sailflow.engine.Client;
 
-namespace saiflow.assignee.Job;
+namespace sailflow.assignee.Job;
 
 /// <summary>自动审批锚点后台 drain（与 HookOutboxDrainLoop 同心智）。</summary>
 public static class AutoApproveAnchorDrainLoop

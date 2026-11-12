@@ -1,4 +1,4 @@
-namespace saiflow.biz.Hosting;
+namespace sailflow.biz.Hosting;
 
 public sealed class SchemaOptions
 {

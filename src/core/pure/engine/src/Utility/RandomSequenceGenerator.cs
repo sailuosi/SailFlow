@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace saiflow.engine.Utility
+namespace sailflow.engine.Utility
 {
     /// <summary>
     /// Random sequence generator

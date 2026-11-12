@@ -1,6 +1,6 @@
 using System;
 
-namespace saiflow.hub.Localize
+namespace sailflow.hub.Localize
 {
     /// <summary>
     /// JSON embedded-resource implementation of <see cref="ILocalizeMessages"/>.

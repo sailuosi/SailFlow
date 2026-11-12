@@ -1,10 +1,10 @@
 using System;
 using Microsoft.Extensions.Configuration;
-using saiflow.engine.Hosting;
-using saiflow.msg;
-using saiflow.msg.Hosting;
+using sailflow.engine.Hosting;
+using sailflow.msg;
+using sailflow.msg.Hosting;
 
-namespace saiflow.biz.Hosting;
+namespace sailflow.biz.Hosting;
 
 /// <summary>
 /// Biz composition：启用消息队列（RabbitMQ）与默认待办邮件。

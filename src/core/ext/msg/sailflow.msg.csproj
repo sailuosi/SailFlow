@@ -4,9 +4,9 @@
     <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageId>saiflow.msg</PackageId>
-    <RootNamespace>saiflow.msg</RootNamespace>
-    <AssemblyName>saiflow.msg</AssemblyName>
+    <PackageId>sailflow.msg</PackageId>
+    <RootNamespace>sailflow.msg</RootNamespace>
+    <AssemblyName>sailflow.msg</AssemblyName>
     <Description>RabbitMQ message queue implementation for sailflow Message/Signal (IMessageQueueService).</Description>
   </PropertyGroup>
 

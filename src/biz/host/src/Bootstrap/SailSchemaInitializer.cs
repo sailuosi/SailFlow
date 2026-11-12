@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using mooSQL.data;
-using saiflow.AI.Runtime;
-using saiflow.data.Schema;
-using saiflow.engine.Entity;
-using saiflow.engine.Client;
-using saiflow.biz.query;
-using saiflow.hub.Form;
-using saiflow.hub.Logging;
+using sailflow.AI.Runtime;
+using sailflow.data.Schema;
+using sailflow.engine.Entity;
+using sailflow.engine.Client;
+using sailflow.biz.query;
+using sailflow.hub.Form;
+using sailflow.hub.Logging;
 
-namespace saiflow.biz.Bootstrap
+namespace sailflow.biz.Bootstrap
 {
     /// <summary>
     /// Business-side DB bootstrap: core engine tables + optional AI tables + minimal seed.
@@ -244,7 +244,7 @@ namespace saiflow.biz.Bootstrap
 
         private static string MinimalBpmnXml()
         {
-            // 可发布的最小 BPMN：Start → UserTask(R6) → End（sf 命名空间须为 saiflow）
+            // 可发布的最小 BPMN：Start → UserTask(R6) → End（sf 命名空间须为 sailflow）
             return
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<bpmn:definitions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
@@ -252,7 +252,7 @@ namespace saiflow.biz.Bootstrap
                 "xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" " +
                 "xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\" " +
                 "xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\" " +
-                "xmlns:sf=\"http://www.saiflow.com/schema/sf\" " +
+                "xmlns:sf=\"http://www.sailflow.com/schema/sf\" " +
                 "id=\"Definitions_SailSeed\" targetNamespace=\"http://bpmn.io/schema/bpmn\">" +
                 "<bpmn:process id=\"Process_1\" name=\"Sail Seed Hello\" isExecutable=\"true\" " +
                 "sf:code=\"SEED_HELLO\" sf:version=\"1\">" +

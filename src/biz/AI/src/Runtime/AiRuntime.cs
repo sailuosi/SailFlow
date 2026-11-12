@@ -1,10 +1,10 @@
 using System;
 using mooSQL.data;
-using saiflow.AI.Abstractions;
-using saiflow.AI.Entity;
-using saiflow.engine.Client;
+using sailflow.AI.Abstractions;
+using sailflow.AI.Entity;
+using sailflow.engine.Client;
 
-namespace saiflow.AI.Runtime
+namespace sailflow.AI.Runtime
 {
     /// <summary>
     /// Host bootstrap helpers for registering AI business implementations with the engine.

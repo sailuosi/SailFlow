@@ -1,8 +1,8 @@
 using System;
-using saiflow.engine.Entity;
-using saiflow.hub.Logging;
+using sailflow.engine.Entity;
+using sailflow.hub.Logging;
 
-namespace saiflow.engine.Logging
+namespace sailflow.engine.Logging
 {
     /// <summary>
     /// 引擎诊断日志契约。写表仅为默认实现；可替换为文件 / Host Logger 等。

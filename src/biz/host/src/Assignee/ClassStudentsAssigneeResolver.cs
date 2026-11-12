@@ -1,8 +1,8 @@
-using saiflow.assignee;
-using saiflow.assignee.Builtin;
-using saiflow.engine.Common;
+using sailflow.assignee;
+using sailflow.assignee.Builtin;
+using sailflow.engine.Common;
 
-namespace saiflow.biz.Assignee;
+namespace sailflow.biz.Assignee;
 
 /// <summary>
 /// 业务 Type 样例：班级学员签字。Type = <c>Business.ClassStudents</c>。

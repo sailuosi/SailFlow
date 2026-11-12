@@ -1,10 +1,10 @@
-using saiflow.AI.Configuration;
+using sailflow.AI.Configuration;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace saiflow.AI.Implementation
+namespace sailflow.AI.Implementation
 {
     /// <summary>
     /// Supabase RAG service

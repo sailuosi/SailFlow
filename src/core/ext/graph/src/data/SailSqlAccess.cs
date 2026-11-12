@@ -1,6 +1,6 @@
 using mooSQL.data;
 
-namespace saiflow.data
+namespace sailflow.data
 {
     /// <summary>
     /// SQLBuilder 上取带主键仓储（继承 kit 事务）。

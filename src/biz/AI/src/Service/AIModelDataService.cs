@@ -1,13 +1,13 @@
-using saiflow.engine.Client;
+using sailflow.engine.Client;
 using System;
 using System.Collections.Generic;
 using mooSQL.data;
-using saiflow.AI.Configuration;
-using saiflow.AI.Entity;
-using saiflow.AI.Manager;
-using saiflow.data;
+using sailflow.AI.Configuration;
+using sailflow.AI.Entity;
+using sailflow.AI.Manager;
+using sailflow.data;
 
-namespace saiflow.AI.Service
+namespace sailflow.AI.Service
 {
     public class AiModelDataService : IAiModelDataService
     {

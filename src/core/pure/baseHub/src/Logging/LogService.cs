@@ -1,9 +1,9 @@
 using System;
 using System.Threading;
 using mooSQL.data;
-using saiflow.data;
+using sailflow.data;
 
-namespace saiflow.hub.Logging
+namespace sailflow.hub.Logging
 {
     /// <summary>
     /// 作业日志服务（baseHub 无引擎引用）。

@@ -1,4 +1,4 @@
-namespace saiflow.hub.Localize
+namespace sailflow.hub.Localize
 {
     /// <summary>
     /// Language type

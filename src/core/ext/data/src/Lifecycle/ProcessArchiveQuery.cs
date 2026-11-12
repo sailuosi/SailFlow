@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
-using saiflow.data;
-using saiflow.engine.Entity;
-using saiflow.engine.Client;
+using sailflow.data;
+using sailflow.engine.Entity;
+using sailflow.engine.Client;
 
-namespace saiflow.data.Lifecycle
+namespace sailflow.data.Lifecycle
 {
     /// <summary>
     /// 冷表只读查询骨架：按办结年定位 <c>*_hist_YYYY</c>。

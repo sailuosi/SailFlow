@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using saiflow.engine.Client;
-using saiflow.engine.HotShard;
+using sailflow.engine.Client;
+using sailflow.engine.HotShard;
 
-namespace saiflow.data.HotShard
+namespace sailflow.data.HotShard
 {
     /// <summary>
     /// 按 <see cref="SailDataLifecycleOptions.HotShardProcessIds"/> 白名单路由轨迹/变量物理表。

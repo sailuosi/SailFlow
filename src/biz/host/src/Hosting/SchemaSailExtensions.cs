@@ -1,8 +1,8 @@
 using System;
-using saiflow.biz.Bootstrap;
-using saiflow.engine.Hosting;
+using sailflow.biz.Bootstrap;
+using sailflow.engine.Hosting;
 
-namespace saiflow.biz.Hosting;
+namespace sailflow.biz.Hosting;
 
 public static class SchemaSailExtensions
 {

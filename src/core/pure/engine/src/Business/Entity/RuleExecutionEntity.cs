@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace saiflow.engine.Entity
+namespace sailflow.engine.Entity
 {
     public class RuleExecutionEntity
     {

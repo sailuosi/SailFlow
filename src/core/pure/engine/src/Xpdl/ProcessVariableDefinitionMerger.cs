@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using saiflow.engine.Manager;
-using saiflow.engine.Client;
-using saiflow.engine.Xpdl;
+using sailflow.engine.Manager;
+using sailflow.engine.Client;
+using sailflow.engine.Xpdl;
 
-namespace saiflow.engine.Xpdl
+namespace sailflow.engine.Xpdl
 {
     /// <summary>
     /// Injects activity variable definitions from <c>wf_variable</c> after BPMN XML is parsed.

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using mooSQL.data;
 
-namespace saiflow.data.Lifecycle
+namespace sailflow.data.Lifecycle
 {
     /// <summary>按年冷表 ENSURE（从热表零行拷结构；SQLite 友好，其它方言失败可重试/忽略）。</summary>
     public static class HistTableEnsurer

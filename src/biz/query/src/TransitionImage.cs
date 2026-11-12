@@ -1,4 +1,4 @@
-namespace saiflow.biz.query
+namespace sailflow.biz.query
 {
     /// <summary>
     /// Transition Image（查询展示用，非引擎主路径）

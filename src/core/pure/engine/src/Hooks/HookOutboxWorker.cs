@@ -4,11 +4,11 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using mooSQL.data;
-using saiflow.engine.Entity;
-using saiflow.engine.Manager;
-using saiflow.engine.Client;
+using sailflow.engine.Entity;
+using sailflow.engine.Manager;
+using sailflow.engine.Client;
 
-namespace saiflow.engine.Hooks
+namespace sailflow.engine.Hooks
 {
     /// <summary>Outbox 消费：认领与逐条短事务隔离（Phase 2）。</summary>
     public sealed class HookOutboxWorker
@@ -52,7 +52,7 @@ namespace saiflow.engine.Hooks
                 }
                 catch (Exception ex)
                 {
-                    Trace.TraceWarning($"[saiflow] Hook outbox claim failed: {ex.Message}");
+                    Trace.TraceWarning($"[sailflow] Hook outbox claim failed: {ex.Message}");
                     throw;
                 }
             }

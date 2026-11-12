@@ -1,4 +1,4 @@
-namespace saiflow.msg
+namespace sailflow.msg
 {
     /// <summary>
     /// RabbitMQ 连接选项（懒连接；首次 Publish/Subscribe 时建连）。

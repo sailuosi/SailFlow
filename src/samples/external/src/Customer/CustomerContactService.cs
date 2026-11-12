@@ -1,10 +1,10 @@
 using System;
 using Newtonsoft.Json;
-using saiflow.engine.Common;
-using saiflow.engine.External;
-using saiflow.hub.External;
+using sailflow.engine.Common;
+using sailflow.engine.External;
+using sailflow.hub.External;
 
-namespace saiflow.hub.External
+namespace sailflow.hub.External
 {
     /// <summary>
     /// Customer contact service for EV RAG workflows.

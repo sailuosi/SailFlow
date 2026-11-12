@@ -1,8 +1,8 @@
 using System;
-using saiflow.engine.Hosting;
-using saiflow.hub.Hosting;
+using sailflow.engine.Hosting;
+using sailflow.hub.Hosting;
 
-namespace saiflow.biz.Hosting;
+namespace sailflow.biz.Hosting;
 
 /// <summary>
 /// Biz composition：启用内置规则引擎（转发 bizRule）。

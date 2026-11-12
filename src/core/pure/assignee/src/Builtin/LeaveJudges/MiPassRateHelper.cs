@@ -1,9 +1,9 @@
-using saiflow.engine.Assignee;
-using saiflow.engine.Entity;
-using saiflow.engine.Common;
-using saiflow.engine.Xpdl;
+using sailflow.engine.Assignee;
+using sailflow.engine.Entity;
+using sailflow.engine.Common;
+using sailflow.engine.Xpdl;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>会签通过率计算（对齐 ActivityInstanceManager.CheckMIPassRateInfo）。</summary>
 public static class MiPassRateHelper

@@ -1,6 +1,6 @@
 using System;
 
-namespace saiflow.engine.Client;
+namespace sailflow.engine.Client;
 
 /// <summary>
 /// 流程/节点事件响应插槽（对齐 BeeFlow EventHub 角色；起步可为 stub）。

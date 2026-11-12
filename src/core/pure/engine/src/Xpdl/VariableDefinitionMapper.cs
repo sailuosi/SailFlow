@@ -1,9 +1,9 @@
 using System;
-using saiflow.engine.Entity;
-using saiflow.engine.Xpdl;
-using saiflow.WebUtility;
+using sailflow.engine.Entity;
+using sailflow.engine.Xpdl;
+using sailflow.WebUtility;
 
-namespace saiflow.engine.Xpdl
+namespace sailflow.engine.Xpdl
 {
     /// <summary>
     /// Maps <see cref="VariableEntity"/> (wf_variable) to runtime <see cref="VariableDetail"/>.

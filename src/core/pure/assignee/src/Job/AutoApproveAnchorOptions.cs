@@ -1,4 +1,4 @@
-namespace saiflow.assignee.Job;
+namespace sailflow.assignee.Job;
 
 /// <summary>R10：自动审批锚点 Job 选项。</summary>
 public sealed class AutoApproveAnchorOptions

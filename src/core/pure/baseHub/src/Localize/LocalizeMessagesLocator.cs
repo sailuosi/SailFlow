@@ -1,6 +1,6 @@
 using System;
 
-namespace saiflow.hub.Localize
+namespace sailflow.hub.Localize
 {
     /// <summary>
     /// Host-side registration point for <see cref="ILocalizeMessages"/>.

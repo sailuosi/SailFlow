@@ -1,4 +1,4 @@
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>
 /// 可选：管道 <c>WireResolver</c> 时注入 Sail / Registry / Callbacks。

@@ -5,13 +5,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using mooSQL.data;
-using saiflow.engine.Entity;
-using saiflow.engine.Manager;
-using saiflow.engine.Client;
-using saiflow.engine.Common;
-using saiflow.engine.Event;
+using sailflow.engine.Entity;
+using sailflow.engine.Manager;
+using sailflow.engine.Client;
+using sailflow.engine.Common;
+using sailflow.engine.Event;
 
-namespace saiflow.engine.Hooks
+namespace sailflow.engine.Hooks
 {
     /// <summary>Gate / Hook / Notifier 分发与 Outbox 写入。</summary>
     public sealed class FlowCapabilityDispatcher
@@ -108,7 +108,7 @@ namespace saiflow.engine.Hooks
                     })
                     {
                         IsBackground = true,
-                        Name = "saiflow-sync-hook:" + hook.Name,
+                        Name = "sailflow-sync-hook:" + hook.Name,
                     };
                     worker.Start();
                     if (!worker.Join(timeoutMs))
@@ -321,7 +321,7 @@ namespace saiflow.engine.Hooks
                 {
                     Sail.CapabilityMetrics?.IncrementOutboxDead();
                     Trace.TraceWarning(
-                        $"[saiflow] Hook outbox dead-letter id={row.TaskId} kind={row.Kind} handler={row.HandlerName}: {ex.Message}");
+                        $"[sailflow] Hook outbox dead-letter id={row.TaskId} kind={row.Kind} handler={row.HandlerName}: {ex.Message}");
                 }
 
                 return false;

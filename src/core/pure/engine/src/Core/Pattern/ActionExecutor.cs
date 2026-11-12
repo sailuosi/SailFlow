@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
-using saiflow.engine.Xpdl;
-using saiflow.engine.Event;
-using saiflow.engine.Core;
+using sailflow.engine.Xpdl;
+using sailflow.engine.Event;
+using sailflow.engine.Core;
 
-namespace saiflow.engine.Pattern
+namespace sailflow.engine.Pattern
 {
     /// <summary>
-    /// Action Executor — 按 <see cref="saiflow.engine.Actions.ActionMethodRegistry"/> 分发。
+    /// Action Executor — 按 <see cref="sailflow.engine.Actions.ActionMethodRegistry"/> 分发。
     /// </summary>
     internal class ActionExecutor
     {
-        internal static void ExecuteActionList(IList<saiflow.engine.Xpdl.Action> actionList,
+        internal static void ExecuteActionList(IList<sailflow.engine.Xpdl.Action> actionList,
             IEventService eventService)
         {
             if (actionList != null && actionList.Count > 0)
@@ -27,7 +27,7 @@ namespace saiflow.engine.Pattern
             }
         }
 
-        internal static void ExecuteActionListBefore(IList<saiflow.engine.Xpdl.Action> actionList,
+        internal static void ExecuteActionListBefore(IList<sailflow.engine.Xpdl.Action> actionList,
             IEventService eventService)
         {
             if (actionList != null && actionList.Count > 0)
@@ -40,7 +40,7 @@ namespace saiflow.engine.Pattern
             }
         }
 
-        internal static void ExecuteActionListAfter(IList<saiflow.engine.Xpdl.Action> actionList,
+        internal static void ExecuteActionListAfter(IList<sailflow.engine.Xpdl.Action> actionList,
             IEventService eventService)
         {
             if (actionList != null && actionList.Count > 0)
@@ -53,7 +53,7 @@ namespace saiflow.engine.Pattern
             }
         }
 
-        private static void Execute(saiflow.engine.Xpdl.Action action, IEventService eventService)
+        private static void Execute(sailflow.engine.Xpdl.Action action, IEventService eventService)
         {
             if (action.ActionType != ActionTypeEnum.Event)
                 return;

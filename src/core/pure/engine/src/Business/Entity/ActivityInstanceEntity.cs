@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using mooSQL.data;
 
-namespace saiflow.engine.Entity
+namespace sailflow.engine.Entity
 {
     /// <summary>
     /// Activity Instance Entity

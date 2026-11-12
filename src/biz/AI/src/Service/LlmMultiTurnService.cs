@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using saiflow.AI.Configuration;
-using saiflow.AI.Entity;
-using saiflow.AI.Implementation;
-using saiflow.AI.Manager;
-using saiflow.WebUtility;
-using saiflow.engine.Client;
+using sailflow.AI.Configuration;
+using sailflow.AI.Entity;
+using sailflow.AI.Implementation;
+using sailflow.AI.Manager;
+using sailflow.WebUtility;
+using sailflow.engine.Client;
 
-namespace saiflow.AI.Service
+namespace sailflow.AI.Service
 {
     /// <summary>
     /// Multi-turn LLM node service: encapsulates memory_turns and history message list,

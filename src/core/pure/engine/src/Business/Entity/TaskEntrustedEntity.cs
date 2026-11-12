@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace saiflow.engine.Entity
+namespace sailflow.engine.Entity
 {
     /// <summary>
     /// Task Entrusted Entity

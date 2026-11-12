@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
-using saiflow.engine.Client;
+using sailflow.engine.Client;
 
-namespace saiflow.engine.Common
+namespace sailflow.engine.Common
 {
     /// <summary>
     /// Next Step Utility

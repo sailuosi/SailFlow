@@ -1,8 +1,8 @@
 using System;
-using saiflow.engine.Hosting;
-using saiflow.hub.Hosting;
+using sailflow.engine.Hosting;
+using sailflow.hub.Hosting;
 
-namespace saiflow.biz.Hosting;
+namespace sailflow.biz.Hosting;
 
 /// <summary>
 /// Biz composition helper: enable JSON localization (re-exports UseLocalize).

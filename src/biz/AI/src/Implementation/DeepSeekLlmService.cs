@@ -1,8 +1,8 @@
-using saiflow.AI.Entity;
-using saiflow.WebUtility;
-using saiflow.engine.Client;
+using sailflow.AI.Entity;
+using sailflow.WebUtility;
+using sailflow.engine.Client;
 
-namespace saiflow.AI.Implementation
+namespace sailflow.AI.Implementation
 {
     /// <summary>
     /// DeepSeek LLM 服务。

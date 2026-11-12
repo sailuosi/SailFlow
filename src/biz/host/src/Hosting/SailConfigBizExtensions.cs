@@ -1,10 +1,10 @@
 using System;
 using Microsoft.Extensions.Configuration;
-using saiflow.engine.Client;
-using saiflow.engine.Hosting;
+using sailflow.engine.Client;
+using sailflow.engine.Hosting;
 using AppSettingsManager = System.Configuration.ConfigurationManager;
 
-namespace saiflow.biz.Hosting;
+namespace sailflow.biz.Hosting;
 
 /// <summary>
 /// 业务侧配置装载：把 IConfiguration / AppSettings 填入引擎 <see cref="SailConfig"/> 形状后注册。

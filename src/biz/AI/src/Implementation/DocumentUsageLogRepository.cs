@@ -1,5 +1,5 @@
-using saiflow.AI.Configuration;
-using saiflow.AI.Entity;
+using sailflow.AI.Configuration;
+using sailflow.AI.Entity;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace saiflow.AI.Implementation
+namespace sailflow.AI.Implementation
 {
     /// <summary>
     /// Inserts document usage log records into biz_document_usage_log via Supabase REST API.

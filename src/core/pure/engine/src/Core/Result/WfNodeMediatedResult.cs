@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using saiflow.engine.Core;
+using sailflow.engine.Core;
 
-namespace saiflow.engine.Result
+namespace sailflow.engine.Result
 {
     /// <summary>
     /// Node mediator result

@@ -1,9 +1,9 @@
 using System;
 using mooSQL.data;
-using saiflow.hub.Essential;
-using saiflow.hub.Logging;
+using sailflow.hub.Essential;
+using sailflow.hub.Logging;
 
-namespace saiflow.hub.Essential
+namespace sailflow.hub.Essential
 {
     public class MessageMediator
     {

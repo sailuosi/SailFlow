@@ -1,11 +1,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using saiflow.engine.Client;
-using saiflow.engine.Hooks;
-using saiflow.hub.Resource;
+using sailflow.engine.Client;
+using sailflow.engine.Hooks;
+using sailflow.hub.Resource;
 
-namespace saiflow.msg.Notify
+namespace sailflow.msg.Notify
 {
     /// <summary>默认 SMTP 待办邮件（须显式 <see cref="Hosting.TaskMailSailExtensions.UseDefaultTaskMail"/> 注册）。</summary>
     public sealed class DefaultMailTaskNotifier : TaskNotifyChannelBase

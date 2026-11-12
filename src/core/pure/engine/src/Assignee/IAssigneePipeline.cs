@@ -1,6 +1,6 @@
-using saiflow.engine.Common;
+using sailflow.engine.Common;
 
-namespace saiflow.engine.Assignee
+namespace sailflow.engine.Assignee
 {
     /// <summary>
     /// 办理人运行时管道（薄契约）。实现由 <c>sailflow.assignee</c> 经 <c>UseAssignees</c> 注入。

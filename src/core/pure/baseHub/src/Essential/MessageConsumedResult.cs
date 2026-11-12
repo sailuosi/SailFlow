@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace saiflow.hub.Essential
+namespace sailflow.hub.Essential
 {
     /// <summary>
     /// Message Consumed Result

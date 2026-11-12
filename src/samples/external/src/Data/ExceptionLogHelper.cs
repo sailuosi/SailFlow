@@ -1,6 +1,6 @@
 using System;
 
-namespace saiflow.hub.External
+namespace sailflow.hub.External
 {
     /// <summary>
     /// Records plugin exceptions to biz_exception_log in Supabase for troubleshooting.

@@ -1,4 +1,4 @@
-namespace saiflow.AI.Hosting;
+namespace sailflow.AI.Hosting;
 
 public sealed class BizAiOptions
 {

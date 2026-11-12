@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace saiflow.engine.Client;
+namespace sailflow.engine.Client;
 
 /// <summary>
 /// 抽象数据库工厂。主 API 返回 <see cref="DBInstance"/>；快捷方法返回 <see cref="SQLBuilder"/>。

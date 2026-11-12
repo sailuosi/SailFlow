@@ -1,4 +1,4 @@
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>
 /// R10：空集处置（选型，非 Filter 长链）。

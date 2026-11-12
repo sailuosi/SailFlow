@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
 
-namespace saiflow.engine.Config
+namespace sailflow.engine.Config
 {
     /// <summary>
     /// Workflow Paramters Configuration
@@ -28,6 +28,6 @@ namespace saiflow.engine.Config
         /// will fire to the external method
         /// 本地服务文件路径设置，用于调用外部服务dll
         /// </summary>
-        internal static readonly string EXTERNAL_SERVICE_FILE_PATH = "Plugins/saiflow.hub.External.dll";
+        internal static readonly string EXTERNAL_SERVICE_FILE_PATH = "Plugins/sailflow.hub.External.dll";
     }
 }

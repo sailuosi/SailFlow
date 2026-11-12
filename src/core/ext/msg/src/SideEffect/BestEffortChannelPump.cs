@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace saiflow.msg.SideEffect
+namespace sailflow.msg.SideEffect
 {
     /// <summary>
     /// BestEffort 生产/消费泵：有界 <see cref="Channel{T}"/> + <b>单消费者串行</b>。
@@ -116,7 +116,7 @@ namespace saiflow.msg.SideEffect
                     }
                     catch (Exception ex)
                     {
-                        Trace.TraceWarning($"[saiflow.msg] BestEffortChannelPump consume failed: {ex.Message}");
+                        Trace.TraceWarning($"[sailflow.msg] BestEffortChannelPump consume failed: {ex.Message}");
                     }
                 }
             }
@@ -126,7 +126,7 @@ namespace saiflow.msg.SideEffect
             }
             catch (Exception ex)
             {
-                Trace.TraceWarning($"[saiflow.msg] BestEffortChannelPump loop ended: {ex.Message}");
+                Trace.TraceWarning($"[sailflow.msg] BestEffortChannelPump loop ended: {ex.Message}");
             }
         }
     }

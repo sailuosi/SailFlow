@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace saiflow.engine.Utility
+namespace sailflow.engine.Utility
 {
     /// <summary>
     /// Serialization Helper

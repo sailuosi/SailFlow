@@ -1,6 +1,6 @@
-using saiflow.engine.Assignee;
+using sailflow.engine.Assignee;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>默认空人：拒绝推进（R4）。Key=<c>reject</c>，亦匹配产品码 <c>2</c>。</summary>
 public class RejectEmptyAction : IAssigneeEmptyAction

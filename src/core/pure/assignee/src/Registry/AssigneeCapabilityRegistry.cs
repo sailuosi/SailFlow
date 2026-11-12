@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>按 Type:string 注册；后写覆盖前者（业务可覆写内置）。R9：同码覆盖强制可观测。</summary>
 public class AssigneeCapabilityRegistry

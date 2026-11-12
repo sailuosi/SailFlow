@@ -1,17 +1,17 @@
-using saiflow.assignee.Adapt;
-using saiflow.assignee.Builtin;
-using saiflow.engine.Assignee;
-using saiflow.engine.Client;
-using saiflow.engine.Hosting;
+using sailflow.assignee.Adapt;
+using sailflow.assignee.Builtin;
+using sailflow.engine.Assignee;
+using sailflow.engine.Client;
+using sailflow.engine.Hosting;
 
-namespace saiflow.assignee.Hosting;
+namespace sailflow.assignee.Hosting;
 
 /// <summary>
 /// R10：<c>UseAssign</c> 总包（Startup 心智）。<see cref="UseAssignees"/> 为其无配置别名。
 /// </summary>
 public static class SailAssignExtensions
 {
-    const string PendingBuildersKey = "saiflow.assignee.assign.builders";
+    const string PendingBuildersKey = "sailflow.assignee.assign.builders";
 
     /// <summary>
     /// 启用办理人管道，并在子 Builder 上 <c>AddResolver&lt;T&gt;</c> / <c>AddFilter</c> / <c>AddEmptyAction</c>。

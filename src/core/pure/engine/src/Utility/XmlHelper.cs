@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Xml;
 using System.Xml.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace saiflow.engine.Utility
+namespace sailflow.engine.Utility
 {
     /// <summary>
     /// XMLHelper 

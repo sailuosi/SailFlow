@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Concurrent;
 using mooSQL.data;
-using saiflow.engine.Entity;
-using saiflow.engine.Client;
-using saiflow.engine.Logging;
-using saiflow.hub.Logging;
+using sailflow.engine.Entity;
+using sailflow.engine.Client;
+using sailflow.engine.Logging;
+using sailflow.hub.Logging;
 
-namespace saiflow.data.Logging
+namespace sailflow.data.Logging
 {
     /// <summary>
     /// 默认日志 Sink：写库表。库连接 / 分表粒度读 <see cref="SailDataLifecycleOptions"/>。

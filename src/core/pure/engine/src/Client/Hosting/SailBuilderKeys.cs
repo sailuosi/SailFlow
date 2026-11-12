@@ -1,4 +1,4 @@
-namespace saiflow.engine.Hosting;
+namespace sailflow.engine.Hosting;
 
 public static class SailBuilderKeys
 {

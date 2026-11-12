@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace saiflow.hub.Essential
+namespace sailflow.hub.Essential
 {
     /// <summary>
     /// Message Entity

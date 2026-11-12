@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace saiflow.engine.Entity
+namespace sailflow.engine.Entity
 {
     /// <summary>Hook / Notifier 异步 Outbox（Phase 1 同库落表）。</summary>
     [SooTable(Name = "wf_hook_outbox", Caption = "钩子Outbox", Type = DBTableType.Table)]

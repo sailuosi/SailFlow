@@ -1,6 +1,6 @@
 using System;
 
-namespace saiflow.msg.SideEffect
+namespace sailflow.msg.SideEffect
 {
     /// <summary>
     /// BestEffort 进程内 Channel 参数：有界、默认可丢；单消费者串行（避免文件等资源并发写坏）。

@@ -1,6 +1,6 @@
-using saiflow.engine.Common;
+using sailflow.engine.Common;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>
 /// 业务动态取人。Params.callback → <see cref="AssigneeBusinessCallbackRegistry"/>。

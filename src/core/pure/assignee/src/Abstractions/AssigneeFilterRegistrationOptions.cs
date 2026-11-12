@@ -1,4 +1,4 @@
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>Filter 注册选项；未设 Order 时按注册顺序递增。</summary>
 public sealed class AssigneeFilterRegistrationOptions

@@ -1,6 +1,6 @@
-using saiflow.engine.Assignee;
+using sailflow.engine.Assignee;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>组内协办（人数/比例）+ 组间 AND/OR。禁止 sealed。</summary>
 public class GroupCollaborateLeaveJudge : IActivityLeaveJudge

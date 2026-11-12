@@ -1,6 +1,6 @@
 using System;
 
-namespace saiflow.hub.Form
+namespace sailflow.hub.Form
 {
     /// <summary>
     /// Host-side registration point for <see cref="IFormService"/>.

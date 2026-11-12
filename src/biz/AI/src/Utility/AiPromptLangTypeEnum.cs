@@ -1,7 +1,7 @@
-namespace saiflow.AI.Utility
+namespace sailflow.AI.Utility
 {
     /// <summary>
-    /// AI 提示词/语种检测用语言类型（与 <c>saiflow.hub.Localize.LangTypeEnum</c> 无关）。
+    /// AI 提示词/语种检测用语言类型（与 <c>sailflow.hub.Localize.LangTypeEnum</c> 无关）。
     /// </summary>
     public enum AiPromptLangTypeEnum
     {

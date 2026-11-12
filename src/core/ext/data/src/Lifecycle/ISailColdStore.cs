@@ -1,8 +1,8 @@
 using System;
 using mooSQL.data;
-using saiflow.engine.Client;
+using sailflow.engine.Client;
 
-namespace saiflow.data.Lifecycle
+namespace sailflow.data.Lifecycle
 {
     /// <summary>
     /// 冷存储访问抽象。默认同库；配置切冷库后仅改实现，热路径仍用 <see cref="SailClient.UseRunSQL"/>。

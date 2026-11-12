@@ -1,9 +1,9 @@
-using saiflow.AI.Configuration;
-using saiflow.AI.Entity;
-using saiflow.AI.Implementation;
-using saiflow.WebUtility;
+using sailflow.AI.Configuration;
+using sailflow.AI.Entity;
+using sailflow.AI.Implementation;
+using sailflow.WebUtility;
 
-namespace saiflow.AI.Service
+namespace sailflow.AI.Service
 {
     /// <summary>
     /// Generates BPMN JSON from natural language using the configured AI provider.

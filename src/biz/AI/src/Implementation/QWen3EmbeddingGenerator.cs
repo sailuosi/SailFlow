@@ -3,13 +3,13 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace saiflow.AI.Implementation
+namespace sailflow.AI.Implementation
 {
     /// <summary>
     /// QWen3-Embedding 向量生成器，使用 DashScope 兼容模式 API
     /// BaseUrl、Model、Endpoint 均从配置文件读取，不在代码中指定默认值
     /// </summary>
-    public class QWen3EmbeddingGenerator : saiflow.AI.Service.IEmbeddingGenerator
+    public class QWen3EmbeddingGenerator : sailflow.AI.Service.IEmbeddingGenerator
     {
         private readonly string _apiKey;
         private readonly string _apiUrl;

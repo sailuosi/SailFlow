@@ -1,6 +1,6 @@
-using saiflow.msg.Notify;
+using sailflow.msg.Notify;
 
-namespace saiflow.msg.SideEffect
+namespace sailflow.msg.SideEffect
 {
     /// <summary>
     /// Reliable 待办推送骨架：走引擎 AsyncOutbox；失败重新抛出供 Outbox 重试 / 死信。

@@ -2,21 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using saiflow.data;
-using saiflow.hub.Localize;
-using saiflow.engine.Common;
-using saiflow.engine.Xpdl;
-using saiflow.engine.Entity;
-using saiflow.engine.Manager;
-using saiflow.engine.Result;
-using saiflow.engine.Event;
-using saiflow.engine.Runtime;
-using saiflow.engine.Client;
+using sailflow.data;
+using sailflow.hub.Localize;
+using sailflow.engine.Common;
+using sailflow.engine.Xpdl;
+using sailflow.engine.Entity;
+using sailflow.engine.Manager;
+using sailflow.engine.Result;
+using sailflow.engine.Event;
+using sailflow.engine.Runtime;
+using sailflow.engine.Client;
 using mooSQL.data;
-using saiflow.engine.Runtime;
-using saiflow.engine.Hooks;
+using sailflow.engine.Runtime;
+using sailflow.engine.Hooks;
 
-namespace saiflow.engine.Service
+namespace sailflow.engine.Service
 {
     /// <summary>
     /// Workflow Service - Process Execution
@@ -681,7 +681,7 @@ namespace saiflow.engine.Service
             catch (System.Exception e)
             {
                 resendResult.Status = WfExecutedStatus.Failed;
-                // 优先带 saiflow 栈帧，避免只剩 InnerException 的 NRE 原文
+                // 优先带 sailflow 栈帧，避免只剩 InnerException 的 NRE 原文
                 var frame = FlattenExceptionFrames(e);
                 var error = string.IsNullOrEmpty(frame) ? (e.InnerException?.Message ?? e.Message) : frame;
                 resendResult.Message = Sail.Messages.GetEngineMessage("workflowservice.resendprocess.error", error);
@@ -701,7 +701,7 @@ namespace saiflow.engine.Service
                 foreach (var line in cur.StackTrace.Split('\n'))
                 {
                     var t = line.Trim();
-                    if (t.Contains("saiflow", StringComparison.OrdinalIgnoreCase))
+                    if (t.Contains("sailflow", StringComparison.OrdinalIgnoreCase))
                     {
                         parts.Add(t);
                         break;

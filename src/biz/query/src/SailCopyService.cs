@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
-using saiflow.data;
-using saiflow.engine.Client;
+using sailflow.data;
+using sailflow.engine.Client;
 
-namespace saiflow.biz.query
+namespace sailflow.biz.query
 {
     /// <summary>流程抄送产品查询/写入（sf_process_instance_copy）。</summary>
     public class SailCopyService

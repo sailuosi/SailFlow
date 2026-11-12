@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using saiflow.engine.Common;
-using saiflow.engine.Xpdl;
-using saiflow.engine.Entity;
-using saiflow.engine.Manager;
-using saiflow.engine.Utility;
-using saiflow.engine.Xpdl;
+using sailflow.engine.Common;
+using sailflow.engine.Xpdl;
+using sailflow.engine.Entity;
+using sailflow.engine.Manager;
+using sailflow.engine.Utility;
+using sailflow.engine.Xpdl;
 
-using saiflow.engine.Client;
-namespace saiflow.engine.Xpdl
+using sailflow.engine.Client;
+namespace sailflow.engine.Xpdl
 {
     /// <summary>
     /// XPDL Helper
@@ -172,7 +172,12 @@ namespace saiflow.engine.Xpdl
         {
             var nsmgr = new XmlNamespaceManager(document.NameTable);
             nsmgr.AddNamespace(XPDLDefinition.BPMN_NameSpacePrefix, XPDLDefinition.BPMN_NameSpacePrefix_Value);
-            nsmgr.AddNamespace(XPDLDefinition.Sf_NameSpacePrefix, XPDLDefinition.Sf_NameSpacePrefix_Value);
+
+            // Prefer the document's declared sf URI so legacy saiflow.com XML still resolves.
+            var sfUri = document?.DocumentElement?.GetNamespaceOfPrefix(XPDLDefinition.Sf_NameSpacePrefix);
+            if (string.IsNullOrEmpty(sfUri))
+                sfUri = XPDLDefinition.Sf_NameSpacePrefix_Value;
+            nsmgr.AddNamespace(XPDLDefinition.Sf_NameSpacePrefix, sfUri);
 
             if (isBPMNDIContained)
             {

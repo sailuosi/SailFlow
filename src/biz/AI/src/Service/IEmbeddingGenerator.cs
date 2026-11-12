@@ -1,4 +1,4 @@
-namespace saiflow.AI.Service
+namespace sailflow.AI.Service
 {
     /// <summary>
     /// 文本向量嵌入生成器接口

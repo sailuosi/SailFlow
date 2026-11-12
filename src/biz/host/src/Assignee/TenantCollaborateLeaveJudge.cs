@@ -1,8 +1,8 @@
-using saiflow.assignee;
-using saiflow.assignee.Builtin;
-using saiflow.engine.Assignee;
+using sailflow.assignee;
+using sailflow.assignee.Builtin;
+using sailflow.engine.Assignee;
 
-namespace saiflow.biz.Assignee;
+namespace sailflow.biz.Assignee;
 
 /// <summary>
 /// 同码覆写样例：仍用 Type=<c>Collaborate</c>，在内置协办前加租户钩子。

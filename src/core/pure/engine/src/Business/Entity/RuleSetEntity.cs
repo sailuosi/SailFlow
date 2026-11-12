@@ -1,8 +1,8 @@
 using System;
-using saiflow.engine.Common;
+using sailflow.engine.Common;
 using mooSQL.data;
 
-namespace saiflow.engine.Entity
+namespace sailflow.engine.Entity
 {
     /// <summary>
     /// Rule set definition entity (wf_rule_set)

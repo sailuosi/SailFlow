@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using saiflow.engine.Hooks;
+using sailflow.engine.Hooks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace saiflow.engine.tests;
+namespace sailflow.engine.tests;
 
 /// <summary>Soft perf smoke — baseline documented in phase3b progress doc.</summary>
 public sealed class FlowCapabilityMatchPerfTests

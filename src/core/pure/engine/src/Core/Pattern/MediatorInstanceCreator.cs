@@ -1,15 +1,15 @@
 
 using System;
-using saiflow.engine.Common;
-using saiflow.data;
+using sailflow.engine.Common;
+using sailflow.data;
 using mooSQL.data;
-using saiflow.hub.Localize;
-using saiflow.engine.Xpdl;
-using saiflow.engine.Manager;
-using saiflow.engine.Client;
-using saiflow.engine.Core;
+using sailflow.hub.Localize;
+using sailflow.engine.Xpdl;
+using sailflow.engine.Manager;
+using sailflow.engine.Client;
+using sailflow.engine.Core;
 
-namespace saiflow.engine.Pattern
+namespace sailflow.engine.Pattern
 {
     /// <summary>
     /// Mediator 实例创建（A 协作者，挂 <see cref="Factories.DefaultMediatorFactory"/>；非 static 表面）。

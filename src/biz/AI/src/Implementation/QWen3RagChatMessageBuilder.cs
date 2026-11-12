@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using saiflow.AI.Configuration;
-using saiflow.AI.Entity;
-using saiflow.AI.Manager;
-using saiflow.AI.Service;
-using saiflow.WebUtility;
-using saiflow.engine.Client;
+using sailflow.AI.Configuration;
+using sailflow.AI.Entity;
+using sailflow.AI.Manager;
+using sailflow.AI.Service;
+using sailflow.WebUtility;
+using sailflow.engine.Client;
 
-namespace saiflow.AI.Implementation
+namespace sailflow.AI.Implementation
 {
     /// <summary>
     /// RAG chat message builder using QWen3-Embedding for vector generation.

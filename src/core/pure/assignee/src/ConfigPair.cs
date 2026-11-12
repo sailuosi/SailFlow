@@ -1,4 +1,4 @@
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>配置对：Type（string）+ Params。禁止用 enum 作分发键。</summary>
 public class ConfigPair

@@ -1,9 +1,9 @@
-using saiflow.engine.Client;
-using saiflow.engine.Common;
-using saiflow.engine.Xpdl;
-using saiflow.hub.Resource;
+using sailflow.engine.Client;
+using sailflow.engine.Common;
+using sailflow.engine.Xpdl;
+using sailflow.hub.Resource;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>
 /// 角色/群组展开。Params.roleIds[]；或 useActivityRoles=true 时按节点定义角色展开。

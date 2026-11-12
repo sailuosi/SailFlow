@@ -1,8 +1,8 @@
 using System;
-using saiflow.engine.Hosting;
-using saiflow.hub.Resource;
+using sailflow.engine.Hosting;
+using sailflow.hub.Resource;
 
-namespace saiflow.hub.Hosting
+namespace sailflow.hub.Hosting
 {
     /// <summary>
     /// Resource 插槽骨架：引擎无组织人员表；须由宿主传入 <see cref="IResourceService"/> 实现。

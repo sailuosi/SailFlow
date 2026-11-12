@@ -2,11 +2,11 @@
 
   <PropertyGroup>
 	  <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
-    <PackageId>saiflow.data</PackageId>
+    <PackageId>sailflow.graph</PackageId>
     <Version>3.5.0</Version>
-    <Title>Sailflow Data Access Layer</Title>
-    <Description>Data access layer for saiflow.NET via mooSQL (SailDbAccess / SQLBuilder / SooRepository).</Description>
-    <Product>saiflow.NET</Product>
+    <Title>Sailflow Graph</Title>
+    <Description>Graph module for sailflow.NET.</Description>
+    <Product>sailflow.NET</Product>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 

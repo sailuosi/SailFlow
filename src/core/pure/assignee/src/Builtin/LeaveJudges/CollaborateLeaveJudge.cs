@@ -1,7 +1,7 @@
-using saiflow.engine.Assignee;
-using saiflow.engine.Entity;
+using sailflow.engine.Assignee;
+using sailflow.engine.Entity;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>
 /// 协办：按主活动 MergeType/CompareType/CompleteOrder，或 Params completeCount|completeRate。

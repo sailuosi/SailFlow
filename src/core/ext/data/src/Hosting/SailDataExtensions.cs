@@ -1,12 +1,12 @@
 using System;
-using saiflow.data.HotShard;
-using saiflow.engine.Client;
-using saiflow.engine.Hosting;
+using sailflow.data.HotShard;
+using sailflow.engine.Client;
+using sailflow.engine.Hosting;
 
-namespace saiflow.data.Hosting
+namespace sailflow.data.Hosting
 {
     /// <summary>
-    /// 注册 saiflow.data：日志 Sink + 可选热表白名单分表。归档 API / 立刻归档 Hook 为独立扩展。
+    /// 注册 sailflow.data：日志 Sink + 可选热表白名单分表。归档 API / 立刻归档 Hook 为独立扩展。
     /// </summary>
     public static class SailDataExtensions
     {

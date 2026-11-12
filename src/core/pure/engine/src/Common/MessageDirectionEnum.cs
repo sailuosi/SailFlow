@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace saiflow.engine.Common
+namespace sailflow.engine.Common
 {
     /// <summary>
     /// Message Direction Type

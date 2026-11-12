@@ -1,7 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace saiflow.hub.External
+namespace sailflow.hub.External
 {
     /// <summary>
     /// Extracts contact info (name, mobile, telephone, wechat, email) from customer reply text using regex.

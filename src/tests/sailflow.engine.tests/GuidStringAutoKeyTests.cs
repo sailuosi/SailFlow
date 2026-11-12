@@ -2,10 +2,10 @@ using System;
 using System.Linq;
 using System.Reflection;
 using mooSQL.data;
-using saiflow.engine.Entity;
+using sailflow.engine.Entity;
 using Xunit;
 
-namespace saiflow.engine.tests
+namespace sailflow.engine.tests
 {
     /// <summary>Guid 字符串主键 / AutoKey 冒烟（不落库）。</summary>
     public class GuidStringAutoKeyTests

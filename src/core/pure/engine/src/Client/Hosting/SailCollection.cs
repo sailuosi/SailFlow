@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using saiflow.engine.Client;
+using sailflow.engine.Client;
 
-namespace saiflow.engine.Hosting;
+namespace sailflow.engine.Hosting;
 
 public sealed class SailCollection : List<SailFeatureDescriptor>, ISailCollection
 {

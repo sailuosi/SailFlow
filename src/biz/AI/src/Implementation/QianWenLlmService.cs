@@ -1,12 +1,12 @@
-using saiflow.AI.Entity;
-using saiflow.AI.Utility;
-using saiflow.WebUtility;
-using saiflow.engine.Client;
+using sailflow.AI.Entity;
+using sailflow.AI.Utility;
+using sailflow.WebUtility;
+using sailflow.engine.Client;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace saiflow.AI.Implementation
+namespace sailflow.AI.Implementation
 {
     /// <summary>
     /// 千问 LLM 服务。baseUrl 由调用方传入，调用方需严格区分配置来源：

@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace saiflow.data.Schema
+namespace sailflow.data.Schema
 {
     /// <summary>
     /// P0：待办/实例热路径索引（IF NOT EXISTS；方言以 SQLite 为主，其它库失败则忽略）。

@@ -5,9 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>sailflow.data</PackageId>
-    <RootNamespace>saiflow.data</RootNamespace>
+    <RootNamespace>sailflow.data</RootNamespace>
     <AssemblyName>sailflow.data</AssemblyName>
-    <Description>Sailflow data lifecycle: hot/cold archive, cold store, table log sink, data-management hooks. (PackageId sailflow.data — basis already owns NuGet id saiflow.data for repository helpers.)</Description>
+    <Description>Sailflow data lifecycle: hot/cold archive, cold store, table log sink, data-management hooks.</Description>
     <LangVersion>14.0</LangVersion>
   </PropertyGroup>
 

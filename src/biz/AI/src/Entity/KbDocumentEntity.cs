@@ -1,6 +1,6 @@
 using mooSQL.data;
 
-namespace saiflow.AI.Entity
+namespace sailflow.AI.Entity
 {
     /// <summary>
     /// Knowledge Base Document Entity

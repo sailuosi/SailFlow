@@ -1,10 +1,10 @@
 using System.Text.Json;
 using mooSQL.data;
-using saiflow.engine.Client;
-using saiflow.engine.Entity;
-using saiflow.engine.Manager;
+using sailflow.engine.Client;
+using sailflow.engine.Entity;
+using sailflow.engine.Manager;
 
-namespace saiflow.assignee.Store;
+namespace sailflow.assignee.Store;
 
 /// <summary>将自动审批锚点写入 <c>wf_hook_outbox</c>（Kind=<see cref="HookOutboxKinds.AssigneeAutoApprove"/>）。</summary>
 public sealed class HookOutboxAutoApproveAnchorStore : IAutoApproveAnchorStore

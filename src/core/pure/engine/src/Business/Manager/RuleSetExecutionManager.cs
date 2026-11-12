@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using saiflow.engine.Entity;
-using saiflow.engine.Client;
-using saiflow.engine.Common;
-using saiflow.engine.Rules;
+using sailflow.engine.Entity;
+using sailflow.engine.Client;
+using sailflow.engine.Common;
+using sailflow.engine.Rules;
 
-namespace saiflow.engine.Manager
+namespace sailflow.engine.Manager
 {
     /// <summary>
     /// 按 <c>wf_rule_set.mode</c> 分派到已注册的 <see cref="IRuleEngine"/>（实现由业务侧挂载）。

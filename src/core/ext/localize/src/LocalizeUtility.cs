@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace saiflow.hub.Localize
+namespace sailflow.hub.Localize
 {
     /// <summary>
     /// Localization Help Tool
@@ -54,8 +54,8 @@ namespace saiflow.hub.Localize
         private static Dictionary<LangTypeEnum, string> GetJSONFileNameByProject(ProjectTypeEnum prjType)
         {
             var dictLang = new Dictionary<LangTypeEnum, string>();
-            dictLang[LangTypeEnum.en] = string.Format("saiflow.hub.Localize.{0}.en.json", prjType.ToString());
-            dictLang[LangTypeEnum.zh] = string.Format("saiflow.hub.Localize.{0}.zh.json", prjType.ToString());
+            dictLang[LangTypeEnum.en] = string.Format("sailflow.hub.Localize.{0}.en.json", prjType.ToString());
+            dictLang[LangTypeEnum.zh] = string.Format("sailflow.hub.Localize.{0}.zh.json", prjType.ToString());
 
             return dictLang;
         }
@@ -73,8 +73,8 @@ namespace saiflow.hub.Localize
             if (stream == null)
             {
                 // 兼容未设置 LogicalName 时 SDK 默认名：sailflow.localize.src.Engine.en.json
-                var suffix = resourceName.StartsWith("saiflow.hub.Localize.", StringComparison.Ordinal)
-                    ? resourceName.Substring("saiflow.hub.Localize.".Length)
+                var suffix = resourceName.StartsWith("sailflow.hub.Localize.", StringComparison.Ordinal)
+                    ? resourceName.Substring("sailflow.hub.Localize.".Length)
                     : resourceName;
                 stream = assembly.GetManifestResourceNames()
                     .Where(n => n.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)

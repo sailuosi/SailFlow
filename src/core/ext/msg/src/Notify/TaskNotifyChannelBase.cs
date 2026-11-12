@@ -2,9 +2,9 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using saiflow.engine.Hooks;
+using sailflow.engine.Hooks;
 
-namespace saiflow.msg.Notify
+namespace sailflow.msg.Notify
 {
     /// <summary>待办推送通道骨架：模板方法 + 默认失败隔离（不向外抛）。</summary>
     public abstract class TaskNotifyChannelBase : ITaskNotifier
@@ -46,11 +46,11 @@ namespace saiflow.msg.Notify
 
         protected virtual void OnSucceeded(TaskNotifyContext ctx) =>
             Trace.TraceInformation(
-                $"[saiflow.msg] Notifier '{Name}' succeeded kind={ctx.Kind} process={ctx.ProcessCode} task={ctx.TaskId} intent={GetIntent(ctx)}");
+                $"[sailflow.msg] Notifier '{Name}' succeeded kind={ctx.Kind} process={ctx.ProcessCode} task={ctx.TaskId} intent={GetIntent(ctx)}");
 
         protected virtual void OnFailed(TaskNotifyContext ctx, Exception ex) =>
             Trace.TraceWarning(
-                $"[saiflow.msg] Notifier '{Name}' failed kind={ctx.Kind} process={ctx.ProcessCode} task={ctx.TaskId} intent={GetIntent(ctx)}: {ex.Message}");
+                $"[sailflow.msg] Notifier '{Name}' failed kind={ctx.Kind} process={ctx.ProcessCode} task={ctx.TaskId} intent={GetIntent(ctx)}: {ex.Message}");
 
         protected static TaskNotifyMessageIntent GetIntent(TaskNotifyContext ctx) =>
             ctx == null ? TaskNotifyMessageIntent.Open : TaskNotifyMessageIntentMapping.FromKind(ctx.Kind);

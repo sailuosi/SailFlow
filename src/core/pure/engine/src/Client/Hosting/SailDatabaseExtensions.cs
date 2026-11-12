@@ -1,8 +1,8 @@
 using System;
 using mooSQL.data;
-using saiflow.engine.Client;
+using sailflow.engine.Client;
 
-namespace saiflow.engine.Hosting;
+namespace sailflow.engine.Hosting;
 
 public static class SailDatabaseExtensions
 {

@@ -1,10 +1,10 @@
 using System;
 using Microsoft.Extensions.Logging;
-using saiflow.engine.Entity;
-using saiflow.engine.Logging;
-using saiflow.hub.Logging;
+using sailflow.engine.Entity;
+using sailflow.engine.Logging;
+using sailflow.hub.Logging;
 
-namespace saiflow.data.Logging
+namespace sailflow.data.Logging
 {
     /// <summary>
     /// 转发到 <see cref="ILogger"/> 的引擎日志 Sink。由宿主在 <c>LogSinkKind=HostLogger</c> 时注入。
@@ -17,8 +17,8 @@ namespace saiflow.data.Logging
         public HostLoggerEngineLogSink(ILoggerFactory loggerFactory)
         {
             ArgumentNullException.ThrowIfNull(loggerFactory);
-            _engine = loggerFactory.CreateLogger("saiflow.engine");
-            _job = loggerFactory.CreateLogger("saiflow.engine.job");
+            _engine = loggerFactory.CreateLogger("sailflow.engine");
+            _job = loggerFactory.CreateLogger("sailflow.engine.job");
         }
 
         public HostLoggerEngineLogSink(ILogger engineLogger, ILogger jobLogger = null)

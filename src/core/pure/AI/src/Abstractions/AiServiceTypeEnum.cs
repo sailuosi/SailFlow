@@ -1,4 +1,4 @@
-namespace saiflow.AI.Abstractions
+namespace sailflow.AI.Abstractions
 {
     /// <summary>
     /// AI 节点服务类型（引擎 Xpdl 与 biz.AI 共用契约）。

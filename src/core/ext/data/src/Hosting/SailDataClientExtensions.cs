@@ -1,11 +1,11 @@
 using System;
 using System.Runtime.CompilerServices;
-using saiflow.data.Lifecycle;
-using saiflow.data.Logging;
-using saiflow.engine.Client;
-using saiflow.engine.Logging;
+using sailflow.data.Lifecycle;
+using sailflow.data.Logging;
+using sailflow.engine.Client;
+using sailflow.engine.Logging;
 
-namespace saiflow.data.Hosting
+namespace sailflow.data.Hosting
 {
     /// <summary>热→冷归档 / 冷存储 / 默认 Table 日志 Sink 的 Client 扩展。</summary>
     public static class SailDataClientExtensions

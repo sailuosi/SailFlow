@@ -1,7 +1,7 @@
 using System.Globalization;
-using saiflow.engine.Common;
+using sailflow.engine.Common;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>固定人：Params.users = [{userId,userName,groupId?,groupRole?}, ...] 或 userIds 逗号串。禁止 sealed。</summary>
 public class FixedUsersAssigneeResolver : IAssigneeResolver

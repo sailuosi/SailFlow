@@ -1,6 +1,6 @@
-using saiflow.engine.Common;
+using sailflow.engine.Common;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>
 /// 发起人自选：与 Specific 相同，吃 NextActivityPerformers；required=true 时无数据返回空列表由上层决定。

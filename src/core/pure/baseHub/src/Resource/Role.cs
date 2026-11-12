@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace saiflow.hub.Resource
+namespace sailflow.hub.Resource
 {
     /// <summary>
     /// Workflow module - Role Entity

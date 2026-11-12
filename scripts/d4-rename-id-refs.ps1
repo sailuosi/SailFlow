@@ -4,7 +4,7 @@ $roots = @(
     "C:\sleveen\code\gitee\sailflow\src\biz\query",
     "C:\sleveen\code\gitee\sailflow\src\biz\host",
     "C:\sleveen\code\gitee\sailflow\src\tests",
-    "C:\sleveen\code\gitee\sleveen-admin\backend\saiflow"
+    "C:\sleveen\code\gitee\sleveen-admin\backend\__KEEP_sailflow__"
 )
 $excludeDir = [regex]::Escape("biz\AI")
 

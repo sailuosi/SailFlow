@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
-    <PackageId>saiflow.biz.query</PackageId>
-    <RootNamespace>saiflow.biz.query</RootNamespace>
-    <AssemblyName>saiflow.biz.query</AssemblyName>
+    <PackageId>sailflow.biz.query</PackageId>
+    <RootNamespace>sailflow.biz.query</RootNamespace>
+    <AssemblyName>sailflow.biz.query</AssemblyName>
     <Description>Business-side query APIs (inbox, instance/history lookups) independent of the workflow engine runtime.</Description>
     <LangVersion>14.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>

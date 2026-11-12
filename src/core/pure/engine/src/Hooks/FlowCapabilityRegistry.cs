@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using saiflow.engine.Client;
+using sailflow.engine.Client;
 
-namespace saiflow.engine.Hooks
+namespace sailflow.engine.Hooks
 {
     /// <summary>
     /// Client 级 Gate / Hook / Notifier 注册表；同名后注册覆盖并 Warning。
@@ -122,6 +122,6 @@ namespace saiflow.engine.Hooks
             };
 
         private static void TraceWarning(string message) =>
-            Trace.TraceWarning("[saiflow.engine.Hooks] " + message);
+            Trace.TraceWarning("[sailflow.engine.Hooks] " + message);
     }
 }

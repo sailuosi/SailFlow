@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace saiflow.AI.Entity
+namespace sailflow.AI.Entity
 {
     [SooTable(Name = "ai_activity_config", Caption = "AI 活动配置", Type = DBTableType.Table)]
     public class AiActivityConfigEntity

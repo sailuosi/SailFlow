@@ -1,11 +1,11 @@
-using saiflow.AI.Utility;
+using sailflow.AI.Utility;
 
-namespace saiflow.AI.Implementation
+namespace sailflow.AI.Implementation
 {
     /// <summary>
     /// OpenAI 兼容 embedding 向量生成器，支持从 ai_model_provider 读取 BaseUrl、ModelName
     /// </summary>
-    public class OpenAiEmbeddingGenerator : saiflow.AI.Service.IEmbeddingGenerator
+    public class OpenAiEmbeddingGenerator : sailflow.AI.Service.IEmbeddingGenerator
     {
         private readonly string _apiKey;
         private readonly string _baseUrl;

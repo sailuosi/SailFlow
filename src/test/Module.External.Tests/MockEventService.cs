@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using mooSQL.data;
-using saiflow.engine.Common;
-using saiflow.engine.Event;
+using sailflow.engine.Common;
+using sailflow.engine.Event;
 
-namespace saiflow.hub.External.Tests
+namespace sailflow.hub.External.Tests
 {
     /// <summary>
     /// In-memory IEventService for testing CustomerExtractService, CustomerSaveService and MessageService

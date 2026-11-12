@@ -1,6 +1,6 @@
 using System;
 
-namespace saiflow.hub.Resource
+namespace sailflow.hub.Resource
 {
     /// <summary>
     /// Host registration point for <see cref="IDeptService"/>.

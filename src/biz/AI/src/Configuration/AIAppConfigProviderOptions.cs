@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace saiflow.AI.Configuration
+namespace sailflow.AI.Configuration
 {
     /// <summary>
     /// Simplified AI provider options loader.

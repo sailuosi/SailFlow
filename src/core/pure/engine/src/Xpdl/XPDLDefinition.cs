@@ -1,10 +1,10 @@
-using saiflow.engine.Pattern;
+using sailflow.engine.Pattern;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace saiflow.engine.Xpdl
+namespace sailflow.engine.Xpdl
 {
     /// <summary>
     /// Constant definitions used in the XML file of process definition
@@ -16,7 +16,9 @@ namespace saiflow.engine.Xpdl
         public static readonly string BPMN_NameSpacePrefix_Value = "http://www.omg.org/spec/BPMN/20100524/MODEL";
 
         public static readonly string Sf_NameSpacePrefix = "sf";
-        public static readonly string Sf_NameSpacePrefix_Value = "http://www.saiflow.com/schema/sf";
+        public static readonly string Sf_NameSpacePrefix_Value = "http://www.sailflow.com/schema/sf";
+        /// <summary>Legacy typo URI; still accepted when reading existing process XML.</summary>
+        public static readonly string Sf_NameSpacePrefix_Value_Legacy = "http://www.saiflow.com/schema/sf";
 
         public static readonly string BPMNDI_NameSpacePrefix = "bpmndi";
         public static readonly string BPMNDI_NameSpacePrefix_Value = "http://www.omg.org/spec/BPMN/20100524/DI";

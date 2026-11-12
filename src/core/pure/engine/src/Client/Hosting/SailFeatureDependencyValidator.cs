@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using saiflow.engine.Client;
+using sailflow.engine.Client;
 
-namespace saiflow.engine.Hosting;
+namespace sailflow.engine.Hosting;
 
 /// <summary>
 /// Build 前校验 <see cref="SailFeatureDescriptor.DependsOn"/>：依赖名须已作为某 Feature 的 <see cref="SailFeatureDescriptor.Name"/> 注册（跨 Phase）。

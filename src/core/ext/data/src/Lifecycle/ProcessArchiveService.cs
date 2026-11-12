@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
-using saiflow.data;
-using saiflow.engine.Entity;
-using saiflow.engine.Client;
-using saiflow.engine.Common;
+using sailflow.data;
+using sailflow.engine.Entity;
+using sailflow.engine.Client;
+using sailflow.engine.Common;
 
-namespace saiflow.data.Lifecycle
+namespace sailflow.data.Lifecycle
 {
     /// <summary>
     /// 终态流程实例闭包：热表 → 按年冷表 → 删热表。读 <see cref="SailDataLifecycleOptions"/>；由 Host 定时或立刻 Hook 唤起。

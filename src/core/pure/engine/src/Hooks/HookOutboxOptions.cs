@@ -1,6 +1,6 @@
 using System;
 
-namespace saiflow.engine.Hooks
+namespace sailflow.engine.Hooks
 {
     /// <summary>Outbox Worker 运行参数（Phase 2+3）+ TTL 清理。</summary>
     public sealed class HookOutboxOptions

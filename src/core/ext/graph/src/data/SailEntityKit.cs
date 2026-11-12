@@ -4,7 +4,7 @@ using System.Data;
 using System.Linq;
 using mooSQL.data;
 
-namespace saiflow.data
+namespace sailflow.data
 {
     /// <summary>
     /// 用 <see cref="SQLBuilder"/> 构建实体 CRUD/按主键查询；

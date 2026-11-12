@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using mooSQL.data;
-using saiflow.engine.Actions;
-using saiflow.engine.Assignee;
-using saiflow.engine.Hosting;
-using saiflow.engine.Hooks;
-using saiflow.engine.Rules;
-using saiflow.hub.Essential;
-using saiflow.hub.Localize;
+using sailflow.engine.Actions;
+using sailflow.engine.Assignee;
+using sailflow.engine.Hosting;
+using sailflow.engine.Hooks;
+using sailflow.engine.Rules;
+using sailflow.hub.Essential;
+using sailflow.hub.Localize;
 
-namespace saiflow.engine.Client;
+namespace sailflow.engine.Client;
 
 /// <summary>
 /// A · 流程运行根实例（对齐 BeeFlow Client 模式；每实例一套富功能/工厂）。
@@ -164,7 +164,7 @@ public partial class SailClient
     private Logging.IEngineLogSink _logSink;
 
     /// <summary>
-    /// 引擎诊断日志 Sink。默认写表实现在 saiflow.data（<c>UseSailData</c> / <c>useDefaultTableLogSink</c>）。
+    /// 引擎诊断日志 Sink。默认写表实现在 sailflow.data（<c>UseSailData</c> / <c>useDefaultTableLogSink</c>）。
     /// </summary>
     public Logging.IEngineLogSink LogSink
     {
@@ -172,7 +172,7 @@ public partial class SailClient
         set => _logSink = value;
     }
 
-    /// <summary>解析日志 Sink：显式注入优先；未挂载时为空操作（由 saiflow.data 注册 Table Sink）。</summary>
+    /// <summary>解析日志 Sink：显式注入优先；未挂载时为空操作（由 sailflow.data 注册 Table Sink）。</summary>
     public Logging.IEngineLogSink GetLogSink() =>
         _logSink ??= Logging.NullEngineLogSink.Instance;
 
@@ -183,19 +183,19 @@ public partial class SailClient
         return this;
     }
 
-    private saiflow.engine.HotShard.ISailHotShardRouter _hotShard;
+    private sailflow.engine.HotShard.ISailHotShardRouter _hotShard;
 
     /// <summary>
-    /// 轨迹/变量热表白名单分表路由（默认 <see cref="saiflow.engine.HotShard.NullSailHotShardRouter"/>）。
-    /// 白名单实现由 saiflow.data <c>UseSailData</c> 按 Options 挂载。
+    /// 轨迹/变量热表白名单分表路由（默认 <see cref="sailflow.engine.HotShard.NullSailHotShardRouter"/>）。
+    /// 白名单实现由 sailflow.data <c>UseSailData</c> 按 Options 挂载。
     /// </summary>
-    public saiflow.engine.HotShard.ISailHotShardRouter HotShard
+    public sailflow.engine.HotShard.ISailHotShardRouter HotShard
     {
-        get => _hotShard ??= saiflow.engine.HotShard.NullSailHotShardRouter.Instance;
+        get => _hotShard ??= sailflow.engine.HotShard.NullSailHotShardRouter.Instance;
         set => _hotShard = value;
     }
 
-    public SailClient useHotShard(saiflow.engine.HotShard.ISailHotShardRouter router)
+    public SailClient useHotShard(sailflow.engine.HotShard.ISailHotShardRouter router)
     {
         _hotShard = router ?? throw new ArgumentNullException(nameof(router));
         return this;

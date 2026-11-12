@@ -1,9 +1,9 @@
 using System;
-using saiflow.engine.Client;
-using saiflow.engine.Manager;
-using saiflow.engine.Runtime;
+using sailflow.engine.Client;
+using sailflow.engine.Manager;
+using sailflow.engine.Runtime;
 
-namespace saiflow.engine.Factories;
+namespace sailflow.engine.Factories;
 
 /// <summary>
 /// A · 默认 Manager 工厂：按 Client 懒创建；不持 Runner/kit；并入 Parser/Checker。

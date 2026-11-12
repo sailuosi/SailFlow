@@ -1,12 +1,12 @@
 using System;
-using saiflow.engine.Config;
+using sailflow.engine.Config;
 
-namespace saiflow.engine.Client;
+namespace sailflow.engine.Client;
 
 /// <summary>
 /// 引擎运行参数形状（类比 mooSQL <c>DBPosition</c>）。
 /// 仅定义字段与默认值；不负责从 IConfiguration / AppSettings 等加载——由业务侧注册填入。
-/// 邮件 SMTP 不在此形状；见 <c>saiflow.msg.TaskMailOptions</c> + <c>UseDefaultTaskMail</c>。
+/// 邮件 SMTP 不在此形状；见 <c>sailflow.msg.TaskMailOptions</c> + <c>UseDefaultTaskMail</c>。
 /// </summary>
 public class SailConfig
 {

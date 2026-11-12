@@ -1,6 +1,6 @@
 using System;
 
-namespace saiflow.engine.Hooks
+namespace sailflow.engine.Hooks
 {
     /// <summary>Sync Hook 在 <see cref="FlowCapabilityOptions.SyncHookTimeoutMs"/> 内未完成。</summary>
     public sealed class FlowSyncHookTimeoutException : Exception

@@ -1,5 +1,5 @@
-using saiflow.AI.Entity;
-using saiflow.WebUtility;
+using sailflow.AI.Entity;
+using sailflow.WebUtility;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -8,10 +8,10 @@ using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using saiflow.AI.Abstractions;
-using saiflow.engine.Client;
+using sailflow.AI.Abstractions;
+using sailflow.engine.Client;
 
-namespace saiflow.AI.Implementation
+namespace sailflow.AI.Implementation
 {
     /// <summary>
     /// OpenAI 兼容 LLM 服务。baseUrl 由调用方传入，调用方需严格区分配置来源：

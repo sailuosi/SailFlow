@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using saiflow.engine.Common;
+using sailflow.engine.Common;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>按 UserId（OrdinalIgnoreCase）去重，保留首次出现。不改 Source=Specific 时的语义以外字段。</summary>
 public class DedupUsersFilter : IAssigneeResolveFilter

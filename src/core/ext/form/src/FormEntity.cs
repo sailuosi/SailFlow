@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace saiflow.hub.Form
+namespace sailflow.hub.Form
 {
     /// <summary>流程附属表单元数据（设计器/节点字段权限），非宿主组织主数据。</summary>
     [SooTable(Name = "FbForm", Caption = "表单", Type = DBTableType.Table)]

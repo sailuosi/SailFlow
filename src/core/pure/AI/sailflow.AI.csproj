@@ -1,18 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
-    <PackageId>saiflow.AI</PackageId>
+    <PackageId>sailflow.AI</PackageId>
     <Version>3.5.0</Version>
     <Title>Sailflow AI Contracts</Title>
     <LangVersion>14.0</LangVersion>
     <Description>Minimal AI scheduling contracts for Sailflow (IAiNodeExecutor). Entities and LLM/RAG/Agent implementations live in sailflow.biz.AI.</Description>
-    <Product>saiflow.NET</Product>
+    <Product>sailflow.NET</Product>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>saiflow.AI</RootNamespace>
-    <AssemblyName>saiflow.AI</AssemblyName>
+    <RootNamespace>sailflow.AI</RootNamespace>
+    <AssemblyName>sailflow.AI</AssemblyName>
   </PropertyGroup>
 
 </Project>

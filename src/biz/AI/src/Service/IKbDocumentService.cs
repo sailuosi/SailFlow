@@ -1,7 +1,7 @@
-using saiflow.AI.Entity;
+using sailflow.AI.Entity;
 using System.Collections.Generic;
 
-namespace saiflow.AI.Service
+namespace sailflow.AI.Service
 {
     /// <summary>
     /// Knowledge Base Document Service Interface

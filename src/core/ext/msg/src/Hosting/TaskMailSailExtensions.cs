@@ -1,10 +1,10 @@
 using System;
-using saiflow.engine.Client;
-using saiflow.engine.Hosting;
-using saiflow.engine.Hooks;
-using saiflow.msg.Notify;
+using sailflow.engine.Client;
+using sailflow.engine.Hosting;
+using sailflow.engine.Hooks;
+using sailflow.msg.Notify;
 
-namespace saiflow.msg.Hosting
+namespace sailflow.msg.Hosting
 {
     /// <summary>默认待办邮件 Notifier 注册；SMTP 选项在 Use 时刻传入。</summary>
     public static class TaskMailSailExtensions

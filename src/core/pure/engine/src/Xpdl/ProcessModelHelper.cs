@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using System.Linq;
-using saiflow.engine.Common;
-using saiflow.engine.Entity;
-using saiflow.engine.Xpdl;
-using saiflow.engine.Utility;
+using sailflow.engine.Common;
+using sailflow.engine.Entity;
+using sailflow.engine.Xpdl;
+using sailflow.engine.Utility;
 
-namespace saiflow.engine.Xpdl
+namespace sailflow.engine.Xpdl
 {
     /// <summary>
     /// Process Model Helper
@@ -152,7 +152,7 @@ namespace saiflow.engine.Xpdl
         /// <summary>
         /// Convert to process
         /// </summary>
-        public static saiflow.engine.Xpdl.Process ConvertToXPDLProcess(XmlDocument xmlDoc)
+        public static sailflow.engine.Xpdl.Process ConvertToXPDLProcess(XmlDocument xmlDoc)
         {
             var root = xmlDoc.DocumentElement;
             var xmlNodeProcess = root.SelectSingleNode(XPDLDefinition.BPMN_StrXmlPath_Process,

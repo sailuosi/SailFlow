@@ -3,11 +3,11 @@ using System.ComponentModel;
 using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
-using saiflow.engine.Client;
-using saiflow.engine.Common;
-using saiflow.engine.Manager;
+using sailflow.engine.Client;
+using sailflow.engine.Common;
+using sailflow.engine.Manager;
 
-namespace saiflow.msg
+namespace sailflow.msg
 {
     /// <summary>
     /// SMTP 发送工具（默认待办邮件通道使用；SMTP 取自 <see cref="TaskMailOptions"/>）。

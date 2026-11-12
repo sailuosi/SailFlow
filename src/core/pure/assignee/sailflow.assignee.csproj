@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
     <LangVersion>14.0</LangVersion>
-    <PackageId>saiflow.assignee</PackageId>
-    <RootNamespace>saiflow.assignee</RootNamespace>
-    <AssemblyName>saiflow.assignee</AssemblyName>
+    <PackageId>sailflow.assignee</PackageId>
+    <RootNamespace>sailflow.assignee</RootNamespace>
+    <AssemblyName>sailflow.assignee</AssemblyName>
     <Description>Sailflow assignee runtime: resolve performers / leave judgment. Engine only holds IAssigneePipeline slot.</Description>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using saiflow.engine.Entity;
-using saiflow.engine.Common;
-using saiflow.engine.Rules;
-using saiflow.engine.Xpdl;
+using sailflow.engine.Entity;
+using sailflow.engine.Common;
+using sailflow.engine.Rules;
+using sailflow.engine.Xpdl;
 
-namespace saiflow.hub.BusinessRule
+namespace sailflow.hub.BusinessRule
 {
     /// <summary>
     /// 内置规则引擎：JSON DSL（<c>rules</c> / when / set），mode = <c>bindingsJson</c>。

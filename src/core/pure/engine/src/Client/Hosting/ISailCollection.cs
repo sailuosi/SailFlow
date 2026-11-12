@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using saiflow.engine.Client;
+using sailflow.engine.Client;
 
-namespace saiflow.engine.Hosting;
+namespace sailflow.engine.Hosting;
 
 /// <summary>
 /// Sail 能力注册集合（类比 IServiceCollection）。

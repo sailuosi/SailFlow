@@ -1,12 +1,12 @@
-using saiflow.AI.Entity;
-using saiflow.WebUtility;
+using sailflow.AI.Entity;
+using sailflow.WebUtility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace saiflow.AI.Service
+namespace sailflow.AI.Service
 {
     /// <summary>
     /// AI 大模型调用服务。严格区分两种配置来源：

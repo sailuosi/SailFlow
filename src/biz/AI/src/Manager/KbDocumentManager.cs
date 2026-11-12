@@ -1,7 +1,7 @@
-using saiflow.AI.Entity;
-using saiflow.AI.Configuration;
-using saiflow.AI.Implementation;
-using saiflow.AI.Utility;
+using sailflow.AI.Entity;
+using sailflow.AI.Configuration;
+using sailflow.AI.Implementation;
+using sailflow.AI.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace saiflow.AI.Manager
+namespace sailflow.AI.Manager
 {
     /// <summary>
     /// Knowledge Base Document Manager

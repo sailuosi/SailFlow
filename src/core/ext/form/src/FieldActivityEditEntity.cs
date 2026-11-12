@@ -1,6 +1,6 @@
 using mooSQL.data;
 
-namespace saiflow.hub.Form
+namespace sailflow.hub.Form
 {
     [SooTable(Name = "FbFormFieldActivityEdit", Caption = "表单字段节点编辑", Type = DBTableType.Table)]
     public class FieldActivityEditEntity

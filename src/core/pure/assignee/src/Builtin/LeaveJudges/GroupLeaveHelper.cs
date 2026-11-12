@@ -1,8 +1,8 @@
-using saiflow.engine.Assignee;
-using saiflow.engine.Entity;
-using saiflow.engine.Common;
+using sailflow.engine.Assignee;
+using sailflow.engine.Entity;
+using sailflow.engine.Common;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>按 GroupId 分组完成判定；空 GroupId 归入同一默认组。组间见 R7（And/Or/Count/Rate）。</summary>
 public static class GroupLeaveHelper

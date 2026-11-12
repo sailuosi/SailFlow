@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
-using saiflow.data;
-using saiflow.engine.Entity;
-using saiflow.engine.Client;
+using sailflow.data;
+using sailflow.engine.Entity;
+using sailflow.engine.Client;
 
-namespace saiflow.engine.Manager
+namespace sailflow.engine.Manager
 {
     /// <summary>
     /// Rule set manager (wf_rule_set)。终态：Client / kit，无 Session、conn、trans。

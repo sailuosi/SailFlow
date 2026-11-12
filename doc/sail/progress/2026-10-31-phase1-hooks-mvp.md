@@ -5,7 +5,7 @@
 
 ## Implemented
 
-### Engine (`saiflow.engine`)
+### Engine (`sailflow.engine`)
 
 - **Contracts** (`src/core/pure/engine/src/Hooks/`): `IFlowGate`, `IFlowHook`, `ITaskNotifier`, `HookResult`, `HookValidationItem`, `FlowHookContext`, `TaskNotifyContext`, enums (`TaskNotifyKind`, `HookMatch`, `HookMode`, `FlowOperation`), `HookRegistrationOptions`, registration DTOs, `FlowCapabilityRegistry`, `FlowCapabilityDispatcher`, `HookOutboxWorker`.
 - **Client:** `SailClient.Capabilities` / `Hooks`, `CapabilityDispatcher`, `useFlowGate` / `useFlowHook` / `useTaskNotifier`.
@@ -16,7 +16,7 @@
 - **Result:** `WfExecutedResult.ValidationCode`, `ValidationDetails`, `ApplyGateReject`.
 - **Events:** `EventFireTypeEnum.OnValidating = 50`, `OnTaskCreated = 60` (typo removed); `EventExecutor` expanded for Process *ing/*ed and task events (documented in source).
 
-### Msg (`saiflow.msg`)
+### Msg (`sailflow.msg`)
 
 - `TaskNotifyChannelBase`, `DefaultMailTaskNotifier`, `UseDefaultTaskMail` (`TaskMailSailExtensions`).
 - Biz: `UseBizTaskMail` → `UseDefaultTaskMail` in `BizMsgSailExtensions`.

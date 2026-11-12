@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using mooSQL.data;
-using saiflow.engine.Client;
-using saiflow.engine.HotShard;
+using sailflow.engine.Client;
+using sailflow.engine.HotShard;
 
-namespace saiflow.data.HotShard
+namespace sailflow.data.HotShard
 {
     /// <summary>白名单热分表 ENSURE（从默认表零行拷结构）。</summary>
     public static class HotShardTableEnsurer

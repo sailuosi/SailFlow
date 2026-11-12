@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace saiflow.hub.Resource
+namespace sailflow.hub.Resource
 {
     /// <summary>
     /// Department / org-rank query contract.

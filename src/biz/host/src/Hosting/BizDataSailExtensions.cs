@@ -1,11 +1,11 @@
 using System;
-using saiflow.data.Hosting;
-using saiflow.engine.Client;
-using saiflow.engine.Hosting;
+using sailflow.data.Hosting;
+using sailflow.engine.Client;
+using sailflow.engine.Hosting;
 
-namespace saiflow.biz.Hosting
+namespace sailflow.biz.Hosting
 {
-    /// <summary>挂载 saiflow.data（冷热归档 / Table 日志 Sink / 数据管理 Hook）。</summary>
+    /// <summary>挂载 sailflow.data（冷热归档 / Table 日志 Sink / 数据管理 Hook）。</summary>
     public static class BizDataSailExtensions
     {
         public static SailClientBuilder UseBizData(this SailClientBuilder builder)

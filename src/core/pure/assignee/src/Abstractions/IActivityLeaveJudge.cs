@@ -1,6 +1,6 @@
-using saiflow.engine.Assignee;
+using sailflow.engine.Assignee;
 
-namespace saiflow.assignee;
+namespace sailflow.assignee;
 
 /// <summary>时刻 B：按 Type 判定能否流出。内置实现禁止 sealed。</summary>
 public interface IActivityLeaveJudge

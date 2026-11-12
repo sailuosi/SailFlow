@@ -1,8 +1,8 @@
 using System;
-using saiflow.hub.Essential;
-using saiflow.engine.Client;
+using sailflow.hub.Essential;
+using sailflow.engine.Client;
 
-namespace saiflow.engine.Hosting;
+namespace sailflow.engine.Hosting;
 
 /// <summary>
 /// 消息队列（IMessageQueueService）注册。

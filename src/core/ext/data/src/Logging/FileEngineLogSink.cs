@@ -1,12 +1,12 @@
 using System;
 using System.IO;
 using System.Text;
-using saiflow.engine.Entity;
-using saiflow.engine.Client;
-using saiflow.engine.Logging;
-using saiflow.hub.Logging;
+using sailflow.engine.Entity;
+using sailflow.engine.Client;
+using sailflow.engine.Logging;
+using sailflow.hub.Logging;
 
-namespace saiflow.data.Logging
+namespace sailflow.data.Logging
 {
     /// <summary>
     /// 文件日志 Sink：按日滚动 engine- / job- 文件；目录读 <see cref="SailDataLifecycleOptions.LogFileDirectory"/>。

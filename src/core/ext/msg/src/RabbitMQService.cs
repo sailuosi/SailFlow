@@ -4,9 +4,9 @@ using System.Text;
 using mooSQL.data;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using saiflow.hub.Essential;
+using sailflow.hub.Essential;
 
-namespace saiflow.msg
+namespace sailflow.msg
 {
     /// <summary>
     /// RabbitMQ <see cref="IMessageQueueService"/> 实现。

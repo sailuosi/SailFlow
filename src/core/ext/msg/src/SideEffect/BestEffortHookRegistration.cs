@@ -1,8 +1,8 @@
 using System;
-using saiflow.engine.Event;
-using saiflow.engine.Hooks;
+using sailflow.engine.Event;
+using sailflow.engine.Hooks;
 
-namespace saiflow.msg.SideEffect
+namespace sailflow.msg.SideEffect
 {
     /// <summary>BestEffort Hook 注册约定：强制 Sync（只入队）。</summary>
     public static class BestEffortHookRegistration

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	  <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
@@ -6,7 +6,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
     <Title>Sailflow Localization Module</Title>
-    <Description>Localization module for saiflow.NET with multiple language support. Provides internationalization capabilities for global users, supporting multiple languages including English and Chinese.</Description>
+    <Description>Localization module for sailflow.NET with multiple language support. Provides internationalization capabilities for global users, supporting multiple languages including English and Chinese.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,14 +30,14 @@
 
   <!-- LogicalName 必须与 LocalizeUtility.GetJSONFileNameByProject 一致（默认 SDK 会生成 sailflow.localize.src.*） -->
   <ItemGroup>
-    <EmbeddedResource Include="src\Designer\en.json" LogicalName="saiflow.hub.Localize.Designer.en.json" />
-    <EmbeddedResource Include="src\Designer\zh.json" LogicalName="saiflow.hub.Localize.Designer.zh.json" />
-    <EmbeddedResource Include="src\Engine\en.json" LogicalName="saiflow.hub.Localize.Engine.en.json" />
-    <EmbeddedResource Include="src\Engine\zh.json" LogicalName="saiflow.hub.Localize.Engine.zh.json" />
-    <EmbeddedResource Include="src\Job\en.json" LogicalName="saiflow.hub.Localize.Job.en.json" />
-    <EmbeddedResource Include="src\Job\zh.json" LogicalName="saiflow.hub.Localize.Job.zh.json" />
-    <EmbeddedResource Include="src\Web\en.json" LogicalName="saiflow.hub.Localize.Web.en.json" />
-    <EmbeddedResource Include="src\Web\zh.json" LogicalName="saiflow.hub.Localize.Web.zh.json" />
+    <EmbeddedResource Include="src\Designer\en.json" LogicalName="sailflow.hub.Localize.Designer.en.json" />
+    <EmbeddedResource Include="src\Designer\zh.json" LogicalName="sailflow.hub.Localize.Designer.zh.json" />
+    <EmbeddedResource Include="src\Engine\en.json" LogicalName="sailflow.hub.Localize.Engine.en.json" />
+    <EmbeddedResource Include="src\Engine\zh.json" LogicalName="sailflow.hub.Localize.Engine.zh.json" />
+    <EmbeddedResource Include="src\Job\en.json" LogicalName="sailflow.hub.Localize.Job.en.json" />
+    <EmbeddedResource Include="src\Job\zh.json" LogicalName="sailflow.hub.Localize.Job.zh.json" />
+    <EmbeddedResource Include="src\Web\en.json" LogicalName="sailflow.hub.Localize.Web.en.json" />
+    <EmbeddedResource Include="src\Web\zh.json" LogicalName="sailflow.hub.Localize.Web.zh.json" />
   </ItemGroup>
 
   <ItemGroup>

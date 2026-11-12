@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace saiflow.hub.Essential
+namespace sailflow.hub.Essential
 {
     /// <summary>
     /// 信号实体对象

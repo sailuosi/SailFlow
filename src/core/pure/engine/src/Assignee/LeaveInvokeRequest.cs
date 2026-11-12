@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using saiflow.engine.Entity;
-using saiflow.engine.Common;
+using sailflow.engine.Entity;
+using sailflow.engine.Common;
 
-namespace saiflow.engine.Assignee
+namespace sailflow.engine.Assignee
 {
     /// <summary>时刻 B：流出判定调用入参（engine 不解析 Type）。</summary>
     public class LeaveInvokeRequest

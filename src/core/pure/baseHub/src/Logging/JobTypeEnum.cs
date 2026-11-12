@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace saiflow.hub.Logging
+namespace sailflow.hub.Logging
 {
     /// <summary>
     /// Job Type 

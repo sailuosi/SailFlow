@@ -2,10 +2,10 @@
 
   <PropertyGroup>
 	<TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
-    <PackageId>saiflow.hub</PackageId>
+    <PackageId>sailflow.hub</PackageId>
     <Version>3.5.0</Version>
     <Title>Sailflow Core Module</Title>
-    <Description>Core hub contracts for saiflow.NET: resource/form/localize ports, message mediators, and shared essential types.</Description>
+    <Description>Core hub contracts for sailflow.NET: resource/form/localize ports, message mediators, and shared essential types.</Description>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 

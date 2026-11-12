@@ -1,6 +1,6 @@
-using saiflow.engine.Entity;
+using sailflow.engine.Entity;
 
-namespace saiflow.biz.query
+namespace sailflow.biz.query
 {
     /// <summary>
     /// Task Query

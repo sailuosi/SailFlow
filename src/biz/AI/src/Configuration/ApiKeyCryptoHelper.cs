@@ -2,7 +2,7 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace saiflow.AI.Configuration
+namespace sailflow.AI.Configuration
 {
     /// <summary>
     /// Cross-platform symmetric crypto helper for API keys.

@@ -1,13 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	  <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
 	  <LangVersion>14.0</LangVersion>
-    <PackageId>saiflow.hub.Resource</PackageId>
+    <PackageId>sailflow.hub.Resource</PackageId>
     <Version>3.5.0</Version>
     <Title>Sailflow Resource Module</Title>
-    <Description>Resource slot for saiflow.NET: UseResource(IResourceService) registration only. Org/personnel implementations belong to the host.</Description>
-    <Product>saiflow.NET</Product>
+    <Description>Resource slot for sailflow.NET: UseResource(IResourceService) registration only. Org/personnel implementations belong to the host.</Description>
+    <Product>sailflow.NET</Product>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 

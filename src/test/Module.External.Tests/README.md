@@ -1,4 +1,4 @@
-# saiflow.hub.External.Tests
+# sailflow.hub.External.Tests
 
 Console test for **CustomerService** and **MessageService**: simulates a customer–AI chat, extracts contact info, and saves to Supabase (`biz_customer`, `biz_conversation`).
 
@@ -32,7 +32,7 @@ Copy `appsettings.Development.json` or edit `appsettings.json` with real values 
 ## Run
 
 ```bash
-cd source/core/saiflow.hub.External.Tests
+cd source/core/sailflow.hub.External.Tests
 dotnet run
 ```
 

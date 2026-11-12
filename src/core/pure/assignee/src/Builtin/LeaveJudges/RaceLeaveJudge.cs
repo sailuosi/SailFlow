@@ -1,7 +1,7 @@
-using saiflow.engine.Assignee;
-using saiflow.engine.Common;
+using sailflow.engine.Assignee;
+using sailflow.engine.Common;
 
-namespace saiflow.assignee.Builtin;
+namespace sailflow.assignee.Builtin;
 
 /// <summary>抢办：子任务任一人同意即可。禁止 sealed。</summary>
 public class RaceLeaveJudge : IActivityLeaveJudge
