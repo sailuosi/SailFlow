@@ -643,10 +643,10 @@ namespace sailflow.engine.Service
         /// Get process variable
         /// 获取流程变量
         /// </summary>
-        public ProcessVariableEntity GetProcessVariable(string variableId)
+        public ProcessVariableEntity GetProcessVariable(string processId, string variableId)
         {
             var pvm = Managers.ProcessVariables;
-            var entity = pvm.GetVariableById(variableId);
+            var entity = pvm.GetVariableById(processId, variableId);
 
             return entity;
         }
@@ -677,10 +677,10 @@ namespace sailflow.engine.Service
         /// Delete process variable
         /// 删除流程变量
         /// </summary>
-        public void DeleteProcessVariable(string variableId)
+        public void DeleteProcessVariable(string processId, string variableId)
         {
             var pvm = Managers.ProcessVariables;
-            pvm.DeleteVariable(variableId);
+            pvm.DeleteVariable(processId, variableId);
         }
 
         /// <summary>

@@ -32,12 +32,18 @@ namespace sailflow.engine.Manager
         ISailHotShardRouter Router => Sail.HotShard;
 
         /// <summary>同库同事务的新 kit，避免链式 select 状态互相污染。</summary>
-        internal ProcessVariableEntity GetVariableById(string variableId)
-            => GetVariableById(Sail.UseRunSQL(), variableId);
+        internal ProcessVariableEntity GetVariableById(string processId, string variableId)
+            => GetVariableById(Sail.UseRunSQL(), processId, variableId);
 
-        internal ProcessVariableEntity GetVariableById(SQLBuilder kit, string variableId)
-            => HotShardEntityAccess.GetByIdProbing<ProcessVariableEntity>(
-                kit.useSQL(), Router.VariableLookupTables, variableId);
+        internal ProcessVariableEntity GetVariableById(SQLBuilder kit, string processId, string variableId)
+        {
+            //此处不做特殊判断，由Router保证返回的表有效！
+            var table = Router.ResolveVariableTable(processId);
+  
+            var row = kit.findRowById<ProcessVariableEntity>(variableId, table );
+            return row;
+
+        }
 
 
         internal string GetVariable(
@@ -215,7 +221,7 @@ namespace sailflow.engine.Manager
             // Id 未赋值（null/空）视为新建
             if (!string.IsNullOrWhiteSpace(entity.ProcessVariableId))
             {
-                existProcessVariable = GetVariableById(kit, entity.ProcessVariableId);
+                existProcessVariable = GetVariableById(kit, entity.ProcessId, entity.ProcessVariableId);
             }
             else if (!string.IsNullOrWhiteSpace(entity.ProcessInstanceId))
             {
@@ -301,12 +307,15 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal void DeleteVariable(string variableId)
-            => DeleteVariable(Sail.UseRunSQL(), variableId);
+        internal void DeleteVariable(string processId, string variableId)
+            => DeleteVariable(Sail.UseRunSQL(), processId, variableId);
 
-        internal void DeleteVariable(SQLBuilder kit, string variableId)
-            => HotShardEntityAccess.DeleteByIdProbing<ProcessVariableEntity>(
-                kit.useSQL(), Router.VariableLookupTables, variableId);
+        internal void DeleteVariable(SQLBuilder kit, string processId, string variableId)
+        {
+            //由router保证表，异常，自然抛出，便于业务侧调试期间就发现问题
+            var table = Router.ResolveVariableTable(processId);
+            kit.deleteById<ProcessVariableEntity>(variableId, table);
+        }
 
         private string ResolveProcessId(SQLBuilder kit, string processInstanceId)
             => HotShardEntityAccess.ResolveProcessId(kit, processInstanceId);

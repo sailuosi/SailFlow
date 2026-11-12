@@ -246,9 +246,9 @@ namespace sailflow.engine.Service
         //Process Variables Interfaces
         IList<ProcessVariableEntity> GetProcessVariableList(ProcessVariableQuery query);
         ProcessVariableEntity GetProcessVariable(ProcessVariableQuery query);
-        ProcessVariableEntity GetProcessVariable(string variableId);
+        ProcessVariableEntity GetProcessVariable(string processId, string variableId);
         Boolean ValidateProcessVariable(string processInstanceId, string expression);
-        void DeleteProcessVariable(string variableId);
+        void DeleteProcessVariable(string processId, string variableId);
         
         //流程变量定义接口（wf_variable）
         IList<VariableEntity> GetVariableDefinitionList(string processId, string version, string activityId);
