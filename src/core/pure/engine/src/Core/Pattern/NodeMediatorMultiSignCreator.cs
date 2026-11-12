@@ -28,14 +28,6 @@ namespace sailflow.engine.Pattern
 
         internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
-            try
-            {
-                ;
-            }
-            catch (System.Exception ex)
-            {
-                throw;
-            }
         }
 
         /// <summary>

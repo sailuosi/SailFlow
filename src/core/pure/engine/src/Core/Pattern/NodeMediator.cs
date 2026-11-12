@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using sailflow.data;
 using mooSQL.data;
-using sailflow.hub.Localize;
 using sailflow.engine.Common;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Entity;
@@ -13,9 +12,7 @@ using sailflow.engine.Assignee;
 using sailflow.engine.Client;
 using sailflow.engine.Result;
 using sailflow.engine.Runtime;
-using sailflow.engine.Pattern;
 using sailflow.engine.Event;
-using sailflow.engine.Pattern;
 using sailflow.engine.Core;
 using sailflow.engine.Hooks;
 
