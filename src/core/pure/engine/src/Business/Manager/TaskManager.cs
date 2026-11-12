@@ -435,7 +435,7 @@ namespace sailflow.engine.Manager
         }
 
         public void Update(SQLBuilder kit, TaskEntity entity)
-            => kit.useRepo<TaskEntity>().Update(entity);
+            => kit.update(entity);
 
         internal void SetTaskType(SQLBuilder kit, string taskId, TaskTypeEnum taskType)
         {

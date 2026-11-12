@@ -10,20 +10,7 @@ namespace sailflow.engine.HotShard
     /// <summary>按物理表名对实体做 CRUD（热分表路由后使用）。</summary>
     public static class HotShardEntityAccess
     {
-        public static string InsertReturnId<T>(SQLBuilder kit, string physicalTable, T entity) where T : class
-        {
-            if (string.IsNullOrWhiteSpace(physicalTable))
-                kit.insert(entity);
-            else
-                kit.insert(entity, physicalTable);
-            var prop = typeof(T).GetProperty("Id");
-            return prop?.GetValue(entity) as string;
-        }
 
-        public static void Update<T>(SQLBuilder kit, string physicalTable, T entity) where T : class
-        {
-            kit.update(entity, physicalTable);
-        }
 
         public static T GetById<T>(SQLBuilder kit, string physicalTable, string id) where T : class
         {

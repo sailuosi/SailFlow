@@ -64,35 +64,19 @@ namespace sailflow.engine.Manager
         #endregion
 
         #region Insert / Delete
-        internal string Insert(TransitionInstanceEntity entity)
-        {
-            var kit = Sail.UseRunSQL();
-            return Insert(kit, entity);
-        }
 
         internal string Insert(SQLBuilder kit, TransitionInstanceEntity entity)
         {
             var table = Router.ResolveTransitionTable(entity?.ProcessId);
-            var newId = HotShardEntityAccess.InsertReturnId(kit, table, entity);
+            var newId = kit.insertReturnId<TransitionInstanceEntity,string>( entity, table);
             entity.TransitionInstanceId = newId;
             return newId;
         }
 
-        internal void Delete(string transitionInstanceId)
-            => Delete(Sail.UseRunSQL(), transitionInstanceId);
-
-        internal void Delete(SQLBuilder kit, string transitionInstanceId)
-            => HotShardEntityAccess.DeleteByIdProbing<TransitionInstanceEntity>(
-                kit, Router.TransitionLookupTables, transitionInstanceId);
         #endregion
 
         #region Query
-        internal TransitionInstanceEntity GetById(string transitionInstanceId)
-            => GetById(Sail.UseRunSQL(), transitionInstanceId);
 
-        internal TransitionInstanceEntity GetById(SQLBuilder kit, string transitionInstanceId)
-            => HotShardEntityAccess.GetByIdProbing<TransitionInstanceEntity>(
-                kit, Router.TransitionLookupTables, transitionInstanceId);
 
         internal TransitionInstanceEntity GetEndTransition(string appName, string appInstanceId, string processId)
         {
