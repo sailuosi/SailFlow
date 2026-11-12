@@ -4,18 +4,18 @@
     <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
     <LangVersion>14.0</LangVersion>
     <IsPackable>true</IsPackable>
-    <PackageId>saiflow.biz</PackageId>
-    <AssemblyName>saiflow.biz.pack</AssemblyName>
-    <RootNamespace>saiflow.biz.pack</RootNamespace>
-    <Description>saiflow biz layer aggregator: host composition root, AI, docs, query. Depends on saiflow.ext.</Description>
-    <PackageTags>saiflow;sailflow;workflow;biz</PackageTags>
+    <PackageId>sailflow.biz</PackageId>
+    <AssemblyName>sailflow.biz.pack</AssemblyName>
+    <RootNamespace>sailflow.biz.pack</RootNamespace>
+    <Description>sailflow biz layer aggregator: host composition root, AI, docs, query. Depends on sailflow.ext.</Description>
+    <PackageTags>sailflow;workflow;biz</PackageTags>
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
   <!-- Cross-layer + leaf third-party deps (PrivateAssets=all ProjectRefs do not flow PackageReferences) -->
   <ItemGroup>
-    <PackageReference Include="saiflow.ext" Version="$(VersionPrefix)" />
+    <PackageReference Include="sailflow.ext" Version="$(VersionPrefix)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.8" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.8" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.8" />
@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <!-- Layer assemblies → packed into this nupkg
-       Note: host AssemblyName is saiflow.biz; pack facade uses saiflow.biz.pack to avoid collision. -->
+       Note: host AssemblyName is saiflow.biz; pack facade uses sailflow.biz.pack to avoid collision. -->
   <ItemGroup>
     <ProjectReference Include="..\src\biz\host\sailflow.biz.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\src\biz\AI\sailflow.biz.AI.csproj" PrivateAssets="all" />

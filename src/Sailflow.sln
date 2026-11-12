@@ -59,11 +59,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sailflow.data", "core\ext\d
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pack", "pack", "{78453166-59D3-F6E5-1AF7-6BAE5D72A388}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "saiflow.pure.Pack", "..\pack\saiflow.pure.Pack.csproj", "{7FB48E61-2279-4F22-83D7-90AC662729F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sailflow.pure.Pack", "..\pack\sailflow.pure.Pack.csproj", "{7FB48E61-2279-4F22-83D7-90AC662729F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "saiflow.ext.Pack", "..\pack\saiflow.ext.Pack.csproj", "{5E8CF600-8256-4092-BC55-D0E5629080B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sailflow.ext.Pack", "..\pack\sailflow.ext.Pack.csproj", "{5E8CF600-8256-4092-BC55-D0E5629080B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "saiflow.biz.Pack", "..\pack\saiflow.biz.Pack.csproj", "{C1B91BA3-B019-4274-9902-85C8C6E9DEBA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sailflow.biz.Pack", "..\pack\sailflow.biz.Pack.csproj", "{C1B91BA3-B019-4274-9902-85C8C6E9DEBA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

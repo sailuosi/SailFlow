@@ -4,18 +4,18 @@
     <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
     <LangVersion>14.0</LangVersion>
     <IsPackable>true</IsPackable>
-    <PackageId>saiflow.ext</PackageId>
-    <AssemblyName>saiflow.ext</AssemblyName>
-    <RootNamespace>saiflow.ext</RootNamespace>
-    <Description>saiflow ext layer aggregator: action, msg, bizRule, form, resource, localize, data. Depends on saiflow.pure.</Description>
-    <PackageTags>saiflow;sailflow;workflow;ext</PackageTags>
+    <PackageId>sailflow.ext</PackageId>
+    <AssemblyName>sailflow.ext</AssemblyName>
+    <RootNamespace>sailflow.ext</RootNamespace>
+    <Description>sailflow ext layer aggregator: action, msg, bizRule, form, resource, localize, data. Depends on sailflow.pure.</Description>
+    <PackageTags>sailflow;workflow;ext</PackageTags>
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
   <!-- Cross-layer + leaf third-party deps (PrivateAssets=all ProjectRefs do not flow PackageReferences) -->
   <ItemGroup>
-    <PackageReference Include="saiflow.pure" Version="$(VersionPrefix)" />
+    <PackageReference Include="sailflow.pure" Version="$(VersionPrefix)" />
     <PackageReference Include="IronPython" Version="3.4.1" />
     <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
     <PackageReference Include="NRules" Version="1.0.4" />

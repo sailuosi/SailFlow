@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
-    <!-- PackageId intentionally not saiflow.biz — that id is reserved for pack/saiflow.biz.Pack.csproj aggregator -->
+    <!-- PackageId intentionally not sailflow.biz — that id is reserved for pack/sailflow.biz.Pack.csproj aggregator -->
     <PackageId>sailflow.biz.host</PackageId>
     <RootNamespace>saiflow.biz</RootNamespace>
     <AssemblyName>saiflow.biz</AssemblyName>

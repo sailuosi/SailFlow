@@ -1,5 +1,5 @@
 <!--
-  Shared targets for saiflow.* aggregator packages:
+  Shared targets for sailflow.* aggregator packages:
   pack only direct PrivateAssets=all ProjectReference primary outputs into lib/<tfm>/.
   Avoids pulling transitive pure/ext DLLs into upper-layer packages.
 -->

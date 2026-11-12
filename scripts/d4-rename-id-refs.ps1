@@ -132,7 +132,6 @@ $perFileEntityId = @{
     'NodeMediatorRevise.cs' = 'ActivityInstanceId'
     'NodeMediatorSubProcess.cs' = 'ActivityInstanceId'
     'NodeMediatorSubProcessNested.cs' = 'ActivityInstanceId'
-    'NodeMediatorInterMessageGo.cs' = 'ActivityInstanceId'
     'NodeMediatorInterTimerGo.cs' = 'ActivityInstanceId'
     'NodeMediatorInterConditionalGo.cs' = 'ActivityInstanceId'
     'WorkflowService.Query.cs' = 'VariableId'
