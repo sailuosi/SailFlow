@@ -4,6 +4,9 @@ bin-release/
 [Oo]bj/
 [Bb]in/
 
+# NuGet pack output (Directory.Build.props → PackageOutputPath)
+release/
+
 # Other files and folders
 .settings/
 

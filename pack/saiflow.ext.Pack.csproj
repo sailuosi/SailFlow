@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
+    <LangVersion>14.0</LangVersion>
+    <IsPackable>true</IsPackable>
+    <PackageId>saiflow.ext</PackageId>
+    <AssemblyName>saiflow.ext</AssemblyName>
+    <RootNamespace>saiflow.ext</RootNamespace>
+    <Description>saiflow ext layer aggregator: action, msg, bizRule, form, resource, localize, data. Depends on saiflow.pure.</Description>
+    <PackageTags>saiflow;sailflow;workflow;ext</PackageTags>
+    <IncludeBuildOutput>true</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
+  </PropertyGroup>
+
+  <!-- Cross-layer + leaf third-party deps (PrivateAssets=all ProjectRefs do not flow PackageReferences) -->
+  <ItemGroup>
+    <PackageReference Include="saiflow.pure" Version="$(VersionPrefix)" />
+    <PackageReference Include="IronPython" Version="3.4.1" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+    <PackageReference Include="NRules" Version="1.0.4" />
+    <PackageReference Include="NRules.Fluent" Version="1.0.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
+  </ItemGroup>
+
+  <!-- Layer assemblies → packed into this nupkg -->
+  <ItemGroup>
+    <ProjectReference Include="..\src\core\ext\action\sailflow.action.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\src\core\ext\msg\sailflow.msg.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\src\core\ext\bizRule\sailflow.bizRule.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\src\core\ext\form\sailflow.form.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\src\core\ext\resource\sailflow.resource.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\src\core\ext\localize\sailflow.localize.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\src\core\ext\data\sailflow.data.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Import Project="Pack.targets" />
+
+</Project>

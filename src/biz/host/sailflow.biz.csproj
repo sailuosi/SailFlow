@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
-    <PackageId>saiflow.biz</PackageId>
+    <!-- PackageId intentionally not saiflow.biz — that id is reserved for pack/saiflow.biz.Pack.csproj aggregator -->
+    <PackageId>sailflow.biz.host</PackageId>
     <RootNamespace>saiflow.biz</RootNamespace>
     <AssemblyName>saiflow.biz</AssemblyName>
     <Description>Sailflow business composition root: schema bootstrap, AI runtime registration, and biz feature packages (docs/AI/query).</Description>

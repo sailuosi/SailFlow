@@ -1,0 +1,28 @@
+<!--
+  Shared targets for saiflow.* aggregator packages:
+  pack only direct PrivateAssets=all ProjectReference primary outputs into lib/<tfm>/.
+  Avoids pulling transitive pure/ext DLLs into upper-layer packages.
+-->
+<Project>
+  <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);_PackCopyProjectReferences</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+
+  <Target Name="_PackCopyProjectReferences">
+    <ItemGroup>
+      <_PackLayerProjectReference Include="@(ProjectReference)"
+        Condition="'%(ProjectReference.PrivateAssets)' == 'all' OR '%(ProjectReference.PrivateAssets)' == 'All'" />
+    </ItemGroup>
+
+    <MSBuild
+      Projects="@(_PackLayerProjectReference)"
+      Targets="GetTargetPath"
+      Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)">
+      <Output TaskParameter="TargetOutputs" ItemName="_PackLayerTargetPath" />
+    </MSBuild>
+
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(_PackLayerTargetPath)" TargetPath="%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
+</Project>

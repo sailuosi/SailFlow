@@ -60,7 +60,7 @@ public partial class SailClient
 
     /// <summary>运行库 SQLBuilder（每请求独立实例；无事务即取即用，有事务则 begin 后向下传递）。</summary>
     public SQLBuilder UseRunSQL() => DBFactory.useRunSQL();
-
+    public SQLClip useClip() => DBFactory.GetDB().useClip();
     public SQLClip useRunClip() => DBFactory.GetDB().useClip();
     /// <summary>
     /// 注册缓存实例（对齐 mooSQL <c>MooClient.useCache</c>）。可换 Redis 等自定义 <see cref="ISooCache"/>。

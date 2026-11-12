@@ -141,7 +141,7 @@ namespace saiflow.engine.Manager
             if (string.IsNullOrEmpty(version)) version = "1";
 
             ProcessEntity entity = null;
-            var clip = Sail.UseRunSQL().useClip();
+            var clip = Sail.useClip();
             clip.from<ProcessEntity>(out var p)
                 .where(() => p.ProcessName, processName)
                 .where(() => p.Version, version);
@@ -171,7 +171,7 @@ namespace saiflow.engine.Manager
             if (string.IsNullOrEmpty(version)) version = "1";
 
             ProcessEntity entity = null;
-            var clip = Sail.UseRunSQL().useClip();
+            var clip = Sail.useClip();
             clip.from<ProcessEntity>(out var p)
                 .where(() => p.ProcessCode, processCode)
                 .where(() => p.Version, version);
