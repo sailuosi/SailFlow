@@ -7,7 +7,7 @@
     <PackageId>sailflow.pure</PackageId>
     <AssemblyName>sailflow.pure</AssemblyName>
     <RootNamespace>sailflow.pure</RootNamespace>
-    <Description>sailflow pure layer aggregator: basis, baseHub, AI, engine, assignee. Depends on mooSQL.Ext.</Description>
+    <Description>sailflow pure layer aggregator: basis, baseHub, AI, engine, assignee, runtime. Depends on mooSQL.Ext.</Description>
     <PackageTags>sailflow;workflow;pure</PackageTags>
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
@@ -25,6 +25,7 @@
     <ProjectReference Include="..\src\core\pure\AI\sailflow.AI.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\src\core\pure\engine\sailflow.engine.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\src\core\pure\assignee\sailflow.assignee.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\src\core\pure\runtime\sailflow.runtime.csproj" PrivateAssets="all" />
   </ItemGroup>
 
   <Import Project="Pack.targets" />

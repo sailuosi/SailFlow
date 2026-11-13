@@ -277,22 +277,14 @@ namespace sailflow.engine.Manager
 
             if (keyValuePair.Count > 0)
             {
-                var pipeline = Sail?.NextStepRoute;
-                if (pipeline != null)
+                var pipeline = NextStep.NextStepConditionRequire.GetPipelineRequired(Sail);
+                parsed = pipeline.Evaluate(new NextStep.ConditionEvaluateContext
                 {
-                    parsed = pipeline.Evaluate(new NextStep.ConditionEvaluateContext
-                    {
-                        Sail = Sail,
-                        Expression = expression,
-                        Variables = keyValuePair,
-                        Phase = NextStep.NextStepRoutePhase.Send
-                    });
-                }
-                else
-                {
-                    parsed = NextStep.LinqDynamicConditionEvaluator
-                        .EvaluateLegacy(expression, keyValuePair);
-                }
+                    Sail = Sail,
+                    Expression = expression,
+                    Variables = keyValuePair,
+                    Phase = NextStep.NextStepRoutePhase.Send
+                });
             }
             return parsed;
         }

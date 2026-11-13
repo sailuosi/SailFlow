@@ -36,32 +36,23 @@ namespace sailflow.engine.Pattern
         {
             try
             {
-                //判断条件表达式是否满足（NextStepRoute Evaluator 链；未挂 ≡ ExpressionParser）
+                //判断条件表达式是否满足（须已配置 NextStep Evaluator；无静默回落）
                 var expression = ActivityForwardContext.CurrentActivity.TriggerDetail.Expression;
                 var dvKeyValuePair = ActivityForwardContext.ActivityResource.AppRunner.Conditions;
 
-                var pipeline = Sail?.NextStepRoute;
-                bool result;
-                if (pipeline != null)
+                var pipeline = sailflow.engine.NextStep.NextStepConditionRequire.GetPipelineRequired(Sail);
+                var pe = ActivityForwardContext.ProcessModel?.ProcessEntity;
+                var result = pipeline.Evaluate(new sailflow.engine.NextStep.ConditionEvaluateContext
                 {
-                    var pe = ActivityForwardContext.ProcessModel?.ProcessEntity;
-                    result = pipeline.Evaluate(new sailflow.engine.NextStep.ConditionEvaluateContext
-                    {
-                        Sail = Sail,
-                        Expression = expression,
-                        Variables = dvKeyValuePair,
-                        ProcessId = pe?.ProcessId,
-                        ProcessCode = pe?.ProcessCode,
-                        CurrentActivityId = ActivityForwardContext.CurrentActivity?.ActivityId,
-                        CurrentActivityCode = ActivityForwardContext.CurrentActivity?.ActivityCode,
-                        Phase = sailflow.engine.NextStep.NextStepRoutePhase.Send
-                    });
-                }
-                else
-                {
-                    result = sailflow.engine.NextStep.LinqDynamicConditionEvaluator
-                        .EvaluateLegacy(expression, dvKeyValuePair);
-                }
+                    Sail = Sail,
+                    Expression = expression,
+                    Variables = dvKeyValuePair,
+                    ProcessId = pe?.ProcessId,
+                    ProcessCode = pe?.ProcessCode,
+                    CurrentActivityId = ActivityForwardContext.CurrentActivity?.ActivityId,
+                    CurrentActivityCode = ActivityForwardContext.CurrentActivity?.ActivityCode,
+                    Phase = sailflow.engine.NextStep.NextStepRoutePhase.Send
+                });
 
                 if (result == true)
                 {

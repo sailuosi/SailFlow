@@ -70,7 +70,7 @@ public sealed class NextStepRoutePipeline : INextStepRoutePipeline
 
         var chain = OrderedEvaluators().ToList();
         if (chain.Count == 0)
-            return LinqDynamicConditionEvaluator.EvaluateLegacy(ctx.Expression, ctx.Variables);
+            throw new InvalidOperationException(NextStepConditionRequire.ConfigureHint);
 
         var anyTried = false;
         foreach (var item in chain)
@@ -124,14 +124,11 @@ public sealed class NextStepRoutePipeline : INextStepRoutePipeline
         }
     }
 
-    /// <summary>启用管道时挂默认 LINQ 兜底（Order=100, Match=All），若尚未注册任何 Evaluator。</summary>
+    /// <summary>
+    /// 历史 API（no-op）。默认 LINQ 须 <c>UseSailRuntimeDefaults</c>；空 Evaluator 链求值将抛异常。
+    /// </summary>
     public void EnsureDefaultLinqEvaluator()
     {
-        if (_evaluators.Count > 0)
-            return;
-        AddConditionEvaluator(
-            new LinqDynamicConditionEvaluator(),
-            new NextStepRouteOptions { Match = NextStepMatch.All, Order = 100 });
     }
 
     IEnumerable<(INextStepPrepare Prep, NextStepRouteOptions Opts, int Seq)> OrderedPrepares() =>

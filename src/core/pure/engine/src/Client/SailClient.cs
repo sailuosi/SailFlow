@@ -242,7 +242,7 @@ public partial class SailClient
 
     /// <summary>
     /// 下一跳节点计算管道（Prepare / Evaluator / Filter）。
-    /// 由 <c>UseNextStepRoute</c> 挂载；未挂时条件求值回落 LINQ Dynamic（≡ ExpressionParser）。
+    /// 由 <c>UseNextStepRoute</c> / <c>UseSailRuntimeDefaults</c> 挂载；未挂或无 Evaluator 时条件求值抛异常。
     /// </summary>
     public INextStepRoutePipeline NextStepRoute { get; private set; }
 

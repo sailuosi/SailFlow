@@ -14,7 +14,9 @@ public sealed class NextStepRouteBuilder
     int _registerSeq;
     bool _skipDefaultLinq;
 
-    /// <summary>不自动挂 <see cref="LinqDynamicConditionEvaluator"/>（高级）。</summary>
+    /// <summary>
+    /// 保留 API。默认 LINQ 由 <c>UseSailRuntimeDefaults</c> 挂载；本方法仅跳过已废弃的 engine 内 Ensure。
+    /// </summary>
     public NextStepRouteBuilder WithoutDefaultLinqEvaluator()
     {
         _skipDefaultLinq = true;

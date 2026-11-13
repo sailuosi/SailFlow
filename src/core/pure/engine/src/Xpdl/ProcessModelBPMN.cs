@@ -1097,28 +1097,22 @@ namespace sailflow.engine.Xpdl
 
         #region Parse Expression
         /// <summary>
-        /// Parse Condition via NextStepRoute Evaluator 链（未挂管道时 ≡ ExpressionParser）。
+        /// Parse Condition via NextStepRoute Evaluator 链；未配置则抛异常（须业务侧 UseSailRuntimeDefaults 等）。
         /// </summary>
         private bool ParseCondition(Transition transition, IDictionary<string, string> conditionKeyValuePair)
         {
             var expression = transition.Condition.ConditionText;
-            var pipeline = Sail?.NextStepRoute;
-            if (pipeline != null)
+            var pipeline = NextStep.NextStepConditionRequire.GetPipelineRequired(Sail);
+            return pipeline.Evaluate(new NextStep.ConditionEvaluateContext
             {
-                return pipeline.Evaluate(new NextStep.ConditionEvaluateContext
-                {
-                    Sail = Sail,
-                    Expression = expression,
-                    Variables = conditionKeyValuePair,
-                    ProcessId = ProcessEntity?.ProcessId,
-                    ProcessCode = ProcessEntity?.ProcessCode,
-                    TransitionId = transition?.TransitionId,
-                    Phase = NextStep.NextStepRoutePhase.Send
-                });
-            }
-
-            return NextStep.LinqDynamicConditionEvaluator.EvaluateLegacy(
-                expression, conditionKeyValuePair);
+                Sail = Sail,
+                Expression = expression,
+                Variables = conditionKeyValuePair,
+                ProcessId = ProcessEntity?.ProcessId,
+                ProcessCode = ProcessEntity?.ProcessCode,
+                TransitionId = transition?.TransitionId,
+                Phase = NextStep.NextStepRoutePhase.Send
+            });
         }
 
         /// <summary>

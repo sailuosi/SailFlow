@@ -180,23 +180,18 @@ namespace sailflow.engine.Xpdl
             IDictionary<string, string> conditionKeyValuePair)
         {
             var expression = transition.Condition.ConditionText;
-            var pipeline = client?.NextStepRoute;
-            if (pipeline != null)
+            var pipeline = NextStepConditionRequire.GetPipelineRequired(client);
+            var entity = processModel?.ProcessEntity;
+            return pipeline.Evaluate(new ConditionEvaluateContext
             {
-                var entity = processModel?.ProcessEntity;
-                return pipeline.Evaluate(new ConditionEvaluateContext
-                {
-                    Sail = client,
-                    Expression = expression,
-                    Variables = conditionKeyValuePair,
-                    ProcessId = entity?.ProcessId,
-                    ProcessCode = entity?.ProcessCode,
-                    TransitionId = transition?.TransitionId,
-                    Phase = NextStepRoutePhase.Preview
-                });
-            }
-
-            return LinqDynamicConditionEvaluator.EvaluateLegacy(expression, conditionKeyValuePair);
+                Sail = client,
+                Expression = expression,
+                Variables = conditionKeyValuePair,
+                ProcessId = entity?.ProcessId,
+                ProcessCode = entity?.ProcessCode,
+                TransitionId = transition?.TransitionId,
+                Phase = NextStepRoutePhase.Preview
+            });
         }
     }
 }

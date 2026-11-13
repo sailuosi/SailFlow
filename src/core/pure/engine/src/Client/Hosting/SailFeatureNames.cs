@@ -11,6 +11,8 @@ public static class SailFeatureNames
     public const string MessageQueue = "message-queue";
     public const string Assignee = "assignee";
     public const string NextStepRoute = "next-step-route";
+    /// <summary>pure 默认扩展总包（sailflow.runtime · UseSailRuntimeDefaults）。</summary>
+    public const string SailRuntimeDefaults = "sail.runtime.defaults";
     public const string FlowGate = "flow-gate";
     public const string FlowHook = "flow-hook";
     public const string TaskNotifier = "task-notifier";

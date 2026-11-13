@@ -120,6 +120,7 @@ var client = CreateBuilder(configuration)
     .UseBizJson()
     .UseBizRules()
     .UseBizAssignees()
+    .UseBizRuntimeDefaults()            // LINQ 条件 Evaluator 等 pure 默认扩展
     .UseNextStepRoute(r =>              // 下一跳写袋 / 求值 / 候选 Filter（可选）
     {
         // r.IfCondition(...); r.AddFilter<T>(...);

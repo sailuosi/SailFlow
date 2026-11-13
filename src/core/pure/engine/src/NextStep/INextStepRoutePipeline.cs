@@ -15,7 +15,7 @@ public interface INextStepRoutePipeline
     void Prepare(NextStepRouteContext ctx);
 
     /// <summary>
-    /// 求值条件表达式。无注册 Evaluator 时回落 LINQ Dynamic（≡ ExpressionParser）。
+    /// 求值条件表达式。无注册 Evaluator 时抛 <see cref="System.InvalidOperationException"/>（须业务侧配置）。
     /// 全链 null → false。
     /// </summary>
     bool Evaluate(ConditionEvaluateContext ctx);
