@@ -29,16 +29,5 @@ namespace sailflow.hub.Hosting
                 }
             });
         }
-
-        /// <summary>
-        /// 已废弃：引擎不再提供默认 sys_* 实现。请 <c>UseResource(hostImpl)</c> 或宿主 <c>UseSleveenOrgResource()</c>。
-        /// </summary>
-        [Obsolete("Engine has no org/personnel tables. Use UseResource(IResourceService) or host UseSleveenOrgResource().")]
-        public static ISailCollection UseResource(this ISailCollection services)
-        {
-            throw new InvalidOperationException(
-                "IResourceService has no built-in engine implementation (no sys_user/sys_role tables). " +
-                "Register a host implementation: services.UseResource(impl) or builder.UseSleveenOrgResource().");
-        }
     }
 }

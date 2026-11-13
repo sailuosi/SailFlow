@@ -11,7 +11,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\core\pure\engine\sailflow.engine.csproj" />
+    <ProjectReference Include="..\..\core\ext\msg\sailflow.msg.csproj" />
   </ItemGroup>
 
 </Project>

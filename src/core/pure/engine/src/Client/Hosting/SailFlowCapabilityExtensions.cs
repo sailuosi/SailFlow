@@ -99,12 +99,14 @@ public static class SailFlowCapabilityExtensions
     /// <code>
     /// services.UseFlowAspects(s =>
     /// {
+    ///     // 样例类型在 samples/external（sailflow.external.Hooks）
     ///     s.AddGate&lt;FinancePreSendGate&gt;(o => o.ProcessCodes = new[] { "EXPENSE" });
     ///     s.UseFlowHook(new FinanceAggregateHook(), o =>
     ///     {
     ///         o.ProcessCodes = new[] { "EXPENSE" };
     ///         o.Events = new[] { EventFireTypeEnum.OnProcessContinued };
     ///     });
+    ///     // SampleHttpTaskNotifier → samples/external（sailflow.external.Notify）
     ///     s.UseTaskNotifier(new SampleHttpTaskNotifier(url), o =>
     ///     {
     ///         o.Match = HookMatch.All;

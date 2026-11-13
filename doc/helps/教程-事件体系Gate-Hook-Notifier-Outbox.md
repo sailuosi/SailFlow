@@ -132,7 +132,7 @@ client.CapabilityMetrics = new InMemoryFlowCapabilityMetrics();
 `SailClientBuilder` 与 `ISailCollection` 均有同名扩展，可链式写在 Builder 上，也可写在 `UseFlowAspects` 回调里。
 
 ```csharp
-// 无参 Gate / Hook（引擎样例 FinancePreSendGate、FinanceAggregateHook 均满足 new()）
+// 无参 Gate / Hook（samples/external 样例 FinancePreSendGate、FinanceAggregateHook 均满足 new()）
 var client = SailClient.CreateBuilder(configuration)
     .UseDatabase(/* ... */)
     .AddGate<FinancePreSendGate>(o =>
@@ -280,7 +280,7 @@ public sealed class AmountLimitGate : IFlowGate
 }
 ```
 
-引擎内置文档样例：`sailflow.engine.Samples.FinancePreSendGate`。
+文档样例（`samples/external`）：`sailflow.external.Hooks.FinancePreSendGate`。
 
 **适合**：Start / Run / Reject / SendBack / Transfer 等推进前规则。  
 **不要**：Gate 内打慢外部 HTTP / MQ（会阻塞审批；超时体验差）。  
@@ -364,7 +364,7 @@ builder.UseFlowHook(new UpdateBillStatusHook(bills), o =>
 });
 ```
 
-引擎样例：`FinanceAggregateHook`（过滤 `OnProcessContinued`）。
+文档样例（`samples/external`）：`FinanceAggregateHook`（过滤 `OnProcessContinued`）。
 
 **建议**
 
