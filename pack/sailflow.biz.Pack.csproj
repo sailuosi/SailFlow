@@ -21,7 +21,8 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.8" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.14" />
-    <PackageReference Include="iTextSharp" Version="5.5.13.4" />
+    <PackageReference Include="itext" Version="9.8.0" />
+    <PackageReference Include="itext.bouncy-castle-adapter" Version="9.8.0" />
   </ItemGroup>
 
   <!-- Layer assemblies → packed into this nupkg
