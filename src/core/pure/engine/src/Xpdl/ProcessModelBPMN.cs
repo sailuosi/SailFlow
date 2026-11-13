@@ -586,6 +586,12 @@ namespace sailflow.engine.Xpdl
                         });
                     }
                 }
+
+                var filtered = NextStep.NextStepRouteRuntime.ApplyFilter(
+                    Sail, nextStepResult, currentActivity, ProcessEntity,
+                    NextStep.NextStepRoutePhase.Preview, conditions,
+                    activityInstanceId: activityInstanceId);
+                NextStep.NextStepRouteRuntime.AnnotateNodeViews(treeNodeList, filtered);
             }
             nextTreeResult.StepList = treeNodeList;
             return nextTreeResult;
@@ -662,6 +668,14 @@ namespace sailflow.engine.Xpdl
                     result.Root);
                 return newResult;
             }
+
+            // Client 级 Filter（与预览同源）；AndSplit 守卫后裁 Disabled
+            var currentActivity = GetActivity(currentActivityId);
+            var filtered = NextStep.NextStepRouteRuntime.ApplyFilter(
+                Sail, result, currentActivity, ProcessEntity,
+                NextStep.NextStepRoutePhase.Send, conditionKeyValuePair,
+                activityResource?.AppRunner, activityInstanceId);
+            NextStep.NextStepRouteRuntime.PruneDisabledFromTree(result.Root, filtered);
 
             //下一步节点列表封装
             //Next step: Node List Encapsulation

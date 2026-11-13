@@ -42,12 +42,22 @@ public sealed class NextStepRoutePipeline : INextStepRoutePipeline
             return;
         foreach (var item in OrderedPrepares())
         {
+            var impl = item.Prep.GetType().Name;
             if (!NextStepRouteMatch.Matches(
                     item.Opts, ctx.ProcessCode, ctx.ProcessId, ctx.CurrentActivityCode))
+            {
+                NextStepRouteDiagnostics.OptionsSkip("Prepare", impl, ctx.ProcessCode, ctx.CurrentActivityCode);
                 continue;
+            }
             if (!item.Prep.IsMatch(ctx))
+            {
+                NextStepRouteDiagnostics.IsMatchSkip("Prepare", impl);
                 continue;
+            }
+
+            var before = SnapshotKeys(ctx.Conditions);
             item.Prep.Prepare(ctx);
+            LogWroteKeys(impl, before, ctx.Conditions);
         }
     }
 
@@ -62,19 +72,32 @@ public sealed class NextStepRoutePipeline : INextStepRoutePipeline
         if (chain.Count == 0)
             return LinqDynamicConditionEvaluator.EvaluateLegacy(ctx.Expression, ctx.Variables);
 
+        var anyTried = false;
         foreach (var item in chain)
         {
+            var impl = item.Evaluator.GetType().Name;
             if (!NextStepRouteMatch.Matches(
                     item.Opts, ctx.ProcessCode, ctx.ProcessId, ctx.CurrentActivityCode))
+            {
+                NextStepRouteDiagnostics.OptionsSkip("Evaluator", impl, ctx.ProcessCode, ctx.CurrentActivityCode);
                 continue;
+            }
             if (!item.Evaluator.IsMatch(ctx))
+            {
+                NextStepRouteDiagnostics.IsMatchSkip("Evaluator", impl);
                 continue;
+            }
+
+            anyTried = true;
             var result = item.Evaluator.TryEvaluate(ctx);
             if (result.HasValue)
                 return result.Value;
+
+            NextStepRouteDiagnostics.EvaluatorNull(impl);
         }
 
-        // 全链 null / 全未命中 → false（N14 / V11）
+        if (anyTried || chain.Count > 0)
+            NextStepRouteDiagnostics.EvaluatorAllNull();
         return false;
     }
 
@@ -84,12 +107,20 @@ public sealed class NextStepRoutePipeline : INextStepRoutePipeline
             return;
         foreach (var item in OrderedFilters())
         {
+            var impl = item.Filter.GetType().Name;
             if (!NextStepRouteMatch.Matches(
                     item.Opts, ctx.ProcessCode, ctx.ProcessId, ctx.CurrentActivityCode))
+            {
+                NextStepRouteDiagnostics.OptionsSkip("Filter", impl, ctx.ProcessCode, ctx.CurrentActivityCode);
                 continue;
+            }
             if (!item.Filter.IsMatch(ctx))
+            {
+                NextStepRouteDiagnostics.IsMatchSkip("Filter", impl);
                 continue;
+            }
             item.Filter.Filter(ctx, candidates);
+            NextStepRouteDiagnostics.FilterApplied(impl);
         }
     }
 
@@ -111,6 +142,27 @@ public sealed class NextStepRoutePipeline : INextStepRoutePipeline
 
     IEnumerable<(IConditionEvaluator Evaluator, NextStepRouteOptions Opts, int Seq)> OrderedEvaluators() =>
         _evaluators.OrderBy(x => x.Opts.Order ?? x.Seq).ThenBy(x => x.Seq);
+
+    static Dictionary<string, string> SnapshotKeys(IDictionary<string, string> bag)
+    {
+        if (bag == null || bag.Count == 0)
+            return null;
+        return new Dictionary<string, string>(bag, StringComparer.OrdinalIgnoreCase);
+    }
+
+    static void LogWroteKeys(string impl, Dictionary<string, string> before, IDictionary<string, string> after)
+    {
+        if (after == null)
+            return;
+        foreach (var kv in after)
+        {
+            if (before != null
+                && before.TryGetValue(kv.Key, out var old)
+                && string.Equals(old, kv.Value, StringComparison.Ordinal))
+                continue;
+            NextStepRouteDiagnostics.PrepareWrote(impl, kv.Key, kv.Value);
+        }
+    }
 
     static NextStepRouteOptions CloneOptions(NextStepRouteOptions source)
     {

@@ -80,5 +80,14 @@ namespace sailflow.engine.Common
         /// 接收者类型
         /// </summary>
         public ReceiverTypeEnum ReceiverType { get; set; }
+
+        /// <summary>NextStep Filter：前端可选隐藏/禁用。</summary>
+        public bool Disabled { get; set; }
+
+        /// <summary>NextStep Filter / AndSplit：必达支。</summary>
+        public bool Required { get; set; }
+
+        /// <summary>NextStep Filter 处置原因码。</summary>
+        public string ReasonCode { get; set; }
     }
 }
