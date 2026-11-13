@@ -76,35 +76,35 @@ public sealed class SailClientBuilder
         return this;
     }
 
-    /// <summary>注册规则引擎（按 mode 扩展；可多次调用）。</summary>
-    public SailClientBuilder UseRuleEngine(IRuleEngine engine)
+    /// <summary>追加规则引擎（按 mode 扩展；可多次调用）。</summary>
+    public SailClientBuilder AddRuleEngine(IRuleEngine engine)
     {
         ArgumentNullException.ThrowIfNull(engine);
-        Services.UseRuleEngine(engine);
+        Services.AddRuleEngine(engine);
         return this;
     }
 
-    /// <summary>注册 Action 方法处理器（可多次；同 Method 后注册覆盖）。</summary>
-    public SailClientBuilder UseActionMethod(IActionMethodHandler handler)
+    /// <summary>追加 Action 方法处理器（可多次；同 Method 后注册覆盖）。</summary>
+    public SailClientBuilder AddActionMethod(IActionMethodHandler handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        Services.UseActionMethod(handler);
+        Services.AddActionMethod(handler);
         return this;
     }
 
-    /// <summary>注册 Script 方法处理器。</summary>
-    public SailClientBuilder UseScriptMethod(IScriptMethodHandler handler)
+    /// <summary>追加 Script 方法处理器（可多次）。</summary>
+    public SailClientBuilder AddScriptMethod(IScriptMethodHandler handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        Services.UseScriptMethod(handler);
+        Services.AddScriptMethod(handler);
         return this;
     }
 
-    /// <summary>注册 Service 方法处理器。</summary>
-    public SailClientBuilder UseServiceMethod(IServiceMethodHandler handler)
+    /// <summary>追加 Service 方法处理器（可多次）。</summary>
+    public SailClientBuilder AddServiceMethod(IServiceMethodHandler handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        Services.UseServiceMethod(handler);
+        Services.AddServiceMethod(handler);
         return this;
     }
 
@@ -193,28 +193,28 @@ public sealed class SailClientBuilder
             && enginesBox is List<IRuleEngine> engines)
         {
             foreach (var engine in engines)
-                client.useRuleEngine(engine);
+                client.addRuleEngine(engine);
         }
 
         if (Services.Properties.TryGetValue(SailBuilderKeys.ActionMethods, out var actionsBox)
             && actionsBox is List<IActionMethodHandler> actions)
         {
             foreach (var handler in actions)
-                client.useActionMethod(handler);
+                client.addActionMethod(handler);
         }
 
         if (Services.Properties.TryGetValue(SailBuilderKeys.ScriptMethods, out var scriptsBox)
             && scriptsBox is List<IScriptMethodHandler> scripts)
         {
             foreach (var handler in scripts)
-                client.useScriptMethod(handler);
+                client.addScriptMethod(handler);
         }
 
         if (Services.Properties.TryGetValue(SailBuilderKeys.ServiceMethods, out var servicesBox)
             && servicesBox is List<IServiceMethodHandler> serviceHandlers)
         {
             foreach (var handler in serviceHandlers)
-                client.useServiceMethod(handler);
+                client.addServiceMethod(handler);
         }
 
         if (Services.Properties.TryGetValue(SailBuilderKeys.MessageQueue, out var mqBox)

@@ -4,7 +4,7 @@ namespace sailflow.external.Hooks;
 
 /// <summary>
 /// 文档示例：发送/启动前 Gate（白名单流程定义 Code）。
-/// 注册：<c>UseFlowGate(new FinancePreSendGate(), o =&gt; o.ProcessCodes = new[] { "EXPENSE" })</c>
+/// 注册：<c>AddGate(new FinancePreSendGate(), o =&gt; o.ProcessCodes = new[] { "EXPENSE" })</c>
 /// </summary>
 public sealed class FinancePreSendGate : IFlowGate
 {

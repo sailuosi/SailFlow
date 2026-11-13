@@ -44,7 +44,7 @@ namespace sailflow.data.Hosting
 
         static void Register(SailClient client, Action<HookRegistrationOptions> configure)
         {
-            client.useFlowHook(new ImmediateProcessArchiveHook(client), o =>
+            client.addHook(new ImmediateProcessArchiveHook(client), o =>
             {
                 o.Match = HookMatch.All;
                 o.Mode = HookMode.AsyncOutbox;

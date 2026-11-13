@@ -5,7 +5,7 @@ using sailflow.engine.Factories;
 namespace sailflow.engine.Hosting;
 
 /// <summary>
-/// Builder：覆写四引擎工厂（与 UseFlowGate 同构，单一门面路径）。
+/// Builder：覆写四引擎工厂（与 AddGate 同构，单一门面路径）。
 /// 委托在 <see cref="SailClientBuilder.Build"/> 之后调用，以便注入本 Client。
 /// </summary>
 public static class SailEngineFactoryExtensions

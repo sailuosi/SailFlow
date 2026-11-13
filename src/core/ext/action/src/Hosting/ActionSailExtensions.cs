@@ -19,8 +19,8 @@ namespace sailflow.action.Hosting
         public static SailClientBuilder UseIronPython(this SailClientBuilder builder)
         {
             ArgumentNullException.ThrowIfNull(builder);
-            builder.UseActionMethod(new PythonActionHandler());
-            builder.UseScriptMethod(new PythonScriptHandler());
+            builder.AddActionMethod(new PythonActionHandler());
+            builder.AddScriptMethod(new PythonScriptHandler());
             return builder;
         }
 
@@ -28,8 +28,8 @@ namespace sailflow.action.Hosting
         public static ISailCollection UseIronPython(this ISailCollection services)
         {
             ArgumentNullException.ThrowIfNull(services);
-            services.UseActionMethod(new PythonActionHandler());
-            services.UseScriptMethod(new PythonScriptHandler());
+            services.AddActionMethod(new PythonActionHandler());
+            services.AddScriptMethod(new PythonScriptHandler());
             return services;
         }
 
@@ -37,8 +37,8 @@ namespace sailflow.action.Hosting
         public static SailClient UseIronPython(this SailClient client)
         {
             ArgumentNullException.ThrowIfNull(client);
-            client.useActionMethod(new PythonActionHandler());
-            client.useScriptMethod(new PythonScriptHandler());
+            client.addActionMethod(new PythonActionHandler());
+            client.addScriptMethod(new PythonScriptHandler());
             return client;
         }
     }

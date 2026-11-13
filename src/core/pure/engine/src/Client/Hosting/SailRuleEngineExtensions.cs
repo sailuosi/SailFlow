@@ -10,8 +10,8 @@ namespace sailflow.engine.Hosting;
 /// </summary>
 public static class SailRuleEngineExtensions
 {
-    /// <summary>登记一个 <see cref="IRuleEngine"/>；Build 时挂到 <see cref="SailClient"/>。</summary>
-    public static ISailCollection UseRuleEngine(this ISailCollection services, IRuleEngine engine)
+    /// <summary>追加一个 <see cref="IRuleEngine"/>（可多次，按 mode 扩展）；Build 时挂到 <see cref="SailClient"/>。</summary>
+    public static ISailCollection AddRuleEngine(this ISailCollection services, IRuleEngine engine)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(engine);

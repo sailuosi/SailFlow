@@ -44,7 +44,7 @@ namespace sailflow.engine.Rules
                 : string.Join(", ", _engines.Keys.OrderBy(x => x, StringComparer.OrdinalIgnoreCase));
             throw new InvalidOperationException(
                 "No rule engine registered for mode \"" + mode + "\". Registered: " + known +
-                ". Call client.useRuleEngine(...) or builder.UseBizRuleEngines().");
+                ". Call client.addRuleEngine(...) or builder.UseBizRuleEngines().");
         }
     }
 }

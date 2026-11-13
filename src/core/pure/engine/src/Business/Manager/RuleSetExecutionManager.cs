@@ -34,7 +34,7 @@ namespace sailflow.engine.Manager
                     : string.Join(", ", _client.RuleEngines.Modes);
                 return Fail(
                     "No rule engine registered for mode \"" + modeKey + "\". Registered: " + known +
-                    ". Call UseBizRuleEngines() or useRuleEngine(...).");
+                    ". Call UseBizRuleEngines() or addRuleEngine(...).");
             }
 
             return engine.Execute(ruleSet, variables ?? new Dictionary<string, object>());

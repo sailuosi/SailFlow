@@ -10,7 +10,7 @@ namespace sailflow.biz.Hosting;
 public static class BizActionSailExtensions
 {
     /// <summary>
-    /// 注册 Python Action/Script 处理器；之后仍可用 <c>UseActionMethod</c> / <c>UseScriptMethod</c> 扩展。
+    /// 注册 Python Action/Script 处理器；之后仍可用 <c>AddActionMethod</c> / <c>AddScriptMethod</c> 扩展。
     /// </summary>
     public static ISailCollection UseBizAction(this ISailCollection services)
     {

@@ -25,7 +25,7 @@ namespace sailflow.msg.Hosting
                 DependsOn = new[] { SailFeatureNames.Json },
                 ConfigureClient = (client, _) =>
                 {
-                    client.useTaskNotifier(new DefaultMailTaskNotifier(client, options), new HookRegistrationOptions
+                    client.addNotifier(new DefaultMailTaskNotifier(client, options), new HookRegistrationOptions
                     {
                         Match = HookMatch.All,
                         TaskKinds = new[] { TaskNotifyKind.Created, TaskNotifyKind.Completed },
@@ -51,7 +51,7 @@ namespace sailflow.msg.Hosting
             ArgumentNullException.ThrowIfNull(client);
             var options = new TaskMailOptions();
             configure?.Invoke(options);
-            client.useTaskNotifier(new DefaultMailTaskNotifier(client, options), new HookRegistrationOptions
+            client.addNotifier(new DefaultMailTaskNotifier(client, options), new HookRegistrationOptions
             {
                 Match = HookMatch.All,
                 TaskKinds = new[] { TaskNotifyKind.Created, TaskNotifyKind.Completed },

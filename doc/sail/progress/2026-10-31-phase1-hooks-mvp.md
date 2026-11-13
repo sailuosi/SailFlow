@@ -8,8 +8,8 @@
 ### Engine (`sailflow.engine`)
 
 - **Contracts** (`src/core/pure/engine/src/Hooks/`): `IFlowGate`, `IFlowHook`, `ITaskNotifier`, `HookResult`, `HookValidationItem`, `FlowHookContext`, `TaskNotifyContext`, enums (`TaskNotifyKind`, `HookMatch`, `HookMode`, `FlowOperation`), `HookRegistrationOptions`, registration DTOs, `FlowCapabilityRegistry`, `FlowCapabilityDispatcher`, `HookOutboxWorker`.
-- **Client:** `SailClient.Capabilities` / `Hooks`, `CapabilityDispatcher`, `useFlowGate` / `useFlowHook` / `useTaskNotifier`.
-- **Hosting:** `SailFlowCapabilityExtensions` — `UseFlowGate` / `UseFlowHook` / `UseTaskNotifier` (class + delegate) on `ISailCollection` and `SailClientBuilder`; `SailBuilderKeys.FlowCapabilities`; Build applies pending registrations.
+- **Client:** `SailClient.Capabilities` / `Hooks`, `CapabilityDispatcher`, `addGate` / `addHook` / `addNotifier`.
+- **Hosting:** `SailFlowCapabilityExtensions` — `AddGate` / `AddHook` / `AddNotifier` (class + delegate) on `ISailCollection` and `SailClientBuilder`; `SailBuilderKeys.FlowCapabilities`; Build applies pending registrations.
 - **Run path:** `WorkflowService.ProcessExecution.Run` — Gate after `CreateRuntimeInstanceAppRunning`, before `Execute`; Reject → `ApplyGateReject` (no `runprocess.error` wrap). On `OnProcessContinued` success: Sync hooks + Async Outbox enqueue.
 - **Task path:** `TaskManager` — removed `SendTaskEMails` / `SendEmailFlag`; `FireTaskLifecycle` on create/complete (Sync hooks, Notifier Outbox, `Subscribe` via `EventExecutor`).
 - **Outbox:** `HookOutboxEntity` (`wf_hook_outbox`), `HookOutboxManager`, schema in `SailSchemaInitializer.EnsureCoreTables`.
@@ -30,9 +30,9 @@
 ```csharp
 var builder = SailClient.CreateBuilder()
     .UseDatabase(db)
-    .UseFlowGate("finance.pre-send", ctx =>
+    .AddGate("finance.pre-send", ctx =>
         HookResult.Ok(), o => { o.ProcessCodes = new[] { "EXPENSE" }; })
-    .UseFlowHook("biz.after-run", ctx => { }, o =>
+    .AddHook("biz.after-run", ctx => { }, o =>
     {
         o.ProcessCodes = new[] { "EXPENSE" };
         o.Events = new[] { EventFireTypeEnum.OnProcessContinued };

@@ -17,8 +17,8 @@ namespace sailflow.hub.Hosting
         public static SailClientBuilder UseBizRuleEngines(this SailClientBuilder builder)
         {
             ArgumentNullException.ThrowIfNull(builder);
-            builder.UseRuleEngine(new NRulesRuleTypesEngine());
-            builder.UseRuleEngine(new BindingsJsonRuleEngine());
+            builder.AddRuleEngine(new NRulesRuleTypesEngine());
+            builder.AddRuleEngine(new BindingsJsonRuleEngine());
             return builder;
         }
 
@@ -26,17 +26,17 @@ namespace sailflow.hub.Hosting
         public static ISailCollection UseBizRuleEngines(this ISailCollection services)
         {
             ArgumentNullException.ThrowIfNull(services);
-            services.UseRuleEngine(new NRulesRuleTypesEngine());
-            services.UseRuleEngine(new BindingsJsonRuleEngine());
+            services.AddRuleEngine(new NRulesRuleTypesEngine());
+            services.AddRuleEngine(new BindingsJsonRuleEngine());
             return services;
         }
 
-        /// <summary>在已构建的 Client 上挂载内置引擎（可再 useRuleEngine 覆盖/追加自定义 mode）。</summary>
+        /// <summary>在已构建的 Client 上挂载内置引擎（可再 addRuleEngine 覆盖/追加自定义 mode）。</summary>
         public static SailClient UseBizRuleEngines(this SailClient client)
         {
             ArgumentNullException.ThrowIfNull(client);
-            client.useRuleEngine(new NRulesRuleTypesEngine());
-            client.useRuleEngine(new BindingsJsonRuleEngine());
+            client.addRuleEngine(new NRulesRuleTypesEngine());
+            client.addRuleEngine(new BindingsJsonRuleEngine());
             return client;
         }
     }

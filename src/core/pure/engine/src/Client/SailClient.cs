@@ -209,7 +209,7 @@ public partial class SailClient
     public CancellationTokenSource AssigneeAutoApproveDrainCts { get; set; }
 
     /// <summary>
-    /// 规则引擎注册表（按 <c>wf_rule_set.mode</c> 调度）。实现由业务侧 <see cref="useRuleEngine"/> 挂载。
+    /// 规则引擎注册表（按 <c>wf_rule_set.mode</c> 调度）。实现由业务侧 <see cref="addRuleEngine"/> 挂载。
     /// </summary>
     public RuleEngineRegistry RuleEngines => _ruleEngines ??= new RuleEngineRegistry();
 
@@ -292,50 +292,50 @@ public partial class SailClient
             "No IAssigneePipeline registered on SailClient. Call UseBizAssignees() / UseAssignees() / useAssigneePipeline(...).");
     }
 
-    /// <summary>注册 Gate（同名后注册覆盖）。</summary>
-    public SailClient useFlowGate(IFlowGate gate, HookRegistrationOptions options = null)
+    /// <summary>追加 Gate（同名后注册覆盖）。</summary>
+    public SailClient addGate(IFlowGate gate, HookRegistrationOptions options = null)
     {
         Capabilities.RegisterGate(gate, options ?? new HookRegistrationOptions());
         return this;
     }
 
-    /// <summary>注册 Hook（同名后注册覆盖）。</summary>
-    public SailClient useFlowHook(IFlowHook hook, HookRegistrationOptions options = null)
+    /// <summary>追加 Hook（同名后注册覆盖）。</summary>
+    public SailClient addHook(IFlowHook hook, HookRegistrationOptions options = null)
     {
         Capabilities.RegisterHook(hook, options ?? new HookRegistrationOptions());
         return this;
     }
 
-    /// <summary>注册待办 Notifier（同名后注册覆盖）。</summary>
-    public SailClient useTaskNotifier(ITaskNotifier notifier, HookRegistrationOptions options = null)
+    /// <summary>追加待办 Notifier（同名后注册覆盖）。</summary>
+    public SailClient addNotifier(ITaskNotifier notifier, HookRegistrationOptions options = null)
     {
         Capabilities.RegisterNotifier(notifier, options ?? new HookRegistrationOptions());
         return this;
     }
 
-    /// <summary>注册规则引擎实现（可多次调用以挂多种 mode）。</summary>
-    public SailClient useRuleEngine(IRuleEngine engine)
+    /// <summary>追加规则引擎实现（可多次调用以挂多种 mode）。</summary>
+    public SailClient addRuleEngine(IRuleEngine engine)
     {
         RuleEngines.Register(engine);
         return this;
     }
 
-    /// <summary>注册 Action 方法处理器（可覆盖同 Method）。</summary>
-    public SailClient useActionMethod(IActionMethodHandler handler)
+    /// <summary>追加 Action 方法处理器（可覆盖同 Method）。</summary>
+    public SailClient addActionMethod(IActionMethodHandler handler)
     {
         ActionMethods.Register(handler);
         return this;
     }
 
-    /// <summary>注册 Script 方法处理器（可覆盖同 Method）。</summary>
-    public SailClient useScriptMethod(IScriptMethodHandler handler)
+    /// <summary>追加 Script 方法处理器（可覆盖同 Method）。</summary>
+    public SailClient addScriptMethod(IScriptMethodHandler handler)
     {
         ScriptMethods.Register(handler);
         return this;
     }
 
-    /// <summary>注册 Service 方法处理器（可覆盖同 Method）。</summary>
-    public SailClient useServiceMethod(IServiceMethodHandler handler)
+    /// <summary>追加 Service 方法处理器（可覆盖同 Method）。</summary>
+    public SailClient addServiceMethod(IServiceMethodHandler handler)
     {
         ServiceMethods.Register(handler);
         return this;

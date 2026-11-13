@@ -10,7 +10,7 @@ namespace sailflow.biz.Hosting;
 public static class BizRuleBizSailExtensions
 {
     /// <summary>
-    /// 注册 NRules(<c>ruleTypes</c>) + bindingsJson 两种内置引擎；之后仍可用 <c>UseRuleEngine</c> 扩展自定义 mode。
+    /// 注册 NRules(<c>ruleTypes</c>) + bindingsJson 两种内置引擎；之后仍可用 <c>AddRuleEngine</c> 扩展自定义 mode。
     /// </summary>
     public static ISailCollection UseBizRules(this ISailCollection services)
     {

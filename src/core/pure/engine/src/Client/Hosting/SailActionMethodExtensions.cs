@@ -10,7 +10,8 @@ namespace sailflow.engine.Hosting;
 /// </summary>
 public static class SailActionMethodExtensions
 {
-    public static ISailCollection UseActionMethod(this ISailCollection services, IActionMethodHandler handler)
+    /// <summary>追加 Action 方法处理器（可多次；同 Method 后注册覆盖）。</summary>
+    public static ISailCollection AddActionMethod(this ISailCollection services, IActionMethodHandler handler)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(handler);
@@ -18,7 +19,8 @@ public static class SailActionMethodExtensions
         return services;
     }
 
-    public static ISailCollection UseScriptMethod(this ISailCollection services, IScriptMethodHandler handler)
+    /// <summary>追加 Script 方法处理器（可多次）。</summary>
+    public static ISailCollection AddScriptMethod(this ISailCollection services, IScriptMethodHandler handler)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(handler);
@@ -26,7 +28,8 @@ public static class SailActionMethodExtensions
         return services;
     }
 
-    public static ISailCollection UseServiceMethod(this ISailCollection services, IServiceMethodHandler handler)
+    /// <summary>追加 Service 方法处理器（可多次）。</summary>
+    public static ISailCollection AddServiceMethod(this ISailCollection services, IServiceMethodHandler handler)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(handler);

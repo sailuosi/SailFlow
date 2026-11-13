@@ -11,7 +11,7 @@ namespace sailflow.external.Notify;
 
 /// <summary>
 /// 业务继承样例：仅实现 <see cref="SendCoreAsync"/>，POST JSON 到配置的回调 URL。
-/// 注册：<c>UseTaskNotifier(new SampleHttpTaskNotifier("https://example/callback"))</c>
+/// 注册：<c>AddNotifier(new SampleHttpTaskNotifier("https://example/callback"))</c>
 /// </summary>
 public sealed class SampleHttpTaskNotifier : TaskNotifyChannelBase
 {

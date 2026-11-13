@@ -33,7 +33,7 @@ namespace sailflow.engine.Actions
                 : string.Join(", ", _handlers.Keys.OrderBy(x => (int)x));
             throw new InvalidOperationException(
                 "No script method handler registered for \"" + method + "\". Registered: " + known +
-                ". Call UseBizAction() / useScriptMethod(...) for extensions (e.g. Python).");
+                ". Call UseBizAction() / addScriptMethod(...) for extensions (e.g. Python).");
         }
     }
 }

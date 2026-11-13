@@ -67,7 +67,7 @@ kit.commit();
 注册 Gate 时可通过 **`FlowHookContext.Operation`** 区分场景，例如仅拦截 Withdraw：
 
 ```csharp
-.UseFlowGate("no-withdraw", ctx =>
+.AddGate("no-withdraw", ctx =>
     ctx.Operation == FlowOperation.Withdraw
         ? HookResult.Reject("WITHDRAW_BLOCKED", "不允许撤回")
         : HookResult.Ok(),

@@ -33,7 +33,7 @@ namespace sailflow.engine.Actions
                 : string.Join(", ", _handlers.Keys.OrderBy(x => (int)x));
             throw new InvalidOperationException(
                 "No service method handler registered for \"" + method + "\". Registered: " + known +
-                ". Call useServiceMethod(...) to register.");
+                ". Call addServiceMethod(...) to register.");
         }
     }
 }

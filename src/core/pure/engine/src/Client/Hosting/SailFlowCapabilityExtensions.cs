@@ -8,9 +8,14 @@ using sailflow.engine.Client;
 namespace sailflow.engine.Hosting;
 
 /// <summary>
-/// Gate / Hook / Notifier 三轨注册扩展（对齐 <c>UseRuleEngine</c> 等 Client 管道语言）。
+/// Gate / Hook / Notifier 三轨注册扩展。
 /// </summary>
 /// <remarks>
+/// <para>
+/// <b>命名约定：</b>
+/// <c>UseXxx</c> = 启用一项能力包（总包 / 开关）；
+/// <c>AddXxx</c> = 可多次追加的注册项（同名后覆盖）。
+/// </para>
 /// <para>
 /// <b>产品语义（刻意拆开，不可混成一个接口）：</b>
 /// </para>
@@ -45,7 +50,7 @@ namespace sailflow.engine.Hosting;
 /// <list type="bullet">
 /// <item>
 /// <description>
-/// 构建中（推荐）：<c>builder.UseXxx</c> / <c>services.UseXxx</c> —
+/// 构建中（推荐）：<c>builder.UseFlowAspects</c> 总包 + <c>AddGate</c> / <c>AddHook</c> / <c>AddNotifier</c> —
 /// 写入 <see cref="ISailCollection.Properties"/> 的 pending 列表（键 <see cref="SailBuilderKeys.FlowCapabilities"/>），
 /// 由 <see cref="SailClientBuilder.Build"/> 调用 <see cref="ApplyPendingRegistrations"/> 落到
 /// <see cref="SailClient.Capabilities"/>。
@@ -53,7 +58,7 @@ namespace sailflow.engine.Hosting;
 /// </item>
 /// <item>
 /// <description>
-/// 构建后补挂：小写 <c>client.useFlowGate</c> / <c>useFlowHook</c> / <c>useTaskNotifier</c> —
+/// 构建后补挂：小写 <c>client.addGate</c> / <c>addHook</c> / <c>addNotifier</c> —
 /// 直接注册到已组装的 Client（测试或 PostBuild 热补挂）。
 /// </description>
 /// </item>
@@ -61,8 +66,7 @@ namespace sailflow.engine.Hosting;
 /// <para>
 /// <b>总包与分轨：</b>
 /// <see cref="UseFlowAspects"/> 仅收拢写法（回调参数即 builder/services 自身）；
-/// 内层仍调 <c>UseFlowGate</c> / <c>UseFlowHook</c> / <c>UseTaskNotifier</c>，
-/// 或无参构造糖 <c>AddGate&lt;T&gt;</c> / <c>AddHook&lt;T&gt;</c> / <c>AddNotifier&lt;T&gt;</c>。
+/// 内层调 <c>AddGate</c> / <c>AddHook</c> / <c>AddNotifier</c>（实例、委托或无参泛型）。
 /// Outbox Drain 见独立扩展 <c>UseHookOutboxDrain</c>（本类不负责启动后台循环）。
 /// </para>
 /// <para>
@@ -94,20 +98,20 @@ public static class SailFlowCapabilityExtensions
     /// <returns>同一 <paramref name="services"/>，便于继续链式。</returns>
     /// <remarks>
     /// 本方法本身不注册任何能力，只提供作用域写法，避免宿主 <c>Program</c> 散落多段
-    /// <c>UseFlowGate</c>/<c>UseFlowHook</c>/<c>UseTaskNotifier</c>。
+    /// <c>AddGate</c>/<c>AddHook</c>/<c>AddNotifier</c>。
     /// 示例：
     /// <code>
     /// services.UseFlowAspects(s =>
     /// {
     ///     // 样例类型在 samples/external（sailflow.external.Hooks）
     ///     s.AddGate&lt;FinancePreSendGate&gt;(o => o.ProcessCodes = new[] { "EXPENSE" });
-    ///     s.UseFlowHook(new FinanceAggregateHook(), o =>
+    ///     s.AddHook(new FinanceAggregateHook(), o =>
     ///     {
     ///         o.ProcessCodes = new[] { "EXPENSE" };
     ///         o.Events = new[] { EventFireTypeEnum.OnProcessContinued };
     ///     });
     ///     // SampleHttpTaskNotifier → samples/external（sailflow.external.Notify）
-    ///     s.UseTaskNotifier(new SampleHttpTaskNotifier(url), o =>
+    ///     s.AddNotifier(new SampleHttpTaskNotifier(url), o =>
     ///     {
     ///         o.Match = HookMatch.All;
     ///         o.TaskKinds = new[] { TaskNotifyKind.Created, TaskNotifyKind.Completed };
@@ -143,19 +147,19 @@ public static class SailFlowCapabilityExtensions
     }
 
     /// <summary>
-    /// 追加无参构造 Gate（语法糖，等价 <c>UseFlowGate(new TGate(), configure)</c>）。
+    /// 追加无参构造 Gate（语法糖，等价 <c>AddGate(new TGate(), configure)</c>）。
     /// </summary>
-    /// <typeparam name="TGate">须实现 <see cref="IFlowGate"/> 且具备无参构造；有构造期依赖时请改用 <see cref="UseFlowGate(ISailCollection, IFlowGate, Action{HookRegistrationOptions})"/>。</typeparam>
+    /// <typeparam name="TGate">须实现 <see cref="IFlowGate"/> 且具备无参构造；有构造期依赖时请改用 <see cref="AddGate(ISailCollection, IFlowGate, Action{HookRegistrationOptions})"/>。</typeparam>
     /// <param name="services">引擎服务集合。</param>
     /// <param name="configure">可选：白名单、ActivityCodes、<c>Order</c> 等（Gate 忽略 Mode）。</param>
     public static ISailCollection AddGate<TGate>(
         this ISailCollection services,
         Action<HookRegistrationOptions> configure = null)
         where TGate : class, IFlowGate, new()
-        => services.UseFlowGate(new TGate(), configure);
+        => services.AddGate(new TGate(), configure);
 
     /// <summary>
-    /// 追加无参构造 Hook（语法糖，等价 <c>UseFlowHook(new THook(), configure)</c>）。
+    /// 追加无参构造 Hook（语法糖，等价 <c>AddHook(new THook(), configure)</c>）。
     /// </summary>
     /// <typeparam name="THook">须实现 <see cref="IFlowHook"/> 且具备无参构造。</typeparam>
     /// <param name="services">引擎服务集合。</param>
@@ -164,19 +168,19 @@ public static class SailFlowCapabilityExtensions
         this ISailCollection services,
         Action<HookRegistrationOptions> configure = null)
         where THook : class, IFlowHook, new()
-        => services.UseFlowHook(new THook(), configure);
+        => services.AddHook(new THook(), configure);
 
     /// <summary>
-    /// 追加无参构造 Notifier（语法糖，等价 <c>UseTaskNotifier(new TNotifier(), configure)</c>）。
+    /// 追加无参构造 Notifier（语法糖，等价 <c>AddNotifier(new TNotifier(), configure)</c>）。
     /// </summary>
-    /// <typeparam name="TNotifier">须实现 <see cref="ITaskNotifier"/> 且具备无参构造；有参构造（如 HTTP URL）请用 <see cref="UseTaskNotifier(ISailCollection, ITaskNotifier, Action{HookRegistrationOptions})"/>。</typeparam>
+    /// <typeparam name="TNotifier">须实现 <see cref="ITaskNotifier"/> 且具备无参构造；有参构造（如 HTTP URL）请用 <see cref="AddNotifier(ISailCollection, ITaskNotifier, Action{HookRegistrationOptions})"/>。</typeparam>
     /// <param name="services">引擎服务集合。</param>
     /// <param name="configure">可选：须声明 <c>TaskKinds</c>；强制 AsyncOutbox。</param>
     public static ISailCollection AddNotifier<TNotifier>(
         this ISailCollection services,
         Action<HookRegistrationOptions> configure = null)
         where TNotifier : class, ITaskNotifier, new()
-        => services.UseTaskNotifier(new TNotifier(), configure);
+        => services.AddNotifier(new TNotifier(), configure);
 
     /// <summary>
     /// Builder 轨：追加无参构造 Gate（转调 <see cref="AddGate{TGate}(ISailCollection, Action{HookRegistrationOptions})"/>）。
@@ -215,7 +219,7 @@ public static class SailFlowCapabilityExtensions
     }
 
     /// <summary>
-    /// 注册流程 Gate（推进落库前同步校验）。
+    /// 追加流程 Gate（推进落库前同步校验；可多次）。
     /// </summary>
     /// <param name="services">引擎服务集合。</param>
     /// <param name="gate">Gate 实例；<c>Name</c> 用于同名覆盖判定与日志。</param>
@@ -231,7 +235,7 @@ public static class SailFlowCapabilityExtensions
     /// 前端可用 <c>IsValidationReject()</c> 区分业务拒绝与引擎事故。禁止在 Gate 内写流程变量或打慢外部网关。
     /// </para>
     /// </remarks>
-    public static ISailCollection UseFlowGate(
+    public static ISailCollection AddGate(
         this ISailCollection services,
         IFlowGate gate,
         Action<HookRegistrationOptions> configure = null)
@@ -246,25 +250,25 @@ public static class SailFlowCapabilityExtensions
     }
 
     /// <summary>
-    /// 以委托形式注册 Gate（临时/短逻辑，不必单独建 class）。
+    /// 以委托形式追加 Gate（临时/短逻辑，不必单独建 class）。
     /// </summary>
     /// <param name="services">引擎服务集合。</param>
     /// <param name="name">注册名（同名后覆盖）。</param>
     /// <param name="validate">同步校验委托，返回 <see cref="HookResult.Ok"/> 或 <see cref="HookResult.Reject"/>。</param>
     /// <param name="configure">可选过滤选项。</param>
     /// <remarks>内部包装为 <c>DelegateFlowGate</c> 再转调实例重载。</remarks>
-    public static ISailCollection UseFlowGate(
+    public static ISailCollection AddGate(
         this ISailCollection services,
         string name,
         Func<FlowHookContext, HookResult> validate,
         Action<HookRegistrationOptions> configure = null)
     {
         ArgumentNullException.ThrowIfNull(validate);
-        return services.UseFlowGate(new DelegateFlowGate(name, validate), configure);
+        return services.AddGate(new DelegateFlowGate(name, validate), configure);
     }
 
     /// <summary>
-    /// 注册流程 Hook（推进后业务扩展）。
+    /// 追加流程 Hook（推进后业务扩展；可多次）。
     /// </summary>
     /// <param name="services">引擎服务集合。</param>
     /// <param name="hook">Hook 实例。</param>
@@ -276,9 +280,9 @@ public static class SailFlowCapabilityExtensions
     /// <returns>同一 <paramref name="services"/>。</returns>
     /// <remarks>
     /// pending + <c>ProvideFeature(FlowHook, order: 31)</c>。
-    /// 推送类场景请用 <see cref="UseTaskNotifier(ISailCollection, ITaskNotifier, Action{HookRegistrationOptions})"/>，避免被误配成 Sync。
+    /// 推送类场景请用 <see cref="AddNotifier(ISailCollection, ITaskNotifier, Action{HookRegistrationOptions})"/>，避免被误配成 Sync。
     /// </remarks>
-    public static ISailCollection UseFlowHook(
+    public static ISailCollection AddHook(
         this ISailCollection services,
         IFlowHook hook,
         Action<HookRegistrationOptions> configure = null)
@@ -293,24 +297,24 @@ public static class SailFlowCapabilityExtensions
     }
 
     /// <summary>
-    /// 以委托形式注册 Hook（临时/短逻辑）。
+    /// 以委托形式追加 Hook（临时/短逻辑）。
     /// </summary>
     /// <param name="services">引擎服务集合。</param>
     /// <param name="name">注册名。</param>
     /// <param name="handle">同步处理委托（AsyncOutbox 时由 Drain 侧再调；委托体仍为同步签名）。</param>
     /// <param name="configure">须声明 Events；按需设 Mode / Match / Order。</param>
-    public static ISailCollection UseFlowHook(
+    public static ISailCollection AddHook(
         this ISailCollection services,
         string name,
         Action<FlowHookContext> handle,
         Action<HookRegistrationOptions> configure = null)
     {
         ArgumentNullException.ThrowIfNull(handle);
-        return services.UseFlowHook(new DelegateFlowHook(name, handle), configure);
+        return services.AddHook(new DelegateFlowHook(name, handle), configure);
     }
 
     /// <summary>
-    /// 注册待办 Notifier（旁路通知；默认入 Outbox）。
+    /// 追加待办 Notifier（旁路通知；默认入 Outbox；可多次）。
     /// </summary>
     /// <param name="services">引擎服务集合。</param>
     /// <param name="notifier">Notifier 实例；多通道须不同 <c>Name</c>，按 Order 串行，一通道失败不取消后续。</param>
@@ -325,7 +329,7 @@ public static class SailFlowCapabilityExtensions
     /// 生产可靠投递需同时启用 <c>UseHookOutboxDrain</c>。
     /// Notifier ≠ 抄送；抄送应独立通道，勿塞进待办推送。
     /// </remarks>
-    public static ISailCollection UseTaskNotifier(
+    public static ISailCollection AddNotifier(
         this ISailCollection services,
         ITaskNotifier notifier,
         Action<HookRegistrationOptions> configure = null)
@@ -340,94 +344,94 @@ public static class SailFlowCapabilityExtensions
     }
 
     /// <summary>
-    /// 以委托形式注册 Notifier（临时/短逻辑）。
+    /// 以委托形式追加 Notifier（临时/短逻辑）。
     /// </summary>
     /// <param name="services">引擎服务集合。</param>
     /// <param name="name">注册名。</param>
     /// <param name="notify">异步通知委托；失败应自管日志/重试语义（或依赖 Outbox 重试）。</param>
     /// <param name="configure">须声明 TaskKinds。</param>
-    public static ISailCollection UseTaskNotifier(
+    public static ISailCollection AddNotifier(
         this ISailCollection services,
         string name,
         Func<TaskNotifyContext, CancellationToken, Task> notify,
         Action<HookRegistrationOptions> configure = null)
     {
         ArgumentNullException.ThrowIfNull(notify);
-        return services.UseTaskNotifier(new DelegateTaskNotifier(name, notify), configure);
+        return services.AddNotifier(new DelegateTaskNotifier(name, notify), configure);
     }
 
     /// <summary>
-    /// Builder 轨：注册 Gate 实例（转调 Collection 重载）。
+    /// Builder 轨：追加 Gate 实例（转调 Collection 重载）。
     /// </summary>
-    public static SailClientBuilder UseFlowGate(
+    public static SailClientBuilder AddGate(
         this SailClientBuilder builder,
         IFlowGate gate,
         Action<HookRegistrationOptions> configure = null)
     {
-        builder.Services.UseFlowGate(gate, configure);
+        builder.Services.AddGate(gate, configure);
         return builder;
     }
 
     /// <summary>
-    /// Builder 轨：委托形式注册 Gate。
+    /// Builder 轨：委托形式追加 Gate。
     /// </summary>
-    public static SailClientBuilder UseFlowGate(
+    public static SailClientBuilder AddGate(
         this SailClientBuilder builder,
         string name,
         Func<FlowHookContext, HookResult> validate,
         Action<HookRegistrationOptions> configure = null)
     {
-        builder.Services.UseFlowGate(name, validate, configure);
+        builder.Services.AddGate(name, validate, configure);
         return builder;
     }
 
     /// <summary>
-    /// Builder 轨：注册 Hook 实例。
+    /// Builder 轨：追加 Hook 实例。
     /// </summary>
-    public static SailClientBuilder UseFlowHook(
+    public static SailClientBuilder AddHook(
         this SailClientBuilder builder,
         IFlowHook hook,
         Action<HookRegistrationOptions> configure = null)
     {
-        builder.Services.UseFlowHook(hook, configure);
+        builder.Services.AddHook(hook, configure);
         return builder;
     }
 
     /// <summary>
-    /// Builder 轨：委托形式注册 Hook。
+    /// Builder 轨：委托形式追加 Hook。
     /// </summary>
-    public static SailClientBuilder UseFlowHook(
+    public static SailClientBuilder AddHook(
         this SailClientBuilder builder,
         string name,
         Action<FlowHookContext> handle,
         Action<HookRegistrationOptions> configure = null)
     {
-        builder.Services.UseFlowHook(name, handle, configure);
+        builder.Services.AddHook(name, handle, configure);
         return builder;
     }
 
     /// <summary>
-    /// Builder 轨：注册 Notifier 实例。
+    /// Builder 轨：追加 Notifier 实例。
     /// </summary>
-    public static SailClientBuilder UseTaskNotifier(
+    public static SailClientBuilder AddNotifier(
         this SailClientBuilder builder,
         ITaskNotifier notifier,
         Action<HookRegistrationOptions> configure = null)
     {
-        builder.Services.UseTaskNotifier(notifier, configure);
+        builder.Services.AddNotifier(notifier, configure);
         return builder;
     }
 
     /// <summary>
-    /// Builder 轨：委托形式注册 Notifier。
+    /// Builder 轨：委托形式追加 Notifier。
     /// </summary>
-    public static SailClientBuilder UseTaskNotifier(
+    public static SailClientBuilder AddNotifier(
         this SailClientBuilder builder,
         string name,
         Func<TaskNotifyContext, CancellationToken, Task> notify,
         Action<HookRegistrationOptions> configure = null)
     {
-        builder.Services.UseTaskNotifier(name, notify, configure);
+        builder.Services.AddNotifier(name, notify, configure);
         return builder;
     }
 
@@ -435,10 +439,10 @@ public static class SailFlowCapabilityExtensions
     /// 构建后补挂 Gate：直接写入已组装 <see cref="SailClient.Capabilities"/>（不经 pending）。
     /// </summary>
     /// <remarks>
-    /// 命名小写以区分 Builder 期 <c>UseFlowGate</c>。
+    /// 命名小写以区分 Builder 期 <c>AddGate</c>。
     /// 宿主能力包应优先在 Builder 声明；本方法适用于测试、PostBuild 内 <c>new Xxx(client)</c> 后再注册等场景。
     /// </remarks>
-    public static SailClient useFlowGate(this SailClient client, IFlowGate gate, Action<HookRegistrationOptions> configure = null)
+    public static SailClient addGate(this SailClient client, IFlowGate gate, Action<HookRegistrationOptions> configure = null)
     {
         ArgumentNullException.ThrowIfNull(client);
         client.Capabilities.RegisterGate(gate, ApplyOptions(configure));
@@ -448,7 +452,7 @@ public static class SailFlowCapabilityExtensions
     /// <summary>
     /// 构建后补挂 Hook（直接注册到 Client）。
     /// </summary>
-    public static SailClient useFlowHook(this SailClient client, IFlowHook hook, Action<HookRegistrationOptions> configure = null)
+    public static SailClient addHook(this SailClient client, IFlowHook hook, Action<HookRegistrationOptions> configure = null)
     {
         ArgumentNullException.ThrowIfNull(client);
         client.Capabilities.RegisterHook(hook, ApplyOptions(configure));
@@ -458,7 +462,7 @@ public static class SailFlowCapabilityExtensions
     /// <summary>
     /// 构建后补挂 Notifier（直接注册到 Client）。
     /// </summary>
-    public static SailClient useTaskNotifier(this SailClient client, ITaskNotifier notifier, Action<HookRegistrationOptions> configure = null)
+    public static SailClient addNotifier(this SailClient client, ITaskNotifier notifier, Action<HookRegistrationOptions> configure = null)
     {
         ArgumentNullException.ThrowIfNull(client);
         client.Capabilities.RegisterNotifier(notifier, ApplyOptions(configure));
