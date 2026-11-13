@@ -17,12 +17,12 @@
   <ItemGroup>
     <PackageReference Include="sailflow.pure" Version="$(VersionPrefix)" />
     <PackageReference Include="IronPython" Version="3.4.1" />
-    <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.2.2" />
     <PackageReference Include="NRules" Version="1.0.4" />
     <PackageReference Include="NRules.Fluent" Version="1.0.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.15" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.15" />
   </ItemGroup>
 
   <!-- Layer assemblies → packed into this nupkg -->

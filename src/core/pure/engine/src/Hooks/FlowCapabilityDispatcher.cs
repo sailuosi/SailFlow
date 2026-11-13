@@ -82,12 +82,16 @@ namespace sailflow.engine.Hooks
 
             var timeoutMs = Sail.CapabilityOptions?.SyncHookTimeoutMs ?? 0;
 
+            // 同事务 kit 挂到上下文，供 Sync Hook 读写未提交实体
+            ctx.Kit = kit;
+
             foreach (var hook in Registry.Hooks.Where(h => h.Mode == HookMode.Sync))
             {
                 if (!MatchesHook(hook, ctx, eventType))
                     continue;
 
-                if (timeoutMs <= 0)
+                // 有 kit 时必须在当前线程执行：连接/事务不可跨线程，且另开线程+新连接会与主事务锁死。
+                if (timeoutMs <= 0 || kit != null)
                 {
                     hook.Handler.Handle(ctx);
                 }
