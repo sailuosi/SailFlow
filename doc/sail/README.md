@@ -9,7 +9,7 @@
 |------|------|
 | [特性说明-引擎能力基线.md](./特性说明-引擎能力基线.md) | **演进基准**：现行命令、查询、节点、Assignee、回调、插槽与 Host 边界 |
 | [特性说明-待办人管道.md](./特性说明-待办人管道.md) | **Assignee 专项**：两大时刻、R1–R10、Filter/EmptyAction/锚点 Job（§11）、`UseAssign`、扩展红线 |
-| [特性说明-下一节点过滤器.md](./特性说明-下一节点过滤器.md) | **下一跳候选管道（定型草案）**：`IfCondition`→`INextStepPrepare` / `INextStepFilter`、Options Match、`UseNextStepRoute`、N1–N12；**未实施** |
+| [特性说明-下一节点过滤器.md](./特性说明-下一节点过滤器.md) | **下一跳节点计算管道（定型草案）**：`UseNextStepRoute` = Prepare + `IConditionEvaluator` + Filter、N1–N15；**未实施** |
 | [分析-流程运转表存储与分表策略.md](./分析-流程运转表存储与分表策略.md) | **存储策略**：同表生命周期 vs NFlow RU/HI；10 万发起/年容量与归档/分表建议 |
 | [架构设计-项目依赖与分层.md](./架构设计-项目依赖与分层.md) | 程序集依赖与分层哲学 |
 | [业务管道特性设计.md](./业务管道特性设计.md) | SailClient / Builder / UseXxx |
