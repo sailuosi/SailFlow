@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using sailflow.engine.Factories;
+using sailflow.engine.NextStep;
 
 namespace sailflow.engine.Xpdl
 {
@@ -32,13 +33,25 @@ namespace sailflow.engine.Xpdl
                 NextActivityMatchedResult result = null;
                 NextActivityMatchedType resultType = NextActivityMatchedType.Unknown;
 
+                // Client 级 Prepare：写同一条件袋（预览 / 发送同源）
+                var currentActivity = processModel?.GetActivity(currentActivityId);
+                conditionKeyValuePair = NextStepRouteRuntime.ApplyPrepare(
+                    client,
+                    conditionKeyValuePair,
+                    currentActivity,
+                    processModel?.ProcessEntity,
+                    string.IsNullOrEmpty(activityInstanceId)
+                        ? NextStepRoutePhase.Preview
+                        : NextStepRoutePhase.Send,
+                    activityInstanceId: activityInstanceId);
+
                 //创建“下一步节点”的根节点
                 //Create the root node for the 'next step node'
                 NextActivityComponent root = NextActivityComponents.CreateNextActivityComponent();
 
                 //开始正常情况下的路径查找
                 //Start normal path search
-                List<Transition> transitionList = GetForwardTransitionList(processModel.Process,
+                List<Transition> transitionList = GetForwardTransitionList(client, processModel,
                     currentActivityId,
                     conditionKeyValuePair).ToList();
 
@@ -119,15 +132,17 @@ namespace sailflow.engine.Xpdl
             }
         }
 
-        private IList<Transition> GetForwardTransitionList(Process process,
+        private IList<Transition> GetForwardTransitionList(
+            SailClient client,
+            IProcessModel processModel,
             string fromActivityId,
             IDictionary<string, string> conditionKeyValuePair)
         {
             var validTransitionList = new List<Transition>();
-            var transitionList = ProcessModelHelper.GetForwardTransitionList(process, fromActivityId);
+            var transitionList = ProcessModelHelper.GetForwardTransitionList(processModel.Process, fromActivityId);
             foreach (var transition in transitionList)
             {
-                bool isValidTranstion = IsValidTransition(transition, conditionKeyValuePair);
+                bool isValidTranstion = IsValidTransition(client, processModel, transition, conditionKeyValuePair);
                 if (isValidTranstion) validTransitionList.Add(transition);
             }
             return validTransitionList;
@@ -135,10 +150,12 @@ namespace sailflow.engine.Xpdl
 
         /// <summary>
         /// Is it a transition that meets the conditions? If the condition is empty, it defaults to being valid.
-        /// 是否是满足条件的Transition，如果条件为空，默认是有效的。
         /// </summary>
-        private bool IsValidTransition(Transition transition,
-           IDictionary<string, string> conditionKeyValuePair)
+        private bool IsValidTransition(
+            SailClient client,
+            IProcessModel processModel,
+            Transition transition,
+            IDictionary<string, string> conditionKeyValuePair)
         {
             bool isValid = false;
 
@@ -146,38 +163,40 @@ namespace sailflow.engine.Xpdl
             {
                 if (conditionKeyValuePair != null && conditionKeyValuePair.Count != 0)
                 {
-                    isValid = ParseCondition(transition, conditionKeyValuePair);
+                    isValid = ParseCondition(client, processModel, transition, conditionKeyValuePair);
                 }
             }
             else
             {
-                //流程节点上定义的条件为空，则认为连线是可到达的
-                //If the condition defined on the process node is empty, it is considered that the connection is reachable
                 isValid = true;
             }
             return isValid;
         }
 
-        /// <summary>
-        /// Parse Condition by LINQ
-        /// 用LINQ解析条件表达式
-        /// </summary>
-        private bool ParseCondition(Transition transition, IDictionary<string, string> conditionKeyValuePair)
+        private bool ParseCondition(
+            SailClient client,
+            IProcessModel processModel,
+            Transition transition,
+            IDictionary<string, string> conditionKeyValuePair)
         {
-            Boolean result = false;
-            try
+            var expression = transition.Condition.ConditionText;
+            var pipeline = client?.NextStepRoute;
+            if (pipeline != null)
             {
-                string expression = transition.Condition.ConditionText;
-                string expressionReplaced = ExpressionParser.ReplaceParameterToValue(expression, conditionKeyValuePair);
-                result = ExpressionParser.Parse(expressionReplaced);
+                var entity = processModel?.ProcessEntity;
+                return pipeline.Evaluate(new ConditionEvaluateContext
+                {
+                    Sail = client,
+                    Expression = expression,
+                    Variables = conditionKeyValuePair,
+                    ProcessId = entity?.ProcessId,
+                    ProcessCode = entity?.ProcessCode,
+                    TransitionId = transition?.TransitionId,
+                    Phase = NextStepRoutePhase.Preview
+                });
             }
-            catch (System.Exception ex)
-            {
-                //throw new WfXpdlException(string.Format("条件表达式解析错误，请确认是否传入所有变量参数！内部错误描述：{0}", ex.Message),
-                //    ex);
-                ;
-            }
-            return result;
+
+            return LinqDynamicConditionEvaluator.EvaluateLegacy(expression, conditionKeyValuePair);
         }
     }
 }

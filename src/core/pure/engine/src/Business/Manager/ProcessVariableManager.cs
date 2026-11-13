@@ -277,8 +277,22 @@ namespace sailflow.engine.Manager
 
             if (keyValuePair.Count > 0)
             {
-                var replaced = ExpressionParser.ReplaceParameterToValue(expression, keyValuePair);
-                parsed = ExpressionParser.Parse(replaced);
+                var pipeline = Sail?.NextStepRoute;
+                if (pipeline != null)
+                {
+                    parsed = pipeline.Evaluate(new NextStep.ConditionEvaluateContext
+                    {
+                        Sail = Sail,
+                        Expression = expression,
+                        Variables = keyValuePair,
+                        Phase = NextStep.NextStepRoutePhase.Send
+                    });
+                }
+                else
+                {
+                    parsed = NextStep.LinqDynamicConditionEvaluator
+                        .EvaluateLegacy(expression, keyValuePair);
+                }
             }
             return parsed;
         }

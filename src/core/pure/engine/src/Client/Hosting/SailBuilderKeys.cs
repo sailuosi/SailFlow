@@ -16,6 +16,8 @@ public static class SailBuilderKeys
 
     /// <summary>办理人管道 <c>IAssigneePipeline</c>（由 sailflow.assignee UseAssignees 挂载）。</summary>
     public static readonly object AssigneePipeline = new();
+    /// <summary>下一跳节点计算管道 <c>INextStepRoutePipeline</c>（UseNextStepRoute）。</summary>
+    public static readonly object NextStepRoute = new();
     public static readonly object JsonSerializer = new();
     public static readonly object FormService = new();
     public static readonly object ResourceService = new();

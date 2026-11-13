@@ -10,6 +10,7 @@ public static class SailFeatureNames
     public const string Json = "json";
     public const string MessageQueue = "message-queue";
     public const string Assignee = "assignee";
+    public const string NextStepRoute = "next-step-route";
     public const string FlowGate = "flow-gate";
     public const string FlowHook = "flow-hook";
     public const string TaskNotifier = "task-notifier";

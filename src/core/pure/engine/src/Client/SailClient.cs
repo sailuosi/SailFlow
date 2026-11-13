@@ -7,6 +7,7 @@ using sailflow.engine.Actions;
 using sailflow.engine.Assignee;
 using sailflow.engine.Hosting;
 using sailflow.engine.Hooks;
+using sailflow.engine.NextStep;
 using sailflow.engine.Rules;
 using sailflow.hub.Essential;
 using sailflow.hub.Localize;
@@ -239,6 +240,12 @@ public partial class SailClient
     /// </summary>
     public IAssigneePipeline AssigneePipeline { get; private set; }
 
+    /// <summary>
+    /// 下一跳节点计算管道（Prepare / Evaluator / Filter）。
+    /// 由 <c>UseNextStepRoute</c> 挂载；未挂时条件求值回落 LINQ Dynamic（≡ ExpressionParser）。
+    /// </summary>
+    public INextStepRoutePipeline NextStepRoute { get; private set; }
+
     /// <summary>注册消息队列实现（覆盖已有）。</summary>
     public SailClient useMessageQueue(IMessageQueueService messageQueue)
     {
@@ -257,6 +264,13 @@ public partial class SailClient
     public SailClient useAssigneePipeline(IAssigneePipeline pipeline)
     {
         AssigneePipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
+        return this;
+    }
+
+    /// <summary>注册下一跳节点计算管道（覆盖已有）。</summary>
+    public SailClient useNextStepRoute(INextStepRoutePipeline pipeline)
+    {
+        NextStepRoute = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
         return this;
     }
 

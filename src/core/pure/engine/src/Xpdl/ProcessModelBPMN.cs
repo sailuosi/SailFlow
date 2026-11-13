@@ -1083,25 +1083,28 @@ namespace sailflow.engine.Xpdl
 
         #region Parse Expression
         /// <summary>
-        /// Parse Condition by LINQ
-        /// 用LINQ解析条件表达式
+        /// Parse Condition via NextStepRoute Evaluator 链（未挂管道时 ≡ ExpressionParser）。
         /// </summary>
         private bool ParseCondition(Transition transition, IDictionary<string, string> conditionKeyValuePair)
         {
-            Boolean result = false;
-            try
+            var expression = transition.Condition.ConditionText;
+            var pipeline = Sail?.NextStepRoute;
+            if (pipeline != null)
             {
-                string expression = transition.Condition.ConditionText;
-                string expressionReplaced = ExpressionParser.ReplaceParameterToValue(expression, conditionKeyValuePair);
-                result = ExpressionParser.Parse(expressionReplaced);
+                return pipeline.Evaluate(new NextStep.ConditionEvaluateContext
+                {
+                    Sail = Sail,
+                    Expression = expression,
+                    Variables = conditionKeyValuePair,
+                    ProcessId = ProcessEntity?.ProcessId,
+                    ProcessCode = ProcessEntity?.ProcessCode,
+                    TransitionId = transition?.TransitionId,
+                    Phase = NextStep.NextStepRoutePhase.Send
+                });
             }
-            catch (System.Exception ex)
-            {
-                //throw new WfXpdlException(string.Format("条件表达式解析错误，请确认是否传入所有变量参数！内部错误描述：{0}", ex.Message),
-                //    ex);
-                ;
-            }
-            return result;
+
+            return NextStep.LinqDynamicConditionEvaluator.EvaluateLegacy(
+                expression, conditionKeyValuePair);
         }
 
         /// <summary>

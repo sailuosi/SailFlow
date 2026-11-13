@@ -4,6 +4,7 @@ using System.Linq;
 using mooSQL.data;
 using sailflow.engine.Actions;
 using sailflow.engine.Assignee;
+using sailflow.engine.NextStep;
 using sailflow.engine.Rules;
 using sailflow.hub.Essential;
 using sailflow.engine.Client;
@@ -232,6 +233,12 @@ public sealed class SailClientBuilder
             && assigneeBox is IAssigneePipeline assigneePipeline)
         {
             client.useAssigneePipeline(assigneePipeline);
+        }
+
+        if (Services.Properties.TryGetValue(SailBuilderKeys.NextStepRoute, out var nextStepBox)
+            && nextStepBox is INextStepRoutePipeline nextStepRoute)
+        {
+            client.useNextStepRoute(nextStepRoute);
         }
 
         SailFlowCapabilityExtensions.ApplyPendingRegistrations(client, Services);
