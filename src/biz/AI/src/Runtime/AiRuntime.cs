@@ -1,8 +1,6 @@
 using System;
 using mooSQL.data;
-using mooSQL.data.model;
 using sailflow.AI.Abstractions;
-using sailflow.AI.Entity;
 using sailflow.engine.Client;
 
 namespace sailflow.AI.Runtime
@@ -32,22 +30,14 @@ namespace sailflow.AI.Runtime
         }
 
         /// <summary>
-        /// Ensures AI-related tables exist (ai_model_provider / ai_activity_config).
-        /// Call from host startup when AI is enabled; not part of core engine schema.
+        /// 建表已迁出：请在业务宿主 createTable&lt;AiModelProviderEntity/AiActivityConfigEntity&gt;。
         /// </summary>
+        [Obsolete("AI 建表归属业务宿主，不再在 sailflow.AI 内执行。EnsureTables 默认应为 false。")]
         public static string EnsureTables(SQLBuilder kit)
         {
             if (kit == null)
                 throw new ArgumentNullException(nameof(kit));
-
-            var wk = kit.useDBInit();
-            wk.upsertMode()
-                .columnTypeByTag("sail.id", DataFam.Guid)
-                .columnTypeByTag("sail.xml", DataFam.Json)
-                .createTable<AiModelProviderEntity>()
-                .createTable<AiActivityConfigEntity>();
-
-            return wk.WorkingProgress?.ToString() ?? string.Empty;
+            return string.Empty;
         }
     }
 }

@@ -1,10 +1,9 @@
 namespace sailflow.biz.Hosting;
 
+/// <summary>已废弃：建表归属宿主。保留类型以免旧编译引用断裂。</summary>
+[Obsolete("UseSchema/SchemaOptions 不再驱动建表；请在业务宿主实现 SchemaInitializer。")]
 public sealed class SchemaOptions
 {
-    /// <summary>Also ensure AI tables via SailSchemaInitializer.</summary>
     public bool IncludeAi { get; set; } = true;
-
-    /// <summary>Insert minimal process seed when process table is empty.</summary>
     public bool Seed { get; set; }
 }
