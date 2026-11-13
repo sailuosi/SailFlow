@@ -120,6 +120,10 @@ var client = CreateBuilder(configuration)
     .UseBizJson()
     .UseBizRules()
     .UseBizAssignees()
+    .UseNextStepRoute(r =>              // 下一跳写袋 / 求值 / 候选 Filter（可选）
+    {
+        // r.IfCondition(...); r.AddFilter<T>(...);
+    })
     .UseDebugConsoleHook()              // 可选能力包
     .UseLeaveStatusHook()               // 样例包
     .UsePortalScheduleTaskNotifier(sp)  // 自带 Enabled 判定

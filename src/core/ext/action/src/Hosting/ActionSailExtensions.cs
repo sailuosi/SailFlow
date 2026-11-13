@@ -7,10 +7,15 @@ namespace sailflow.action.Hosting
 {
     /// <summary>
     /// 注册 sailflow.action 扩展（IronPython Action/Script）。
+    /// <para>
+    /// 不含连线条件求值：<see cref="PythonConditionEvaluator"/> 须显式
+    /// <c>UseNextStepRoute(r => r.AddConditionEvaluator&lt;PythonConditionEvaluator&gt;(…))</c>，
+    /// 切勿与 ScriptMethod 混用。
+    /// </para>
     /// </summary>
     public static class ActionSailExtensions
     {
-        /// <summary>挂载 Python Action + Script 处理器到 Builder。</summary>
+        /// <summary>挂载 Python Action + Script 处理器到 Builder（不含条件 Evaluator）。</summary>
         public static SailClientBuilder UseIronPython(this SailClientBuilder builder)
         {
             ArgumentNullException.ThrowIfNull(builder);
