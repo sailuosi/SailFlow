@@ -39,7 +39,7 @@ dotnet add package sailflow.ext
 
 | NuGet 包名 | Role / 说明 |
 | ---------- | ----------- |
-| **sailflow.pure** | 框架内核：basis / baseHub / AI / engine / assignee；依赖 **mooSQL.Ext** |
+| **sailflow.pure** | 框架内核：basis / baseHub / AI / engine / assignee / runtime；依赖 **mooSQL.Ext** |
 | **sailflow.ext** | 可选实现：action / msg / bizRule / form / resource / localize / data（含 IronPython、RabbitMQ、NRules 等） |
 | **sailflow.biz** | 产品组合根：biz / biz.AI / biz.docs / biz.query；推荐宿主入口 |
 

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageIcon>bitbug_favicon.png</PackageIcon>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
-    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionPrefix>0.1.1</VersionPrefix>
     <!-- 统一输出到仓库根 release/，任意深度子项目均可正确解析 -->
     <PackageOutputPath>$(MSBuildThisFileDirectory)release</PackageOutputPath>
     <!-- 默认不发包；仅 pack/*.csproj 显式 IsPackable=true -->
