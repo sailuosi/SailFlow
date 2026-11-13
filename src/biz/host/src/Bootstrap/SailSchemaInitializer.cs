@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using mooSQL.data;
+using mooSQL.data.model;
 using sailflow.AI.Runtime;
 using sailflow.data.Schema;
 using sailflow.engine.Entity;
@@ -39,7 +40,10 @@ namespace sailflow.biz.Bootstrap
 
             var wk = kit.useDBInit();
             // upsert：缺表建表，已有表补齐实体新增列（替代手工 Ensure*Column）
+            // sail.id → Guid；sail.xml → Json(max)；实体侧用 SooColumn.Tag 对齐
             wk.upsertMode()
+                .columnTypeByTag("sail.id", DataFam.Guid)
+                .columnTypeByTag("sail.xml", DataFam.Json)
                 .createTable<ProcessEntity>()
                 .createTable<ProcessInstanceEntity>()
                 .createTable<ActivityInstanceEntity>()

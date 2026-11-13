@@ -7,7 +7,7 @@ namespace sailflow.hub.Form
     [SooTable(Name = "FbForm", Caption = "表单", Type = DBTableType.Table)]
     public class FormEntity
     {
-        [SooColumn(Name = "Id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        [SooColumn(Name = "Id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
         public string FormId { get; set; }
 
         [SooColumn(Name = "FormName", Length = 200)]
@@ -19,13 +19,13 @@ namespace sailflow.hub.Form
         [SooColumn(Name = "Version", Length = 32)]
         public string Version { get; set; }
 
-        [SooColumn(Name = "FieldSummary")]
+        [SooColumn(Name = "FieldSummary", DataType = DataFam.Json, Tag = "sail.xml")]
         public string FieldSummary { get; set; }
 
-        [SooColumn(Name = "TemplateContent")]
+        [SooColumn(Name = "TemplateContent", DataType = DataFam.Json, Tag = "sail.xml")]
         public string TemplateContent { get; set; }
 
-        [SooColumn(Name = "HTMLContent")]
+        [SooColumn(Name = "HTMLContent", DataType = DataFam.Json, Tag = "sail.xml")]
         public string HTMLContent { get; set; }
 
         [SooColumn(Name = "Description", Length = 500)]

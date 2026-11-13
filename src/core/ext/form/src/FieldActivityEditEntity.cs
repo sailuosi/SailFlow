@@ -5,13 +5,13 @@ namespace sailflow.hub.Form
     [SooTable(Name = "FbFormFieldActivityEdit", Caption = "表单字段节点编辑", Type = DBTableType.Table)]
     public class FieldActivityEditEntity
     {
-        [SooColumn(Name = "Id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        [SooColumn(Name = "Id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
         public string FieldActivityEditId { get; set; }
 
-        [SooColumn(Name = "ProcessDefId", Length = 64)]
+        [SooColumn(Name = "ProcessDefId", Length = 64, Tag = "sail.id", IsFK = true)]
         public string ProcessDefId { get; set; }
 
-        [SooColumn(Name = "ProcessId", Length = 64)]
+        [SooColumn(Name = "ProcessId", Length = 64, Tag = "sail.id")]
         public string ProcessId { get; set; }
 
         [SooColumn(Name = "ProcessName", Length = 255)]
@@ -26,7 +26,7 @@ namespace sailflow.hub.Form
         [SooColumn(Name = "ActivityName", Length = 255)]
         public string ActivityName { get; set; }
 
-        [SooColumn(Name = "FormId", Length = 64)]
+        [SooColumn(Name = "FormId", Length = 64, Tag = "sail.id", IsFK = true)]
         public string FormId { get; set; }
 
         [SooColumn(Name = "FormName", Length = 200)]
@@ -35,7 +35,7 @@ namespace sailflow.hub.Form
         [SooColumn(Name = "FormVersion", Length = 32)]
         public string FormVersion { get; set; }
 
-        [SooColumn(Name = "FieldsPermission")]
+        [SooColumn(Name = "FieldsPermission", DataType = DataFam.Json, Tag = "sail.xml")]
         public string FieldsPermission { get; set; }
     }
 }

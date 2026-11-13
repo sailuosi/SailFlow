@@ -15,7 +15,7 @@
 
   <!-- Published dependency; leaf projects keep local mooSQL ProjectReference for compile. -->
   <ItemGroup>
-    <PackageReference Include="mooSQL.Ext" Version="8.2.1.10" />
+    <PackageReference Include="mooSQL.Ext" Version="8.2.1.11" />
   </ItemGroup>
 
   <!-- Layer assemblies → packed into this nupkg; not separate NuGet deps -->

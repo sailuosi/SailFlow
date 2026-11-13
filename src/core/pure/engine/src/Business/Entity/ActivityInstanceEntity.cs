@@ -13,23 +13,23 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_activity_instance", Caption = "活动实例", Type = DBTableType.Table)]
     public class ActivityInstanceEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
         public string ActivityInstanceId { get; set; }
-        [SooColumn(Name = "process_instance_id", Length = 64)]
+        [SooColumn(Name = "process_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string ProcessInstanceId { get; set; }
-        [SooColumn(Name = "app_name")]
+        [SooColumn(Name = "app_name", Length = 128)]
         public string AppName { get; set; }
-        [SooColumn(Name = "app_instance_id")]
+        [SooColumn(Name = "app_instance_id", Length = 128)]
         public string AppInstanceId { get; set; }
-        [SooColumn(Name = "app_instance_code")]
+        [SooColumn(Name = "app_instance_code", Length = 64)]
         public string AppInstanceCode { get; set; }
-        [SooColumn(Name = "process_id")]
+        [SooColumn(Name = "process_id", Length = 64, Tag = "sail.id")]
         public string ProcessId { get; set; }
-        [SooColumn(Name = "activity_id")]
+        [SooColumn(Name = "activity_id", Length = 64)]
         public string ActivityId { get; set; }
-        [SooColumn(Name = "activity_name")]
+        [SooColumn(Name = "activity_name", Length = 255)]
         public string ActivityName { get; set; }
-        [SooColumn(Name = "activity_code")]
+        [SooColumn(Name = "activity_code", Length = 64)]
         public string ActivityCode { get; set; }
         [SooColumn(Name = "activity_type")]
         public short? ActivityType { get; set; }
@@ -37,23 +37,23 @@ namespace sailflow.engine.Entity
         public short? ActivityState { get; set; }
         [SooColumn(Name = "work_item_type")]
         public short? WorkItemType { get; set; }
-        [SooColumn(Name = "assigned_user_ids")]
+        [SooColumn(Name = "assigned_user_ids", DataType = DataFam.Json, Tag = "sail.xml")]
         public string AssignedUserIds { get; set; }
-        [SooColumn(Name = "assigned_user_names")]
+        [SooColumn(Name = "assigned_user_names", DataType = DataFam.Json, Tag = "sail.xml")]
         public string AssignedUserNames { get; set; }
         /// <summary>组别（会签子实例 / 单办理人场景）。</summary>
-        [SooColumn(Name = "group_id")]
+        [SooColumn(Name = "group_id", Length = 64)]
         public string GroupId { get; set; }
-        [SooColumn(Name = "group_name")]
+        [SooColumn(Name = "group_name", Length = 255)]
         public string GroupName { get; set; }
         /// <summary>组内身份（string）。</summary>
-        [SooColumn(Name = "group_role")]
+        [SooColumn(Name = "group_role", Length = 64)]
         public string GroupRole { get; set; }
-        [SooColumn(Name = "unit_id")]
+        [SooColumn(Name = "unit_id", Length = 64)]
         public string UnitId { get; set; }
-        [SooColumn(Name = "unit_code")]
+        [SooColumn(Name = "unit_code", Length = 64)]
         public string UnitCode { get; set; }
-        [SooColumn(Name = "unit_name")]
+        [SooColumn(Name = "unit_name", Length = 255)]
         public string UnitName { get; set; }
         [SooColumn(Name = "gateway_direction_type_id")]
         public short? GatewayDirectionTypeId { get; set; }
@@ -69,7 +69,7 @@ namespace sailflow.engine.Entity
         public short? JobTimerType { get; set; }
         [SooColumn(Name = "job_timer_status")]
         public short? JobTimerStatus { get; set; }
-        [SooColumn(Name = "trigger_expression")]
+        [SooColumn(Name = "trigger_expression", Length = 2000)]
         public string TriggerExpression { get; set; }
         [SooColumn(Name = "overdue_datetime")]
         public DateTime? OverdueDateTime { get; set; }
@@ -87,7 +87,7 @@ namespace sailflow.engine.Entity
         /// </summary>
         [SooColumn(Name = "merge_type")]
         public short? MergeType { get; set; }
-        [SooColumn(Name = "main_activity_instance_id", Length = 64)]
+        [SooColumn(Name = "main_activity_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string MainActivityInstanceId { get; set; }
         /// <summary>
         /// Sign Together Passover Type: Count / Percentage
@@ -107,29 +107,29 @@ namespace sailflow.engine.Entity
         public short? SignForwardType { get; set; }
         [SooColumn(Name = "backward_type")]
         public short? BackwardType { get; set; }
-        [SooColumn(Name = "back_src_activity_instance_id", Length = 64)]
+        [SooColumn(Name = "back_src_activity_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string BackSrcActivityInstanceId { get; set; }
-        [SooColumn(Name = "back_org_activity_instance_id", Length = 64)]
+        [SooColumn(Name = "back_org_activity_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string BackOrgActivityInstanceId { get; set; }
-        [SooColumn(Name = "next_step_performers")]
+        [SooColumn(Name = "next_step_performers", DataType = DataFam.Json, Tag = "sail.xml")]
         public string NextStepPerformers { get; set; }
-        [SooColumn(Name = "created_user_id")]
+        [SooColumn(Name = "created_user_id", Length = 64)]
         public string CreatedUserId { get; set; }
-        [SooColumn(Name = "created_user_name")]
+        [SooColumn(Name = "created_user_name", Length = 128)]
         public string CreatedUserName { get; set; }
         [SooColumn(Name = "created_datetime")]
         public DateTime? CreatedDateTime { get; set; }
-        [SooColumn(Name = "updated_user_id")]
+        [SooColumn(Name = "updated_user_id", Length = 64)]
         public string UpdatedUserId { get; set; }
-        [SooColumn(Name = "updated_user_name")]
+        [SooColumn(Name = "updated_user_name", Length = 128)]
         public string UpdatedUserName { get; set; }
         [SooColumn(Name = "updated_datetime")]
         public DateTime? UpdatedDateTime { get; set; }
         [SooColumn(Name = "ended_datetime")]
         public DateTime? EndedDateTime { get; set; }
-        [SooColumn(Name = "ended_user_id")]
+        [SooColumn(Name = "ended_user_id", Length = 64)]
         public string EndedUserId { get; set; }
-        [SooColumn(Name = "ended_user_name")]
+        [SooColumn(Name = "ended_user_name", Length = 128)]
         public string EndedUserName { get; set; }
         [SooColumn(Name = "record_status_invalid")]
         public byte? RecordStatusInvalid { get; set; }

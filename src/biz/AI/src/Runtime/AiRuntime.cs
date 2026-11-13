@@ -1,5 +1,6 @@
 using System;
 using mooSQL.data;
+using mooSQL.data.model;
 using sailflow.AI.Abstractions;
 using sailflow.AI.Entity;
 using sailflow.engine.Client;
@@ -40,7 +41,9 @@ namespace sailflow.AI.Runtime
                 throw new ArgumentNullException(nameof(kit));
 
             var wk = kit.useDBInit();
-            wk.autoMode()
+            wk.upsertMode()
+                .columnTypeByTag("sail.id", DataFam.Guid)
+                .columnTypeByTag("sail.xml", DataFam.Json)
                 .createTable<AiModelProviderEntity>()
                 .createTable<AiActivityConfigEntity>();
 

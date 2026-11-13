@@ -7,7 +7,7 @@ namespace sailflow.biz.query
     [SooTable(Name = "sf_process_instance_copy", Caption = "流程抄送", Type = DBTableType.Table)]
     public class SailProcessCopyEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
         public string ProcessCopyId { get; set; }
 
         [SooColumn(Name = "user_id", Length = 64)]
@@ -19,10 +19,10 @@ namespace sailflow.biz.query
         [SooColumn(Name = "start_user_id", Length = 64)]
         public string StartUserId { get; set; }
 
-        [SooColumn(Name = "process_instance_id", Length = 64)]
+        [SooColumn(Name = "process_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string ProcessInstanceId { get; set; }
 
-        [SooColumn(Name = "process_id", Length = 64)]
+        [SooColumn(Name = "process_id", Length = 64, Tag = "sail.id")]
         public string ProcessId { get; set; }
 
         [SooColumn(Name = "process_name", Length = 255)]
@@ -31,7 +31,7 @@ namespace sailflow.biz.query
         [SooColumn(Name = "app_instance_id", Length = 128)]
         public string AppInstanceId { get; set; }
 
-        [SooColumn(Name = "task_id", Length = 64)]
+        [SooColumn(Name = "task_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string TaskId { get; set; }
 
         [SooColumn(Name = "task_name", Length = 255)]

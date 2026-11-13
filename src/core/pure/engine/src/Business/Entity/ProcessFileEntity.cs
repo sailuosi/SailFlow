@@ -14,27 +14,27 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_process", Caption = "流程定义", Type = DBTableType.Table)]
     public class ProcessFileEntity
     {
-        [SooColumn(Name = "process_id")]
+        [SooColumn(Name = "process_id", Length = 64, Tag = "sail.id")]
         public String ProcessId { get; set; }
-        [SooColumn(Name = "process_name")]
+        [SooColumn(Name = "process_name", Length = 255)]
         public String ProcessName { get; set; }
-        [SooColumn(Name = "process_code")]
+        [SooColumn(Name = "process_code", Length = 64)]
         public String ProcessCode { get; set; }
-        [SooColumn(Name = "version")]
+        [SooColumn(Name = "version", Length = 32)]
         public String Version { get; set; }
         [SooColumn(Name = "status")]
         public byte? Status { get; set; }
         [SooColumn(Name = "start_type")]
         public Byte StartType { get; set; }
-        [SooColumn(Name = "start_expression")]
+        [SooColumn(Name = "start_expression", Length = 2000)]
         public String StartExpression { get; set; }
         [SooColumn(Name = "end_type")]
         public Byte EndType { get; set; }
-        [SooColumn(Name = "end_expression")]
+        [SooColumn(Name = "end_expression", Length = 2000)]
         public String EndExpression { get; set; }
-        [SooColumn(Name = "description")]
+        [SooColumn(Name = "description", Length = 500)]
         public String Description { get; set; }
-        [SooColumn(Name = "xml_content")]
+        [SooColumn(Name = "xml_content", DataType = DataFam.Json, Tag = "sail.xml")]
         public String XmlContent { get; set; }
     }
 

@@ -10,33 +10,33 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_variable", Caption = "流程变量定义", Type = DBTableType.Table)]
     public class VariableEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
         public string VariableId { get; set; }
-        [SooColumn(Name = "process_id")]
+        [SooColumn(Name = "process_id", Length = 64, Tag = "sail.id")]
         public string ProcessId { get; set; }
-        [SooColumn(Name = "version")]
+        [SooColumn(Name = "version", Length = 32)]
         public string Version { get; set; }
-        [SooColumn(Name = "activity_id")]
+        [SooColumn(Name = "activity_id", Length = 64)]
         public string ActivityId { get; set; }
-        [SooColumn(Name = "name")]
+        [SooColumn(Name = "name", Length = 128)]
         public string Name { get; set; }
-        [SooColumn(Name = "type")]
+        [SooColumn(Name = "type", Length = 64)]
         public string Type { get; set; }
-        [SooColumn(Name = "direction")]
+        [SooColumn(Name = "direction", Length = 64)]
         public string Direction { get; set; }
-        [SooColumn(Name = "default_value")]
+        [SooColumn(Name = "default_value", DataType = DataFam.Json, Tag = "sail.xml")]
         public string DefaultValue { get; set; }
         [SooColumn(Name = "is_required")]
         public short? IsRequired { get; set; }
         [SooColumn(Name = "is_referenced")]
         public short? IsReferenced { get; set; }
-        [SooColumn(Name = "source_ref")]
+        [SooColumn(Name = "source_ref", Length = 128)]
         public string SourceRef { get; set; }
-        [SooColumn(Name = "source_variable_name")]
+        [SooColumn(Name = "source_variable_name", Length = 128)]
         public string SourceVariableName { get; set; }
         [SooColumn(Name = "sort_order")]
         public int? SortOrder { get; set; }
-        [SooColumn(Name = "description")]
+        [SooColumn(Name = "description", Length = 500)]
         public string Description { get; set; }
         [SooColumn(Name = "created_datetime")]
         public DateTime? CreatedDateTime { get; set; }
