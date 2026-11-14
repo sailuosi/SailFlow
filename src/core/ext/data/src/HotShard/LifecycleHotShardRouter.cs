@@ -12,8 +12,8 @@ namespace sailflow.data.HotShard
     /// </summary>
     public sealed class LifecycleHotShardRouter : ISailHotShardRouter
     {
-        public const string TransitionLogicalBase = "transition_instance";
-        public const string VariableLogicalBase = "process_variable";
+        public const string TransitionLogicalBase = "tran_instance";
+        public const string VariableLogicalBase = "proc_variable";
 
         private readonly HashSet<string> _whitelist;
         private readonly SailDataLifecycleOptions _options;
@@ -48,8 +48,8 @@ namespace sailflow.data.HotShard
 
         public SailClient Client { get; }
 
-        public string DefaultTransitionTable => "wf_transition_instance";
-        public string DefaultVariableTable => "wf_process_variable";
+        public string DefaultTransitionTable => "wf_tran_instance";
+        public string DefaultVariableTable => "wf_proc_variable";
 
         public IReadOnlyList<string> TransitionLookupTables => _transitionLookup;
         public IReadOnlyList<string> VariableLookupTables => _variableLookup;

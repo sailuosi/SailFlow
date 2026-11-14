@@ -7,7 +7,7 @@ using sailflow.engine.Client;
 
 namespace sailflow.biz.query
 {
-    /// <summary>流程抄送产品查询/写入（sf_process_instance_copy）。</summary>
+    /// <summary>流程抄送产品查询/写入（sf_proc_copy）。</summary>
     public class SailCopyService
     {
         public SailCopyService(SailClient client)

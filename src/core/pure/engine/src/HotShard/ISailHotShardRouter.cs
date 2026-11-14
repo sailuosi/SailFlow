@@ -28,8 +28,8 @@ namespace sailflow.engine.HotShard
     {
         public static readonly NullSailHotShardRouter Instance = new NullSailHotShardRouter();
 
-        public string DefaultTransitionTable => "wf_transition_instance";
-        public string DefaultVariableTable => "wf_process_variable";
+        public string DefaultTransitionTable => "wf_tran_instance";
+        public string DefaultVariableTable => "wf_proc_variable";
 
         public bool IsSharded(string processId) => false;
 
@@ -37,8 +37,8 @@ namespace sailflow.engine.HotShard
 
         public string ResolveVariableTable(string processId) => DefaultVariableTable;
 
-        public IReadOnlyList<string> TransitionLookupTables { get; } = new[] { "wf_transition_instance" };
+        public IReadOnlyList<string> TransitionLookupTables { get; } = new[] { "wf_tran_instance" };
 
-        public IReadOnlyList<string> VariableLookupTables { get; } = new[] { "wf_process_variable" };
+        public IReadOnlyList<string> VariableLookupTables { get; } = new[] { "wf_proc_variable" };
     }
 }

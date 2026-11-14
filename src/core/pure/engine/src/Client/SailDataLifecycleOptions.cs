@@ -16,7 +16,7 @@ public sealed class SailDataLifecycleOptions
 
     // --- 流程实例归档 / 冷表 ---
 
-    /// <summary>终态实例保留在热表的天数（按 ended_datetime）；默认 90。</summary>
+    /// <summary>终态实例保留在热表的天数（按 pi_end_tm）；默认 90。</summary>
     public int ArchiveRetentionDays { get; set; } = DefaultArchiveRetentionDays;
 
     /// <summary>单次归档作业最多处理的实例数。</summary>
@@ -74,8 +74,8 @@ public sealed class SailDataLifecycleOptions
     public List<string> HotShardProcessIds { get; set; } = new();
 
     /// <summary>
-    /// 热分表名：{0}=逻辑基名（transition_instance / process_variable），{1}=清洗后的 process_id 后缀。
-    /// 例：wf_transition_instance__abc123。
+    /// 热分表名：{0}=逻辑基名（tran_instance / proc_variable），{1}=清洗后的 process_id 后缀。
+    /// 例：wf_tran_instance__abc123。
     /// </summary>
     public string HotShardTableNameFormat { get; set; } = "wf_{0}__{1}";
 

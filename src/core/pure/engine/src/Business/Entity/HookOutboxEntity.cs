@@ -7,55 +7,55 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_hook_outbox", Caption = "钩子Outbox", Type = DBTableType.Table)]
     public class HookOutboxEntity
     {
-        [SooColumn(Name = "id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "ho_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
         public string HookOutboxId { get; set; }
 
-        [SooColumn(Name = "kind", Length = 64)]
+        [SooColumn(Name = "ho_kind", Length = 64)]
         public string Kind { get; set; }
 
-        [SooColumn(Name = "handler_name", Length = 128)]
+        [SooColumn(Name = "ho_handler_name", Length = 128)]
         public string HandlerName { get; set; }
 
-        [SooColumn(Name = "event_type", Length = 128)]
+        [SooColumn(Name = "ho_evt_type", Length = 128)]
         public string EventType { get; set; }
 
-        [SooColumn(Name = "process_id", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "ho_process_id", Length = 64, Tag = "sail.id")]
         public string ProcessId { get; set; }
 
-        [SooColumn(Name = "process_code", Length = 64)]
+        [SooColumn(Name = "ho_proc_code", Length = 64)]
         public string ProcessCode { get; set; }
 
-        [SooColumn(Name = "process_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
+        [SooColumn(Name = "ho_proc_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string ProcessInstanceId { get; set; }
 
-        [SooColumn(Name = "activity_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
+        [SooColumn(Name = "ho_act_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string ActivityInstanceId { get; set; }
 
-        [SooColumn(Name = "task_id", Length = 64, Tag = "sail.id", IsFK = true)]
+        [SooColumn(Name = "ho_task_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string TaskId { get; set; }
 
-        [SooColumn(Name = "payload_json", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ho_payload_json", DataType = DataFam.Json, Tag = "sail.xml")]
         public string PayloadJson { get; set; }
 
-        [SooColumn(Name = "status", Length = 64)]
+        [SooColumn(Name = "ho_status", Length = 64)]
         public string Status { get; set; }
 
-        [SooColumn(Name = "attempt")]
+        [SooColumn(Name = "ho_attempt")]
         public int? Attempt { get; set; }
 
-        [SooColumn(Name = "next_retry_at")]
+        [SooColumn(Name = "ho_nxt_retry_at")]
         public DateTime? NextRetryAt { get; set; }
 
-        [SooColumn(Name = "last_error", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ho_last_err", DataType = DataFam.Json, Tag = "sail.xml")]
         public string LastError { get; set; }
 
-        [SooColumn(Name = "created_at")]
+        [SooColumn(Name = "ho_crt_time")]
         public DateTime? CreatedAt { get; set; }
 
-        [SooColumn(Name = "updated_at")]
+        [SooColumn(Name = "ho_upd_time")]
         public DateTime? UpdatedAt { get; set; }
 
-        [SooColumn(Name = "leased_until")]
+        [SooColumn(Name = "ho_lease_until")]
         public DateTime? LeasedUntil { get; set; }
     }
 

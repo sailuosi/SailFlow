@@ -5,13 +5,13 @@ using sailflow.hub.Form;
 namespace sailflow.hub.Hosting
 {
     /// <summary>
-    /// Form 插槽：默认挂 <see cref="FormService"/>（FbForm 流程附属表）；
+    /// Form 插槽：默认挂 <see cref="FormService"/>（fm_form 流程附属表）；
     /// 宿主可用 <see cref="UseForm(ISailCollection, IFormService)"/> 覆盖。
     /// </summary>
     public static class FormSailExtensions
     {
         /// <summary>
-        /// 注册默认表单实现（引擎库 <c>FbForm</c> / 字段节点权限，属流程附属配置，非宿主组织主数据）。
+        /// 注册默认表单实现（引擎库 <c>fm_form</c> / 字段节点权限，属流程附属配置，非宿主组织主数据）。
         /// </summary>
         public static ISailCollection UseForm(this ISailCollection services)
         {
@@ -31,7 +31,7 @@ namespace sailflow.hub.Hosting
             });
         }
 
-        /// <summary>注册宿主自定义 <see cref="IFormService"/>（覆盖默认 FbForm 实现）。</summary>
+        /// <summary>注册宿主自定义 <see cref="IFormService"/>（覆盖默认 fm_form 实现）。</summary>
         public static ISailCollection UseForm(this ISailCollection services, IFormService implementation)
         {
             ArgumentNullException.ThrowIfNull(services);

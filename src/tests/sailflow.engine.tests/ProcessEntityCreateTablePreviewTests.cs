@@ -52,12 +52,12 @@ namespace sailflow.engine.tests
 
             Assert.False(string.IsNullOrWhiteSpace(sql));
             Assert.Contains("uniqueidentifier", sql, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("[id] uniqueidentifier", sql, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("[process_id] uniqueidentifier", sql, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("[xml_content] nvarchar(max)", sql, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("[description] nvarchar(500)", sql, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("[process_name] nvarchar(255)", sql, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("[start_expression] nvarchar(2000)", sql, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("[p_id] uniqueidentifier", sql, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("[p_process_id] uniqueidentifier", sql, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("[p_xml_content] nvarchar(max)", sql, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("[p_description] nvarchar(500)", sql, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("[p_name] nvarchar(255)", sql, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("[p_start_expression] nvarchar(2000)", sql, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

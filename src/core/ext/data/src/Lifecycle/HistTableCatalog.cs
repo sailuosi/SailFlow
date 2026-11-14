@@ -8,11 +8,11 @@ namespace sailflow.data.Lifecycle
     /// <summary>流程归档闭包涉及的热表 → 逻辑基名（供 <see cref="SailDataLifecycleOptions.FormatHistTableName"/>）。</summary>
     public static class HistTableCatalog
     {
-        public static readonly HistTableSpec ProcessInstance = Spec<ProcessInstanceEntity>("process_instance");
-        public static readonly HistTableSpec ActivityInstance = Spec<ActivityInstanceEntity>("activity_instance");
+        public static readonly HistTableSpec ProcessInstance = Spec<ProcessInstanceEntity>("proc_instance");
+        public static readonly HistTableSpec ActivityInstance = Spec<ActivityInstanceEntity>("act_instance");
         public static readonly HistTableSpec Task = Spec<TaskEntity>("task");
-        public static readonly HistTableSpec TransitionInstance = Spec<TransitionInstanceEntity>("transition_instance");
-        public static readonly HistTableSpec ProcessVariable = Spec<ProcessVariableEntity>("process_variable");
+        public static readonly HistTableSpec TransitionInstance = Spec<TransitionInstanceEntity>("tran_instance");
+        public static readonly HistTableSpec ProcessVariable = Spec<ProcessVariableEntity>("proc_variable");
 
         public static readonly HistTableSpec[] Closure =
         {

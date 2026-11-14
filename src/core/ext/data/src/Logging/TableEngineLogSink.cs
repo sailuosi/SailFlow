@@ -111,32 +111,32 @@ namespace sailflow.data.Logging
 
         private static void MapLogColumns(SQLBuilder kit, LogEntity log)
         {
-            if (log.EventTypeId.HasValue) kit.set("event_type_id", log.EventTypeId.Value);
-            if (log.Priority.HasValue) kit.set("priority", log.Priority.Value);
-            if (log.Severity != null) kit.set("severity", log.Severity);
-            if (log.Title != null) kit.set("title", log.Title);
-            if (log.Message != null) kit.set("message", log.Message);
-            if (log.StackTrace != null) kit.set("stack_trace", log.StackTrace);
-            if (log.InnerStackTrace != null) kit.set("inner_stack_trace", log.InnerStackTrace);
-            if (log.RequestData != null) kit.set("request_data", log.RequestData);
-            if (log.Timestamp.HasValue) kit.set("time_stamp", log.Timestamp.Value);
+            if (log.EventTypeId.HasValue) kit.set("lg_evt_type_id", log.EventTypeId.Value);
+            if (log.Priority.HasValue) kit.set("lg_priority", log.Priority.Value);
+            if (log.Severity != null) kit.set("lg_severity", log.Severity);
+            if (log.Title != null) kit.set("lg_title", log.Title);
+            if (log.Message != null) kit.set("lg_message", log.Message);
+            if (log.StackTrace != null) kit.set("lg_stk_trc", log.StackTrace);
+            if (log.InnerStackTrace != null) kit.set("lg_in_stk_trc", log.InnerStackTrace);
+            if (log.RequestData != null) kit.set("lg_req_data", log.RequestData);
+            if (log.Timestamp.HasValue) kit.set("lg_timestamp", log.Timestamp.Value);
         }
 
         private static void MapJobLogColumns(SQLBuilder kit, JobLogEntity log)
         {
-            if (log.JobType != null) kit.set("job_type", log.JobType);
-            if (log.JobName != null) kit.set("job_name", log.JobName);
-            if (log.JobKey != null) kit.set("job_key", log.JobKey);
-            if (log.RefClass != null) kit.set("ref_class", log.RefClass);
-            if (log.RefIDs != null) kit.set("ref_ids", log.RefIDs);
-            if (log.Status.HasValue) kit.set("status", log.Status.Value);
-            if (log.Message != null) kit.set("message", log.Message);
-            if (log.StackTrace != null) kit.set("stack_trace", log.StackTrace);
-            if (log.InnerStackTrace != null) kit.set("inner_stack_trace", log.InnerStackTrace);
-            if (log.RequestData != null) kit.set("request_data", log.RequestData);
-            if (log.CreatedDateTime.HasValue) kit.set("created_datetime", log.CreatedDateTime.Value);
-            if (log.CreatedUserId != null) kit.set("created_user_id", log.CreatedUserId);
-            if (log.CreatedUserName != null) kit.set("created_user_name", log.CreatedUserName);
+            if (log.JobType != null) kit.set("jl_job_type", log.JobType);
+            if (log.JobName != null) kit.set("jl_job_name", log.JobName);
+            if (log.JobKey != null) kit.set("jl_job_key", log.JobKey);
+            if (log.RefClass != null) kit.set("jl_ref_cls", log.RefClass);
+            if (log.RefIDs != null) kit.set("jl_ref_ids", log.RefIDs);
+            if (log.Status.HasValue) kit.set("jl_status", log.Status.Value);
+            if (log.Message != null) kit.set("jl_message", log.Message);
+            if (log.StackTrace != null) kit.set("jl_stk_trc", log.StackTrace);
+            if (log.InnerStackTrace != null) kit.set("jl_in_stk_trc", log.InnerStackTrace);
+            if (log.RequestData != null) kit.set("jl_req_data", log.RequestData);
+            if (log.CreatedDateTime.HasValue) kit.set("jl_crt_time", log.CreatedDateTime.Value);
+            if (log.CreatedUserId != null) kit.set("jl_crt_user_id", log.CreatedUserId);
+            if (log.CreatedUserName != null) kit.set("jl_crt_user_name", log.CreatedUserName);
         }
     }
 }

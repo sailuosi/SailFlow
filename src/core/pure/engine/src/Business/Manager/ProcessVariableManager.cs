@@ -17,7 +17,7 @@ using sailflow.hub.Localize;
 namespace sailflow.engine.Manager
 {
     /// <summary>
-    /// 流程运行变量（wf_process_variable / 白名单热分表）。
+    /// 流程运行变量（wf_proc_variable / 白名单热分表）。
     /// 终态：无事务从 Client 取 kit；有事务只用传入的同一个 kit。
     /// </summary>
     internal class ProcessVariableManager

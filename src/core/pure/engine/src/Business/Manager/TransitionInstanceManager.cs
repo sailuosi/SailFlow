@@ -12,7 +12,7 @@ using sailflow.engine.HotShard;
 namespace sailflow.engine.Manager
 {
     /// <summary>
-    /// 节点转移实例（wf_transition_instance / 白名单热分表）。
+    /// 节点转移实例（wf_tran_instance / 白名单热分表）。
     /// 终态：无事务从 Client 取 kit；有事务只用传入的同一个 kit。
     /// </summary>
     public class TransitionInstanceManager

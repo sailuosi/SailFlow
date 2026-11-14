@@ -4,7 +4,7 @@ namespace sailflow.hub.Form
 {
     /// <summary>
     /// Host-side registration point for <see cref="IFormService"/>.
-    /// Default: sailflow.form <c>UseForm()</c>（FbForm 流程附属库）；或 <c>UseForm(hostImpl)</c> 覆盖。
+    /// Default: sailflow.form <c>UseForm()</c>（fm_form 流程附属库）；或 <c>UseForm(hostImpl)</c> 覆盖。
     /// </summary>
     public static class FormServiceLocator
     {
@@ -24,7 +24,7 @@ namespace sailflow.hub.Form
             if (_service == null)
             {
                 throw new InvalidOperationException(
-                    "IFormService is not registered. Call builder.Services.UseForm() (default FbForm store) " +
+                    "IFormService is not registered. Call builder.Services.UseForm() (default fm_form store) " +
                     "or UseForm(IFormService) with a host implementation.");
             }
 
