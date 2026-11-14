@@ -144,7 +144,19 @@ namespace sailflow.engine.Hooks
                 if (!MatchesHook(hook, ctx, eventType))
                     continue;
 
-                var payload = Sail.JsonSerializer.Serialize(ctx);
+                // Kit 不可入 Outbox（自引用环）；临时摘掉再序列化
+                var savedKit = ctx.Kit;
+                ctx.Kit = null;
+                string payload;
+                try
+                {
+                    payload = Sail.JsonSerializer.Serialize(ctx);
+                }
+                finally
+                {
+                    ctx.Kit = savedKit;
+                }
+
                 var row = new HookOutboxEntity
                 {
                     Kind = HookOutboxKinds.Hook,
