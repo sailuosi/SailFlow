@@ -16,7 +16,8 @@
 | [特性设计-回调与事件.md](./特性设计-回调与事件.md) | Gate / Hook / Notifier / Outbox 设计 |
 | [特性说明-副作用可靠性.md](./特性说明-副作用可靠性.md) | **旁路可靠性**：Outbox / Channel / 对账分档；批量推送削峰 |
 | [草案-挂起与统一Resume.md](./草案-挂起与统一Resume.md) | **草案引子**：Bookmark 思想 → WaitToken / ResumeWaiting；不改 UserTask |
-| [草案-命令执行管道.md](./草案-命令执行管道.md) | **草案引子**：Elsa Middleware 思想 → Command Pipeline；不替换 Gate/Hook |
+| [草案-命令执行管道.md](./草案-命令执行管道.md) | **已吸收**：原 Command Pipeline 引子；横切 DRY 并入动作骨架，不再单独立项 |
+| [草案-非流转动作骨架.md](./草案-非流转动作骨架.md) | **草案引子**：动作骨架；父类 protected 复用 + Assignee/Transition/Lifecycle 三族；新特性 ≈ 枚举 + 族群子类 |
 | [草案-引擎异步化.md](./草案-引擎异步化.md) | **草案专题（0–2 首包已落地）**：假 Async 禁令 + Clip/`ct` + 锁/Manager async；下一刀 Mediator 深链 |
 | [目录-扩展插件.md](./目录-扩展插件.md) | **扩展目录**：pure/ext/biz + sleveen-admin 的 UseXxx / Resolver / Filter / Hook / Handler 与核心代码 |
 | [todo-产品缺口.md](./todo-产品缺口.md) | **活动缺口**：联调 + 余债；已接线见 [progress/2026-11-04-产品缺口接线归档.md](./progress/2026-11-04-产品缺口接线归档.md) |
