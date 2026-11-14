@@ -31,19 +31,28 @@ namespace sailflow.hub.Localize
         }
 
         /// <summary>
-        /// Get current language
-        /// 获取当前语言
+        /// Whether an explicit language has been set (UseLang / SetLang / SetDefault).
         /// </summary>
-        /// <param name="project"></param>
+        internal static bool IsLangConfigured()
+        {
+            return _languageCache.TryGetValue("LANG", out LangTypeEnum lang)
+                && lang != LangTypeEnum.none;
+        }
+
+        /// <summary>
+        /// Get current language
+        /// 获取当前语言；未配置时回落 en（应先经 SetDefault / UseLang）。
+        /// </summary>
         /// <returns></returns>
         internal static LangTypeEnum GetLang()
         {
-            var lang = _languageCache.Get<LangTypeEnum>("LANG");
-            if (lang == LangTypeEnum.none)
+            if (_languageCache.TryGetValue("LANG", out LangTypeEnum lang)
+                && lang != LangTypeEnum.none)
             {
-                lang = LangTypeEnum.en;
+                return lang;
             }
-            return lang;
+
+            return LangTypeEnum.en;
         }
     }
 }

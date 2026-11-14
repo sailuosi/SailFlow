@@ -39,8 +39,8 @@ namespace sailflow.hub.Localize
 
         public void SetDefault()
         {
-            var lang = LanguageKeyCachedHelper.GetLang();
-            if (lang == LangTypeEnum.none)
+            // GetLang() 未配置时会回落 en，不能用其判断；仅在尚未显式配置时默认中文
+            if (!LanguageKeyCachedHelper.IsLangConfigured())
                 LanguageKeyCachedHelper.SetLang(LangTypeEnum.zh);
         }
     }

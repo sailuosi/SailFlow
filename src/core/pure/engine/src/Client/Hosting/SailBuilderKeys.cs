@@ -22,6 +22,8 @@ public static class SailBuilderKeys
     public static readonly object FormService = new();
     public static readonly object ResourceService = new();
     public static readonly object LocalizeMessages = new();
+    /// <summary>引擎文案语言 <see cref="sailflow.hub.Localize.LangTypeEnum"/>（UseLang）。</summary>
+    public static readonly object Lang = new();
     public static readonly object FlowCapabilities = new();
     public static readonly object HookOutboxDrain = new();
     public static readonly object InstanceLockCleaner = new();

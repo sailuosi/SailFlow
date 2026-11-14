@@ -8,7 +8,7 @@ namespace sailflow.hub.Localize
     {
         public static PassthroughLocalizeMessages Instance { get; } = new();
 
-        private LangTypeEnum _lang = LangTypeEnum.en;
+        private LangTypeEnum _lang = LangTypeEnum.none;
 
         private PassthroughLocalizeMessages()
         {

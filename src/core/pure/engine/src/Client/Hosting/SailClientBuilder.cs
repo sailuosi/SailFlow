@@ -7,6 +7,7 @@ using sailflow.engine.Assignee;
 using sailflow.engine.NextStep;
 using sailflow.engine.Rules;
 using sailflow.hub.Essential;
+using sailflow.hub.Localize;
 using sailflow.engine.Client;
 
 namespace sailflow.engine.Hosting;
@@ -121,6 +122,19 @@ public sealed class SailClientBuilder
     {
         ArgumentNullException.ThrowIfNull(serializer);
         Services.UseJsonSerializer(serializer);
+        return this;
+    }
+
+    /// <summary>
+    /// 配置引擎本地化文案语言（zh / en）。需配合 <c>UseLocalize</c> / <c>UseBizLocalize</c>；
+    /// 未调用时 <c>UseLocalize</c> 的 SetDefault 默认中文。
+    /// </summary>
+    public SailClientBuilder UseLang(LangTypeEnum lang)
+    {
+        if (lang == LangTypeEnum.none)
+            throw new ArgumentOutOfRangeException(nameof(lang), "UseLang requires zh or en.");
+
+        Services.Properties[SailBuilderKeys.Lang] = lang;
         return this;
     }
 
@@ -249,6 +263,14 @@ public sealed class SailClientBuilder
                      .Where(x => x.Phase == SailFeaturePhase.ConfigureClient))
         {
             d.ConfigureClient?.Invoke(client, Services);
+        }
+
+        // UseLang pending：在 UseLocalize.SetDefault 之后覆盖，确保 Builder 配置生效
+        if (Services.Properties.TryGetValue(SailBuilderKeys.Lang, out var langBox)
+            && langBox is LangTypeEnum configuredLang
+            && configuredLang != LangTypeEnum.none)
+        {
+            client.Messages.SetLang(configuredLang);
         }
 
         foreach (var d in Services.OrderBy(x => x.Order)
