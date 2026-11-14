@@ -171,6 +171,15 @@ public sealed class RunBuilder
     /// <summary>减签：需 TaskId + NextActivityPerformers（待移除办理人）。</summary>
     public WfExecutedResult RemoveAssignee() => Service().RemoveAssigneeProcess(Build());
 
+    /// <summary>改派：需 TaskId + NextActivityPerformers（新办理人全集）。</summary>
+    public WfExecutedResult ChangeAssignee() => Service().ChangeAssigneeProcess(Build());
+
+    /// <summary>催办：需 TaskId；可选 NextActivityPerformers 限定对象。</summary>
+    public WfExecutedResult Urge() => Service().UrgeProcess(Build());
+
+    /// <summary>委派：需 TaskId + NextActivityPerformers（受托人）；办结自动回转。</summary>
+    public WfExecutedResult Delegate() => Service().DelegateProcess(Build());
+
     /// <summary>挂起：需已设 <c>TaskId</c>。</summary>
     public WfExecutedResult Suspend() => Service().SuspendProcess(Build());
 

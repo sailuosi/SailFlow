@@ -66,8 +66,8 @@
 | 场景 / 常用名 | 建议 Sail 编码 | 建议引擎落点 | 执行含义 | 现状 |
 |---------------|----------------|--------------|----------|------|
 | 转办 | `Transfer` | `TransferProcess` | **个人办结 + 本节点交人，不发生节点流转**（原人待办 Closed，新人同 Activity 待办；刷新 AssignedUser*；≠ 委派回转） | **已接线**（码表 + Host `ButtonsOperation`）；见 [todo-产品缺口.md](./todo-产品缺口.md) **§F** |
-| 委派 / 委托 | `Delegate` | 待定 | 请他人代办，办完或规则满足后**可回到**原责任人（与转办区分）；审计优先走**审批轨迹**，不默认单独流水表 | 暂缓 |
-| 变更处理人 | `ChangeAssignee` | 待定（管理改派） | 管理员/有权人改当前节点办理人集合 | 无产品命令 |
+| 委派 / 委托 | `Delegate` | `DelegateProcess` | 请他人代办；**受托人办结后自动回转**原责任人待办（不推进）。若办完不回转 → 用 `Transfer`。审计走审批轨迹，不默认单独流水表 | 引擎落地中；Host 待产品 |
+| 变更处理人 | `ChangeAssignee` | `ChangeAssigneeProcess` | 管理员/有权人改当前节点办理人集合（差量） | 引擎 API 已有；办理条码表未挂 |
 | 承办 / 认领 | `Claim`（勿用 Undertake 当万能名） | 待定认领命令；**仅** `Leave=Race` | 或签多人时先独占待办，**不推进**；再 `Approve`/`Reject` | 存疑，默认不跟 AntFlow 按钮 |
 | 加批 | `SignAddNode`（候选） | 与 `SignForward` 拆语义后定 | **生成新审批节点/段**再审（AntFlow JP） | 现揉在加签，未拆 |
 | 当前节点加签 | `AddAssignee` | 可落 `SignForward` 子选项 | 不改图结构，仅当前节点增加办理人 | 语义待从 `SignForward` 拆清 |
@@ -129,7 +129,7 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 驳回 | 整单作废 | `Reject`；作废用候选 `Discard` |
 | 退回 | 反转 | `SendBack` ≠ `Reverse` |
 | 加签 | 加批（生新节点） | 现 `SignForward`；加批待拆 |
-| 转办 | 委派 | 候选 `Transfer` ≠ `Delegate` |
+| 转办 | 委派 | `Transfer`＝交人不再回；`Delegate`＝代办完**自动回转**原人 |
 | 承办 | 通过 / 越过会签 | 仅或签认领；见存疑文档；Leave=`Race` |
 | 抄送 | 算人 / 待办 | Host `Copyto`；禁止塞进 Resolve Type |
 | 关闭 | 终止 / 作废 | `Close` vs 候选 `Terminate`/`Discard` |
@@ -154,3 +154,4 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 2026-11-01 | 转办定为「个人办结+本节点交人、不流转」须有；退回后再走两分对齐 Resend/Run + todo F/G |
 | 2026-11-01 | 退回改为两维定型（目标 × 再发送）；AntFlow 五码降为对照别名 |
 | 2026-11-01 | 转办 `TransferProcess` 接线：码表 + Host ButtonsOperation + 办理条 |
+| 2026-11-15 | **拍板**：委派办完自动回转；不回转则用转办；`DelegateProcess` 引擎落地 |

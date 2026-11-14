@@ -1,0 +1,112 @@
+using System;
+using mooSQL.data;
+using sailflow.engine.Client;
+using sailflow.engine.Common;
+using sailflow.engine.Event;
+using sailflow.engine.Hooks;
+using sailflow.engine.Result;
+
+namespace sailflow.engine.Actions.Assignee
+{
+    /// <summary>
+    /// 改派：用 <c>NextActivityPerformers</c> 作为新办理人全集，差量关旧/建新；不推进下一节点。
+    /// 定位活动靠 <c>TaskId</c>。
+    /// </summary>
+    public sealed class ChangeAssigneeAction : AssigneeActionBase
+    {
+        PerformerList _targets;
+
+        public ChangeAssigneeAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
+            : base(sail, kit, runner)
+        {
+        }
+
+        public override FlowOperation Operation => FlowOperation.ChangeAssignee;
+
+        protected override EventFireTypeEnum SuccessEvent => EventFireTypeEnum.OnAssigneeChanged;
+
+        /// <summary><see cref="Manager.TaskManager.ChangeAssignees"/> 内已发 Cancelled/Created。</summary>
+        protected override bool FireTaskLifecycleAfterCore => false;
+
+        protected override string ErrorLogName => "WF_PROCESS_CHANGE_ASSIGNEE_ERROR";
+
+        protected override bool TryLoadContext(out AssigneeActionContext ctx, WfExecutedResult result)
+        {
+            ctx = null!;
+            if (Runner == null || string.IsNullOrWhiteSpace(Runner.TaskId))
+            {
+                result.Status = WfExecutedStatus.Exception;
+                result.ExceptionType = WfExceptionType.ChangeAssignee_ErrorArguments;
+                result.Message = "ChangeAssignee requires TaskId.";
+                return false;
+            }
+
+            _targets = TransferAction.FlattenTransferTargets(Runner);
+            if (_targets.Count == 0)
+            {
+                result.Status = WfExecutedStatus.Exception;
+                result.ExceptionType = WfExceptionType.ChangeAssignee_NoneTargets;
+                result.Message = "ChangeAssignee requires NextActivityPerformers with at least one user.";
+                return false;
+            }
+
+            var tm = Sail.ManagerFactory.Tasks;
+            var taskView = tm.GetTaskView(Kit, Runner.TaskId);
+            if (taskView?.ActivityInstanceId == null)
+            {
+                result.Status = WfExecutedStatus.Exception;
+                result.ExceptionType = WfExceptionType.ChangeAssignee_ErrorArguments;
+                result.Message = "ChangeAssignee task not found.";
+                return false;
+            }
+
+            var activityInstance = Sail.ManagerFactory.Activities.GetById(Kit, taskView.ActivityInstanceId);
+            ctx = new AssigneeActionContext
+            {
+                TaskView = taskView,
+                ActivityInstance = activityInstance,
+                ProcessInstanceId = activityInstance.ProcessInstanceId,
+                TaskId = Runner.TaskId
+            };
+            return true;
+        }
+
+        protected override void ExecuteCore(AssigneeActionContext ctx, WfExecutedResult result)
+        {
+            var managed = Sail.ManagerFactory.Tasks.ChangeAssignees(Kit, ctx.TaskId, Runner, _targets);
+            if (managed.Status != WfDataManagedStatusEnum.Success)
+            {
+                result.Status = WfExecutedStatus.Exception;
+                result.ExceptionType = MapException(managed.Message);
+                result.Message = managed.Message;
+                return;
+            }
+
+            result.Status = WfExecutedStatus.Success;
+            result.Message = "ChangeAssignee succeeded.";
+        }
+
+        protected override string FormatFailedMessage(Exception e)
+        {
+            var error = e.InnerException != null ? e.InnerException.Message : e.Message;
+            return "ChangeAssigneeProcess error: " + error;
+        }
+
+        protected override void ApplyFailedExceptionType(WfExecutedResult result, Exception e)
+        {
+            result.ExceptionType = WfExceptionType.ChangeAssignee_RuntimeError;
+        }
+
+        static string MapException(string message)
+        {
+            if (string.IsNullOrEmpty(message))
+                return WfExceptionType.ChangeAssignee_RuntimeError;
+            if (message.Contains("ready/running", StringComparison.OrdinalIgnoreCase))
+                return WfExceptionType.ChangeAssignee_NotInRunning;
+            if (message.Contains("target", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("performer", StringComparison.OrdinalIgnoreCase))
+                return WfExceptionType.ChangeAssignee_NoneTargets;
+            return WfExceptionType.ChangeAssignee_RuntimeError;
+        }
+    }
+}

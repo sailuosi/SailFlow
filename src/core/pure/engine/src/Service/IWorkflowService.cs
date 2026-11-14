@@ -172,6 +172,27 @@ namespace sailflow.engine.Service
         WfExecutedResult RemoveAssigneeProcess(FlowCommandContext runner);
         Task<WfExecutedResult> RemoveAssigneeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// 改派：用 <c>NextActivityPerformers</c> 作为当前节点新办理人全集（差量关旧/建新），不发生节点流转。
+        /// 定位活动靠 <c>TaskId</c>。
+        /// </summary>
+        WfExecutedResult ChangeAssigneeProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> ChangeAssigneeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 催办：对当前节点未办待办发催办通知（不改状态、不流转）。
+        /// <c>TaskId</c> 定位活动；可选 <c>NextActivityPerformers</c> 限定对象（空=全部打开待办）。
+        /// </summary>
+        WfExecutedResult UrgeProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> UrgeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 委派：本人待办交一人代办；受托人办结后自动回转原责任人（不推进）。≠ Transfer。
+        /// <c>TaskId</c> + <c>NextActivityPerformers</c>（取首个有效用户）。
+        /// </summary>
+        WfExecutedResult DelegateProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> DelegateProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
+
         //审批决策
         //Approval
         void AgreeTask(string taskId);

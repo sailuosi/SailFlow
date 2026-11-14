@@ -230,11 +230,16 @@ namespace sailflow.engine.Hooks
             // runner 保留签名兼容调用方；上下文由 task/activityInstance 构造
             _ = runner;
 
-            var eventType = kind == TaskNotifyKind.Created
-                ? EventFireTypeEnum.OnTaskCreated
-                : EventFireTypeEnum.OnTaskCompleted;
+            // Created/Urged 有独立事件；其余（Completed/Cancelled/Entrusted）保持历史映射 OnTaskCompleted
+            var eventType = kind switch
+            {
+                TaskNotifyKind.Created => EventFireTypeEnum.OnTaskCreated,
+                TaskNotifyKind.Urged => EventFireTypeEnum.OnTaskUrged,
+                _ => EventFireTypeEnum.OnTaskCompleted
+            };
+            var operation = kind == TaskNotifyKind.Urged ? FlowOperation.Urge : FlowOperation.Run;
 
-            var hookCtx = BuildHookContextFromTask(task, activityInstance, eventType, FlowOperation.Run);
+            var hookCtx = BuildHookContextFromTask(task, activityInstance, eventType, operation);
             RunSyncHooks(kit, hookCtx, eventType);
             EnqueueAsyncHooks(kit, hookCtx, eventType);
 

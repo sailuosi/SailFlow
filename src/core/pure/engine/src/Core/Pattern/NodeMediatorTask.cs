@@ -71,6 +71,11 @@ namespace sailflow.engine.Pattern
 
             if (taskId != null)
             {
+                // 委派受托人办结：自动回转原责任人，不完成本活动、不继续流转
+                if (base.TaskManager.TryCompleteAsDelegationReturn(
+                        kit.useSQL(), taskId, activityResource.AppRunner))
+                    return false;
+
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
                 base.TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
             }

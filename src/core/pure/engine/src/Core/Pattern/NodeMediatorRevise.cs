@@ -126,6 +126,10 @@ namespace sailflow.engine.Pattern
 
             if (taskId != null)
             {
+                if (base.TaskManager.TryCompleteAsDelegationReturn(
+                        kit.useSQL(), taskId, activityResource.AppRunner))
+                    return false;
+
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
                 base.TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);

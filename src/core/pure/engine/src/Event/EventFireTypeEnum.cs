@@ -100,6 +100,18 @@ namespace sailflow.engine.Event
 
         OnAssigneeRemoved = 105,
 
+        OnAssigneeChanging = 106,
+
+        OnAssigneeChanged = 107,
+
+        OnProcessUrging = 108,
+
+        OnProcessUrged = 109,
+
+        OnProcessDelegating = 110,
+
+        OnProcessDelegated = 111,
+
         OnActivityCreated = 40,
 
         OnActivityExecuting = 41,
@@ -117,6 +129,8 @@ namespace sailflow.engine.Event
         OnTaskCreated = 60,
 
         OnTaskCompleted = 61,
+
+        OnTaskUrged = 62,
 
         OnSuccess = 100,
 

@@ -327,6 +327,42 @@ Assignee 族 `RemoveAssigneeAction`（A4；**引擎 API 已有，Host 办理条�
 | Hook | `OnAssigneeRemoved` |
 | 设计 | [progress/2026-11-15-动作骨架-A4-RemoveAssignee.md](../progress/2026-11-15-动作骨架-A4-RemoveAssignee.md) |
 
+### 5.12c ChangeAssigneeProcess（改派，不推进）
+
+Assignee 族 `ChangeAssigneeAction`（A4 续）。
+
+| 步骤 | 类·方法 |
+|------|---------|
+| API | `ChangeAssigneeProcess` → `RunAction` → `ChangeAssigneeAction.Execute` |
+| 定位 | `TaskId` → 活动；`NextActivityPerformers` = **新办理人全集** |
+| Gate | `FlowOperation.ChangeAssignee` |
+| 写库 | `TaskManager.ChangeAssignees`：不在新集合 → Closed+Cancelled；缺开待办 → Insert+Created；刷新 AssignedUser* |
+| Hook | `OnAssigneeChanged` |
+
+### 5.12d UrgeProcess（催办，不推进）
+
+Assignee 族 `UrgeAction`（A4 续）。**不改** TaskState。
+
+| 步骤 | 类·方法 |
+|------|---------|
+| API | `UrgeProcess` → `RunAction` → `UrgeAction.Execute` |
+| 定位 | `TaskId` → 活动；可选 `NextActivityPerformers` 限定对象（空=全部打开待办） |
+| Gate | `FlowOperation.Urge` |
+| 通知 | `TaskManager.UrgeOpenTasks` → 逐条 `FireTaskLifecycle(Urged)` → `OnTaskUrged` + Notifier |
+| Hook | `OnProcessUrged` |
+| Host | 需注册 `TaskKinds` 含 `Urged` 的 Notifier 通道后才有实际消息 |
+
+### 5.12e DelegateProcess（委派，办完自动回转）
+
+Assignee 族 `DelegateAction`。**拍板：** 受托人办结必须回转原人；否则用 Transfer。
+
+| 步骤 | 类·方法 |
+|------|---------|
+| API | `DelegateProcess` → `RunAction` → `DelegateAction.Execute` |
+| 发起 | `TaskManager.Delegate`：原人 Closed + `Entrusted`；受托人新建（`EntrustedTaskId`=原 TaskId） |
+| 办结 | 受托人 `Approve/Run` → `TryCompleteAsDelegationReturn`：受托 Completed + 原人重建 Waiting；**不**完结 AI、**不** ContinueForward |
+| Hook | `OnProcessDelegated`（发起时） |
+
 ### 5.13 Suspend / Resume（Lifecycle 族，A2）
 
 **不经** Runtime/Mediator。走动作骨架。

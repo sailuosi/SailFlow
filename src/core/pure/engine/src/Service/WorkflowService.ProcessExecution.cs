@@ -391,6 +391,27 @@ namespace sailflow.engine.Service
         public Task<WfExecutedResult> RemoveAssigneeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunActionAsync(runner, cancellationToken, (kit, r) => new RemoveAssigneeAction(Sail, kit, r).Execute());
 
+        /// <summary>A4 续：改派（Assignee 族）。Host 办理条待产品。</summary>
+        public WfExecutedResult ChangeAssigneeProcess(FlowCommandContext runner)
+            => RunAction(runner, (kit, r) => new ChangeAssigneeAction(Sail, kit, r).Execute());
+
+        public Task<WfExecutedResult> ChangeAssigneeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new ChangeAssigneeAction(Sail, kit, r).Execute());
+
+        /// <summary>A4 续：催办（Assignee 族）；仅 Notifier/Hook，不改待办状态。</summary>
+        public WfExecutedResult UrgeProcess(FlowCommandContext runner)
+            => RunAction(runner, (kit, r) => new UrgeAction(Sail, kit, r).Execute());
+
+        public Task<WfExecutedResult> UrgeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new UrgeAction(Sail, kit, r).Execute());
+
+        /// <summary>委派（Assignee 族）；受托人办结经 Mediator 自动回转原人。</summary>
+        public WfExecutedResult DelegateProcess(FlowCommandContext runner)
+            => RunAction(runner, (kit, r) => new DelegateAction(Sail, kit, r).Execute());
+
+        public Task<WfExecutedResult> DelegateProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new DelegateAction(Sail, kit, r).Execute());
+
         #endregion
 
         #region Process Resume Suspend Cancel Discard Terminate

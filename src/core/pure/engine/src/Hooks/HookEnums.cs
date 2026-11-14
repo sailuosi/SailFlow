@@ -7,6 +7,8 @@ namespace sailflow.engine.Hooks
         Completed,
         Cancelled,
         Entrusted,
+        /// <summary>催办：不改待办状态，仅旁路通知当前办理人。</summary>
+        Urged,
     }
 
     /// <summary>注册白名单匹配策略。</summary>
@@ -41,6 +43,12 @@ namespace sailflow.engine.Hooks
         Transfer,
         /// <summary>减签：从当前多人节点移除尚未办完的办理人待办，不推进下一节点。</summary>
         RemoveAssignee,
+        /// <summary>改派：用新办理人集合替换当前节点未办待办（差量关旧/建新），不推进下一节点。</summary>
+        ChangeAssignee,
+        /// <summary>催办：对当前节点未办待办发催办通知，不改状态、不推进。</summary>
+        Urge,
+        /// <summary>委派：请人代办；受托人办结后自动回转原责任人（≠ Transfer）。</summary>
+        Delegate,
         /// <summary>挂起流程实例。</summary>
         Suspend,
         /// <summary>恢复已挂起的流程实例。</summary>

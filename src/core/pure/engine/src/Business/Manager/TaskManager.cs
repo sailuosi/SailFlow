@@ -494,6 +494,133 @@ namespace sailflow.engine.Manager
             FireTaskLifecycle(kit, task, runner, TaskNotifyKind.Completed);
         }
 
+        /// <summary>
+        /// 若待办为委派受托任务（<see cref="TaskEntity.EntrustedTaskId"/> 非空）：办结受托待办并自动回转原责任人 Waiting，
+        /// 返回 true（调用方<strong>不得</strong> Complete 活动实例 / ContinueForward）。否则返回 false，走正常办结。
+        /// </summary>
+        internal bool TryCompleteAsDelegationReturn(SQLBuilder kit, string taskId, FlowCommandContext runner)
+        {
+            if (string.IsNullOrWhiteSpace(taskId))
+                return false;
+
+            var task = GetTask(kit, taskId);
+            if (task == null || string.IsNullOrWhiteSpace(task.EntrustedTaskId))
+                return false;
+
+            var originalTaskId = task.EntrustedTaskId;
+            EndTaskState(kit, taskId, TaskStateEnum.Completed, runner);
+            FireTaskLifecycle(kit, GetTask(kit, taskId), runner, TaskNotifyKind.Completed);
+
+            RestoreOriginalAssigneeAfterDelegation(kit, originalTaskId, runner);
+            return true;
+        }
+
+        /// <summary>委派：关闭原人待办并为受托人建待办（挂 <c>EntrustedTaskId</c>）；不刷新 AssignedUser*（原人仍为责任锚点）。</summary>
+        internal WfDataManagedResult Delegate(
+            SQLBuilder kit,
+            string taskId,
+            FlowCommandContext runner,
+            PerformerList targets)
+        {
+            if (targets == null || targets.Count == 0)
+                return WfDataManagedResult.Exception("Delegate requires at least one target performer.");
+
+            var task = GetTask(kit, taskId);
+            if (task == null)
+                return WfDataManagedResult.Exception("Delegate task not found.");
+
+            if (!string.IsNullOrWhiteSpace(task.EntrustedTaskId))
+                return WfDataManagedResult.Exception("Delegate cannot nest: task is already a delegated task.");
+
+            if (!string.Equals(task.AssignedUserId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
+                return WfDataManagedResult.Exception("Delegate is only allowed on the current user's task.");
+
+            if (task.TaskState != (short)TaskStateEnum.Waiting
+                && task.TaskState != (short)TaskStateEnum.Reading)
+                return WfDataManagedResult.Exception("Delegate task is not in to-do state.");
+
+            var am = Sail.ManagerFactory.Activities;
+            var activityInstance = am.GetById(kit, task.ActivityInstanceId);
+            if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
+                && activityInstance.ActivityState != (short)ActivityStateEnum.Running)
+            {
+                return WfDataManagedResult.Exception("Delegate activity is not ready/running.");
+            }
+
+            Performer target = null;
+            foreach (var p in targets)
+            {
+                if (p != null && !string.IsNullOrWhiteSpace(p.UserId))
+                {
+                    target = p;
+                    break;
+                }
+            }
+            if (target == null)
+                return WfDataManagedResult.Exception("Delegate requires at least one target performer.");
+            if (string.Equals(target.UserId, runner.UserId, StringComparison.OrdinalIgnoreCase))
+                return WfDataManagedResult.Exception("Cannot delegate to self.");
+
+            var existing = GetTaskListByActivity(
+                kit, activityInstance.ProcessInstanceId, activityInstance.ActivityInstanceId);
+            if (existing.Any(t =>
+                    string.Equals(t.AssignedUserId, target.UserId, StringComparison.OrdinalIgnoreCase)
+                    && (t.TaskState == (short)TaskStateEnum.Waiting
+                        || t.TaskState == (short)TaskStateEnum.Reading)))
+            {
+                return WfDataManagedResult.Exception(
+                    $"Delegate target already has an open task: {target.UserId}");
+            }
+
+            task.TaskState = (short)TaskStateEnum.Closed;
+            task.EndedDateTime = DateTime.UtcNow;
+            task.EndedUserId = runner.UserId;
+            task.EndedUserName = runner.UserName;
+            Update(kit, task);
+            Sail.CapabilityDispatcher.FireTaskLifecycle(
+                kit, task, activityInstance, runner, TaskNotifyKind.Entrusted);
+
+            Insert(kit, activityInstance, target.UserId, target.UserName,
+                runner.UserId, runner.UserName, taskId, runner);
+            return WfDataManagedResult.Success();
+        }
+
+        void RestoreOriginalAssigneeAfterDelegation(
+            SQLBuilder kit,
+            string originalTaskId,
+            FlowCommandContext runner)
+        {
+            var originalTask = GetTask(kit, originalTaskId);
+            if (originalTask == null)
+                throw new WorkflowException("Delegate return: original task not found.");
+
+            var newTask = new TaskEntity
+            {
+                BizPK = originalTask.BizPK,
+                BizChannel = originalTask.BizChannel,
+                ProcessInstanceId = originalTask.ProcessInstanceId,
+                ProcessId = originalTask.ProcessId,
+                ActivityId = originalTask.ActivityId,
+                ActivityName = originalTask.ActivityName,
+                ActivityInstanceId = originalTask.ActivityInstanceId,
+                AssignedUserId = originalTask.AssignedUserId,
+                AssignedUserName = originalTask.AssignedUserName,
+                GroupId = originalTask.GroupId,
+                GroupName = originalTask.GroupName,
+                GroupRole = originalTask.GroupRole,
+                UnitId = originalTask.UnitId,
+                UnitCode = originalTask.UnitCode,
+                UnitName = originalTask.UnitName,
+                TaskState = (short)TaskStateEnum.Waiting,
+                TaskType = originalTask.TaskType,
+                CreatedDateTime = DateTime.UtcNow,
+                CreatedUserId = runner?.UserId ?? originalTask.CreatedUserId,
+                CreatedUserName = runner?.UserName ?? originalTask.CreatedUserName
+            };
+            Insert(kit, newTask);
+            FireTaskLifecycle(kit, newTask, runner, TaskNotifyKind.Created);
+        }
+
         internal void Withdraw(SQLBuilder kit, string taskId, FlowCommandContext runner)
         {
             EndTaskState(kit, taskId, TaskStateEnum.Withdrawed, runner);
@@ -634,6 +761,133 @@ namespace sailflow.engine.Manager
             }
 
             // 按仍打开的待办重写活动 AssignedUser*，转出人不再占用会签名额
+            RefreshActivityAssignedUsersFromOpenTasks(kit, activityInstance);
+            return WfDataManagedResult.Success();
+        }
+
+        /// <summary>
+        /// 催办：对当前活动打开待办发 <see cref="TaskNotifyKind.Urged"/>，不改 TaskState。
+        /// <paramref name="filterUserIds"/> 非空时只催这些人；为空则催全部打开待办。
+        /// </summary>
+        internal WfDataManagedResult UrgeOpenTasks(
+            SQLBuilder kit,
+            string taskId,
+            FlowCommandContext runner,
+            ISet<string> filterUserIds = null)
+        {
+            var task = GetTask(kit, taskId);
+            if (task == null)
+                return WfDataManagedResult.Exception("Urge task not found.");
+
+            var am = Sail.ManagerFactory.Activities;
+            var activityInstance = am.GetById(kit, task.ActivityInstanceId);
+            if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
+                && activityInstance.ActivityState != (short)ActivityStateEnum.Running)
+            {
+                return WfDataManagedResult.Exception("Urge activity is not ready/running.");
+            }
+
+            var open = GetTaskListByActivity(
+                    kit,
+                    activityInstance.ProcessInstanceId,
+                    activityInstance.ActivityInstanceId)
+                .Where(t => t.TaskState == (short)TaskStateEnum.Waiting
+                    || t.TaskState == (short)TaskStateEnum.Reading)
+                .ToList();
+
+            if (filterUserIds != null && filterUserIds.Count > 0)
+            {
+                open = open
+                    .Where(t => filterUserIds.Contains(t.AssignedUserId))
+                    .ToList();
+            }
+
+            if (open.Count == 0)
+                return WfDataManagedResult.Exception("Urge: no open task to notify.");
+
+            foreach (var t in open)
+            {
+                Sail.CapabilityDispatcher.FireTaskLifecycle(
+                    kit, t, activityInstance, runner, TaskNotifyKind.Urged);
+            }
+
+            return WfDataManagedResult.Success();
+        }
+
+        /// <summary>
+        /// 改派：将当前活动未办待办差量对齐到新办理人集合（关旧 Cancelled / 建新 Created），刷新 AssignedUser*。
+        /// 新集合至少一人；已在集合内且仍打开的待办保留。不推进下一节点。
+        /// </summary>
+        internal WfDataManagedResult ChangeAssignees(
+            SQLBuilder kit,
+            string taskId,
+            FlowCommandContext runner,
+            PerformerList newAssignees)
+        {
+            if (newAssignees == null || newAssignees.Count == 0)
+                return WfDataManagedResult.Exception("ChangeAssignee requires at least one target performer.");
+
+            var task = GetTask(kit, taskId);
+            if (task == null)
+                return WfDataManagedResult.Exception("ChangeAssignee task not found.");
+
+            var am = Sail.ManagerFactory.Activities;
+            var activityInstance = am.GetById(kit, task.ActivityInstanceId);
+            if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
+                && activityInstance.ActivityState != (short)ActivityStateEnum.Running)
+            {
+                return WfDataManagedResult.Exception("ChangeAssignee activity is not ready/running.");
+            }
+
+            var desired = new Dictionary<string, Performer>(StringComparer.OrdinalIgnoreCase);
+            foreach (var p in newAssignees)
+            {
+                if (p == null || string.IsNullOrWhiteSpace(p.UserId))
+                    continue;
+                desired[p.UserId] = p;
+            }
+            if (desired.Count == 0)
+                return WfDataManagedResult.Exception("ChangeAssignee requires at least one target performer.");
+
+            var open = GetTaskListByActivity(
+                    kit,
+                    activityInstance.ProcessInstanceId,
+                    activityInstance.ActivityInstanceId)
+                .Where(t => t.TaskState == (short)TaskStateEnum.Waiting
+                    || t.TaskState == (short)TaskStateEnum.Reading)
+                .ToList();
+
+            foreach (var t in open)
+            {
+                if (desired.ContainsKey(t.AssignedUserId))
+                    continue;
+                t.TaskState = (short)TaskStateEnum.Closed;
+                t.EndedDateTime = DateTime.UtcNow;
+                t.EndedUserId = runner?.UserId;
+                t.EndedUserName = runner?.UserName;
+                Update(kit, t);
+                Sail.CapabilityDispatcher.FireTaskLifecycle(
+                    kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
+            }
+
+            var stillOpenIds = new HashSet<string>(
+                GetTaskListByActivity(
+                        kit,
+                        activityInstance.ProcessInstanceId,
+                        activityInstance.ActivityInstanceId)
+                    .Where(t => t.TaskState == (short)TaskStateEnum.Waiting
+                        || t.TaskState == (short)TaskStateEnum.Reading)
+                    .Select(t => t.AssignedUserId),
+                StringComparer.OrdinalIgnoreCase);
+
+            foreach (var kv in desired)
+            {
+                if (stillOpenIds.Contains(kv.Key))
+                    continue;
+                Insert(kit, activityInstance, kv.Value.UserId, kv.Value.UserName,
+                    runner?.UserId, runner?.UserName, taskId, runner);
+            }
+
             RefreshActivityAssignedUsersFromOpenTasks(kit, activityInstance);
             return WfDataManagedResult.Success();
         }

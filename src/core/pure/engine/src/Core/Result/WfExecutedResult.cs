@@ -205,6 +205,26 @@ namespace sailflow.engine.Result
         public const string RemoveAssignee_LastAssignee = "RemoveAssignee_LastAssignee";
         public const string RemoveAssignee_RuntimeError = "RemoveAssignee_RuntimeError";
 
+        // 改派
+        public const string ChangeAssignee_ErrorArguments = "ChangeAssignee_ErrorArguments";
+        public const string ChangeAssignee_NoneTargets = "ChangeAssignee_NoneTargets";
+        public const string ChangeAssignee_NotInRunning = "ChangeAssignee_NotInRunning";
+        public const string ChangeAssignee_RuntimeError = "ChangeAssignee_RuntimeError";
+
+        // 催办
+        public const string Urge_ErrorArguments = "Urge_ErrorArguments";
+        public const string Urge_NoOpenTasks = "Urge_NoOpenTasks";
+        public const string Urge_NotInRunning = "Urge_NotInRunning";
+        public const string Urge_RuntimeError = "Urge_RuntimeError";
+
+        // 委派
+        public const string Delegate_ErrorArguments = "Delegate_ErrorArguments";
+        public const string Delegate_NoneTargets = "Delegate_NoneTargets";
+        public const string Delegate_NotMineTask = "Delegate_NotMineTask";
+        public const string Delegate_NotInRunning = "Delegate_NotInRunning";
+        public const string Delegate_Nested = "Delegate_Nested";
+        public const string Delegate_RuntimeError = "Delegate_RuntimeError";
+
         // 挂起 / 恢复
         public const string Suspend_ErrorArguments = "Suspend_ErrorArguments";
         public const string Suspend_RuntimeError = "Suspend_RuntimeError";
