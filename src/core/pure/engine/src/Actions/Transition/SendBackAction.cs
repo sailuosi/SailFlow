@@ -30,13 +30,7 @@ namespace sailflow.engine.Actions.Transition
             if (result.Status == WfExecutedStatus.Exception || runtime == null)
                 return false;
 
-            ctx = new TransitionActionContext
-            {
-                ProcessInstanceId = runtime.ProcessInstanceId,
-                RunningActivityInstance = runtime.RunningActivityInstance,
-                TaskId = runtime.TaskView?.TaskId,
-                Runtime = runtime
-            };
+            ctx = ToContext(runtime);
             return true;
         }
 

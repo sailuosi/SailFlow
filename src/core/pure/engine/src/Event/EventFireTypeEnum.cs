@@ -84,6 +84,18 @@ namespace sailflow.engine.Event
 
         OnProcessResumed = 33,
 
+        OnProcessCanceling = 34,
+
+        OnProcessCanceled = 35,
+
+        OnProcessDiscarding = 36,
+
+        OnProcessDiscarded = 37,
+
+        OnProcessTerminating = 38,
+
+        OnProcessTerminated = 39,
+
         OnActivityCreated = 40,
 
         OnActivityExecuting = 41,

@@ -93,8 +93,8 @@ Manager 经 `Sail.ManagerFactory` / `SailFactoryAccess.Managers`；模型经 `Sa
 | `Close` | `CloseOperationHandler` | `CloseProcessAsync` |
 | `Revise` | `ReviseOperationHandler` | `ReviseProcessAsync` |
 | `Reverse` | `ReverseOperationHandler` | `ReverseProcessAsync` |
-| `Terminate` | `TerminateOperationHandler` | `TerminateProcess`（bool） |
-| `Discard` | `DiscardOperationHandler` | `DiscardProcess`（bool） |
+| `Terminate` | `TerminateOperationHandler` | `TerminateProcess`（Lifecycle / `WfExecutedResult`） |
+| `Discard` | `DiscardOperationHandler` | `DiscardProcess`（Lifecycle / `WfExecutedResult`） |
 
 发起不在办理条：`StartProcess` / `StartProcessByMessage`（直调或 FormBiz）。
 
@@ -155,16 +155,19 @@ WfRuntimeManagerRun.ExecuteInstanceImp
 
 ### 5.2 RunProcess（Approve / 通过）
 
+Transition 族 `RunAction`（A3 续）。
+
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `RunProcess` → `Run()` → `Run(kit)` → `ExecuteRunCore` → `FinishRunCore` |
-| Factory | `CreateRuntimeInstanceAppRunning` |
+| API | `RunProcess` → `RunAction` → `RunAction.Execute`；`RunProcessAsync` → Factory 预载 + `ExecuteWithRuntime` |
+| 族群时序 | Load Runtime → Gate → `Runtime.Execute` → `OnProcessContinued` |
+| Factory | `CreateRuntimeInstanceAppRunning`（同步）/ `CreateRuntimeInstanceAppRunningAsync`（异步） |
 | Factory 读库 | `ActivityInstanceManager.GetRunningNode` · `TaskManager.CheckTaskStateInRunningState` · `ProcessInstanceManager.GetById` · `client.ProcessModelFactory.CreateByTask` · `ProcessVariableResolver.CheckVariableRequired` |
 | Gate | `FlowOperation.Run` |
 | Runtime | `WfRuntimeManagerRun.ExecuteInstanceImp` → §4 深链；含代码说明见 **§6** |
 | Hook | `OnProcessContinued`；若实例 Completed 另 `OnProcessCompleted` |
 
-`RunProcessAuto`：`CreateRuntimeInstanceRunAuto`（按活动实例推进，无人工任务校验）→ 同 `WfRuntimeManagerRun`，**不走 Gate**（`FinishRunAutoCore` 直接 Execute）。
+`RunProcessAuto`：`CreateRuntimeInstanceRunAuto`（按活动实例推进，无人工任务校验）→ 同 `WfRuntimeManagerRun`，**不走 Gate**（仍 Service 直调；是否纳入骨架见草案 §8.2）。
 
 ### 5.3 SendBackProcess（退回）
 
@@ -216,9 +219,11 @@ Host `RejectOperationHandler` 可能按节点策略改走 `SendBackProcessAsync`
 
 ### 5.6 ResendProcess（返送退回人）
 
+Transition 族 `ResendAction`。
+
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `ResendProcess` → `Resend` → `ExecuteResendCore` |
+| API | `ResendProcess` → `RunAction` → `ResendAction.Execute` |
 | Factory | `CreateRuntimeInstanceResend` |
 | Factory 读库 | `TaskManager.GetTaskView` · `ActivityInstanceManager.GetById`（当前 + `BackSrcActivityInstanceId`）· `client.ProcessModelFactory.CreateByTask` |
 | Gate | `FlowOperation.Resend` |
@@ -228,9 +233,11 @@ Host `RejectOperationHandler` 可能按节点策略改走 `SendBackProcessAsync`
 
 ### 5.7 ReviseProcess（修订）
 
+Transition 族 `ReviseAction`（Factory 已 `Success` 则直接返回，不跑 Gate/Execute）。
+
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `ReviseProcess` → `ExecuteReviseCore` |
+| API | `ReviseProcess` → `RunAction` → `ReviseAction.Execute` |
 | Factory | `CreateRuntimeInstanceRevise`（TaskView + Running AI + NextPerformers） |
 | Runtime | `WfRuntimeManagerRevise.ExecuteInstanceImp` |
 | Mediator | **固定** `new NodeMediatorRevise(...).ExecuteWorkItem`（不经 Factory 选型） |
@@ -238,9 +245,11 @@ Host `RejectOperationHandler` 可能按节点策略改走 `SendBackProcessAsync`
 
 ### 5.8 ReverseProcess（反转 / 已完成返签）
 
+Transition 族 `ReverseAction`。
+
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `ReverseProcess` → `ExecuteReverseCore` |
+| API | `ReverseProcess` → `RunAction` → `ReverseAction.Execute` |
 | Factory | `CreateRuntimeInstanceReverse` |
 | Factory 读库 | `ProcessInstanceManager.GetProcessInstanceLatest`（须 Completed）· `TransitionInstanceManager.GetEndTransition` · `ActivityInstanceManager.GetById` · `PreviousStepChecker.GetPreviousActivityInstanceList` |
 | Gate | `FlowOperation.Reverse` |
@@ -276,9 +285,11 @@ Transition 族 `CloseAction`（`Fill(End)`）。
 
 ### 5.11 SignForwardProcess（加签）
 
+Transition 族 `SignForwardAction`。
+
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `SignForwardProcess` → `ExecuteSignForwardCore` |
+| API | `SignForwardProcess` → `RunAction` → `SignForwardAction.Execute` |
 | Factory | `CreateRuntimeInstanceSignForward` |
 | Factory 读库 | `GetRunningNode`（校验 AssignedUserIds）· `client.ProcessModelFactory.CreateByTask` |
 | Gate | `FlowOperation.SignForward` |
@@ -313,15 +324,17 @@ Transition 族 `CloseAction`（`Fill(End)`）。
 | Hook | `OnProcessSuspended` / `OnProcessResumed` |
 | 兼容 | 原 `bool SuspendProcess(taskId,…)` / `bool ResumeProcess(processInstanceId,…)` 仍可用，内部转 Action |
 
-### 5.14 Terminate / Discard / Cancel（短路径，未迁骨架）
+### 5.14 Terminate / Discard / Cancel（Lifecycle 族，A2 续）
 
-| 命令 | API | 核心 |
-|------|-----|------|
-| Terminate | `TerminateProcess` | `ProcessInstanceManager.Terminate` |
-| Discard | `DiscardProcess` | `ProcessInstanceManager.Discard` |
-| Cancel | `CancelProcess` | `ProcessInstanceManager.Cancel` |
+**不经** Runtime/Mediator。走动作骨架；产品码表默认仍关。
 
-仍无 Gate 外壳（bool）；产品码表默认关。后续可归 Lifecycle 族。
+| 步骤 | 类·方法 |
+|------|---------|
+| API | `*Process` → `RunAction` → `TerminateAction` / `DiscardAction` / `CancelAction` |
+| 定位 | Cancel/Discard：`BizPK+ProcessId(+Version)`；Terminate：`ProcessInstanceId` 或同上 |
+| Gate | `FlowOperation.Terminate` / `Discard` / `Cancel` |
+| 写库 | `ProcessInstanceManager.*(kit, …)`；Terminate 级联收口活动/待办 |
+| Hook | `OnProcessTerminated` / `OnProcessDiscarded` / `OnProcessCanceled` |
 
 ---
 

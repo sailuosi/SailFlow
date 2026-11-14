@@ -173,4 +173,13 @@ public sealed class RunBuilder
 
     /// <summary>恢复：需已设 <c>ProcessInstanceId</c>。</summary>
     public WfExecutedResult Resume() => Service().ResumeProcess(Build());
+
+    /// <summary>取消：需 BizPK+ProcessId。</summary>
+    public WfExecutedResult Cancel() => Service().CancelProcess(Build());
+
+    /// <summary>作废：需 BizPK+ProcessId。</summary>
+    public WfExecutedResult Discard() => Service().DiscardProcess(Build());
+
+    /// <summary>终止：需 ProcessInstanceId 或 BizPK+ProcessId。</summary>
+    public WfExecutedResult Terminate() => Service().TerminateProcess(Build());
 }

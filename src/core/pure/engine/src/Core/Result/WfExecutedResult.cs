@@ -203,6 +203,14 @@ namespace sailflow.engine.Result
         public const string Suspend_RuntimeError = "Suspend_RuntimeError";
         public const string Resume_ErrorArguments = "Resume_ErrorArguments";
         public const string Resume_RuntimeError = "Resume_RuntimeError";
+
+        // 取消 / 作废 / 终止
+        public const string Cancel_ErrorArguments = "Cancel_ErrorArguments";
+        public const string Cancel_RuntimeError = "Cancel_RuntimeError";
+        public const string Discard_ErrorArguments = "Discard_ErrorArguments";
+        public const string Discard_RuntimeError = "Discard_RuntimeError";
+        public const string Terminate_ErrorArguments = "Terminate_ErrorArguments";
+        public const string Terminate_RuntimeError = "Terminate_RuntimeError";
     }
 }
 

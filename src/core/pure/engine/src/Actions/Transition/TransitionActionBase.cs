@@ -5,6 +5,7 @@ using sailflow.engine.Common;
 using sailflow.engine.Event;
 using sailflow.engine.Manager;
 using sailflow.engine.Result;
+using sailflow.engine.Runtime;
 
 namespace sailflow.engine.Actions.Transition
 {
@@ -31,39 +32,77 @@ namespace sailflow.engine.Actions.Transition
                 if (!TryLoadContext(out var ctx, result))
                     return result;
 
-                var gateCtx = BuildGateContext(ctx.ProcessInstanceId, ctx.RunningActivityInstance, ctx.TaskId);
-                if (!TryGate(gateCtx, result))
-                    return result;
-
-                ExecuteCore(ctx, result);
-                if (result.Status != WfExecutedStatus.Success)
-                    return result;
-
-                var hookCtx = BuildHookContext(
-                    ctx.ProcessInstanceId,
-                    ctx.RunningActivityInstance,
-                    ctx.TaskId,
-                    SuccessEvent);
-                OnFireFlowHook(hookCtx, SuccessEvent);
+                return RunGateCoreHook(ctx, result);
             }
             catch (Exception e)
             {
-                result.Status = WfExecutedStatus.Failed;
-                result.Message = FormatFailedMessage(e);
-                ApplyFailedExceptionType(result, e);
-                LogManager.RecordLog(Sail, ErrorLogName, LogEventType.Error, LogPriority.High, Runner, e);
+                return Fail(result, e);
             }
+        }
 
+        /// <summary>
+        /// Factory 已预载（如 Run Async）时走同一 Gate→Core→Hook，避免重复 Create。
+        /// WfRuntimeManager 为 internal，本方法仅供同程序集 Service 调用。
+        /// </summary>
+        internal WfExecutedResult ExecuteWithRuntime(WfRuntimeManager runtime, WfExecutedResult factoryResult)
+        {
+            var result = factoryResult ?? WfExecutedResult.Default();
+            try
+            {
+                if (result.Status == WfExecutedStatus.Exception || runtime == null)
+                    return result;
+
+                var ctx = ToContext(runtime);
+                return RunGateCoreHook(ctx, result);
+            }
+            catch (Exception e)
+            {
+                return Fail(result, e);
+            }
+        }
+
+        /// <summary>WfRuntimeManager 为 internal；同程序集 Transition 动词可用。</summary>
+        internal static TransitionActionContext ToContext(WfRuntimeManager runtime) =>
+            new()
+            {
+                ProcessInstanceId = runtime.ProcessInstanceId,
+                RunningActivityInstance = runtime.RunningActivityInstance,
+                TaskId = runtime.TaskView?.TaskId,
+                Runtime = runtime
+            };
+
+        WfExecutedResult RunGateCoreHook(TransitionActionContext ctx, WfExecutedResult result)
+        {
+            var gateCtx = BuildGateContext(ctx.ProcessInstanceId, ctx.RunningActivityInstance, ctx.TaskId);
+            if (!TryGate(gateCtx, result))
+                return result;
+
+            ExecuteCore(ctx, result);
+            if (result.Status != WfExecutedStatus.Success)
+                return result;
+
+            var hookCtx = BuildHookContext(
+                ctx.ProcessInstanceId,
+                ctx.RunningActivityInstance,
+                ctx.TaskId,
+                SuccessEvent);
+            OnFireFlowHook(hookCtx, SuccessEvent);
             return result;
         }
 
-        /// <summary>创建/装载 Runtime；失败时 result 已写好（常为 Factory 预检 Exception）。</summary>
+        WfExecutedResult Fail(WfExecutedResult result, Exception e)
+        {
+            result.Status = WfExecutedStatus.Failed;
+            result.Message = FormatFailedMessage(e);
+            ApplyFailedExceptionType(result, e);
+            LogManager.RecordLog(Sail, ErrorLogName, LogEventType.Error, LogPriority.High, Runner, e);
+            return result;
+        }
+
         protected abstract bool TryLoadContext(out TransitionActionContext ctx, WfExecutedResult result);
 
-        /// <summary>执行 Runtime（或专用 Maker）；成功时同步 result 自 Runtime.WfExecutedResult。</summary>
         protected abstract void ExecuteCore(TransitionActionContext ctx, WfExecutedResult result);
 
-        /// <summary>执行 Runtime 并将结果拷入命令结果（含 Assignee ReasonCode / 退回接收人等）。</summary>
         protected void ExecuteRuntimeAndCopyResult(TransitionActionContext ctx, WfExecutedResult result)
         {
             ctx.Runtime.Execute(Kit);

@@ -181,9 +181,16 @@ namespace sailflow.engine.Service
         Boolean SuspendProcess(string taskId, FlowCommandContext runner);
         /// <summary>兼容：按 processInstanceId 恢复，成功返回 true。（参数名历史为 activityInstanceId，实为流程实例 Id）</summary>
         Boolean ResumeProcess(string processInstanceId, FlowCommandContext runner);
-        Boolean CancelProcess(FlowCommandContext canceler);
-        Boolean DiscardProcess(FlowCommandContext discarder);
-        Boolean TerminateProcess(FlowCommandContext terminator);
+
+        /// <summary>取消：BizPK+ProcessId(+Version)；Lifecycle 族。</summary>
+        WfExecutedResult CancelProcess(FlowCommandContext canceler);
+        Task<WfExecutedResult> CancelProcessAsync(FlowCommandContext canceler, CancellationToken cancellationToken = default);
+        /// <summary>作废：BizPK+ProcessId(+Version)；Lifecycle 族。</summary>
+        WfExecutedResult DiscardProcess(FlowCommandContext discarder);
+        Task<WfExecutedResult> DiscardProcessAsync(FlowCommandContext discarder, CancellationToken cancellationToken = default);
+        /// <summary>终止：ProcessInstanceId 或 BizPK+ProcessId；Lifecycle 族。</summary>
+        WfExecutedResult TerminateProcess(FlowCommandContext terminator);
+        Task<WfExecutedResult> TerminateProcessAsync(FlowCommandContext terminator, CancellationToken cancellationToken = default);
         Boolean SetTaskRead(FlowCommandContext runner);
         WfDataManagedResult EntrustTask(TaskEntrustedEntity entrusted, bool cancalOriginalTask = true);
         void CancelEntrustedTask(string id);

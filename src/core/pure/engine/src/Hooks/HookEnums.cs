@@ -43,5 +43,11 @@ namespace sailflow.engine.Hooks
         Suspend,
         /// <summary>恢复已挂起的流程实例。</summary>
         Resume,
+        /// <summary>取消流程实例（业务取消）。</summary>
+        Cancel,
+        /// <summary>作废流程实例。</summary>
+        Discard,
+        /// <summary>终止流程实例（管理向终态）。</summary>
+        Terminate,
     }
 }
