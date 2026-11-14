@@ -3,15 +3,16 @@ using System.Linq;
 using System.Reflection;
 using mooSQL.data;
 using sailflow.engine.Entity;
+using sailflow.engine.Ids;
 using Xunit;
 
 namespace sailflow.engine.tests
 {
-    /// <summary>Guid 字符串主键 / AutoKey 冒烟（不落库）。</summary>
+    /// <summary>string 主键 / AutoKey=SailId 冒烟（不落库）。</summary>
     public class GuidStringAutoKeyTests
     {
         [Fact]
-        public void ProcessEntity_Id_Is_String_With_AutoKey_Guid()
+        public void ProcessEntity_Id_Is_String_With_AutoKey_SailId()
         {
             var prop = typeof(ProcessEntity).GetProperty(nameof(ProcessEntity.ProcessDefId));
             Assert.NotNull(prop);
@@ -20,7 +21,7 @@ namespace sailflow.engine.tests
             var col = prop.GetCustomAttributes(false)
                 .Select(a => a.GetType().GetProperty("AutoKey")?.GetValue(a) as string)
                 .FirstOrDefault(s => !string.IsNullOrWhiteSpace(s));
-            Assert.Equal("Guid", col);
+            Assert.Equal(SailIdNames.AutoKey, col);
 
             var isIdentity = prop.GetCustomAttributes(false)
                 .Select(a => a.GetType().GetProperty("IsIdentity")?.GetValue(a) as bool?)
@@ -29,10 +30,11 @@ namespace sailflow.engine.tests
         }
 
         [Fact]
-        public void ResolveAutoKey_Guid_Yields_String_For_String_Property()
+        public void ResolveAutoKey_SailId_Registered_Yields_String()
         {
             var client = new MooClient();
-            var v = client.ResolveAutoKey("Guid", typeof(string));
+            client.RegisterKeyGenerator(SailIdNames.AutoKey, () => Guid.NewGuid().ToString("D"));
+            var v = client.ResolveAutoKey(SailIdNames.AutoKey, typeof(string));
             Assert.IsType<string>(v);
             Assert.True(Guid.TryParse((string)v, out _));
         }

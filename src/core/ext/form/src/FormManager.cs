@@ -35,7 +35,7 @@ namespace sailflow.hub.Form
             entity.LastUpdatedDate = DateTime.Now;
             if (string.IsNullOrEmpty(entity.Version))
                 entity.Version = "1";
-            // AutoKey=Guid：Id 为 null 时由 InsertReturnId 回填
+            // AutoKey=SailId：Id 为 null 时由 InsertReturnId 回填
             var id = Sail.UseRunSQL().useRepo<FormEntity, string>().InsertReturnId(entity);
             entity.FormId = id;
             return id;

@@ -31,4 +31,7 @@ public static class SailBuilderKeys
     public static readonly object MediatorFactory = new();
     public static readonly object ProcessModelFactory = new();
     public static readonly object ManagerFactory = new();
+
+    /// <summary>发号 <see cref="SailIdBuilder"/>（UseSailIds）。</summary>
+    public static readonly object SailIds = new();
 }

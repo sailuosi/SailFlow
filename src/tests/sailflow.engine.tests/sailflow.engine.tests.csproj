@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\core\pure\engine\sailflow.engine.csproj" />
+    <ProjectReference Include="..\..\core\pure\runtime\sailflow.runtime.csproj" />
   </ItemGroup>
 
 </Project>

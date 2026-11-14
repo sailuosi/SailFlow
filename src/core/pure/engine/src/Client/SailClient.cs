@@ -7,6 +7,7 @@ using sailflow.engine.Actions;
 using sailflow.engine.Assignee;
 using sailflow.engine.Hosting;
 using sailflow.engine.Hooks;
+using sailflow.engine.Ids;
 using sailflow.engine.NextStep;
 using sailflow.engine.Rules;
 using sailflow.hub.Essential;
@@ -53,6 +54,31 @@ public partial class SailClient
     /// <summary>事件插槽便捷访问（与 <see cref="SailDialect.Event"/> 同源）。</summary>
     public ISailEventHub Event => Dialect?.Event
         ?? throw new InvalidOperationException("SailClient.Dialect.Event is not mounted.");
+
+    private ISailIdSource _ids;
+    private ISailBpmnIdCodec _bpmnIds;
+
+    /// <summary>A · Id 发号源（须 <c>UseSailIds</c> / runtime <c>UseSailRuntimeDefaults</c> 挂载）。</summary>
+    public ISailIdSource Ids
+    {
+        get => _ids ?? throw new InvalidOperationException(
+            "SailClient.Ids not mounted. Call UseSailRuntimeDefaults / UseSailIdDefaults / UseSailIds.");
+        set => _ids = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
+    /// <summary>A · BPMN process@id codec（与 <see cref="Ids"/> 一同挂载）。</summary>
+    public ISailBpmnIdCodec BpmnIds
+    {
+        get => _bpmnIds ?? throw new InvalidOperationException(
+            "SailClient.BpmnIds not mounted. Call UseSailRuntimeDefaults / UseSailIdDefaults / UseSailIds.");
+        set => _bpmnIds = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
+    /// <summary>是否已挂载发号源（EnsurePorts 注册 moo 前探测）。</summary>
+    public ISailIdSource TryGetIds() => _ids;
+
+    /// <summary>InitDb 是否将 sail.id 映为 Guid 列；默认跟 Source.IsGuidCompatible。</summary>
+    public bool IdsGuidCompatibleColumns { get; set; } = true;
 
     /// <summary>
     /// 主库实例快捷访问（装配/诊断用）。业务 Manager 请优先 <see cref="UseRunSQL"/>，勿扩散持有 DBInstance。
@@ -366,25 +392,8 @@ public partial class SailClient
             _serviceMethods = new ServiceMethodRegistry();
 
         BuiltinActionMethods.RegisterAll(_actionMethods, _scriptMethods, _serviceMethods);
-        EnsureGuidStringAutoKey();
-    }
-
-    /// <summary>
-    /// 实体主键为 string + AutoKey=Guid：注册返回 string 的发号（覆盖内置 Guid 对象路径，避免 .NET Core 上 Guid→string 强制转换失败）。
-    /// </summary>
-    void EnsureGuidStringAutoKey()
-    {
-        try
-        {
-            var moo = GetDB()?.Client;
-            if (moo == null)
-                return;
-            moo.RegisterKeyGenerator("Guid", () => Guid.NewGuid().ToString());
-        }
-        catch
-        {
-            // 装配期 DB 尚未就绪时忽略；首次 Insert 前宿主可再挂载
-        }
+        // 双注册 SailId + Guid → Ids.NextEntityRowId（覆盖 moo 内置 Guid 对象路径）
+        SailIdExtensions.RegisterMooKeyGenerators(this);
     }
 
     private ISooCache CreateDefaultCache()

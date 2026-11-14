@@ -12,7 +12,7 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_process", Caption = "流程定义", Type = DBTableType.Table)]
     public class ProcessEntity
     {
-        [SooColumn(Name = "p_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "p_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string ProcessDefId { get; set; }
         [SooColumn(Name = "p_process_id", Length = 64, Tag = "sail.id")]
         public string ProcessId { get; set; }

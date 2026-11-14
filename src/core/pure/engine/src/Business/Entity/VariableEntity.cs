@@ -10,7 +10,7 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_variable", Caption = "流程变量定义", Type = DBTableType.Table)]
     public class VariableEntity
     {
-        [SooColumn(Name = "v_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "v_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string VariableId { get; set; }
         [SooColumn(Name = "v_process_id", Length = 64, Tag = "sail.id")]
         public string ProcessId { get; set; }

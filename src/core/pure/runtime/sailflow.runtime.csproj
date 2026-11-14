@@ -7,7 +7,7 @@
     <RootNamespace>sailflow.runtime</RootNamespace>
     <AssemblyName>sailflow.runtime</AssemblyName>
     <Description>
-      Engine default pluggable implementations (no heavy NuGet): LINQ condition evaluator, etc.
+      Engine default pluggable implementations (no heavy NuGet): LINQ condition evaluator, GuidString Id source / BPMN codec, etc.
       Depends on sailflow.engine only. Assignee remains sailflow.assignee until migrated here.
     </Description>
     <ImplicitUsings>enable</ImplicitUsings>

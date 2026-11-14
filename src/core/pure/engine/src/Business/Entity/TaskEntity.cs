@@ -14,7 +14,7 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_task", Caption = "任务", Type = DBTableType.Table)]
     public class TaskEntity
     {
-        [SooColumn(Name = "tk_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "tk_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string TaskId { get; set; }
         [SooColumn(Name = "tk_act_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string ActivityInstanceId { get; set; }

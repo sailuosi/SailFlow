@@ -9,7 +9,7 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_job_detail", Caption = "作业信息", Type = DBTableType.Table)]
     public class JobInfoEntity
     {
-        [SooColumn(Name = "jb_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "jb_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string JobInfoId { get; set; }
         [SooColumn(Name = "jb_name", Length = 255)]
         public string JobName { get; set; }

@@ -49,11 +49,16 @@ public static class SailConfigBizExtensions
         return services.UseConfig(ApplyFromAppSettings);
     }
 
-    /// <summary>带 IConfiguration 的 CreateBuilder 便捷入口。</summary>
+    /// <summary>
+    /// 带 IConfiguration 的 CreateBuilder 便捷入口。
+    /// 默认挂 <see cref="BizRuntimeSailExtensions.UseBizRuntimeDefaults"/>（含 Guid 发号 + NextStep LINQ）。
+    /// </summary>
     public static SailClientBuilder CreateBuilder(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
-        return SailClient.CreateBuilder().UseConfigFrom(configuration);
+        return SailClient.CreateBuilder()
+            .UseConfigFrom(configuration)
+            .UseBizRuntimeDefaults();
     }
 
     /// <summary>把 IConfiguration 键写入已有形状（不含 Email SMTP）。</summary>

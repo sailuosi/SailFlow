@@ -14,7 +14,7 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_proc_variable", Caption = "流程变量运行时", Type = DBTableType.Table)]
     public class ProcessVariableEntity
     {
-        [SooColumn(Name = "pv_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "pv_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string ProcessVariableId { get; set; }
         [SooColumn(Name = "pv_var_scope", Length = 64)]
         public string VariableScope { get; set; }

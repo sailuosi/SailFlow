@@ -118,7 +118,7 @@ namespace sailflow.engine.Manager
                 item.Version = version;
                 item.ActivityId = activityId;
                 item.SortOrder = order++;
-                // 新建：清空 Id，由 AutoKey=Guid 发号
+                // 新建：清空 Id，由 AutoKey=SailId 发号
                 item.VariableId = null;
                 Insert(kit, item);
             }

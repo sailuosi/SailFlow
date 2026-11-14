@@ -13,7 +13,7 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_log", Caption = "日志", Type = DBTableType.Table)]
     public class LogEntity
     {
-        [SooColumn(Name = "lg_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "lg_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string LogId { get; set; }
         [SooColumn(Name = "lg_evt_type_id")]
         public int? EventTypeId { get; set; }

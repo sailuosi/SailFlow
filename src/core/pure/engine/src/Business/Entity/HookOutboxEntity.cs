@@ -7,7 +7,7 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_hook_outbox", Caption = "钩子Outbox", Type = DBTableType.Table)]
     public class HookOutboxEntity
     {
-        [SooColumn(Name = "ho_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "ho_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string HookOutboxId { get; set; }
 
         [SooColumn(Name = "ho_kind", Length = 64)]

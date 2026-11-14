@@ -13,7 +13,7 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_tran_instance", Caption = "转移实例", Type = DBTableType.Table)]
     public class TransitionInstanceEntity
     {
-        [SooColumn(Name = "ti_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "ti_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string TransitionInstanceId { get; set; }
         [SooColumn(Name = "ti_tran_id", Length = 64)]
         public string TransitionId { get; set; }

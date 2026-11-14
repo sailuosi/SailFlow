@@ -25,7 +25,7 @@ namespace sailflow.biz.query
             foreach (var row in rows)
             {
                 if (string.IsNullOrWhiteSpace(row.UserId)) continue;
-                // Id 留 null，由 AutoKey=Guid 在 Insert 时发号写回
+                // Id 留 null，由 AutoKey=SailId 在 Insert 时发号写回
                 if (string.IsNullOrWhiteSpace(row.ProcessCopytoId))
                     row.ProcessCopytoId = null;
                 row.CreateTime ??= DateTime.Now;

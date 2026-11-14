@@ -9,15 +9,16 @@ namespace sailflow.runtime.Hosting;
 
 /// <summary>
 /// 引擎默认扩展能力总包（pure、无重 NuGet）。
-/// 当前：NextStep 默认 LINQ Evaluator。Assignee 仍见 <c>UseAssign</c> / <c>sailflow.assignee</c>（后续迁入本包）。
+/// 当前：NextStep 默认 LINQ Evaluator；内置 Guid 发号（<see cref="SailIdRuntimeExtensions.UseGuidString"/>）。
+/// Assignee 仍见 <c>UseAssign</c> / <c>sailflow.assignee</c>（后续迁入本包）。
 /// </summary>
 public static class SailRuntimeExtensions
 {
     public const string FeatureName = SailFeatureNames.SailRuntimeDefaults;
 
     /// <summary>
-    /// 挂载 pure 默认实现：为 NextStep 管道注册 <see cref="LinqDynamicConditionEvaluator"/>（Order=100, Match=All）。
-    /// 可与宿主自己的 <c>UseNextStepRoute</c> 并存（同 pending 表按序 Apply）。
+    /// 挂载 pure 默认实现：NextStep LINQ Evaluator + GuidString Id 发号。
+    /// 可与宿主自己的 <c>UseNextStepRoute</c> / <c>UseSailIds</c> 并存（后注册覆盖）。
     /// </summary>
     public static SailClientBuilder UseSailRuntimeDefaults(this SailClientBuilder builder)
     {
@@ -43,6 +44,9 @@ public static class SailRuntimeExtensions
             });
         });
 
+        // 内置 Guid 发号注册（实现位于 runtime.Ids）
+        services.UseSailIdDefaults();
+
         // 占位 Feature：便于 ProbeInstalledFeatures / DependsOn
         if (!services.Any(f => string.Equals(f.Name, FeatureName, StringComparison.Ordinal)))
         {
@@ -52,7 +56,7 @@ public static class SailRuntimeExtensions
         return services;
     }
 
-    /// <summary>已 Build 的 Client：补挂默认 LINQ Evaluator（若管道尚无 Evaluator）。</summary>
+    /// <summary>已 Build 的 Client：补挂默认 LINQ Evaluator + Guid 发号。</summary>
     public static SailClient UseSailRuntimeDefaults(this SailClient client)
     {
         if (client == null)
@@ -66,6 +70,7 @@ public static class SailRuntimeExtensions
                 o.Match = NextStepMatch.All;
             });
         });
+        client.UseSailIdDefaults();
         return client;
     }
 }

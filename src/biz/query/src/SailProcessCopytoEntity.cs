@@ -7,7 +7,7 @@ namespace sailflow.biz.query
     [SooTable(Name = "sf_proc_copyto", Caption = "流程抄送", Type = DBTableType.Table)]
     public class SailProcessCopytoEntity
     {
-        [SooColumn(Name = "ct_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "ct_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string ProcessCopytoId { get; set; }
 
         [SooColumn(Name = "ct_user_id", Length = 64)]

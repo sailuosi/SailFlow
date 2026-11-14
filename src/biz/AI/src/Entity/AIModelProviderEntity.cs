@@ -6,7 +6,7 @@ namespace sailflow.AI.Entity
     [SooTable(Name = "ai_model_provider", Caption = "AI 模型提供方", Type = DBTableType.Table)]
     public class AiModelProviderEntity
     {
-        [SooColumn(Name = "mp_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "mp_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string Id { get; set; }
         [SooColumn(Name = "mp_prov", Length = 128)]
         public string ModelProvider { get; set; }

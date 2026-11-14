@@ -10,7 +10,7 @@ namespace sailflow.AI.Entity
     public class KbDocumentEntity
     {
         [JsonProperty("kd_id")]
-        [SooColumn(Name = "kd_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64)]
+        [SooColumn(Name = "kd_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64)]
         public string Id { get; set; }
 
         [JsonProperty("kd_content")]

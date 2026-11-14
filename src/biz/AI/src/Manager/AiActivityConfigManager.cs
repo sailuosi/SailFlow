@@ -164,7 +164,7 @@ namespace sailflow.AI.Manager
             foreach (var entity in list)
             {
                 entity.Version = newVersion;
-                // 新建：清空 Id，由 AutoKey=Guid 发号
+                // 新建：清空 Id，由 AutoKey=SailId 发号
                 entity.Id = null;
                 Insert(kit, entity);
             }

@@ -10,7 +10,7 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_rule_set", Caption = "规则集", Type = DBTableType.Table)]
     public class RuleSetEntity
     {
-        [SooColumn(Name = "rs_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "rs_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string RuleSetId { get; set; }
 
         [SooColumn(Name = "rs_code", Length = 64)]

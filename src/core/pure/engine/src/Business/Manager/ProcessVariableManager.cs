@@ -250,7 +250,7 @@ namespace sailflow.engine.Manager
                 return existProcessVariable.ProcessVariableId;
             }
 
-            // 新建：清空 Id，由 AutoKey=Guid 发号
+            // 新建：清空 Id，由 AutoKey=SailId 发号
             entity.ProcessVariableId = null;
             entity.UpdatedDateTime = DateTime.UtcNow;
             return Insert(kit, entity);

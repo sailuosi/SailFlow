@@ -7,7 +7,7 @@ namespace sailflow.hub.Form
     [SooTable(Name = "fm_form", Caption = "表单", Type = DBTableType.Table)]
     public class FormEntity
     {
-        [SooColumn(Name = "ff_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "ff_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string FormId { get; set; }
 
         [SooColumn(Name = "ff_name", Length = 200)]

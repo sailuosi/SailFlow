@@ -10,7 +10,7 @@ namespace sailflow.hub.Logging
     [SooTable(Name = "wf_job_log", Caption = "作业日志", Type = DBTableType.Table)]
     public class JobLogEntity
     {
-        [SooColumn(Name = "jl_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "jl_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string Id { get; set; }
         [SooColumn(Name = "jl_job_type", Length = 64)]
         public string JobType { get; set; }

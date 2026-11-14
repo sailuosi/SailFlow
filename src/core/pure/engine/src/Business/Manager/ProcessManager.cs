@@ -420,7 +420,7 @@ namespace sailflow.engine.Manager
 
                     entity.Version = newVersion;
                     entity.CreatedDateTime = System.DateTime.UtcNow;
-                    // 新建版本：清空 Id，由 AutoKey=Guid 重新发号（勿沿用旧版 Id）
+                    // 新建版本：清空 Id，由 AutoKey=SailId 重新发号（勿沿用旧版 Id）
                     entity.ProcessDefId = null;
                     //升级主流程版本
                     //Upgrade package process version
@@ -567,7 +567,7 @@ namespace sailflow.engine.Manager
                 {
                     if (string.IsNullOrEmpty(entity.ProcessId))
                     {
-                        entity.ProcessId = Guid.NewGuid().ToString();
+                        entity.ProcessId = Sail.Ids.NextProcessDesignId();
                     }
 
                     if (String.IsNullOrEmpty(entity.Version))
@@ -609,6 +609,18 @@ namespace sailflow.engine.Manager
                 process.XmlContent = xmlContent;
                 process.Version = "1";
 
+                // BPMN process@id 可能是 Process_{guid} 或旧式 process_数字；库列须纯 Guid
+                var bpmnProcessId = process.ProcessId;
+                var dbProcessId = Sail.BpmnIds.FromBpmnElementId(bpmnProcessId, out var generatedNew);
+                var bpmnId = Sail.BpmnIds.ToBpmnElementId(dbProcessId);
+                if (generatedNew || !string.Equals(bpmnProcessId, bpmnId, StringComparison.Ordinal))
+                {
+                    process.XmlContent = Sail.BpmnIds.RewriteProcessElementId(xmlContent, bpmnProcessId, bpmnId);
+                    if (string.IsNullOrWhiteSpace(process.ProcessCode) && !string.IsNullOrWhiteSpace(bpmnProcessId))
+                        process.ProcessCode = Sail.BpmnIds.TruncateCode(bpmnProcessId);
+                }
+                process.ProcessId = dbProcessId;
+
                 var processManager = Sail.ManagerFactory.Processes;
                 var processDB = processManager.GetByVersion(process.ProcessId, process.Version, false);
                 if (processDB != null)
@@ -619,7 +631,7 @@ namespace sailflow.engine.Manager
                 {
                     //saving single process file
                     var processEntity = new ProcessEntity();
-                    processEntity.ProcessId = !string.IsNullOrEmpty(process.ProcessId) ? process.ProcessId : Guid.NewGuid().ToString();
+                    processEntity.ProcessId = process.ProcessId;
                     processEntity.ProcessName = process.ProcessName;
                     processEntity.ProcessCode = process.ProcessCode;
                     processEntity.Version = process.Version;
@@ -714,7 +726,9 @@ namespace sailflow.engine.Manager
                     else
                     {
                         processEntity = new ProcessEntity();
-                        processEntity.ProcessId = !string.IsNullOrEmpty(entity.ProcessId) ? entity.ProcessId : Guid.NewGuid().ToString();
+                        processEntity.ProcessId = !string.IsNullOrEmpty(entity.ProcessId)
+                            ? entity.ProcessId
+                            : Sail.Ids.NextProcessDesignId();
                         processEntity.ProcessName = entity.ProcessName;
                         processEntity.ProcessCode = entity.ProcessCode;
                         processEntity.Version = entity.Version;

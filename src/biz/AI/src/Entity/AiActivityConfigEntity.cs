@@ -6,7 +6,7 @@ namespace sailflow.AI.Entity
     [SooTable(Name = "ai_act_config", Caption = "AI 活动配置", Type = DBTableType.Table)]
     public class AiActivityConfigEntity
     {
-        [SooColumn(Name = "ac_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "ac_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string Id { get; set; }
         [SooColumn(Name = "ac_process_id", Length = 64, Tag = "sail.id")]
         public string ProcessId { get; set; }

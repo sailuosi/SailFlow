@@ -13,7 +13,7 @@ namespace sailflow.engine.Entity
     [SooTable(Name = "wf_act_instance", Caption = "活动实例", Type = DBTableType.Table)]
     public class ActivityInstanceEntity
     {
-        [SooColumn(Name = "ai_id", IsPrimaryKey = true, AutoKey = "Guid", Length = 64, Tag = "sail.id")]
+        [SooColumn(Name = "ai_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string ActivityInstanceId { get; set; }
         [SooColumn(Name = "ai_proc_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string ProcessInstanceId { get; set; }
