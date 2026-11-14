@@ -29,31 +29,64 @@ namespace sailflow.data.Lifecycle
         public ProcessInstanceEntity GetProcessInstance(string id, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.ProcessInstance, endedYear);
-            return LoadById<ProcessInstanceEntity>(table, id);
+            try
+            {
+                using (var kit = Cold.UseColdSQL())
+                {
+                    var clip = kit.useClip();
+                    clip.from<ProcessInstanceEntity>(table, out var row)
+                        .where(() => row.ProcessInstanceId, id);
+                    return clip.select(row).queryList().FirstOrDefault();
+                }
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public IList<TaskEntity> GetTasks(string processInstanceId, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.Task, endedYear);
-            return LoadByPi<TaskEntity>(table, processInstanceId);
+            return LoadByPi<TaskEntity>(table, processInstanceId, (clip, tb, pi) =>
+            {
+                clip.from<TaskEntity>(tb, out var row)
+                    .where(() => row.ProcessInstanceId, pi);
+                return clip.select(row).queryList().ToList();
+            });
         }
 
         public IList<ActivityInstanceEntity> GetActivityInstances(string processInstanceId, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.ActivityInstance, endedYear);
-            return LoadByPi<ActivityInstanceEntity>(table, processInstanceId);
+            return LoadByPi<ActivityInstanceEntity>(table, processInstanceId, (clip, tb, pi) =>
+            {
+                clip.from<ActivityInstanceEntity>(tb, out var row)
+                    .where(() => row.ProcessInstanceId, pi);
+                return clip.select(row).queryList().ToList();
+            });
         }
 
         public IList<TransitionInstanceEntity> GetTransitions(string processInstanceId, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.TransitionInstance, endedYear);
-            return LoadByPi<TransitionInstanceEntity>(table, processInstanceId);
+            return LoadByPi<TransitionInstanceEntity>(table, processInstanceId, (clip, tb, pi) =>
+            {
+                clip.from<TransitionInstanceEntity>(tb, out var row)
+                    .where(() => row.ProcessInstanceId, pi);
+                return clip.select(row).queryList().ToList();
+            });
         }
 
         public IList<ProcessVariableEntity> GetVariables(string processInstanceId, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.ProcessVariable, endedYear);
-            return LoadByPi<ProcessVariableEntity>(table, processInstanceId);
+            return LoadByPi<ProcessVariableEntity>(table, processInstanceId, (clip, tb, pi) =>
+            {
+                clip.from<ProcessVariableEntity>(tb, out var row)
+                    .where(() => row.ProcessInstanceId, pi);
+                return clip.select(row).queryList().ToList();
+            });
         }
 
         /// <summary>热表未命中时按候选年份依次查冷表。</summary>
@@ -71,34 +104,16 @@ namespace sailflow.data.Lifecycle
             return null;
         }
 
-        private T LoadById<T>(string table, string id) where T : class, new()
+        private IList<T> LoadByPi<T>(
+            string table,
+            string processInstanceId,
+            Func<SQLClip, string, string, IList<T>> query) where T : class, new()
         {
             try
             {
                 using (var kit = Cold.UseColdSQL())
                 {
-                    var clip = kit.useClip();
-                    clip.from<T>(table, out var row)
-                        .where("id", id);
-                    return clip.select(row).queryList().FirstOrDefault();
-                }
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private IList<T> LoadByPi<T>(string table, string processInstanceId) where T : class, new()
-        {
-            try
-            {
-                using (var kit = Cold.UseColdSQL())
-                {
-                    var clip = kit.useClip();
-                    clip.from<T>(table, out var row)
-                        .where("process_instance_id", processInstanceId);
-                    return clip.select(row).queryList().ToList();
+                    return query(kit.useClip(), table, processInstanceId);
                 }
             }
             catch

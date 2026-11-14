@@ -586,18 +586,18 @@ namespace sailflow.engine.Manager
                     .where(() => t.ProcessInstanceId, processInstanceId)
                     .doDelete();
 
-                DeleteByProcessInstance(kit, Sail.HotShard.ResolveTransitionTable(entity.ProcessId), processInstanceId);
+                DeleteTransitionsByProcessInstance(kit, Sail.HotShard.ResolveTransitionTable(entity.ProcessId), processInstanceId);
                 if (Sail.HotShard.IsSharded(entity.ProcessId))
-                    DeleteByProcessInstance(kit, Sail.HotShard.DefaultTransitionTable, processInstanceId);
+                    DeleteTransitionsByProcessInstance(kit, Sail.HotShard.DefaultTransitionTable, processInstanceId);
 
                 clip = kit.useClip();
                 clip.setTable<ActivityInstanceEntity>(out var ai)
                     .where(() => ai.ProcessInstanceId, processInstanceId)
                     .doDelete();
 
-                DeleteByProcessInstance(kit, Sail.HotShard.ResolveVariableTable(entity.ProcessId), processInstanceId);
+                DeleteVariablesByProcessInstance(kit, Sail.HotShard.ResolveVariableTable(entity.ProcessId), processInstanceId);
                 if (Sail.HotShard.IsSharded(entity.ProcessId))
-                    DeleteByProcessInstance(kit, Sail.HotShard.DefaultVariableTable, processInstanceId);
+                    DeleteVariablesByProcessInstance(kit, Sail.HotShard.DefaultVariableTable, processInstanceId);
 
                 kit.useRepo<ProcessInstanceEntity, string>().DeleteById(processInstanceId);
                 return true;
@@ -605,12 +605,30 @@ namespace sailflow.engine.Manager
             throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.delete.error"));
         }
 
-        static void DeleteByProcessInstance(SQLBuilder kit, string physicalTable, string processInstanceId)
+        static void DeleteTransitionsByProcessInstance(SQLBuilder kit, string physicalTable, string processInstanceId)
         {
             try
             {
-                kit.useSQL().setTable(physicalTable)
-                    .where("process_instance_id", processInstanceId)
+                var clip = kit.useClip();
+                clip.setTable<TransitionInstanceEntity>(out var t)
+                    .useSQL(b => b.setTable(physicalTable))
+                    .where(() => t.ProcessInstanceId, processInstanceId)
+                    .doDelete();
+            }
+            catch
+            {
+                // 分表未创建时忽略
+            }
+        }
+
+        static void DeleteVariablesByProcessInstance(SQLBuilder kit, string physicalTable, string processInstanceId)
+        {
+            try
+            {
+                var clip = kit.useClip();
+                clip.setTable<ProcessVariableEntity>(out var v)
+                    .useSQL(b => b.setTable(physicalTable))
+                    .where(() => v.ProcessInstanceId, processInstanceId)
                     .doDelete();
             }
             catch

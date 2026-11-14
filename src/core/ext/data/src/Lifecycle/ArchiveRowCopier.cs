@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using mooSQL.data;
 using sailflow.data;
+using sailflow.engine.Entity;
 
 namespace sailflow.data.Lifecycle
 {
@@ -26,17 +28,77 @@ namespace sailflow.data.Lifecycle
             kit.doInsert();
         }
 
-        public static bool ExistsById(SQLBuilder kit, string physicalTable, int id)
+        /// <summary>冷表是否已有该主键行（Exists 走 from 查询，不用裸 SQL）。</summary>
+        public static bool ExistsById<T>(SQLBuilder kit, string physicalTable, string id) where T : class, new()
         {
+            if (string.IsNullOrWhiteSpace(id))
+                return false;
             try
             {
-                var dt = kit.exeQuery("SELECT 1 AS x FROM " + physicalTable + " WHERE id = " + id);
-                return dt != null && dt.Rows.Count > 0;
+                if (typeof(T) == typeof(ProcessInstanceEntity))
+                    return ExistsProcessInstance(kit, physicalTable, id);
+                if (typeof(T) == typeof(TaskEntity))
+                    return ExistsTask(kit, physicalTable, id);
+                if (typeof(T) == typeof(ActivityInstanceEntity))
+                    return ExistsActivityInstance(kit, physicalTable, id);
+                if (typeof(T) == typeof(TransitionInstanceEntity))
+                    return ExistsTransitionInstance(kit, physicalTable, id);
+                if (typeof(T) == typeof(ProcessVariableEntity))
+                    return ExistsProcessVariable(kit, physicalTable, id);
+
+                // 其它实体：列名来自映射主键，非手写字面量
+                var keyCol = SailEntityMapper.GetColumnMaps<T>().FirstOrDefault(m => m.IsKey)?.ColumnName;
+                if (string.IsNullOrWhiteSpace(keyCol))
+                    return false;
+                var clip = kit.useClip();
+                clip.from<T>(physicalTable, out var row)
+                    .where(keyCol, id);
+                return clip.select(row).queryList().Any();
             }
             catch
             {
                 return false;
             }
+        }
+
+        static bool ExistsProcessInstance(SQLBuilder kit, string physicalTable, string id)
+        {
+            var clip = kit.useClip();
+            clip.from<ProcessInstanceEntity>(physicalTable, out var row)
+                .where(() => row.ProcessInstanceId, id);
+            return clip.select(row).queryList().Any();
+        }
+
+        static bool ExistsTask(SQLBuilder kit, string physicalTable, string id)
+        {
+            var clip = kit.useClip();
+            clip.from<TaskEntity>(physicalTable, out var row)
+                .where(() => row.TaskId, id);
+            return clip.select(row).queryList().Any();
+        }
+
+        static bool ExistsActivityInstance(SQLBuilder kit, string physicalTable, string id)
+        {
+            var clip = kit.useClip();
+            clip.from<ActivityInstanceEntity>(physicalTable, out var row)
+                .where(() => row.ActivityInstanceId, id);
+            return clip.select(row).queryList().Any();
+        }
+
+        static bool ExistsTransitionInstance(SQLBuilder kit, string physicalTable, string id)
+        {
+            var clip = kit.useClip();
+            clip.from<TransitionInstanceEntity>(physicalTable, out var row)
+                .where(() => row.TransitionInstanceId, id);
+            return clip.select(row).queryList().Any();
+        }
+
+        static bool ExistsProcessVariable(SQLBuilder kit, string physicalTable, string id)
+        {
+            var clip = kit.useClip();
+            clip.from<ProcessVariableEntity>(physicalTable, out var row)
+                .where(() => row.ProcessVariableId, id);
+            return clip.select(row).queryList().Any();
         }
 
         private static bool IsDefaultKey(object val)
@@ -49,6 +111,8 @@ namespace sailflow.data.Lifecycle
                 return l == 0L;
             if (val is short s)
                 return s == 0;
+            if (val is string str)
+                return string.IsNullOrWhiteSpace(str);
             return false;
         }
     }

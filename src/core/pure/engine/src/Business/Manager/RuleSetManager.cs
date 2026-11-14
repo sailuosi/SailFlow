@@ -19,7 +19,6 @@ namespace sailflow.engine.Manager
         }
 
         protected SailClient Sail { get; }
-        private const string RuleSetTable = "wf_rule_set";
 
         public IList<RuleSetEntity> GetAll()
             => Sail.UseRunSQL()
@@ -91,8 +90,9 @@ namespace sailflow.engine.Manager
         {
             if (string.IsNullOrEmpty(ruleSetCode))
                 return;
-            kit.setTable(RuleSetTable)
-                .where("rule_set_code", ruleSetCode)
+            kit.useClip()
+                .setTable<RuleSetEntity>(out var r)
+                .where(() => r.RuleSetCode, ruleSetCode)
                 .doDelete();
         }
     }

@@ -131,10 +131,11 @@ namespace sailflow.AI.Manager
                 kit.beginTransaction();
                 try
                 {
-                    kit.setTable("ai_activity_config")
-                        .where("process_id", processId)
-                        .where("version", version)
-                        .where("activity_id", activityId)
+                    kit.useClip()
+                        .setTable<AiActivityConfigEntity>(out var p)
+                        .where(() => p.ProcessId, processId)
+                        .where(() => p.Version, version)
+                        .where(() => p.ActivityId, activityId)
                         .doDelete();
                     kit.commit();
                 }
