@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Concurrent;
 using mooSQL.data;
+using sailflow.data.Lifecycle;
 using sailflow.engine.Entity;
 using sailflow.engine.Client;
 using sailflow.engine.Logging;
@@ -13,9 +13,6 @@ namespace sailflow.data.Logging
     /// </summary>
     public sealed class TableEngineLogSink : IEngineLogSink
     {
-        private static readonly ConcurrentDictionary<string, byte> EnsuredTables =
-            new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase);
-
         public TableEngineLogSink(SailClient client)
         {
             Client = client ?? throw new ArgumentNullException(nameof(client));
@@ -72,7 +69,14 @@ namespace sailflow.data.Logging
         {
             using (var kit = ResolveKit())
             {
-                EnsureShardTable(kit, physicalTable, templateTable);
+                // 优先拷基表结构；基表不在则按实体建；失败不挡主流程
+                TemplateTableEnsurer.Ensure(
+                    kit,
+                    physicalTable,
+                    templateTable,
+                    entityType: typeof(T),
+                    configure: TemplateTableEnsurer.ApplySailColumnTags,
+                    rethrow: false);
                 kit.setTable(physicalTable).newRow();
                 mapColumns(kit, entity);
                 kit.doInsert();
@@ -86,27 +90,6 @@ namespace sailflow.data.Logging
             _ = opts.LogUsePrimaryDatabase;
             _ = opts.LogConnectionName;
             return Client.UseRunSQL();
-        }
-
-        private static void EnsureShardTable(SQLBuilder kit, string physicalTable, string templateTable)
-        {
-            if (string.Equals(physicalTable, templateTable, StringComparison.OrdinalIgnoreCase))
-                return;
-            if (!EnsuredTables.TryAdd(physicalTable, 0))
-                return;
-
-            try
-            {
-                // SQLite / 兼容：从模板表拷零行结构
-                kit.exeNonQuery(
-                    "CREATE TABLE IF NOT EXISTS " + physicalTable
-                    + " AS SELECT * FROM " + templateTable + " WHERE 0=1");
-            }
-            catch
-            {
-                // 方言不支持或模板表尚未创建时忽略；插入失败由上层吞掉
-                EnsuredTables.TryRemove(physicalTable, out _);
-            }
         }
 
         private static void MapLogColumns(SQLBuilder kit, LogEntity log)

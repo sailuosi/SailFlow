@@ -163,7 +163,7 @@ namespace sailflow.data.Lifecycle
             foreach (var spec in HistTableCatalog.Closure)
             {
                 var hist = HistTableCatalog.ResolveHistName(opts, spec, year);
-                HistTableEnsurer.Ensure(kit, hist, spec.HotTableName);
+                HistTableEnsurer.Ensure(kit, spec, hist);
             }
         }
 
