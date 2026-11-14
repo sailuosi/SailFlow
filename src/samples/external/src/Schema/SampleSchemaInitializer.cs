@@ -190,18 +190,19 @@ public static class SampleSchemaInitializer
             .LeftJoin<ActivityInstanceEntity>(out var mai)
             .on(() => ai.MainActivityInstanceId == mai.ActivityInstanceId);
 
+        // 投影列名须与 TaskViewEntity SooColumn 一致（带表前缀后不可再混用 t./ai./pi. 同名列）。
         clip.select(() => new
         {
             t.TaskId,
             t.AppName,
             t.AppInstanceId,
-            ai.AppInstanceCode,
+            pi.AppInstanceCode,
             t.ProcessInstanceId,
-            t.ProcessId,
+            pi.ProcessId,
             pi.Version,
             t.ActivityId,
             t.ActivityInstanceId,
-            t.ActivityName,
+            ai.ActivityName,
             ai.ActivityCode,
             ai.ActivityType,
             ai.WorkItemType,
@@ -234,7 +235,7 @@ public static class SampleSchemaInitializer
             t.RecordStatusInvalid,
             pi.ProcessState
         });
-        clip.select("mai.activity_state AS main_activity_state");
+        clip.select("mai.ai_activity_state AS ai_mn_activity_state");
     }
 
     public static int EnsureMinimalSeed(SQLBuilder kit)

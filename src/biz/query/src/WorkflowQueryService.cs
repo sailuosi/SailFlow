@@ -346,7 +346,7 @@ namespace sailflow.biz.query
                 clip.where(() => t.TaskState, (short)4);
             }
 
-            // 非会签任务 main_activity_state 为 NULL；SQL 中 NULL<>4 为未知，会把整行滤掉
+            // 非会签任务 ai_mn_activity_state 为 NULL；SQL 中 NULL<>4 为未知，会把整行滤掉
             if (activityState == 1)
             {
                 clip.sinkOR()
