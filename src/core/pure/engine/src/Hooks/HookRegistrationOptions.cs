@@ -11,6 +11,8 @@ namespace sailflow.engine.Hooks
         public string[] ActivityCodes { get; set; }
         public EventFireTypeEnum[] Events { get; set; }
         public TaskNotifyKind[] TaskKinds { get; set; }
+        /// <summary>抄送 Notifier 专用；未配则不推送。</summary>
+        public CopytoNotifyKind[] CopytoKinds { get; set; }
         public HookMode Mode { get; set; } = HookMode.AsyncOutbox;
         public int Order { get; set; }
 

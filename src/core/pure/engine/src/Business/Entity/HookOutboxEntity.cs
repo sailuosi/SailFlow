@@ -64,6 +64,9 @@ namespace sailflow.engine.Entity
         public const string Hook = "Hook";
         public const string Notify = "Notify";
 
+        /// <summary>抄送旁路通知（独立于待办 Notify）。</summary>
+        public const string CopytoNotify = "CopytoNotify";
+
         /// <summary>R10：待办人自动审批锚点（Assignee Filter/EmptyAction 入队；普通 Job 消费）。</summary>
         public const string AssigneeAutoApprove = "AssigneeAutoApprove";
     }

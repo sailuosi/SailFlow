@@ -247,6 +247,74 @@ namespace sailflow.engine.Hooks
             EnqueueTaskNotifiers(kit, notifyCtx);
         }
 
+        /// <summary>抄送创建：可选 FlowHook（OnCopytoCreated）+ 独立 CopytoNotifier Outbox。</summary>
+        public void FireCopytoLifecycle(SQLBuilder kit, CopytoNotifyContext ctx)
+        {
+            if (ctx == null)
+                return;
+
+            EnsureProcessCode(kit, ctx);
+
+            var eventType = ctx.Kind == CopytoNotifyKind.Created
+                ? EventFireTypeEnum.OnCopytoCreated
+                : EventFireTypeEnum.OnCopytoCreated;
+
+            var hookCtx = new FlowHookContext
+            {
+                BizChannel = ctx.BizChannel,
+                BizPK = ctx.BizPK,
+                ProcessId = ctx.ProcessId,
+                ProcessCode = ctx.ProcessCode,
+                Version = ctx.Version,
+                ProcessInstanceId = ctx.ProcessInstanceId,
+                TaskId = ctx.TaskId,
+                AssignedUserId = ctx.UserId,
+                AssignedUserName = ctx.UserName,
+                EventType = eventType,
+                Operation = FlowOperation.Run,
+                Kit = kit
+            };
+            RunSyncHooks(kit, hookCtx, eventType);
+            EnqueueAsyncHooks(kit, hookCtx, eventType);
+            EnqueueCopytoNotifiers(kit, ctx);
+        }
+
+        /// <summary>抄送 Notifier 默认 AsyncOutbox（Kind=<see cref="HookOutboxKinds.CopytoNotify"/>）。</summary>
+        public void EnqueueCopytoNotifiers(SQLBuilder kit, CopytoNotifyContext ctx)
+        {
+            if (ctx == null || Registry.CopytoNotifiers.Count == 0)
+                return;
+
+            EnsureProcessCode(kit, ctx);
+
+            var om = Sail.ManagerFactory.HookOutbox;
+            foreach (var notifier in Registry.CopytoNotifiers)
+            {
+                if (!MatchesCopytoNotifier(notifier, ctx))
+                    continue;
+
+                var payload = Sail.JsonSerializer.Serialize(ctx);
+                var row = new HookOutboxEntity
+                {
+                    Kind = HookOutboxKinds.CopytoNotify,
+                    HandlerName = notifier.Name,
+                    EventType = ctx.Kind.ToString(),
+                    ProcessId = ctx.ProcessId,
+                    ProcessCode = ctx.ProcessCode,
+                    ProcessInstanceId = ctx.ProcessInstanceId,
+                    TaskId = ctx.TaskId,
+                    PayloadJson = payload,
+                };
+
+                if (kit != null)
+                    om.InsertPending(kit, row);
+                else
+                    om.InsertPending(Sail.UseRunSQL(), row);
+
+                Sail.CapabilityMetrics?.IncrementOutboxEnqueue();
+            }
+        }
+
         /// <summary>认领并消费 Pending Outbox（Worker / 测试 drain）。</summary>
         public int DispatchPendingOutbox(
             SQLBuilder kit,
@@ -365,6 +433,8 @@ namespace sailflow.engine.Hooks
                 DispatchHookOutboxRow(row);
             else if (row.Kind == HookOutboxKinds.Notify)
                 await DispatchNotifyOutboxRow(row, cancellationToken).ConfigureAwait(false);
+            else if (row.Kind == HookOutboxKinds.CopytoNotify)
+                await DispatchCopytoNotifyOutboxRow(row, cancellationToken).ConfigureAwait(false);
             else
                 throw new InvalidOperationException($"Unknown outbox kind '{row.Kind}'.");
         }
@@ -431,6 +501,21 @@ namespace sailflow.engine.Hooks
                 throw new InvalidOperationException("Hook outbox payload is empty.");
 
             hook.Handler.Handle(ctx);
+        }
+
+        private async Task DispatchCopytoNotifyOutboxRow(HookOutboxEntity row, CancellationToken cancellationToken)
+        {
+            var notifier = Registry.CopytoNotifiers.FirstOrDefault(n =>
+                string.Equals(n.Name, row.HandlerName, StringComparison.OrdinalIgnoreCase));
+            if (notifier?.Handler == null)
+                throw new InvalidOperationException($"CopytoNotifier '{row.HandlerName}' not registered.");
+
+            var ctx = Sail.JsonSerializer.Deserialize<CopytoNotifyContext>(row.PayloadJson);
+            if (ctx == null)
+                throw new InvalidOperationException("CopytoNotify outbox payload is empty.");
+
+            await notifier.Handler.NotifyAsync(ctx, cancellationToken).ConfigureAwait(false);
+            Sail.CapabilityMetrics?.IncrementNotifierDispatch();
         }
 
         private async Task DispatchNotifyOutboxRow(HookOutboxEntity row, CancellationToken cancellationToken)
@@ -517,6 +602,13 @@ namespace sailflow.engine.Hooks
             ctx.ProcessCode = ResolveProcessCode(kit ?? Sail.UseRunSQL(), ctx.ProcessId, ctx.Version);
         }
 
+        private void EnsureProcessCode(SQLBuilder kit, CopytoNotifyContext ctx)
+        {
+            if (ctx == null || !string.IsNullOrEmpty(ctx.ProcessCode))
+                return;
+            ctx.ProcessCode = ResolveProcessCode(kit ?? Sail.UseRunSQL(), ctx.ProcessId, ctx.Version);
+        }
+
         private static bool MatchesGate(GateRegistration gate, FlowHookContext ctx) =>
             FlowCapabilityMatch.MatchesProcess(gate.Match, gate.ProcessCodes, gate.ProcessIds, ctx.ProcessCode, ctx.ProcessId)
             && FlowCapabilityMatch.MatchesActivity(gate.ActivityCodes, ctx.ActivityCode);
@@ -535,6 +627,15 @@ namespace sailflow.engine.Hooks
                 return false;
             return FlowCapabilityMatch.MatchesProcess(notifier.Match, notifier.ProcessCodes, notifier.ProcessIds, ctx.ProcessCode, ctx.ProcessId)
                    && FlowCapabilityMatch.MatchesActivity(notifier.ActivityCodes, ctx.ActivityCode);
+        }
+
+        private static bool MatchesCopytoNotifier(CopytoNotifierRegistration notifier, CopytoNotifyContext ctx)
+        {
+            if (notifier.CopytoKinds == null || notifier.CopytoKinds.Length == 0
+                || !notifier.CopytoKinds.Contains(ctx.Kind))
+                return false;
+            return FlowCapabilityMatch.MatchesProcess(
+                notifier.Match, notifier.ProcessCodes, notifier.ProcessIds, ctx.ProcessCode, ctx.ProcessId);
         }
     }
 }

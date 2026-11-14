@@ -344,6 +344,35 @@ public static class SailFlowCapabilityExtensions
     }
 
     /// <summary>
+    /// 追加抄送 Notifier（独立于待办 <see cref="AddNotifier"/>；默认入 Outbox Kind=CopytoNotify）。
+    /// </summary>
+    /// <param name="configure">须声明 <c>CopytoKinds</c>（如 Created）；建议 <c>Match=All</c> 或配 ProcessCodes。</param>
+    public static ISailCollection AddCopytoNotifier(
+        this ISailCollection services,
+        ICopytoNotifier notifier,
+        Action<HookRegistrationOptions> configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(notifier);
+        var options = new HookRegistrationOptions();
+        configure?.Invoke(options);
+        GetPending(services).Add(r => r.RegisterCopytoNotifier(notifier, options));
+        services.ProvideFeature(SailFeatureNames.CopytoNotifier, order: 33);
+        return services;
+    }
+
+    /// <summary>以委托形式追加抄送 Notifier。</summary>
+    public static ISailCollection AddCopytoNotifier(
+        this ISailCollection services,
+        string name,
+        Func<CopytoNotifyContext, CancellationToken, Task> notify,
+        Action<HookRegistrationOptions> configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(notify);
+        return services.AddCopytoNotifier(new DelegateCopytoNotifier(name, notify), configure);
+    }
+
+    /// <summary>
     /// 以委托形式追加 Notifier（临时/短逻辑）。
     /// </summary>
     /// <param name="services">引擎服务集合。</param>

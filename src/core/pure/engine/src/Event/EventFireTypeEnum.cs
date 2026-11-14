@@ -132,6 +132,9 @@ namespace sailflow.engine.Event
 
         OnTaskUrged = 62,
 
+        /// <summary>抄送创建（产品通道；与待办 Notifier 分离）。</summary>
+        OnCopytoCreated = 70,
+
         OnSuccess = 100,
 
         OnError = 101,

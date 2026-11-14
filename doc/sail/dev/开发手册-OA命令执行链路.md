@@ -392,6 +392,15 @@ Assignee 族 `DelegateAction`。**拍板：** 受托人办结必须回转原人�
 
 命令级 AfterSuccess **只**在动作骨架各族 `OnFireFlowHook`；路径内 `FireTaskLifecycle`（Created/Completed/Cancelled/Entrusted）与节点级 Hook **保留**。全表见 [progress/2026-11-15-动作骨架-A3-SendBack.md](../progress/2026-11-15-动作骨架-A3-SendBack.md)「Notifier / Hook 对账表」。
 
+### 5.16 抄送专用钩子（≠ 待办 Notifier）
+
+| 项 | 说明 |
+|----|------|
+| 写入 | `SailCopytoService.CreateMany` → 每行后 `FireCopytoLifecycle` |
+| FlowHook | `EventFireType.OnCopytoCreated`（可 `AddHook` + Events） |
+| 旁路 | `AddCopytoNotifier`；须配 `CopytoKinds`（如 `Created`）；Outbox Kind=`CopytoNotify` |
+| 禁忌 | 禁止用 `AddNotifier` / `TaskNotifyKind` 冒充抄送 |
+
 ---
 
 ## 6. 典型链详解 · Approve → RunProcess（含关键代码）

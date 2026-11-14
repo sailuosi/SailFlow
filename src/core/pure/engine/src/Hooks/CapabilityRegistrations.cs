@@ -45,6 +45,18 @@ namespace sailflow.engine.Hooks
         public NotifyThrottleOptions InProcessThrottle { get; init; }
     }
 
+    public sealed class CopytoNotifierRegistration
+    {
+        public string Name { get; init; }
+        public int Order { get; init; }
+        public HookMatch Match { get; init; }
+        public string[] ProcessCodes { get; init; }
+        public string[] ProcessIds { get; init; }
+        public CopytoNotifyKind[] CopytoKinds { get; init; }
+        public HookMode Mode { get; init; }
+        public ICopytoNotifier Handler { get; init; }
+    }
+
     public sealed class ProcessInstanceCreateHookRegistration
     {
         public string Name { get; init; }
@@ -97,6 +109,20 @@ namespace sailflow.engine.Hooks
 
         public string Name { get; }
         public Task NotifyAsync(TaskNotifyContext ctx, CancellationToken ct) => _notify(ctx, ct);
+    }
+
+    internal sealed class DelegateCopytoNotifier : ICopytoNotifier
+    {
+        private readonly Func<CopytoNotifyContext, CancellationToken, Task> _notify;
+
+        public DelegateCopytoNotifier(string name, Func<CopytoNotifyContext, CancellationToken, Task> notify)
+        {
+            Name = name;
+            _notify = notify ?? throw new ArgumentNullException(nameof(notify));
+        }
+
+        public string Name { get; }
+        public Task NotifyAsync(CopytoNotifyContext ctx, CancellationToken ct) => _notify(ctx, ct);
     }
 
     internal sealed class DelegateProcessInstanceCreateHook : IProcessInstanceCreateHook

@@ -57,4 +57,27 @@ namespace sailflow.engine.Hooks
         public string AssignedUserName { get; set; }
         public TaskNotifyKind Kind { get; set; }
     }
+
+    /// <summary>抄送 Notifier 上下文（产品抄送箱；禁止与待办 TaskNotify 混用）。</summary>
+    public sealed class CopytoNotifyContext
+    {
+        public string ProcessCopytoId { get; set; }
+        public string BizChannel { get; set; }
+        public string BizPK { get; set; }
+        public string ProcessId { get; set; }
+        public string ProcessCode { get; set; }
+        public string ProcessName { get; set; }
+        public string Version { get; set; }
+        public string ProcessInstanceId { get; set; }
+        public string TaskId { get; set; }
+        public string TaskName { get; set; }
+        /// <summary>被抄送人。</summary>
+        public string UserId { get; set; }
+        public string UserName { get; set; }
+        public string StartUserId { get; set; }
+        public string CreatorId { get; set; }
+        public string CreatorName { get; set; }
+        public string Reason { get; set; }
+        public CopytoNotifyKind Kind { get; set; }
+    }
 }

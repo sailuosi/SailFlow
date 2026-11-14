@@ -31,7 +31,7 @@
 | 驳回 / 拒绝 | `Reject` | `RejectProcess` | 不同意并走驳回路径（**≠** 部分产品「驳回即整单作废」；具体落点看配置/图） |
 | 退回 / 回退 / 打回 | `SendBack` | `SendBackProcess` | 退到可选历史节点（常配合上一跳树）；流程多继续可再提交 |
 | 加签 | `SignForward` | `SignForwardProcess` | 在会签/加签语义下增加审批人（与 AntFlow「加批生新节点」需区分，见 §4） |
-| 抄送 | `Copyto` | `WfCopyto/Create`（Host 产品表） | 知会他人，**不产生**推进权待办；与 Assignee / Notifier 分离 |
+| 抄送 | `Copyto` | `WfCopyto/Create` + `FireCopytoLifecycle` | 知会他人，**不产生**推进权待办；**专用** `ICopytoNotifier` / `OnCopytoCreated`（≠ 待办 TaskNotifier） |
 | 撤回 | `Withdraw` | `WithdrawProcess` | 已办人在允许条件下收回上一步办理（常见：下一手尚未办） |
 | 重发 | `Resend` | `ResendProcess` | Sail 特色：按重发语义再次送出（常与退回后修正配套；≠ 简单再点同意） |
 | 跳转 | `Jump` | `JumpProcess` | 管理态跳到指定活动并指定办理人；强管控，慎对终端用户默认开 |
@@ -140,7 +140,7 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 
 1. **禁止空壳**：无引擎命令 + Host API，不得进办理条码表。  
 2. **Leave 正交**：认领/转办不得默认可绕过 `Collaborate` / 会签。  
-3. **抄送独立通道**：不与 Assignee ConfigPair、Task Notifier 混用。  
+3. **抄送独立通道**：不与 Assignee ConfigPair、Task Notifier 混用；用 `AddCopytoNotifier` + `CopytoNotifyKind`。  
 4. **存疑先记文档**：怪异 UX（如 AntFlow 承办）进 [存疑参考功能点.md](./存疑参考功能点.md)，不默许进基线。  
 5. **文案可本地化**：码表 `DisplayName` 可改「同意/通过」；**Id 与 Engine 稳定**。
 

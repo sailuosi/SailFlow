@@ -14,6 +14,8 @@ namespace sailflow.engine.Hooks
         private readonly Dictionary<string, GateRegistration> _gates = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, HookRegistration> _hooks = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, NotifierRegistration> _notifiers = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, CopytoNotifierRegistration> _copytoNotifiers =
+            new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, ProcessInstanceCreateHookRegistration> _createHooks =
             new(StringComparer.OrdinalIgnoreCase);
 
@@ -27,6 +29,8 @@ namespace sailflow.engine.Hooks
         public IReadOnlyCollection<GateRegistration> Gates => _gates.Values.OrderBy(g => g.Order).ToList();
         public IReadOnlyCollection<HookRegistration> Hooks => _hooks.Values.OrderBy(h => h.Order).ToList();
         public IReadOnlyCollection<NotifierRegistration> Notifiers => _notifiers.Values.OrderBy(n => n.Order).ToList();
+        public IReadOnlyCollection<CopytoNotifierRegistration> CopytoNotifiers =>
+            _copytoNotifiers.Values.OrderBy(n => n.Order).ToList();
         public IReadOnlyCollection<ProcessInstanceCreateHookRegistration> ProcessInstanceCreateHooks =>
             _createHooks.Values.OrderBy(h => h.Order).ToList();
 
@@ -82,6 +86,24 @@ namespace sailflow.engine.Hooks
                 TraceWarning($"Notifier '{registration.Name}' overwritten by a later registration.");
 
             _notifiers[registration.Name] = registration;
+        }
+
+        public void RegisterCopytoNotifier(ICopytoNotifier notifier, HookRegistrationOptions options = null)
+        {
+            ArgumentNullException.ThrowIfNull(notifier);
+            RegisterCopytoNotifier(BuildCopytoNotifierRegistration(notifier, options ?? new HookRegistrationOptions()));
+        }
+
+        public void RegisterCopytoNotifier(CopytoNotifierRegistration registration)
+        {
+            ArgumentNullException.ThrowIfNull(registration);
+            if (string.IsNullOrWhiteSpace(registration.Name))
+                throw new ArgumentException("CopytoNotifier Name is required.", nameof(registration));
+
+            if (_copytoNotifiers.ContainsKey(registration.Name))
+                TraceWarning($"CopytoNotifier '{registration.Name}' overwritten by a later registration.");
+
+            _copytoNotifiers[registration.Name] = registration;
         }
 
         public void RegisterProcessInstanceCreateHook(
@@ -144,6 +166,21 @@ namespace sailflow.engine.Hooks
                 Mode = o.Mode == HookMode.Sync ? HookMode.AsyncOutbox : o.Mode,
                 Handler = notifier,
                 InProcessThrottle = o.InProcessThrottle,
+            };
+
+        internal static CopytoNotifierRegistration BuildCopytoNotifierRegistration(
+            ICopytoNotifier notifier,
+            HookRegistrationOptions o) =>
+            new()
+            {
+                Name = notifier.Name,
+                Order = o.Order,
+                Match = o.Match,
+                ProcessCodes = o.ProcessCodes,
+                ProcessIds = o.ProcessIds,
+                CopytoKinds = o.CopytoKinds,
+                Mode = o.Mode == HookMode.Sync ? HookMode.AsyncOutbox : o.Mode,
+                Handler = notifier,
             };
 
         internal static ProcessInstanceCreateHookRegistration BuildCreateHookRegistration(

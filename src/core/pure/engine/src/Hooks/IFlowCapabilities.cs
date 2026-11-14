@@ -24,4 +24,11 @@ namespace sailflow.engine.Hooks
         string Name { get; }
         Task NotifyAsync(TaskNotifyContext ctx, CancellationToken ct);
     }
+
+    /// <summary>抄送旁路：独立于待办 Notifier；默认异步 Outbox。</summary>
+    public interface ICopytoNotifier
+    {
+        string Name { get; }
+        Task NotifyAsync(CopytoNotifyContext ctx, CancellationToken ct);
+    }
 }

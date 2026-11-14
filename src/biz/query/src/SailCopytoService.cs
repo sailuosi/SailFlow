@@ -4,6 +4,7 @@ using System.Linq;
 using mooSQL.data;
 using sailflow.data;
 using sailflow.engine.Client;
+using sailflow.engine.Hooks;
 
 namespace sailflow.biz.query
 {
@@ -31,8 +32,35 @@ namespace sailflow.biz.query
                 row.CreateTime ??= DateTime.Now;
                 repo.Insert(row);
                 n++;
+                FireCopytoCreated(kit, row);
             }
             return n;
+        }
+
+        /// <summary>写入后触发抄送专用钩子（FlowHook OnCopytoCreated + CopytoNotifier Outbox）。</summary>
+        void FireCopytoCreated(SQLBuilder kit, SailProcessCopytoEntity row)
+        {
+            if (row == null || string.IsNullOrWhiteSpace(row.UserId))
+                return;
+
+            var ctx = new CopytoNotifyContext
+            {
+                ProcessCopytoId = row.ProcessCopytoId,
+                BizPK = row.BizPK,
+                ProcessId = row.ProcessId,
+                ProcessName = row.ProcessName,
+                ProcessInstanceId = row.ProcessInstanceId,
+                TaskId = row.TaskId,
+                TaskName = row.TaskName,
+                UserId = row.UserId,
+                UserName = row.UserName,
+                StartUserId = row.StartUserId,
+                CreatorId = row.CreatorId,
+                CreatorName = row.CreatorName,
+                Reason = row.Reason,
+                Kind = CopytoNotifyKind.Created
+            };
+            Sail.CapabilityDispatcher.FireCopytoLifecycle(kit, ctx);
         }
 
         public (IList<SailProcessCopytoEntity> Items, int Total) QueryMyPage(string userId, int pageIndex, int pageSize)

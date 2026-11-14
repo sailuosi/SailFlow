@@ -11,6 +11,13 @@ namespace sailflow.engine.Hooks
         Urged,
     }
 
+    /// <summary>抄送旁路通知种类（独立于 <see cref="TaskNotifyKind"/>）。</summary>
+    public enum CopytoNotifyKind
+    {
+        /// <summary>抄送记录已创建（知会到达）。</summary>
+        Created,
+    }
+
     /// <summary>注册白名单匹配策略。</summary>
     public enum HookMatch
     {

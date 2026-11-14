@@ -17,6 +17,7 @@ public static class SailFeatureNames
     public const string FlowHook = "flow-hook";
     public const string ProcessInstanceCreateHook = "process-instance-create-hook";
     public const string TaskNotifier = "task-notifier";
+    public const string CopytoNotifier = "copyto-notifier";
     public const string HookOutboxDrain = "HookOutboxDrain";
     public const string HookOutboxDrainAutoStart = "HookOutboxDrain.AutoStart";
     public const string InstanceLockCleaner = "InstanceLockCleaner";
