@@ -16,11 +16,12 @@ using Newtonsoft.Json.Linq;
 namespace sailflow.AI.Manager
 {
     /// <summary>
-    /// Knowledge Base Document Manager
-    /// 知识库文档管理类（所有操作通过 Supabase REST API 完成）
+    /// 知识库文档管理（Supabase REST，表 <c>kb_document</c> / 列 <c>kd_*</c>）。
     /// </summary>
     public class KbDocumentManager
     {
+        private const string TablePath = "/rest/v1/kb_document";
+
         private readonly AiAppConfigProviderOptions _configOptions;
 
         public KbDocumentManager(AiAppConfigProviderOptions configOptions = null)
@@ -50,16 +51,17 @@ namespace sailflow.AI.Manager
         public List<KbDocumentEntity> GetAll()
         {
             using var httpClient = CreateHttpClient();
-            var response = httpClient.GetAsync("/rest/v1/biz_documents?select=id,content,metadata,embedding&order=id").Result;
+            var response = httpClient.GetAsync(
+                TablePath + "?select=kd_id,kd_content,kd_metadata,kd_embedding&order=kd_id").Result;
 
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = response.Content.ReadAsStringAsync().Result;
-                throw new InvalidOperationException($"Failed to read biz_documents table: HTTP {response.StatusCode} - {errorContent}");
+                throw new InvalidOperationException($"Failed to read kb_document table: HTTP {response.StatusCode} - {errorContent}");
             }
 
             var content = response.Content.ReadAsStringAsync().Result;
-            var rawDocuments = JsonConvert.DeserializeObject<List<dynamic>>(content);
+            var rawDocuments = JsonConvert.DeserializeObject<List<JObject>>(content);
             var documents = new List<KbDocumentEntity>();
 
             if (rawDocuments != null)
@@ -68,17 +70,21 @@ namespace sailflow.AI.Manager
                 {
                     var doc = new KbDocumentEntity
                     {
-                        Id = rawDoc.id != null ? Convert.ToInt64(rawDoc.id) : 0,
-                        Content = rawDoc.content?.ToString() ?? string.Empty,
-                        Embedding = rawDoc.embedding?.ToString() ?? string.Empty
+                        Id = rawDoc["kd_id"]?.ToString() ?? string.Empty,
+                        Content = rawDoc["kd_content"]?.ToString() ?? string.Empty,
+                        Embedding = rawDoc["kd_embedding"]?.ToString() ?? string.Empty
                     };
 
-                    if (rawDoc.metadata != null)
+                    var meta = rawDoc["kd_metadata"];
+                    if (meta != null && meta.Type != JTokenType.Null)
                     {
-                        doc.Metadata = (rawDoc.metadata is JObject || rawDoc.metadata is JToken)
-                            ? JsonConvert.SerializeObject(rawDoc.metadata)
-                            : rawDoc.metadata.ToString();
+                        doc.Metadata = (meta is JObject || meta is JArray)
+                            ? meta.ToString(Formatting.None)
+                            : meta.ToString();
                     }
+
+                    if (rawDoc["kd_industry_id"] != null && rawDoc["kd_industry_id"].Type != JTokenType.Null)
+                        doc.IndustryId = rawDoc["kd_industry_id"].Value<long?>();
 
                     documents.Add(doc);
                 }
@@ -90,12 +96,13 @@ namespace sailflow.AI.Manager
         public List<KbDocumentEntity> TestReadBizDocuments(int limit = 5)
         {
             using var httpClient = CreateHttpClient();
-            var response = httpClient.GetAsync($"/rest/v1/biz_documents?select=id,content,metadata,embedding&limit={limit}&order=id").Result;
+            var response = httpClient.GetAsync(
+                $"{TablePath}?select=kd_id,kd_content,kd_metadata,kd_embedding&limit={limit}&order=kd_id").Result;
 
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = response.Content.ReadAsStringAsync().Result;
-                throw new InvalidOperationException($"Failed to read biz_documents table: HTTP {response.StatusCode} - {errorContent}");
+                throw new InvalidOperationException($"Failed to read kb_document table: HTTP {response.StatusCode} - {errorContent}");
             }
 
             var content = response.Content.ReadAsStringAsync().Result;
@@ -118,22 +125,22 @@ namespace sailflow.AI.Manager
                 catch { metaVal = entity.Metadata; }
             }
 
-            var payload = new Dictionary<string, object?>
+            var payload = new Dictionary<string, object>
             {
-                ["content"] = entity.Content,
-                ["metadata"] = metaVal
+                ["kd_content"] = entity.Content,
+                ["kd_metadata"] = metaVal
             };
             if (entity.IndustryId.HasValue)
-                payload["industry_id"] = entity.IndustryId.Value;
+                payload["kd_industry_id"] = entity.IndustryId.Value;
 
             var json = JsonConvert.SerializeObject(payload);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             HttpResponseMessage response;
             if (!string.IsNullOrWhiteSpace(entity.Id))
-                response = httpClient.PatchAsync($"/rest/v1/biz_documents?id=eq.{entity.Id}", content).Result;
+                response = httpClient.PatchAsync($"{TablePath}?kd_id=eq.{entity.Id}", content).Result;
             else
-                response = httpClient.PostAsync("/rest/v1/biz_documents", content).Result;
+                response = httpClient.PostAsync(TablePath, content).Result;
 
             if (!response.IsSuccessStatusCode)
             {
@@ -144,7 +151,7 @@ namespace sailflow.AI.Manager
             var responseContent = response.Content.ReadAsStringAsync().Result;
             var savedRows = JsonConvert.DeserializeObject<List<JObject>>(responseContent);
             if (savedRows != null && savedRows.Count > 0)
-                entity.Id = savedRows[0]["id"]?.ToString();
+                entity.Id = savedRows[0]["kd_id"]?.ToString();
 
             return entity;
         }
@@ -157,10 +164,10 @@ namespace sailflow.AI.Manager
             using var httpClient = CreateHttpClient();
             httpClient.DefaultRequestHeaders.Add("Prefer", "return=minimal");
 
-            var json = JsonConvert.SerializeObject(new { embedding });
+            var json = JsonConvert.SerializeObject(new Dictionary<string, object> { ["kd_embedding"] = embedding });
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await httpClient.PatchAsync($"/rest/v1/biz_documents?id=eq.{documentId}", content);
+            var response = await httpClient.PatchAsync($"{TablePath}?kd_id=eq.{documentId}", content);
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
@@ -177,12 +184,12 @@ namespace sailflow.AI.Manager
             using var httpClient = CreateHttpClient();
             httpClient.DefaultRequestHeaders.Add("Prefer", "return=minimal");
 
-            var json = JsonConvert.SerializeObject(new { embedding = (object)null });
+            var json = JsonConvert.SerializeObject(new Dictionary<string, object> { ["kd_embedding"] = null });
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             foreach (var doc in documents)
             {
-                var response = await httpClient.PatchAsync($"/rest/v1/biz_documents?id=eq.{doc.Id}", content);
+                var response = await httpClient.PatchAsync($"{TablePath}?kd_id=eq.{doc.Id}", content);
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
@@ -199,7 +206,7 @@ namespace sailflow.AI.Manager
         {
             using var httpClient = CreateHttpClient();
             httpClient.DefaultRequestHeaders.Add("Prefer", "return=representation");
-            var response = httpClient.DeleteAsync($"/rest/v1/biz_documents?id=eq.{id}").Result;
+            var response = httpClient.DeleteAsync($"{TablePath}?kd_id=eq.{id}").Result;
             if (!response.IsSuccessStatusCode)
             {
                 var err = response.Content.ReadAsStringAsync().Result;
@@ -214,7 +221,7 @@ namespace sailflow.AI.Manager
             using var httpClient = CreateHttpClient();
             httpClient.DefaultRequestHeaders.Add("Prefer", "return=representation");
 
-            var response = await httpClient.DeleteAsync($"/rest/v1/biz_documents?id=gt.{minId}");
+            var response = await httpClient.DeleteAsync($"{TablePath}?kd_id=gt.{minId}");
             if (!response.IsSuccessStatusCode)
             {
                 var err = await response.Content.ReadAsStringAsync();
@@ -234,7 +241,7 @@ namespace sailflow.AI.Manager
             httpClient.DefaultRequestHeaders.Add("Prefer", "return=representation");
 
             var filter = string.Join(",", ids);
-            var response = await httpClient.DeleteAsync($"/rest/v1/biz_documents?industry_id=in.({filter})");
+            var response = await httpClient.DeleteAsync($"{TablePath}?kd_industry_id=in.({filter})");
             if (!response.IsSuccessStatusCode)
             {
                 var err = await response.Content.ReadAsStringAsync();
@@ -256,7 +263,7 @@ namespace sailflow.AI.Manager
 
             using var httpClient = CreateHttpClient();
             var filter = string.Join(",", ids);
-            var url = $"/rest/v1/biz_documents?industry_id=in.({filter})&embedding=is.null&select=id,content&order=id";
+            var url = $"{TablePath}?kd_industry_id=in.({filter})&kd_embedding=is.null&select=kd_id,kd_content&order=kd_id";
 
             var response = await httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -271,8 +278,16 @@ namespace sailflow.AI.Manager
             if (rows != null)
                 foreach (var r in rows)
                 {
-                    var id = r["id"]?.Value<long>() ?? 0;
-                    var content = r["content"]?.ToString() ?? string.Empty;
+                    var idToken = r["kd_id"];
+                    long id = 0;
+                    if (idToken != null && idToken.Type != JTokenType.Null)
+                    {
+                        if (idToken.Type == JTokenType.Integer)
+                            id = idToken.Value<long>();
+                        else
+                            long.TryParse(idToken.ToString(), out id);
+                    }
+                    var content = r["kd_content"]?.ToString() ?? string.Empty;
                     if (id > 0) result.Add((id, content));
                 }
             return result;
@@ -288,7 +303,7 @@ namespace sailflow.AI.Manager
 
             foreach (var industryId in ids)
             {
-                var response = await httpClient.GetAsync($"/rest/v1/biz_documents?industry_id=eq.{industryId}&select=id");
+                var response = await httpClient.GetAsync($"{TablePath}?kd_industry_id=eq.{industryId}&select=kd_id");
                 if (!response.IsSuccessStatusCode)
                 {
                     var err = await response.Content.ReadAsStringAsync();
