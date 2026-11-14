@@ -26,14 +26,12 @@ namespace sailflow.engine.Manager
 
         public List<JobInfoEntity> GetJobSubscribedByTopic(SQLBuilder kit, string topic)
         {
-            return kit
-                .select("*")
-                .from("wf_job_info")
-                .where("topic", topic)
-                .where("job_status", "Subscribed")
-                .orderBy("id DESC")
-                .query<JobInfoEntity>()
-                .ToList();
+            var clip = kit.useClip();
+            clip.from<JobInfoEntity>(out var j)
+                .where(() => j.Topic, topic)
+                .where(() => j.JobStatus, "Subscribed")
+                .orderByDesc(() => j.JobInfoId);
+            return clip.select(j).queryList().ToList();
         }
     }
 }

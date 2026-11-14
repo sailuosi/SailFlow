@@ -20,13 +20,10 @@ namespace sailflow.hub.Form
 
         internal List<FormEntity> GetAll()
         {
-            var kit = Sail.UseRunSQL();
-            return kit
-                .select("F.*")
-                .from("FbForm F")
-                .orderBy("F.FormName")
-                .query<FormEntity>()
-                .ToList();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<FormEntity>(out var f)
+                .orderBy(() => f.FormName);
+            return clip.select(f).queryList().ToList();
         }
 
         internal FormEntity GetById(string formId)

@@ -31,7 +31,8 @@ namespace sailflow.engine.Manager
                 .where(() => v.ProcessId, processId)
                 .where(() => v.Version, version)
                 .where(() => v.ActivityId, activityId)
-                .orderBy("sort_order, id");
+                .orderBy(() => v.SortOrder)
+                .orderBy(() => v.VariableId);
             return clip.select(v).queryList().ToList();
         }
 

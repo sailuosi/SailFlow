@@ -1,3 +1,4 @@
+using System.Linq;
 using mooSQL.data;
 using sailflow.data;
 using sailflow.engine.Client;
@@ -20,15 +21,13 @@ namespace sailflow.hub.Form
             string processVersion,
             string activityId)
         {
-            var kit = Sail.UseRunSQL();
-            return kit
-                .select("F.*")
-                .from("FbFormFieldActivityEdit F")
-                .where("ProcessId", processId)
-                .where("ProcessVersion", processVersion)
-                .where("ActivityId", activityId)
-                .where("FormId", formId)
-                .queryUnique<FieldActivityEditEntity>();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<FieldActivityEditEntity>(out var f)
+                .where(() => f.ProcessId, processId)
+                .where(() => f.ProcessVersion, processVersion)
+                .where(() => f.ActivityId, activityId)
+                .where(() => f.FormId, formId);
+            return clip.select(f).queryList().FirstOrDefault();
         }
 
         internal void InsertFormFieldEdit(FieldActivityEditEntity entity)
