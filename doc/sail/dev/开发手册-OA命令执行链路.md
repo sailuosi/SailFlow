@@ -168,34 +168,43 @@ WfRuntimeManagerRun.ExecuteInstanceImp
 
 ### 5.3 SendBackProcess（退回）
 
+A3 起走 Transition 动作骨架（`SendBackAction`）。
+
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `SendBackProcess` → `SendBack` → `ExecuteSendBackCore` |
-| Factory | `CreateRuntimeInstanceSendBack` |
+| API | `SendBackProcess` → `RunAction` → `SendBackAction.Execute`（`SendBack(kit,…)` 同） |
+| 族群时序 | `TransitionActionBase`：Load Runtime → Gate → `Runtime.Execute` → `OnProcessSendBacked` |
+| Factory | `CreateRuntimeInstanceSendBack`（在 `SendBackAction.TryLoadContext`） |
 | Factory 读库 | `ActivityInstanceManager.GetRunningNode` · `IsMineTask` · `ProcessInstanceManager.GetById` · `client.ProcessModelFactory.CreateByProcessInstance` · `PreviousStepChecker.GetPreviousActivityList` |
 | Gate | `FlowOperation.SendBack` |
 | Runtime | `WfRuntimeManagerSendBack.ExecuteInstanceImp` |
-| 退回执行 | `DistributeEachPerformerTask` → `SailFactoryAccess.Mediator(Sail).CreateNodeSendBack` → `NodeSendBack*.Execute`（按普通/会签组合生成回退 AI+Task+Transition） |
+| 退回执行 | `DistributeEachPerformerTask` → `CreateNodeSendBack` → `NodeSendBack*.Execute` |
 | 收尾写库 | `SetRunningNodeSendBack` → `TaskManager.SendBack` · `ActivityInstanceManager.SendBack` |
-| Hook | `OnProcessSendBacked` |
+| Hook | `OnProcessSendBacked`（族群 `OnFireFlowHook`；路径内 TaskNotifier 不在此重复） |
+| 设计 | [草案-非流转动作骨架.md](../草案-非流转动作骨架.md) · [progress/2026-11-15-动作骨架-A3-SendBack.md](../progress/2026-11-15-动作骨架-A3-SendBack.md) |
 
 ### 5.4 WithdrawProcess（撤回）
 
+与 SendBack 同属 Transition 族（`WithdrawAction`）。
+
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `WithdrawProcess` → `Withdraw` → `ExecuteWithdrawCore` |
+| API | `WithdrawProcess` → `RunAction` → `WithdrawAction.Execute` |
+| 族群时序 | 同 SendBack：Load → Gate → Execute → `OnProcessWithdrawn` |
 | Factory | `CreateRuntimeInstanceWithdraw`（**产出仍是** `WfRuntimeManagerSendBack`） |
-| Factory 读库 | `TaskManager.GetTaskView`（已办）· `IsMine` · `TransitionInstanceManager.GetTargetActivityInstanceList`（下一跳运行节点）· 会签时 `GetActivityMulitipleInstanceWithStateBatch` · `GetTaskViewByActivity` · `PreviousStepChecker.GetPreviousActivityList` |
+| Factory 读库 | `TaskManager.GetTaskView`（已办）· `IsMine` · `TransitionInstanceManager.GetTargetActivityInstanceList` · 会签批次 · `PreviousStepChecker.GetPreviousActivityList` |
 | 语义 | `SendBackOperation.BackwardType = Withdrawed`，`IsCancellingBrothersNode = true` |
 | Gate | `FlowOperation.Withdraw` |
 | Runtime / 写库 | 同 SendBack：`WfRuntimeManagerSendBack.ExecuteInstanceImp` |
-| Hook | `OnProcessWithdrawn` |
+| Hook | `OnProcessWithdrawn`（族群 `OnFireFlowHook`） |
 
 ### 5.5 RejectProcess（驳回）
 
+Transition 族 `RejectAction`（先 `TransitionNextPerformers.Fill(Startup)`）。
+
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `RejectProcess` → `Reject` → `ExecuteRejectCore` |
+| API | `RejectProcess` → `RunAction` → `RejectAction.Execute` |
 | Factory | `CreateRuntimeInstanceReject` |
 | Factory 读库 | `GetRunningNode` · `GetActivityInstanceLatest`（目标）· `ProcessInstanceManager.GetById` · `TransitionInstanceManager.GetLastTaskTransition` · `PreviousStepChecker.GetPreviousActivityInstanceList` |
 | Gate | `FlowOperation.Reject` |
@@ -241,9 +250,11 @@ Host `RejectOperationHandler` 可能按节点策略改走 `SendBackProcessAsync`
 
 ### 5.9 JumpProcess（跳转）
 
+Transition 族 `JumpAction`（`TransitionNextPerformers.Fill(jumpOption)`）。
+
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `JumpProcess` → `ExecuteJumpCore` |
+| API | `JumpProcess` → `RunAction` → `JumpAction.Execute` |
 | Factory | `CreateRuntimeInstanceJump`（`NextActivityPerformers` 只能一步） |
 | Factory 读库 | `GetRunningNode` · `client.ProcessModelFactory.CreateByTask` |
 | Gate | `FlowOperation.Jump` |
@@ -253,9 +264,11 @@ Host `RejectOperationHandler` 可能按节点策略改走 `SendBackProcessAsync`
 
 ### 5.10 CloseProcess（关闭）
 
+Transition 族 `CloseAction`（`Fill(End)`）。
+
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `CloseProcess` → `ExecuteCloseCore` |
+| API | `CloseProcess` → `RunAction` → `CloseAction.Execute` |
 | Factory | `CreateRuntimeInstanceClose`（目标多为 End 活动） |
 | Runtime | `WfRuntimeManagerClose.ExecuteInstanceImp` |
 | 写库 / Mediator | 同 Jump：Complete 当前 → Jumpforward 上下文 → Mediator（常到 End）→ `ExecuteWorkItem` |
@@ -287,17 +300,28 @@ Host `RejectOperationHandler` 可能按节点策略改走 `SendBackProcessAsync`
 | Hook | `OnProcessTransferred`（族群 `OnFireFlowHook`） |
 | 设计 | [草案-非流转动作骨架.md](../草案-非流转动作骨架.md) · [progress/2026-11-15-动作骨架-A1-Transfer.md](../progress/2026-11-15-动作骨架-A1-Transfer.md) |
 
-### 5.13 Terminate / Discard / Cancel / Suspend / Resume（短路径）
+### 5.13 Suspend / Resume（Lifecycle 族，A2）
+
+**不经** Runtime/Mediator。走动作骨架。
+
+| 步骤 | 类·方法 |
+|------|---------|
+| API | `SuspendProcess(runner)` / `ResumeProcess(runner)` → `RunAction` → `SuspendAction` / `ResumeAction` |
+| 定位 | Suspend：`TaskId`；Resume：`ProcessInstanceId` |
+| Gate | `FlowOperation.Suspend` / `Resume` |
+| 写库 | `ProcessInstanceManager.Suspend/Resume(kit, …)` |
+| Hook | `OnProcessSuspended` / `OnProcessResumed` |
+| 兼容 | 原 `bool SuspendProcess(taskId,…)` / `bool ResumeProcess(processInstanceId,…)` 仍可用，内部转 Action |
+
+### 5.14 Terminate / Discard / Cancel（短路径，未迁骨架）
 
 | 命令 | API | 核心 |
 |------|-----|------|
 | Terminate | `TerminateProcess` | `ProcessInstanceManager.Terminate` |
 | Discard | `DiscardProcess` | `ProcessInstanceManager.Discard` |
 | Cancel | `CancelProcess` | `ProcessInstanceManager.Cancel` |
-| Suspend | `SuspendProcess` | `TaskManager.GetTask` → `ProcessInstanceManager.Suspend` |
-| Resume | `ResumeProcess` | `ProcessInstanceManager.Resume` |
 
-无 RuntimeManager / Gate 外壳（bool 返回）；产品码表默认关，Host Handler 包装。
+仍无 Gate 外壳（bool）；产品码表默认关。后续可归 Lifecycle 族。
 
 ---
 
@@ -495,14 +519,14 @@ FlowCapabilityPipeline.AfterSuccess(/* OnActivityCreated */);
 | Start | `CreateRuntimeInstanceStartup` | `WfRuntimeManagerStartup` | `NodeMediatorStart` + Continue |
 | Run / Approve | `CreateRuntimeInstanceAppRunning` | `WfRuntimeManagerRun` | `NodeMediatorTask` 等 |
 | RunAuto | `CreateRuntimeInstanceRunAuto` | `WfRuntimeManagerRun` | 同上 |
-| SendBack | `CreateRuntimeInstanceSendBack` | `WfRuntimeManagerSendBack` | `NodeSendBack*` |
-| Withdraw | `CreateRuntimeInstanceWithdraw` | **同** `WfRuntimeManagerSendBack` | `NodeSendBack`*（Withdrawed） |
-| Reject | `CreateRuntimeInstanceReject` | `WfRuntimeManagerReject` | `NodeMediatorBackward` |
+| SendBack | `CreateRuntimeInstanceSendBack` | `SendBackAction` / `WfRuntimeManagerSendBack` | `NodeSendBack*` |
+| Withdraw | `CreateRuntimeInstanceWithdraw` | `WithdrawAction` / **同** `WfRuntimeManagerSendBack` | `NodeSendBack`*（Withdrawed） |
+| Reject | `CreateRuntimeInstanceReject` | `RejectAction` / `WfRuntimeManagerReject` | `NodeMediatorBackward` |
 | Resend | `CreateRuntimeInstanceResend` | `WfRuntimeManagerResend` | `NodeMediator*`（指向 BackSrc） |
 | Revise | `CreateRuntimeInstanceRevise` | `WfRuntimeManagerRevise` | `NodeMediatorRevise` |
 | Reverse | `CreateRuntimeInstanceReverse` | `WfRuntimeManagerReverse` | `NodeMediatorBackward` |
-| Jump | `CreateRuntimeInstanceJump` | `WfRuntimeManagerJump` | `NodeMediator*`（跳转目标） |
-| Close | `CreateRuntimeInstanceClose` | `WfRuntimeManagerClose` | 常 `NodeMediatorEnd` |
+| Jump | `CreateRuntimeInstanceJump` | `JumpAction` / `WfRuntimeManagerJump` | `NodeMediator*`（跳转目标） |
+| Close | `CreateRuntimeInstanceClose` | `CloseAction` / `WfRuntimeManagerClose` | 常 `NodeMediatorEnd` |
 | SignForward | `CreateRuntimeInstanceSignForward` | `WfRuntimeManagerSignForward` | 加签 Mediator |
 | Transfer | （无 Runtime） | `TransferAction` / `AssigneeActionBase` | `TaskManager.Transfer` |
 

@@ -170,8 +170,17 @@ namespace sailflow.engine.Service
         void AgreeTask(string taskId);
         void RefuseTask(string taskId);
 
-        Boolean ResumeProcess(string activityInstanceId, FlowCommandContext runner);
+        /// <summary>挂起：<c>runner.TaskId</c> 定位实例；走 Lifecycle 动作骨架（Gate/Hook）。</summary>
+        WfExecutedResult SuspendProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> SuspendProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
+        /// <summary>恢复：<c>runner.ProcessInstanceId</c> 定位实例。</summary>
+        WfExecutedResult ResumeProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> ResumeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
+
+        /// <summary>兼容：按 taskId 挂起，成功返回 true。</summary>
         Boolean SuspendProcess(string taskId, FlowCommandContext runner);
+        /// <summary>兼容：按 processInstanceId 恢复，成功返回 true。（参数名历史为 activityInstanceId，实为流程实例 Id）</summary>
+        Boolean ResumeProcess(string processInstanceId, FlowCommandContext runner);
         Boolean CancelProcess(FlowCommandContext canceler);
         Boolean DiscardProcess(FlowCommandContext discarder);
         Boolean TerminateProcess(FlowCommandContext terminator);

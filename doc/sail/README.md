@@ -17,7 +17,7 @@
 | [特性说明-副作用可靠性.md](./特性说明-副作用可靠性.md) | **旁路可靠性**：Outbox / Channel / 对账分档；批量推送削峰 |
 | [草案-挂起与统一Resume.md](./草案-挂起与统一Resume.md) | **草案引子**：Bookmark 思想 → WaitToken / ResumeWaiting；不改 UserTask |
 | [草案-命令执行管道.md](./草案-命令执行管道.md) | **已吸收**：原 Command Pipeline 引子；横切 DRY 并入动作骨架，不再单独立项 |
-| [草案-非流转动作骨架.md](./草案-非流转动作骨架.md) | **草案（A1 首包已落地）**：动作骨架；Transfer→Assignee 族；父类工具箱 + 族群钩子时序 + 动词只写 Core |
+| [草案-非流转动作骨架.md](./草案-非流转动作骨架.md) | **草案（A1–A3）**：Assignee/Lifecycle/Transition 样板齐；Run/SignForward/Resend 等待迁 |
 | [草案-引擎异步化.md](./草案-引擎异步化.md) | **草案专题（0–2 首包已落地）**：假 Async 禁令 + Clip/`ct` + 锁/Manager async；下一刀 Mediator 深链 |
 | [目录-扩展插件.md](./目录-扩展插件.md) | **扩展目录**：pure/ext/biz + sleveen-admin 的 UseXxx / Resolver / Filter / Hook / Handler 与核心代码 |
 | [todo-产品缺口.md](./todo-产品缺口.md) | **活动缺口**：联调 + 余债；已接线见 [progress/2026-11-04-产品缺口接线归档.md](./progress/2026-11-04-产品缺口接线归档.md) |

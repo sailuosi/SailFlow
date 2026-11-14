@@ -197,6 +197,12 @@ namespace sailflow.engine.Result
         public const string Transfer_NotMineTask = "Transfer_NotMineTask";
         public const string Transfer_NotInRunning = "Transfer_NotInRunning";
         public const string Transfer_RuntimeError = "Transfer_RuntimeError";
+
+        // 挂起 / 恢复
+        public const string Suspend_ErrorArguments = "Suspend_ErrorArguments";
+        public const string Suspend_RuntimeError = "Suspend_RuntimeError";
+        public const string Resume_ErrorArguments = "Resume_ErrorArguments";
+        public const string Resume_RuntimeError = "Resume_RuntimeError";
     }
 }
 

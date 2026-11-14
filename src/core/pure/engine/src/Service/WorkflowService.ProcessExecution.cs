@@ -16,6 +16,8 @@ using mooSQL.data;
 using sailflow.engine.Runtime;
 using sailflow.engine.Hooks;
 using sailflow.engine.Actions.Assignee;
+using sailflow.engine.Actions.Lifecycle;
+using sailflow.engine.Actions.Transition;
 
 namespace sailflow.engine.Service
 {
@@ -486,159 +488,40 @@ namespace sailflow.engine.Service
         #endregion
 
         #region Process Withdraw
-        /// <summary>
-        /// Process withdraw
-        /// 流程撤回
-        /// </summary>
-
+        /// <summary>在已有事务 kit 上撤回（带锁）。Transition 族 <see cref="WithdrawAction"/>。</summary>
         public WfExecutedResult Withdraw(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
-                return ExecuteWithdrawCore(kit, runner);
+                return new WithdrawAction(Sail, kit, runner).Execute();
         }
 
-        WfExecutedResult ExecuteWithdrawCore(SQLBuilder kit, FlowCommandContext runner)
-        {
-            WfExecutedResult withdrawedResult = WfExecutedResult.Default();
-
-            //Withdraw method begins execution
-            WfRuntimeManager runtimeInstance = null;
-            try
-            {
-                runtimeInstance = Runtimes.CreateRuntimeInstanceWithdraw(runner, ref withdrawedResult);
-
-                //Not satisfied with withdraw operation, return exception
-                if (withdrawedResult.Status == WfExecutedStatus.Exception)
-                {
-                    return withdrawedResult;
-                }
-
-                var withdrawGateCtx = FlowCapabilityPipeline.BuildGateContext(
-                    Sail,
-                    kit,
-                    runner,
-                    runtimeInstance.ProcessInstanceId,
-                    runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.TaskId,
-                    FlowOperation.Withdraw);
-                if (!FlowCapabilityPipeline.TryGate(Sail, kit, withdrawGateCtx, withdrawedResult))
-                    return withdrawedResult;
-
-                runtimeInstance.Execute(kit);
-                    withdrawedResult = runtimeInstance.WfExecutedResult;
-                    if (withdrawedResult.Status == WfExecutedStatus.Success)
-                    {
-                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                            Sail, kit, runner,
-                            runtimeInstance.ProcessInstanceId,
-                            runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.TaskId,
-                            EventFireTypeEnum.OnProcessWithdrawn,
-                            FlowOperation.Withdraw);
-                        FlowCapabilityPipeline.AfterSuccess(
-                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessWithdrawn);
-                    }
-            }
-            catch (System.Exception e)
-            {
-                withdrawedResult.Status = WfExecutedStatus.Failed;
-                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                withdrawedResult.Message = Sail.Messages.GetEngineMessage("workflowservice.withdrawprocess.error", error);
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_WITHDRAW_ERROR, LogEventType.Error, LogPriority.High, runner, e);
-            }
-            return withdrawedResult;
-        }
-
-        /// <summary>
-        /// Process withdraw
-        /// 流程撤回
-        /// </summary>
+        /// <summary>流程撤回 → Transition 族动作骨架。</summary>
         public WfExecutedResult WithdrawProcess(FlowCommandContext runner)
-            => CommitOnSuccess(kit => Withdraw(kit, runner));
+            => RunAction(runner, (kit, r) => new WithdrawAction(Sail, kit, r).Execute());
 
-        /// <summary>
-        /// Process withdraw async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
-        /// </summary>
+        /// <summary>Process withdraw async：可取消等待实例锁；Action/Mediator 仍同步。</summary>
         public Task<WfExecutedResult> WithdrawProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
-            => RunVerbAsync(runner, cancellationToken, ExecuteWithdrawCore);
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new WithdrawAction(Sail, kit, r).Execute());
 
         #endregion
 
         #region Process Sendback
         /// <summary>
-        /// Process sendback
-        /// 流程退回
+        /// 在已有事务 kit 上退回（带锁）。A3：横切由 <see cref="SendBackAction"/> / Transition 族固化。
         /// </summary>
-
         public WfExecutedResult SendBack(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
-                return ExecuteSendBackCore(kit, runner);
+                return new SendBackAction(Sail, kit, runner).Execute();
         }
 
-        WfExecutedResult ExecuteSendBackCore(SQLBuilder kit, FlowCommandContext runner)
-        {
-            WfExecutedResult sendbackResult = WfExecutedResult.Default();
-
-            //sendback operation
-            WfRuntimeManager runtimeInstance = null;
-            try
-            {
-                runtimeInstance = Runtimes.CreateRuntimeInstanceSendBack(runner, ref sendbackResult);
-
-                if (sendbackResult.Status == WfExecutedStatus.Exception)
-                {
-                    return sendbackResult;
-                }
-
-                var sendBackGateCtx = FlowCapabilityPipeline.BuildGateContext(
-                    Sail,
-                    kit,
-                    runner,
-                    runtimeInstance.ProcessInstanceId,
-                    runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.TaskId,
-                    FlowOperation.SendBack);
-                if (!FlowCapabilityPipeline.TryGate(Sail, kit, sendBackGateCtx, sendbackResult))
-                    return sendbackResult;
-
-                runtimeInstance.Execute(kit);
-                    sendbackResult = runtimeInstance.WfExecutedResult;
-                    if (sendbackResult.Status == WfExecutedStatus.Success)
-                    {
-                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                            Sail, kit, runner,
-                            runtimeInstance.ProcessInstanceId,
-                            runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.TaskId,
-                            EventFireTypeEnum.OnProcessSendBacked,
-                            FlowOperation.SendBack);
-                        FlowCapabilityPipeline.AfterSuccess(
-                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessSendBacked);
-                    }
-            }
-            catch (System.Exception e)
-            {
-                sendbackResult.Status = WfExecutedStatus.Failed;
-                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                sendbackResult.Message = Sail.Messages.GetEngineMessage("workflowservice.sendbackprocess.error", error);
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_SENDBACK_ERROR, LogEventType.Error, LogPriority.High, runner, e);
-            }
-            return sendbackResult;
-        }
-
-        /// <summary>
-        /// Process sendback
-        /// 退回到下一步
-        /// </summary>
+        /// <summary>流程退回 → Transition 族动作骨架。</summary>
         public WfExecutedResult SendBackProcess(FlowCommandContext runner)
-            => CommitOnSuccess(kit => SendBack(kit, runner));
+            => RunAction(runner, (kit, r) => new SendBackAction(Sail, kit, r).Execute());
 
-        /// <summary>
-        /// Process sendback async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
-        /// </summary>
+        /// <summary>Process sendback async：可取消等待实例锁；Action/Mediator 仍同步。</summary>
         public Task<WfExecutedResult> SendBackProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
-            => RunVerbAsync(runner, cancellationToken, ExecuteSendBackCore);
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new SendBackAction(Sail, kit, r).Execute());
 
         #endregion
 
@@ -904,264 +787,51 @@ namespace sailflow.engine.Service
         #endregion
 
         #region Process Reject
-        /// <summary>
-        /// Process reject
-        /// 流程驳回
-        /// </summary>
-
         public WfExecutedResult Reject(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
-                return ExecuteRejectCore(kit, runner);
+                return new RejectAction(Sail, kit, runner).Execute();
         }
 
-        WfExecutedResult ExecuteRejectCore(SQLBuilder kit, FlowCommandContext runner)
-        {
-            WfExecutedResult rejectedResult = WfExecutedResult.Default();
-
-            //Reject method start to execute
-            WfRuntimeManager runtimeInstance = null;
-            try
-            {
-                runner.NextActivityPerformers = FillNextActivityPerforms(runner, JumpOptionEnum.Startup);
-                runtimeInstance = Runtimes.CreateRuntimeInstanceReject(runner, ref rejectedResult);
-                if (rejectedResult.Status == WfExecutedStatus.Exception)
-                {
-                    return rejectedResult;
-                }
-
-                var rejectGateCtx = FlowCapabilityPipeline.BuildGateContext(
-                    Sail,
-                    kit,
-                    runner,
-                    runtimeInstance.ProcessInstanceId,
-                    runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.TaskId,
-                    FlowOperation.Reject);
-                if (!FlowCapabilityPipeline.TryGate(Sail, kit, rejectGateCtx, rejectedResult))
-                    return rejectedResult;
-
-                runtimeInstance.Execute(kit);
-                    rejectedResult = runtimeInstance.WfExecutedResult;
-                    if (rejectedResult.Status == WfExecutedStatus.Success)
-                    {
-                        var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                            Sail, kit, runner,
-                            runtimeInstance.ProcessInstanceId,
-                            runtimeInstance.RunningActivityInstance,
-                            runtimeInstance.TaskView?.TaskId,
-                            EventFireTypeEnum.OnProcessRejected,
-                            FlowOperation.Reject);
-                        FlowCapabilityPipeline.AfterSuccess(
-                            Sail, kit, hookCtx, EventFireTypeEnum.OnProcessRejected);
-                    }
-            }
-            catch (System.Exception e)
-            {
-                rejectedResult.Status = WfExecutedStatus.Failed;
-                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                rejectedResult.Message = Sail.Messages.GetEngineMessage("workflowservice.rejectprocess.error", error);
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_REJECT_ERROR, LogEventType.Error, LogPriority.High, runner, e);
-            }
-            return rejectedResult;
-        }
-
-        /// <summary>
-        /// Process reject
-        /// 流程驳回
-        /// </summary>
         public WfExecutedResult RejectProcess(FlowCommandContext runner)
-            => CommitOnSuccess(kit => Reject(kit, runner));
+            => RunAction(runner, (kit, r) => new RejectAction(Sail, kit, r).Execute());
 
-        /// <summary>
-        /// Process reject async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
-        /// </summary>
         public Task<WfExecutedResult> RejectProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
-            => RunVerbAsync(runner, cancellationToken, ExecuteRejectCore);
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new RejectAction(Sail, kit, r).Execute());
 
         #endregion
 
         #region Process Close
-        /// <summary>
-        /// Process Close
-        /// 流程关闭
-        /// </summary>
-
         public WfExecutedResult Close(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
-                return ExecuteCloseCore(kit, runner);
+                return new CloseAction(Sail, kit, runner).Execute();
         }
 
-        WfExecutedResult ExecuteCloseCore(SQLBuilder kit, FlowCommandContext runner)
-        {
-            WfExecutedResult closedResult = WfExecutedResult.Default();
-            try
-            {
-                runner.NextActivityPerformers = FillNextActivityPerforms(runner, JumpOptionEnum.End);
-                var runtimeInstance = Runtimes.CreateRuntimeInstanceClose(runner, ref closedResult);
-                if (closedResult.Status == WfExecutedStatus.Exception)
-                    return closedResult;
-
-                var closeGateCtx = FlowCapabilityPipeline.BuildGateContext(
-                    Sail,
-                    kit,
-                    runner,
-                    runtimeInstance.ProcessInstanceId,
-                    runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.TaskId,
-                    FlowOperation.Close);
-                if (!FlowCapabilityPipeline.TryGate(Sail, kit, closeGateCtx, closedResult))
-                    return closedResult;
-
-                runtimeInstance.Execute(kit);
-                closedResult = runtimeInstance.WfExecutedResult;
-                if (closedResult.Status == WfExecutedStatus.Success)
-                {
-                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                        Sail, kit, runner,
-                        runtimeInstance.ProcessInstanceId,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.TaskId,
-                        EventFireTypeEnum.OnProcessClosed,
-                        FlowOperation.Close);
-                    FlowCapabilityPipeline.AfterSuccess(
-                        Sail, kit, hookCtx, EventFireTypeEnum.OnProcessClosed);
-                }
-            }
-            catch (System.Exception e)
-            {
-                closedResult.Status = WfExecutedStatus.Failed;
-                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                closedResult.Message = Sail.Messages.GetEngineMessage("workflowservice.closeprocess.error", error);
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_CLOSE_ERROR, LogEventType.Error, LogPriority.High, runner, e);
-            }
-            return closedResult;
-        }
-
-        /// <summary>
-        ///  Process Close
-        /// 流程关闭
-        /// </summary>
         public WfExecutedResult CloseProcess(FlowCommandContext runner)
-            => CommitOnSuccess(kit => Close(kit, runner));
+            => RunAction(runner, (kit, r) => new CloseAction(Sail, kit, r).Execute());
 
-        /// <summary>
-        /// Process Close Async：可取消等待实例锁；预载/Execute 仍同步（范围收窄）。
-        /// </summary>
         public Task<WfExecutedResult> CloseProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
-            => RunVerbAsync(runner, cancellationToken, ExecuteCloseCore);
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new CloseAction(Sail, kit, r).Execute());
 
         #endregion
 
         #region Process Jump
-        /// <summary>
-        /// Process Jump
-        /// 流程跳转
-        /// </summary>
-
         public WfExecutedResult Jump(SQLBuilder kit, JumpOptionEnum jumpOption, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
-                return ExecuteJumpCore(kit, runner, jumpOption);
+                return new JumpAction(Sail, kit, runner, jumpOption).Execute();
         }
 
-        WfExecutedResult ExecuteJumpCore(SQLBuilder kit, FlowCommandContext runner, JumpOptionEnum jumpOption)
-        {
-            WfExecutedResult jumpResult = WfExecutedResult.Default();
-            try
-            {
-                runner.NextActivityPerformers = FillNextActivityPerforms(runner, jumpOption);
-                var runtimeInstance = Runtimes.CreateRuntimeInstanceJump(runner, ref jumpResult);
+        public WfExecutedResult JumpProcess(FlowCommandContext runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default)
+            => RunAction(runner, (kit, r) => new JumpAction(Sail, kit, r, jumpOption).Execute());
 
-                if (jumpResult.Status == WfExecutedStatus.Exception)
-                    return jumpResult;
+        public Task<WfExecutedResult> JumpProcessAsync(
+            FlowCommandContext runner,
+            JumpOptionEnum jumpOption = JumpOptionEnum.Default,
+            CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new JumpAction(Sail, kit, r, jumpOption).Execute());
 
-                var jumpGateCtx = FlowCapabilityPipeline.BuildGateContext(
-                    Sail,
-                    kit,
-                    runner,
-                    runtimeInstance.ProcessInstanceId,
-                    runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.TaskId,
-                    FlowOperation.Jump);
-                if (!FlowCapabilityPipeline.TryGate(Sail, kit, jumpGateCtx, jumpResult))
-                    return jumpResult;
-
-                runtimeInstance.Execute(kit);
-                jumpResult = runtimeInstance.WfExecutedResult;
-                if (jumpResult.Status == WfExecutedStatus.Success)
-                {
-                    var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                        Sail, kit, runner,
-                        runtimeInstance.ProcessInstanceId,
-                        runtimeInstance.RunningActivityInstance,
-                        runtimeInstance.TaskView?.TaskId,
-                        EventFireTypeEnum.OnProcessJumped,
-                        FlowOperation.Jump);
-                    FlowCapabilityPipeline.AfterSuccess(
-                        Sail, kit, hookCtx, EventFireTypeEnum.OnProcessJumped);
-                }
-            }
-            catch (System.Exception e)
-            {
-                jumpResult.ExceptionType = WfExceptionType.Jump_OtherError;
-                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                jumpResult.Message = Sail.Messages.GetEngineMessage("workflowservice.jumpprocess.error", error);
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_JUMP_ERROR, LogEventType.Error, LogPriority.High, runner, e);
-            }
-            return jumpResult;
-        }
-
-        /// <summary>
-        /// Process Jump
-        /// 流程跳转
-        /// </summary>
-        public WfExecutedResult JumpProcess(FlowCommandContext runner,
-            JumpOptionEnum jumpOption = JumpOptionEnum.Default)
-            => CommitOnSuccess(kit => Jump(kit, jumpOption, runner));
-
-        /// <summary>
-        /// Process Jump Async：可取消等待实例锁；预载/Execute 仍同步（范围收窄）。
-        /// </summary>
-        public Task<WfExecutedResult> JumpProcessAsync(FlowCommandContext runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default, CancellationToken cancellationToken = default)
-            => RunVerbAsync(runner, cancellationToken, (kit, r) => ExecuteJumpCore(kit, r, jumpOption));
-
-        /// <summary>
-        /// Regenerate the list of performers for the jump activity
-        /// 流程跳转动作执行人员列表
-        /// </summary>
-        private IDictionary<string, PerformerList> FillNextActivityPerforms(FlowCommandContext runner,
-            JumpOptionEnum jumpOption)
-        {
-            IDictionary<string, PerformerList> nextActivityPerformers = null;
-            var pm = Sail.ProcessModelFactory.CreateByProcess(runner.ProcessId, runner.Version);
-            if (jumpOption == JumpOptionEnum.Default)
-            {
-                nextActivityPerformers = runner.NextActivityPerformers;
-            }
-            else if (jumpOption == JumpOptionEnum.Startup)
-            {
-                var firstActivity = pm.GetFirstActivity();
-                var aim = Sail.ManagerFactory.Activities;
-                var firstActivityInstance = aim.GetActivityInstanceLatest(runner.BizPK, runner.ProcessId, firstActivity.ActivityId);
-                nextActivityPerformers = new Dictionary<string, PerformerList>();
-                var performer = new Performer(firstActivityInstance.CreatedUserId, firstActivityInstance.CreatedUserName);
-                var performerList = new PerformerList();
-                performerList.Add(performer);
-                nextActivityPerformers.Add(firstActivity.ActivityId, performerList);
-            }
-            else if (jumpOption == JumpOptionEnum.End)
-            {
-                var endActivity = pm.GetEndActivity();
-                nextActivityPerformers = new Dictionary<string, PerformerList>();
-                var performer = new Performer(runner.UserId, runner.UserName);
-                var performerList = new PerformerList();
-                performerList.Add(performer);
-                nextActivityPerformers.Add(endActivity.ActivityId, performerList);
-            }
-            return nextActivityPerformers;
-        }
         #endregion
 
         #region Process Signforward
@@ -1266,45 +936,32 @@ namespace sailflow.engine.Service
         #endregion
 
         #region Process Resume Suspend Cancel Discard Terminate
-        /// <summary>
-        /// Resume process instance (only applicable to suspended operations)
-        /// Suspend (restore) processes, cancel (run) processes, discard processes in progress or completed
-        /// 恢复流程实例(只针对已挂起)
-        /// 挂起(恢复)流程、取消(运行)流程、撤回执行或执行中的流程
-        /// </summary>
-        public bool ResumeProcess(string processInstanceId, FlowCommandContext runner)
-        {
-            bool result = true;
-            try
-            {
-                var pim = Managers.ProcessInstances;
-                pim.Resume(processInstanceId, runner);
-            }
-            catch (Exception ex)
-            {
-                result = false;
-            }
-            return result;
-        }
-        /// <summary>
-        /// Process Suspend
-        /// 流程挂起实例
-        /// </summary>
+        /// <summary>A2：挂起（Lifecycle 族）；事务+锁由 <see cref="RunAction"/>。</summary>
+        public WfExecutedResult SuspendProcess(FlowCommandContext runner)
+            => RunAction(runner, (kit, r) => new SuspendAction(Sail, kit, r).Execute());
+
+        public Task<WfExecutedResult> SuspendProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new SuspendAction(Sail, kit, r).Execute());
+
+        /// <summary>A2：恢复（Lifecycle 族）。</summary>
+        public WfExecutedResult ResumeProcess(FlowCommandContext runner)
+            => RunAction(runner, (kit, r) => new ResumeAction(Sail, kit, r).Execute());
+
+        public Task<WfExecutedResult> ResumeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new ResumeAction(Sail, kit, r).Execute());
+
+        /// <summary>兼容 bool：按 taskId 挂起。</summary>
         public bool SuspendProcess(string taskId, FlowCommandContext runner)
         {
-            bool result = true;
-            try
-            {
-                var pim = Managers.ProcessInstances;
-                var taskMng = Sail.ManagerFactory.Tasks;
-                TaskEntity taskentity = taskMng.GetTask(taskId);
-                pim.Suspend(taskentity.ProcessInstanceId, runner);
-            }
-            catch (Exception ex)
-            {
-                result = false;
-            }
-            return result;
+            var result = RunAction(runner, (kit, r) => new SuspendAction(Sail, kit, r, taskId).Execute());
+            return result.Status == WfExecutedStatus.Success;
+        }
+
+        /// <summary>兼容 bool：按 processInstanceId 恢复。（历史参数名 activityInstanceId，实为流程实例 Id）</summary>
+        public bool ResumeProcess(string processInstanceId, FlowCommandContext runner)
+        {
+            var result = RunAction(runner, (kit, r) => new ResumeAction(Sail, kit, r, processInstanceId).Execute());
+            return result.Status == WfExecutedStatus.Success;
         }
 
         /// <summary>

@@ -167,4 +167,10 @@ public sealed class RunBuilder
     public WfExecutedResult SignForward() => Service().SignForwardProcess(Build());
 
     public WfExecutedResult Transfer() => Service().TransferProcess(Build());
+
+    /// <summary>挂起：需已设 <c>TaskId</c>。</summary>
+    public WfExecutedResult Suspend() => Service().SuspendProcess(Build());
+
+    /// <summary>恢复：需已设 <c>ProcessInstanceId</c>。</summary>
+    public WfExecutedResult Resume() => Service().ResumeProcess(Build());
 }

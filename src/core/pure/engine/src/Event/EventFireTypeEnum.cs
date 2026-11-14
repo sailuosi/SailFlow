@@ -76,6 +76,14 @@ namespace sailflow.engine.Event
 
         OnProcessTransferred = 29,
 
+        OnProcessSuspending = 30,
+
+        OnProcessSuspended = 31,
+
+        OnProcessResuming = 32,
+
+        OnProcessResumed = 33,
+
         OnActivityCreated = 40,
 
         OnActivityExecuting = 41,
