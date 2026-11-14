@@ -35,7 +35,7 @@ namespace sailflow.AI.Implementation
             if (serviceType == AiServiceTypeEnum.RAG)
             {
                 if (string.IsNullOrWhiteSpace(axConfig?.RagEmbeddingModelId))
-                    throw new InvalidOperationException("RAG 节点必须在 ai_activity_config 中设置 RagEmbeddingModelId，指向 ai_model_provider 中的向量模型 (model_type=vector_model)。");
+                    throw new InvalidOperationException("RAG 节点必须在 ai_act_config 中设置 RagEmbeddingModelId，指向 ai_model_provider 中的向量模型 (model_type=vector_model)。");
                 if (sail == null)
                     throw new ArgumentNullException(nameof(sail), "SailClient is required for RAG embedding provider lookup.");
 

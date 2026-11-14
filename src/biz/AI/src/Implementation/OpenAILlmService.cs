@@ -15,7 +15,7 @@ namespace sailflow.AI.Implementation
 {
     /// <summary>
     /// OpenAI 兼容 LLM 服务。baseUrl 由调用方传入，调用方需严格区分配置来源：
-    /// - 工作流节点：从 ai_activity_config → ai_model_provider 传入
+    /// - 工作流节点：从 ai_act_config → ai_model_provider 传入
     /// - 文字生成工作流等：从 AiAppConfiguration (appsettings) 传入，通过 InvokeWithLocalConfigAsync
     /// </summary>
     internal class OpenAILlmService : IAiLlmService

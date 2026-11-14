@@ -9,7 +9,7 @@ namespace sailflow.AI.Service
 {
     /// <summary>
     /// AI 大模型调用服务。严格区分两种配置来源：
-    /// 1) InvokeAIServiceAsync：工作流节点执行，从 ai_activity_config → ai_model_provider 读取
+    /// 1) InvokeAIServiceAsync：工作流节点执行，从 ai_act_config → ai_model_provider 读取
     /// 2) InvokeWithLocalConfigAsync：文字生成工作流等，从 appsettings (AiModelProvider:OpenAI/QianWen) 读取
     /// </summary>
     public class AiFastCallingService : IAiFastCallingService
@@ -21,9 +21,9 @@ namespace sailflow.AI.Service
             Sail = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        #region 工作流节点执行 - 从 ai_activity_config、ai_model_provider 读取
+        #region 工作流节点执行 - 从 ai_act_config、ai_model_provider 读取
         /// <summary>
-        /// 工作流节点执行：BaseUrl、ApiKey 等仅从 ai_activity_config → ai_model_provider 读取，不使用 AiAppConfiguration
+        /// 工作流节点执行：BaseUrl、ApiKey 等仅从 ai_act_config → ai_model_provider 读取，不使用 AiAppConfiguration
         /// </summary>
         public async Task<string> InvokeAIServiceAsync(AiActivityConfigEntity axConfig, IList<MultiMediaFile> mediaFileList)
         {
@@ -100,7 +100,7 @@ namespace sailflow.AI.Service
 
         #region 本地配置场景 - 从 appsettings (AiAppConfiguration) 读取
         /// <summary>
-        /// 文字生成工作流等场景：BaseUrl、Endpoint 从 appsettings AiModelProvider:OpenAI 或 QianWen 读取，不使用 ai_activity_config
+        /// 文字生成工作流等场景：BaseUrl、Endpoint 从 appsettings AiModelProvider:OpenAI 或 QianWen 读取，不使用 ai_act_config
         /// </summary>
         public async Task<string> InvokeWithLocalConfigAsync(string userMessage, string systemPrompt = null, string provider = "OpenAI")
         {

@@ -16,7 +16,7 @@ namespace sailflow.AI.Entity
         public string ActivityId { get; set; }
         [SooColumn(Name = "ac_svc_type", Length = 64)]
         public string ServiceType { get; set; }
-        /// <summary>对话/主模型提供方（ai_mdl_provider）；同表双 FK，含义 l=llm。</summary>
+        /// <summary>对话/主模型提供方（ai_model_provider）；同表双 FK，含义 l=llm。</summary>
         [SooColumn(Name = "ac_l_mdl_provider_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string ModelProviderId { get; set; }
         [SooColumn(Name = "ac_model_name", Length = 255)]
@@ -55,7 +55,7 @@ namespace sailflow.AI.Entity
         public string RagSearchMode { get; set; }
         [SooColumn(Name = "ac_rag_function", Length = 128)]
         public string RagFunction { get; set; }
-        /// <summary>RAG 向量模型提供方（ai_mdl_provider）；同表双 FK，含义 e=embed。</summary>
+        /// <summary>RAG 向量模型提供方（ai_model_provider）；同表双 FK，含义 e=embed。</summary>
         [SooColumn(Name = "ac_e_mdl_provider_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string RagEmbeddingModelId { get; set; }
         [SooColumn(Name = "ac_emb_model_name", Length = 255)]

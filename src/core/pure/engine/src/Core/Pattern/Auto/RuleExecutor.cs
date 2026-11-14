@@ -70,7 +70,7 @@ namespace sailflow.engine.Pattern
 
         /// <summary>
         /// Rule inputs: process-scoped vars; then <c>wf_variable</c> for this activity (Input rows —
-        /// referenced inputs load from prior node <c>wf_process_variable</c> via <c>source_ref</c>/<c>source_variable_name</c>);
+        /// referenced inputs load from prior node <c>wf_proc_variable</c> via source_ref / source_variable_name);
         /// if no <c>wf_variable</c> rows, merge all activity-scoped rows for this instance (legacy).
         /// Auto-run uses <see cref="AutoRunEventServiceAdapter.VariablesSnapshot"/>.
         /// </summary>

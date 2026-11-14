@@ -94,7 +94,7 @@ public static class SampleSchemaInitializer
             .createTable<HookOutboxEntity>()
             .createTable<FormEntity>()
             .createTable<FieldActivityEditEntity>()
-            .createTable<SailProcessCopyEntity>();
+            .createTable<SailProcessCopytoEntity>();
 
         EnsureHotPathIndexes(kit);
         EnsureTaskDetailsView(kit);

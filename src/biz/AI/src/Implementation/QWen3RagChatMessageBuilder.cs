@@ -13,14 +13,14 @@ namespace sailflow.AI.Implementation
     /// <summary>
     /// RAG chat message builder using QWen3-Embedding for vector generation.
     /// 使用 QWen3-Embedding 生成向量的 RAG 消息构建器
-    /// 配置仅从 ai_activity_config (axConfig) 及 ai_model_provider 读取，不使用本地 AiAppConfiguration
+    /// 配置仅从 ai_act_config (axConfig) 及 ai_model_provider 读取，不使用本地 AiAppConfiguration
     /// </summary>
     internal class QWen3RagChatMessageBuilder
     {
         /// <summary>
         /// Build RAG chat message content with QWen3-Embedding for document retrieval.
         /// 使用 QWen3-Embedding 构建 RAG 消息内容。
-        /// 配置仅从节点 ai_activity_config 和 ai_model_provider 读取，不读取本地 AiAppConfiguration。
+        /// 配置仅从节点 ai_act_config 和 ai_model_provider 读取，不读取本地 AiAppConfiguration。
         /// </summary>
         internal static async Task<IList<CustomApiMessage>> BuildRagChatMessageContentAsync(
             SailClient sail,
@@ -34,7 +34,7 @@ namespace sailflow.AI.Implementation
             if (sail == null)
                 throw new ArgumentNullException(nameof(sail));
             if (string.IsNullOrWhiteSpace(axConfig?.RagEmbeddingModelId))
-                throw new InvalidOperationException("QWen3 RAG 需要在节点配置 ai_activity_config 中设置 RagEmbeddingModelId，指向 ai_model_provider 中的向量模型 (model_type=vector_model)。");
+                throw new InvalidOperationException("QWen3 RAG 需要在节点配置 ai_act_config 中设置 RagEmbeddingModelId，指向 ai_model_provider 中的向量模型 (model_type=vector_model)。");
 
             var modelManager = new AiModelProviderManager(sail);
             var provider = modelManager.GetById(axConfig.RagEmbeddingModelId);
