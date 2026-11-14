@@ -302,7 +302,12 @@ namespace sailflow.engine.Manager
             ProcessEntity processEntity,
             ProcessInstanceEntity entity)
         {
-            if (!FlowCapabilityMatch.MatchesProcess(
+            // 与 Gate/Hook 差异：创建 Hook 允许「仅 BizChannels/BizTypes」过滤。
+            // ProcessCodes/ProcessIds 皆空 → 流程维不限制（避免默认 Whitelist+空名单永远不触发）。
+            var hasProcessFilter =
+                (reg.ProcessCodes?.Length ?? 0) > 0 || (reg.ProcessIds?.Length ?? 0) > 0;
+            if (hasProcessFilter
+                && !FlowCapabilityMatch.MatchesProcess(
                     reg.Match,
                     reg.ProcessCodes,
                     reg.ProcessIds,
