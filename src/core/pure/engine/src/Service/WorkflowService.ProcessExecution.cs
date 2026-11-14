@@ -15,6 +15,7 @@ using sailflow.engine.Client;
 using mooSQL.data;
 using sailflow.engine.Runtime;
 using sailflow.engine.Hooks;
+using sailflow.engine.Actions.Assignee;
 
 namespace sailflow.engine.Service
 {
@@ -69,6 +70,22 @@ namespace sailflow.engine.Service
                 return result;
             }).ConfigureAwait(false);
         }
+
+        /// <summary>
+        /// A1：动作骨架入口——事务 + 实例锁在 Service；Action 只吃已开 kit（无事务语义）。
+        /// </summary>
+        WfExecutedResult RunAction(FlowCommandContext runner, Func<SQLBuilder, FlowCommandContext, WfExecutedResult> execute) =>
+            CommitOnSuccess(kit =>
+            {
+                using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
+                    return execute(kit, runner);
+            });
+
+        Task<WfExecutedResult> RunActionAsync(
+            FlowCommandContext runner,
+            CancellationToken cancellationToken,
+            Func<SQLBuilder, FlowCommandContext, WfExecutedResult> execute) =>
+            RunVerbAsync(runner, cancellationToken, execute);
 
         #region Process Startup
         /// <summary>
@@ -1228,137 +1245,22 @@ namespace sailflow.engine.Service
         #region Process Transfer
         /// <summary>
         /// 转办：结束本人待办 + 本节点交给他人，不推进下一节点。
+        /// A1：横切由 <see cref="TransferAction"/> / <see cref="AssigneeActionBase"/> 固化；本方法只包事务与锁。
         /// </summary>
         public WfExecutedResult TransferProcess(FlowCommandContext runner)
-            => CommitOnSuccess(kit => Transfer(kit, runner));
+            => RunAction(runner, (kit, r) => new TransferAction(Sail, kit, r).Execute());
 
         /// <summary>
-        /// Transfer async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
+        /// Transfer async：可取消等待实例锁；Action 仍同步（阶段 2 续）。
         /// </summary>
         public Task<WfExecutedResult> TransferProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
-            => RunVerbAsync(runner, cancellationToken, ExecuteTransferCore);
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new TransferAction(Sail, kit, r).Execute());
 
+        /// <summary>在已有事务 kit 上转办（调用方负责锁时可直接用；带锁请走 <see cref="TransferProcess"/>）。</summary>
         public WfExecutedResult Transfer(SQLBuilder kit, FlowCommandContext runner)
         {
             using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
-                return ExecuteTransferCore(kit, runner);
-        }
-
-        WfExecutedResult ExecuteTransferCore(SQLBuilder kit, FlowCommandContext runner)
-        {
-            var result = WfExecutedResult.Default();
-
-            try
-            {
-                if (runner == null || runner.TaskId == null)
-                {
-                    result.Status = WfExecutedStatus.Exception;
-                    result.ExceptionType = WfExceptionType.Transfer_ErrorArguments;
-                    result.Message = "Transfer requires TaskId.";
-                    return result;
-                }
-
-                var targets = FlattenTransferTargets(runner);
-                if (targets.Count == 0)
-                {
-                    result.Status = WfExecutedStatus.Exception;
-                    result.ExceptionType = WfExceptionType.Transfer_NoneTargets;
-                    result.Message = "Transfer requires NextActivityPerformers with at least one user.";
-                    return result;
-                }
-
-                var tm = Sail.ManagerFactory.Tasks;
-                var taskView = tm.GetTaskView(kit, runner.TaskId);
-                if (taskView?.ActivityInstanceId == null)
-                {
-                    result.Status = WfExecutedStatus.Exception;
-                    result.ExceptionType = WfExceptionType.Transfer_ErrorArguments;
-                    result.Message = "Transfer task not found.";
-                    return result;
-                }
-
-                var aim = Sail.ManagerFactory.Activities;
-                var activityInstance = aim.GetById(kit, taskView.ActivityInstanceId);
-                var processInstanceId = activityInstance.ProcessInstanceId;
-
-                var gateCtx = FlowCapabilityPipeline.BuildGateContext(
-                    Sail,
-                    kit,
-                    runner,
-                    processInstanceId,
-                    activityInstance,
-                    runner.TaskId,
-                    FlowOperation.Transfer);
-                if (!FlowCapabilityPipeline.TryGate(Sail, kit, gateCtx, result))
-                    return result;
-
-                var managed = tm.Transfer(kit, runner.TaskId, runner, targets);
-                if (managed.Status != WfDataManagedStatusEnum.Success)
-                {
-                    result.Status = WfExecutedStatus.Exception;
-                    result.ExceptionType = MapTransferException(managed.Message);
-                    result.Message = managed.Message;
-                    return result;
-                }
-
-                result.Status = WfExecutedStatus.Success;
-                result.Message = "Transfer succeeded.";
-
-                var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                    Sail,
-                    kit,
-                    runner,
-                    processInstanceId,
-                    activityInstance,
-                    runner.TaskId,
-                    EventFireTypeEnum.OnProcessTransferred,
-                    FlowOperation.Transfer);
-                FlowCapabilityPipeline.AfterSuccess(
-                    Sail, kit, hookCtx, EventFireTypeEnum.OnProcessTransferred);
-            }
-            catch (System.Exception e)
-            {
-                result.Status = WfExecutedStatus.Failed;
-                result.ExceptionType = WfExceptionType.Transfer_RuntimeError;
-                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                result.Message = "TransferProcess error: " + error;
-                LogManager.RecordLog(Sail, "WF_PROCESS_TRANSFER_ERROR", LogEventType.Error, LogPriority.High, runner, e);
-            }
-
-            return result;
-        }
-
-        private static PerformerList FlattenTransferTargets(FlowCommandContext runner)
-        {
-            var list = new PerformerList();
-            if (runner?.NextActivityPerformers == null)
-                return list;
-            foreach (var kv in runner.NextActivityPerformers)
-            {
-                if (kv.Value == null) continue;
-                foreach (var p in kv.Value)
-                {
-                    if (p != null && !string.IsNullOrWhiteSpace(p.UserId))
-                        list.Add(p);
-                }
-            }
-            return list;
-        }
-
-        private static string MapTransferException(string message)
-        {
-            if (string.IsNullOrEmpty(message))
-                return WfExceptionType.Transfer_RuntimeError;
-            if (message.Contains("self", StringComparison.OrdinalIgnoreCase)
-                || message.Contains("current user's", StringComparison.OrdinalIgnoreCase))
-                return WfExceptionType.Transfer_NotMineTask;
-            if (message.Contains("ready/running", StringComparison.OrdinalIgnoreCase)
-                || message.Contains("to-do", StringComparison.OrdinalIgnoreCase))
-                return WfExceptionType.Transfer_NotInRunning;
-            if (message.Contains("target", StringComparison.OrdinalIgnoreCase)
-                || message.Contains("performer", StringComparison.OrdinalIgnoreCase))
-                return WfExceptionType.Transfer_NoneTargets;
-            return WfExceptionType.Transfer_RuntimeError;
+                return new TransferAction(Sail, kit, runner).Execute();
         }
 
         #endregion

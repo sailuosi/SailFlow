@@ -1,0 +1,134 @@
+using System;
+using mooSQL.data;
+using sailflow.engine.Client;
+using sailflow.engine.Common;
+using sailflow.engine.Event;
+using sailflow.engine.Hooks;
+using sailflow.engine.Result;
+
+namespace sailflow.engine.Actions.Assignee
+{
+    /// <summary>
+    /// 转办：本节点交人、不推进下一节点。族群时序由 <see cref="AssigneeActionBase"/> 固化。
+    /// </summary>
+    public sealed class TransferAction : AssigneeActionBase
+    {
+        public TransferAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
+            : base(sail, kit, runner)
+        {
+        }
+
+        public override FlowOperation Operation => FlowOperation.Transfer;
+
+        protected override EventFireTypeEnum SuccessEvent => EventFireTypeEnum.OnProcessTransferred;
+
+        /// <summary><see cref="Manager.TaskManager.Transfer"/> 内已 FireTaskLifecycle(Entrusted/Created)。</summary>
+        protected override bool FireTaskLifecycleAfterCore => false;
+
+        protected override string ErrorLogName => "WF_PROCESS_TRANSFER_ERROR";
+
+        protected override bool TryLoadContext(out AssigneeActionContext ctx, WfExecutedResult result)
+        {
+            ctx = null!;
+            if (Runner == null || Runner.TaskId == null)
+            {
+                result.Status = WfExecutedStatus.Exception;
+                result.ExceptionType = WfExceptionType.Transfer_ErrorArguments;
+                result.Message = "Transfer requires TaskId.";
+                return false;
+            }
+
+            var targets = FlattenTransferTargets(Runner);
+            if (targets.Count == 0)
+            {
+                result.Status = WfExecutedStatus.Exception;
+                result.ExceptionType = WfExceptionType.Transfer_NoneTargets;
+                result.Message = "Transfer requires NextActivityPerformers with at least one user.";
+                return false;
+            }
+
+            var tm = Sail.ManagerFactory.Tasks;
+            var taskView = tm.GetTaskView(Kit, Runner.TaskId);
+            if (taskView?.ActivityInstanceId == null)
+            {
+                result.Status = WfExecutedStatus.Exception;
+                result.ExceptionType = WfExceptionType.Transfer_ErrorArguments;
+                result.Message = "Transfer task not found.";
+                return false;
+            }
+
+            var activityInstance = Sail.ManagerFactory.Activities.GetById(Kit, taskView.ActivityInstanceId);
+            ctx = new AssigneeActionContext
+            {
+                TaskView = taskView,
+                ActivityInstance = activityInstance,
+                ProcessInstanceId = activityInstance.ProcessInstanceId,
+                TaskId = Runner.TaskId
+            };
+            // stash targets for Core via runner already; keep local via field
+            _targets = targets;
+            return true;
+        }
+
+        PerformerList _targets;
+
+        protected override void ExecuteCore(AssigneeActionContext ctx, WfExecutedResult result)
+        {
+            var managed = Sail.ManagerFactory.Tasks.Transfer(Kit, ctx.TaskId, Runner, _targets);
+            if (managed.Status != WfDataManagedStatusEnum.Success)
+            {
+                result.Status = WfExecutedStatus.Exception;
+                result.ExceptionType = MapTransferException(managed.Message);
+                result.Message = managed.Message;
+                return;
+            }
+
+            result.Status = WfExecutedStatus.Success;
+            result.Message = "Transfer succeeded.";
+        }
+
+        protected override string FormatFailedMessage(Exception e)
+        {
+            var error = e.InnerException != null ? e.InnerException.Message : e.Message;
+            return "TransferProcess error: " + error;
+        }
+
+        protected override void ApplyFailedExceptionType(WfExecutedResult result, Exception e)
+        {
+            result.ExceptionType = WfExceptionType.Transfer_RuntimeError;
+        }
+
+        internal static PerformerList FlattenTransferTargets(FlowCommandContext runner)
+        {
+            var list = new PerformerList();
+            if (runner?.NextActivityPerformers == null)
+                return list;
+            foreach (var kv in runner.NextActivityPerformers)
+            {
+                if (kv.Value == null) continue;
+                foreach (var p in kv.Value)
+                {
+                    if (p != null && !string.IsNullOrWhiteSpace(p.UserId))
+                        list.Add(p);
+                }
+            }
+            return list;
+        }
+
+        internal static string MapTransferException(string message)
+        {
+            if (string.IsNullOrEmpty(message))
+                return WfExceptionType.Transfer_RuntimeError;
+            if (message.Contains("self", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("current user's", StringComparison.OrdinalIgnoreCase))
+                return WfExceptionType.Transfer_NotMineTask;
+            if (message.Contains("ready/running", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("to-do", StringComparison.OrdinalIgnoreCase))
+                return WfExceptionType.Transfer_NotInRunning;
+            if (message.Contains("target", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("performer", StringComparison.OrdinalIgnoreCase))
+                return WfExceptionType.Transfer_NoneTargets;
+            return WfExceptionType.Transfer_RuntimeError;
+        }
+    }
+}

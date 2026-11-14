@@ -275,15 +275,17 @@ Host `RejectOperationHandler` 可能按节点策略改走 `SendBackProcessAsync`
 
 ### 5.12 TransferProcess（转办，不推进）
 
-**不经** `WfRuntimeManager` / `NodeMediator`。
+**不经** `WfRuntimeManager` / `NodeMediator`。A1 起走动作骨架（Assignee 族）。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `TransferProcess` → `Transfer` → `ExecuteTransferCore` |
-| 读库 | `TaskManager.GetTaskView` · `ActivityInstanceManager.GetById` |
+| API | `TransferProcess` → `RunAction`（事务+锁）→ `TransferAction.Execute` |
+| 族群时序 | `AssigneeActionBase`：Load → `TryGate` → `ExecuteCore` → `OnProcessTransferred` |
+| 读库 | `TaskManager.GetTaskView` · `ActivityInstanceManager.GetById`（在 `TransferAction.TryLoadContext`） |
 | Gate | `FlowOperation.Transfer` |
-| 写库 | `TaskManager.Transfer`：原待办 `Closed` + `Update`；目标 `Insert` 同 Activity 新待办；`RefreshActivityAssignedUsersFromOpenTasks`；`CapabilityDispatcher.FireTaskLifecycle(Entrusted)` |
-| Hook | `OnProcessTransferred` |
+| 写库 | `TaskManager.Transfer`：原待办 `Closed` + `Update`；目标 `Insert` 同 Activity 新待办；`RefreshActivityAssignedUsersFromOpenTasks`；`CapabilityDispatcher.FireTaskLifecycle(Entrusted)`（仍在 Manager 内；族内不重复） |
+| Hook | `OnProcessTransferred`（族群 `OnFireFlowHook`） |
+| 设计 | [草案-非流转动作骨架.md](../草案-非流转动作骨架.md) · [progress/2026-11-15-动作骨架-A1-Transfer.md](../progress/2026-11-15-动作骨架-A1-Transfer.md) |
 
 ### 5.13 Terminate / Discard / Cancel / Suspend / Resume（短路径）
 
@@ -502,7 +504,7 @@ FlowCapabilityPipeline.AfterSuccess(/* OnActivityCreated */);
 | Jump | `CreateRuntimeInstanceJump` | `WfRuntimeManagerJump` | `NodeMediator*`（跳转目标） |
 | Close | `CreateRuntimeInstanceClose` | `WfRuntimeManagerClose` | 常 `NodeMediatorEnd` |
 | SignForward | `CreateRuntimeInstanceSignForward` | `WfRuntimeManagerSignForward` | 加签 Mediator |
-| Transfer | （无） | （无） | `TaskManager.Transfer` |
+| Transfer | （无 Runtime） | `TransferAction` / `AssigneeActionBase` | `TaskManager.Transfer` |
 
 ---
 
