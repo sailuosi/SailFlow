@@ -71,7 +71,7 @@
 | 承办 / 认领 | `Claim`（勿用 Undertake 当万能名） | 待定认领命令；**仅** `Leave=Race` | 或签多人时先独占待办，**不推进**；再 `Approve`/`Reject` | 存疑，默认不跟 AntFlow 按钮 |
 | 加批 | `SignAddNode`（候选） | 与 `SignForward` 拆语义后定 | **生成新审批节点/段**再审（AntFlow JP） | 现揉在加签，未拆 |
 | 当前节点加签 | `AddAssignee` | 可落 `SignForward` 子选项 | 不改图结构，仅当前节点增加办理人 | 语义待从 `SignForward` 拆清 |
-| 减签 | `RemoveAssignee` | 待定 | 从当前多人节点移除尚未办完的办理人 | 无 |
+| 减签 | `RemoveAssignee` | `RemoveAssigneeProcess` | 从当前多人节点移除尚未办完的办理人 | 引擎 API 已有；办理条码表未挂 |
 | 未来节点加签 | `AddFutureAssignee` | 待定 | 改尚未到达节点的预定办理人（加人） | 无 |
 | 未来节点减签 | `RemoveFutureAssignee` | 待定 | 同上，减人 | 无 |
 | 未来节点换人 | `ChangeFutureAssignee` | 待定 | 同上，替换 | 无 |

@@ -638,6 +638,72 @@ namespace sailflow.engine.Manager
             return WfDataManagedResult.Success();
         }
 
+        /// <summary>
+        /// 减签：取消指定办理人在本活动上的未办待办（Closed + Cancelled 通知），并刷新 AssignedUser*。
+        /// 至少保留一名打开待办；不推进下一节点。
+        /// </summary>
+        internal WfDataManagedResult RemoveAssignees(
+            SQLBuilder kit,
+            string taskId,
+            FlowCommandContext runner,
+            PerformerList removeTargets)
+        {
+            if (removeTargets == null || removeTargets.Count == 0)
+                return WfDataManagedResult.Exception("RemoveAssignee requires at least one target performer.");
+
+            var task = GetTask(kit, taskId);
+            if (task == null)
+                return WfDataManagedResult.Exception("RemoveAssignee task not found.");
+
+            var am = Sail.ManagerFactory.Activities;
+            var activityInstance = am.GetById(kit, task.ActivityInstanceId);
+            if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
+                && activityInstance.ActivityState != (short)ActivityStateEnum.Running)
+            {
+                return WfDataManagedResult.Exception("RemoveAssignee activity is not ready/running.");
+            }
+
+            var removeIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var p in removeTargets)
+            {
+                if (!string.IsNullOrWhiteSpace(p?.UserId))
+                    removeIds.Add(p.UserId);
+            }
+            if (removeIds.Count == 0)
+                return WfDataManagedResult.Exception("RemoveAssignee requires at least one target performer.");
+
+            var open = GetTaskListByActivity(
+                    kit,
+                    activityInstance.ProcessInstanceId,
+                    activityInstance.ActivityInstanceId)
+                .Where(t => t.TaskState == (short)TaskStateEnum.Waiting
+                    || t.TaskState == (short)TaskStateEnum.Reading)
+                .ToList();
+
+            var toClose = open
+                .Where(t => removeIds.Contains(t.AssignedUserId))
+                .ToList();
+            if (toClose.Count == 0)
+                return WfDataManagedResult.Exception("RemoveAssignee: no open task matched the targets.");
+
+            if (open.Count - toClose.Count < 1)
+                return WfDataManagedResult.Exception("RemoveAssignee cannot remove the last open assignee.");
+
+            foreach (var t in toClose)
+            {
+                t.TaskState = (short)TaskStateEnum.Closed;
+                t.EndedDateTime = DateTime.UtcNow;
+                t.EndedUserId = runner?.UserId;
+                t.EndedUserName = runner?.UserName;
+                Update(kit, t);
+                Sail.CapabilityDispatcher.FireTaskLifecycle(
+                    kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
+            }
+
+            RefreshActivityAssignedUsersFromOpenTasks(kit, activityInstance);
+            return WfDataManagedResult.Success();
+        }
+
         /// <summary>用 Waiting/Reading 待办重建活动 AssignedUserIds/Names。</summary>
         internal void RefreshActivityAssignedUsersFromOpenTasks(
             SQLBuilder kit,

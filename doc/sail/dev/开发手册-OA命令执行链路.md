@@ -139,10 +139,13 @@ WfRuntimeManagerRun.ExecuteInstanceImp
 
 ### 5.1 StartProcess（发起）
 
+Transition 族 `StartAction`（A3 续）。
+
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `WorkflowService.StartProcess` → `Start()` → `Start(kit)` → `ExecuteStartCore` |
-| Factory | `RuntimeFactory.CreateRuntimeInstanceStartup(Sail, runner, kit, ref result)` |
+| API | `StartProcess` → `RunAction` → `StartAction.Execute`；`Start(kit,…)` 同 |
+| 族群时序 | Load Runtime → Gate（补 Start 活动码）→ Execute → `OnProcessStarted`（PI 取 `ProcessInstanceIdStarted`） |
+| Factory | `CreateRuntimeInstanceStartup` |
 | Factory 读库 | `ProcessInstanceManager.GetProcessInstanceCurrent`（查重 Running）· `client.ProcessModelFactory.CreateByProcess` |
 | Gate | `FlowOperation.Start` |
 | Runtime | `WfRuntimeManagerStartup.ExecuteInstanceImp` |
@@ -151,7 +154,7 @@ WfRuntimeManagerRun.ExecuteInstanceImp
 | Start 写库 | `ProcessInstanceManager.Insert` · `ActivityInstanceManager.Insert` + `Complete`（开始节点自动完）· `ContinueForwardCurrentNode` → 首任务 AI/Task/Transition |
 | Hook | `OnProcessStarted` |
 
-`StartProcessByMessage`：`StartByMessage` → `ProcessManager.GetByMessage` 填 `ProcessId/Version` → 再走同一 `ExecuteStartCore`。
+`StartProcessByMessage`：`BindMessageStartup`（`GetByMessage` 填定义 + 系统用户）→ 同一 `StartAction`。
 
 ### 5.2 RunProcess（Approve / 通过）
 
@@ -167,7 +170,7 @@ Transition 族 `RunAction`（A3 续）。
 | Runtime | `WfRuntimeManagerRun.ExecuteInstanceImp` → §4 深链；含代码说明见 **§6** |
 | Hook | `OnProcessContinued`；若实例 Completed 另 `OnProcessCompleted` |
 
-`RunProcessAuto`：`CreateRuntimeInstanceRunAuto`（按活动实例推进，无人工任务校验）→ 同 `WfRuntimeManagerRun`，**不走 Gate**（仍 Service 直调；是否纳入骨架见草案 §8.2）。
+`RunProcessAuto`：Transition 族 `RunAutoAction`（`SkipGate=true`；仍 `FlowOperation.Run` + `OnProcessContinued`）；Async 走 Factory 预载 + `ExecuteWithRuntime`。
 
 ### 5.3 SendBackProcess（退回）
 
@@ -311,6 +314,19 @@ Transition 族 `SignForwardAction`。
 | Hook | `OnProcessTransferred`（族群 `OnFireFlowHook`） |
 | 设计 | [草案-非流转动作骨架.md](../草案-非流转动作骨架.md) · [progress/2026-11-15-动作骨架-A1-Transfer.md](../progress/2026-11-15-动作骨架-A1-Transfer.md) |
 
+### 5.12b RemoveAssigneeProcess（减签，不推进）
+
+Assignee 族 `RemoveAssigneeAction`（A4；**引擎 API 已有，Host 办理条待产品**）。
+
+| 步骤 | 类·方法 |
+|------|---------|
+| API | `RemoveAssigneeProcess` → `RunAction` → `RemoveAssigneeAction.Execute` |
+| 定位 | `TaskId` → 活动；`NextActivityPerformers` = 待移除人 |
+| Gate | `FlowOperation.RemoveAssignee` |
+| 写库 | `TaskManager.RemoveAssignees`：匹配未办待办 → `Closed` + `Cancelled`；刷新 AssignedUser*；禁减至 0 |
+| Hook | `OnAssigneeRemoved` |
+| 设计 | [progress/2026-11-15-动作骨架-A4-RemoveAssignee.md](../progress/2026-11-15-动作骨架-A4-RemoveAssignee.md) |
+
 ### 5.13 Suspend / Resume（Lifecycle 族，A2）
 
 **不经** Runtime/Mediator。走动作骨架。
@@ -333,8 +349,12 @@ Transition 族 `SignForwardAction`。
 | API | `*Process` → `RunAction` → `TerminateAction` / `DiscardAction` / `CancelAction` |
 | 定位 | Cancel/Discard：`BizPK+ProcessId(+Version)`；Terminate：`ProcessInstanceId` 或同上 |
 | Gate | `FlowOperation.Terminate` / `Discard` / `Cancel` |
-| 写库 | `ProcessInstanceManager.*(kit, …)`；Terminate 级联收口活动/待办 |
+| 写库 | `ProcessInstanceManager.*(kit, …)`；Terminate 级联收口活动/待办 + 逐条 `FireTaskLifecycle(Cancelled)` |
 | Hook | `OnProcessTerminated` / `OnProcessDiscarded` / `OnProcessCanceled` |
+
+### 5.15 Notifier / Hook 对账（防双响）
+
+命令级 AfterSuccess **只**在动作骨架各族 `OnFireFlowHook`；路径内 `FireTaskLifecycle`（Created/Completed/Cancelled/Entrusted）与节点级 Hook **保留**。全表见 [progress/2026-11-15-动作骨架-A3-SendBack.md](../progress/2026-11-15-动作骨架-A3-SendBack.md)「Notifier / Hook 对账表」。
 
 ---
 

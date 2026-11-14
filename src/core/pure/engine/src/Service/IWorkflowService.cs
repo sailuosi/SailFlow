@@ -165,6 +165,13 @@ namespace sailflow.engine.Service
         WfExecutedResult TransferProcess(FlowCommandContext runner);
         Task<WfExecutedResult> TransferProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// 减签：取消指定办理人在本节点的未办待办，不发生节点流转。
+        /// 定位活动靠 <c>TaskId</c>；移除对象取自 <c>NextActivityPerformers</c>。至少保留一名打开待办。
+        /// </summary>
+        WfExecutedResult RemoveAssigneeProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> RemoveAssigneeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
+
         //审批决策
         //Approval
         void AgreeTask(string taskId);

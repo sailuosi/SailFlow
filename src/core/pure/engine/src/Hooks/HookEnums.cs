@@ -39,6 +39,8 @@ namespace sailflow.engine.Hooks
         SignForward,
         /// <summary>转办：结束本人待办并在本节点交给他人，不推进下一节点。</summary>
         Transfer,
+        /// <summary>减签：从当前多人节点移除尚未办完的办理人待办，不推进下一节点。</summary>
+        RemoveAssignee,
         /// <summary>挂起流程实例。</summary>
         Suspend,
         /// <summary>恢复已挂起的流程实例。</summary>

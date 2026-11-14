@@ -90,110 +90,19 @@ namespace sailflow.engine.Service
             RunVerbAsync(runner, cancellationToken, execute);
 
         #region Process Startup
-        /// <summary>
-        /// 在已有事务 kit 上启动。入口请用 <see cref="StartProcess"/> 或 <c>Sail.CreateRunBuilder(...).Start()</c>。
-        /// </summary>
+        /// <summary>在已有事务 kit 上启动（带锁）。Transition 族 <see cref="StartAction"/>。</summary>
         public WfExecutedResult Start(SQLBuilder kit, FlowCommandContext runner)
         {
-            WfExecutedResult startedResult = WfExecutedResult.Default();
-            try
-            {
-                using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
-                    startedResult = ExecuteStartCore(kit, runner);
-            }
-            catch (System.Exception e)
-            {
-                startedResult.Status = WfExecutedStatus.Failed;
-                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                startedResult.Message = Sail.Messages.GetEngineMessage("workflowservice.startprocess.error", error);
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_START_ERROR, LogEventType.Error, LogPriority.High, runner, e);
-            }
-            return startedResult;
+            using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
+                return new StartAction(Sail, kit, runner).Execute();
         }
 
-        async Task<WfExecutedResult> StartAsync(SQLBuilder kit, FlowCommandContext runner, CancellationToken cancellationToken)
-        {
-            WfExecutedResult startedResult = WfExecutedResult.Default();
-            try
-            {
-                using (await InstanceExecutionLock.AcquireAsync(ResolveInstanceLockKey(runner), cancellationToken)
-                    .ConfigureAwait(false))
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    startedResult = ExecuteStartCore(kit, runner);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (System.Exception e)
-            {
-                startedResult.Status = WfExecutedStatus.Failed;
-                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                startedResult.Message = Sail.Messages.GetEngineMessage("workflowservice.startprocess.error", error);
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_START_ERROR, LogEventType.Error, LogPriority.High, runner, e);
-            }
-            return startedResult;
-        }
-
-        WfExecutedResult ExecuteStartCore(SQLBuilder kit, FlowCommandContext runner)
-        {
-            var startedResult = WfExecutedResult.Default();
-            var runtimeInstance = Runtimes.CreateRuntimeInstanceStartup(runner, kit, ref startedResult);
-
-            if (startedResult.Status == WfExecutedStatus.Exception)
-                return startedResult;
-
-            var gateCtx = FlowCapabilityPipeline.BuildGateContext(
-                Sail,
-                kit,
-                runner,
-                null,
-                runtimeInstance.RunningActivityInstance,
-                null,
-                FlowOperation.Start);
-            var startActivity = runtimeInstance.ProcessModel?.GetStartActivity();
-            if (startActivity != null)
-            {
-                gateCtx.ActivityId = startActivity.ActivityId;
-                gateCtx.ActivityCode = startActivity.ActivityCode;
-            }
-
-            if (!FlowCapabilityPipeline.TryGate(Sail, kit, gateCtx, startedResult))
-                return startedResult;
-
-            runtimeInstance.Execute(kit);
-            startedResult = runtimeInstance.WfExecutedResult;
-            if (startedResult.Status == WfExecutedStatus.Success)
-            {
-                var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                    Sail, kit, runner,
-                    startedResult.ProcessInstanceIdStarted,
-                    runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.TaskId,
-                    EventFireTypeEnum.OnProcessStarted,
-                    FlowOperation.Start);
-                FlowCapabilityPipeline.AfterSuccess(
-                    Sail, kit, hookCtx, EventFireTypeEnum.OnProcessStarted);
-            }
-            return startedResult;
-        }
-
-        /// <summary>
-        /// Start process
-        /// </summary>
+        /// <summary>Start process — Transition 族 <see cref="StartAction"/>。</summary>
         public WfExecutedResult StartProcess(FlowCommandContext runner)
-            => CommitOnSuccess(kit => Start(kit, runner));
+            => RunAction(runner, (kit, r) => new StartAction(Sail, kit, r).Execute());
 
-        /// <summary>
-        /// Start process async：可取消等待实例锁；Mediator 办理仍同步（阶段 2）。
-        /// </summary>
-        public async Task<WfExecutedResult> StartProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return await CommitOnSuccessAsync(kit => StartAsync(kit, runner, cancellationToken)).ConfigureAwait(false);
-        }
+        public Task<WfExecutedResult> StartProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new StartAction(Sail, kit, r).Execute());
 
         #endregion
 
@@ -205,40 +114,33 @@ namespace sailflow.engine.Service
 
         public WfExecutedResult StartByMessage(SQLBuilder kit, FlowCommandContext runner)
         {
-            var pm = Sail.ManagerFactory.Processes;
-            var entity = pm.GetByMessage(runner.MessageTopic);
+            BindMessageStartup(runner);
+            return Start(kit, runner);
+        }
+
+        /// <summary>消息启动：解析定义后走同一 <see cref="StartAction"/>。</summary>
+        public WfExecutedResult StartProcessByMessage(FlowCommandContext runner)
+            => RunAction(runner, (kit, r) =>
+            {
+                BindMessageStartup(r);
+                return new StartAction(Sail, kit, r).Execute();
+            });
+
+        public Task<WfExecutedResult> StartProcessByMessageAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) =>
+            {
+                BindMessageStartup(r);
+                return new StartAction(Sail, kit, r).Execute();
+            });
+
+        void BindMessageStartup(FlowCommandContext runner)
+        {
+            var entity = Sail.ManagerFactory.Processes.GetByMessage(runner.MessageTopic);
             runner.ProcessId = entity.ProcessId;
             runner.ProcessCode = entity.ProcessCode;
             runner.Version = entity.Version;
             runner.UserId = WfDefine.SYSTEM_INTERNAL_USER_ID;
             runner.UserName = WfDefine.SYSTEM_INTERNAL_USER_NAME;
-            return Start(kit, runner);
-        }
-
-        /// <summary>
-        /// Start by Message
-        /// 流程流转
-        /// </summary>
-        public WfExecutedResult StartProcessByMessage(FlowCommandContext runner)
-            => CommitOnSuccess(kit => StartByMessage(kit, runner));
-
-        /// <summary>
-        /// Start by Message Async：可取消等待实例锁；Mediator 仍同步（阶段 2 续）。
-        /// </summary>
-        public async Task<WfExecutedResult> StartProcessByMessageAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return await CommitOnSuccessAsync(async kit =>
-            {
-                var pm = Sail.ManagerFactory.Processes;
-                var entity = pm.GetByMessage(runner.MessageTopic);
-                runner.ProcessId = entity.ProcessId;
-                runner.ProcessCode = entity.ProcessCode;
-                runner.Version = entity.Version;
-                runner.UserId = WfDefine.SYSTEM_INTERNAL_USER_ID;
-                runner.UserName = WfDefine.SYSTEM_INTERNAL_USER_NAME;
-                return await StartAsync(kit, runner, cancellationToken).ConfigureAwait(false);
-            }).ConfigureAwait(false);
         }
 
         #endregion
@@ -285,110 +187,32 @@ namespace sailflow.engine.Service
         #endregion
 
         #region Process Run Auto
-        /// <summary>
-        /// Run Automatically
-        /// 自动运行
-        /// </summary>
-
+        /// <summary>在已有事务 kit 上自动推进（带锁，无 Gate）。Transition 族 <see cref="RunAutoAction"/>。</summary>
         public WfExecutedResult RunAuto(SQLBuilder kit, FlowCommandContext runner)
         {
-            WfExecutedResult runAppResult = WfExecutedResult.Default();
-            try
-            {
-                using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
-                    runAppResult = ExecuteRunAutoCore(kit, runner);
-            }
-            catch (System.Exception e)
-            {
-                runAppResult.Status = WfExecutedStatus.Failed;
-                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                runAppResult.Message = Sail.Messages.GetEngineMessage("workflowservice.runprocess.error", error);
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
-            }
-            return runAppResult;
+            using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
+                return new RunAutoAction(Sail, kit, runner).Execute();
         }
 
-        async Task<WfExecutedResult> RunAutoAsync(SQLBuilder kit, FlowCommandContext runner, CancellationToken cancellationToken)
+        public WfExecutedResult RunProcessAuto(FlowCommandContext runner)
+            => RunAction(runner, (kit, r) => new RunAutoAction(Sail, kit, r).Execute());
+
+        /// <summary>RunAuto async：Factory 预载后走 <see cref="TransitionActionBase.ExecuteWithRuntime"/>（仍 SkipGate）。</summary>
+        public async Task<WfExecutedResult> RunProcessAutoAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
         {
-            WfExecutedResult runAppResult = WfExecutedResult.Default();
-            try
+            cancellationToken.ThrowIfCancellationRequested();
+            return await CommitOnSuccessAsync(async kit =>
             {
                 using (await InstanceExecutionLock.AcquireAsync(ResolveInstanceLockKey(runner), cancellationToken)
                     .ConfigureAwait(false))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    runAppResult = await ExecuteRunAutoCoreAsync(kit, runner, cancellationToken).ConfigureAwait(false);
+                    var (runtime, factoryResult) = await Runtimes
+                        .CreateRuntimeInstanceRunAutoAsync(runner, kit, cancellationToken)
+                        .ConfigureAwait(false);
+                    return new RunAutoAction(Sail, kit, runner).ExecuteWithRuntime(runtime, factoryResult);
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (System.Exception e)
-            {
-                runAppResult.Status = WfExecutedStatus.Failed;
-                var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-                runAppResult.Message = Sail.Messages.GetEngineMessage("workflowservice.runprocess.error", error);
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, e);
-            }
-            return runAppResult;
-        }
-
-        WfExecutedResult ExecuteRunAutoCore(SQLBuilder kit, FlowCommandContext runner)
-        {
-            var runAppResult = WfExecutedResult.Default();
-            var runtimeInstance = Runtimes.CreateRuntimeInstanceRunAuto(runner, kit, ref runAppResult);
-            return FinishRunAutoCore(kit, runner, runtimeInstance, runAppResult);
-        }
-
-        async Task<WfExecutedResult> ExecuteRunAutoCoreAsync(SQLBuilder kit, FlowCommandContext runner, CancellationToken cancellationToken)
-        {
-            var (runtimeInstance, runAppResult) = await Runtimes
-                .CreateRuntimeInstanceRunAutoAsync(runner, kit, cancellationToken)
-                .ConfigureAwait(false);
-            return FinishRunAutoCore(kit, runner, runtimeInstance, runAppResult);
-        }
-
-        WfExecutedResult FinishRunAutoCore(
-            SQLBuilder kit,
-            FlowCommandContext runner,
-            WfRuntimeManager runtimeInstance,
-            WfExecutedResult runAppResult)
-        {
-            if (runAppResult.Status == WfExecutedStatus.Exception)
-                return runAppResult;
-
-            runtimeInstance.Execute(kit);
-            runAppResult = runtimeInstance.WfExecutedResult;
-            if (runAppResult.Status == WfExecutedStatus.Success)
-            {
-                var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                    Sail, kit, runner,
-                    runtimeInstance.ProcessInstanceId,
-                    runtimeInstance.RunningActivityInstance,
-                    runtimeInstance.TaskView?.TaskId,
-                    EventFireTypeEnum.OnProcessContinued,
-                    FlowOperation.Run);
-                FlowCapabilityPipeline.AfterSuccess(
-                    Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
-            }
-            return runAppResult;
-        }
-
-        /// <summary>
-        /// Run process auto
-        /// 流程执行自动
-        /// </summary>
-        public WfExecutedResult RunProcessAuto(FlowCommandContext runner)
-            => CommitOnSuccess(kit => RunAuto(kit, runner));
-
-        /// <summary>
-        /// Run process auto async：可取消等待实例锁；Factory 预载 IO-await；Mediator Execute 仍同步（阶段 3 首刀）。
-        /// </summary>
-        public async Task<WfExecutedResult> RunProcessAutoAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return await CommitOnSuccessAsync(kit => RunAutoAsync(kit, runner, cancellationToken)).ConfigureAwait(false);
+            }).ConfigureAwait(false);
         }
 
         #endregion
@@ -560,6 +384,13 @@ namespace sailflow.engine.Service
                 return new TransferAction(Sail, kit, runner).Execute();
         }
 
+        /// <summary>A4：减签（Assignee 族）；事务+锁由 <see cref="RunAction"/>。Host 办理条待产品码表。</summary>
+        public WfExecutedResult RemoveAssigneeProcess(FlowCommandContext runner)
+            => RunAction(runner, (kit, r) => new RemoveAssigneeAction(Sail, kit, r).Execute());
+
+        public Task<WfExecutedResult> RemoveAssigneeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new RemoveAssigneeAction(Sail, kit, r).Execute());
+
         #endregion
 
         #region Process Resume Suspend Cancel Discard Terminate
@@ -605,7 +436,7 @@ namespace sailflow.engine.Service
         public Task<WfExecutedResult> DiscardProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunActionAsync(runner, cancellationToken, (kit, r) => new DiscardAction(Sail, kit, r).Execute());
 
-        /// <summary>终止（Lifecycle 族）；级联收口待办仍在 PIM.Terminate(kit,…)。</summary>
+        /// <summary>终止（Lifecycle 族）；PIM 级联收口待办并发 Cancelled Notifier。</summary>
         public WfExecutedResult TerminateProcess(FlowCommandContext terminator)
             => RunAction(terminator, (kit, r) => new TerminateAction(Sail, kit, r).Execute());
 

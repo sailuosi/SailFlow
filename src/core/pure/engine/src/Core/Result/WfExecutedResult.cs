@@ -198,6 +198,13 @@ namespace sailflow.engine.Result
         public const string Transfer_NotInRunning = "Transfer_NotInRunning";
         public const string Transfer_RuntimeError = "Transfer_RuntimeError";
 
+        // 减签
+        public const string RemoveAssignee_ErrorArguments = "RemoveAssignee_ErrorArguments";
+        public const string RemoveAssignee_NoneTargets = "RemoveAssignee_NoneTargets";
+        public const string RemoveAssignee_NotInRunning = "RemoveAssignee_NotInRunning";
+        public const string RemoveAssignee_LastAssignee = "RemoveAssignee_LastAssignee";
+        public const string RemoveAssignee_RuntimeError = "RemoveAssignee_RuntimeError";
+
         // 挂起 / 恢复
         public const string Suspend_ErrorArguments = "Suspend_ErrorArguments";
         public const string Suspend_RuntimeError = "Suspend_RuntimeError";

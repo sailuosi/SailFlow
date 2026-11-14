@@ -533,7 +533,7 @@ namespace sailflow.engine.Manager
                         entity = GetById(kit, runner.ProcessInstanceId);
                     else
                         entity = GetProcessInstanceLatest(kit, runner.BizPK, runner.ProcessId, runner.Version);
-                    var ok = Terminate(kit, entity, runner.UserId, runner.UserName);
+                    var ok = Terminate(kit, entity, runner);
                     kit.commit();
                     return ok;
                 }
@@ -545,9 +545,15 @@ namespace sailflow.engine.Manager
         }
 
         internal bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, string userId, string userName)
+            => Terminate(kit, entity, new FlowCommandContext { UserId = userId, UserName = userName });
+
+        internal bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, FlowCommandContext runner)
         {
             if (entity == null)
                 throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error"));
+
+            var userId = runner?.UserId;
+            var userName = runner?.UserName;
 
             if (entity.ProcessState == (int)ProcessStateEnum.Running
                 || entity.ProcessState == (int)ProcessStateEnum.Ready
@@ -575,6 +581,18 @@ namespace sailflow.engine.Manager
                     })
                     .doUpdate();
 
+                // 先读出待取消待办，批量 update 后再发 Cancelled（与 Withdraw/SendBack 同旁路）
+                var openTaskClip = kit.useClip();
+                openTaskClip.from<TaskEntity>(out var ot)
+                    .where(() => ot.ProcessInstanceId, entity.ProcessInstanceId)
+                    .whereIn(() => ot.TaskState, new short?[]
+                    {
+                        (short)TaskStateEnum.Waiting,
+                        (short)TaskStateEnum.Reading
+                    });
+                var openTasks = openTaskClip.select(ot).queryList()?.ToList()
+                    ?? new List<TaskEntity>();
+
                 var taskClip = kit.useClip();
                 taskClip.setTable<TaskEntity>(out var t)
                     .set(() => t.TaskState, (short)TaskStateEnum.Canceled)
@@ -589,6 +607,17 @@ namespace sailflow.engine.Manager
                         (short)TaskStateEnum.Reading
                     })
                     .doUpdate();
+
+                foreach (var task in openTasks)
+                {
+                    task.TaskState = (short)TaskStateEnum.Canceled;
+                    task.RecordStatusInvalid = 1;
+                    task.EndedDateTime = DateTime.UtcNow;
+                    task.EndedUserId = userId;
+                    task.EndedUserName = userName;
+                    Sail.CapabilityDispatcher.FireTaskLifecycle(
+                        kit, task, activityInstance: null, runner, TaskNotifyKind.Cancelled);
+                }
 
                 return true;
             }

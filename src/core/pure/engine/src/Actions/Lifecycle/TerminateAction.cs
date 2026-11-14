@@ -61,8 +61,8 @@ namespace sailflow.engine.Actions.Lifecycle
 
         protected override void ExecuteCore(LifecycleActionContext ctx, WfExecutedResult result)
         {
-            SailFactoryAccess.Managers(Sail).ProcessInstances.Terminate(
-                Kit, ctx.ProcessInstance, Runner.UserId, Runner.UserName);
+            // PIM 内级联 Cancelled Notifier；命令级 OnProcessTerminated 仍由族基类 Hook
+            SailFactoryAccess.Managers(Sail).ProcessInstances.Terminate(Kit, ctx.ProcessInstance, Runner);
             result.Status = WfExecutedStatus.Success;
             result.Message = "Terminate succeeded.";
             result.ProcessInstanceIdStarted = ctx.ProcessInstanceId;

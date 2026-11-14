@@ -96,6 +96,10 @@ namespace sailflow.engine.Event
 
         OnProcessTerminated = 39,
 
+        OnAssigneeRemoving = 104,
+
+        OnAssigneeRemoved = 105,
+
         OnActivityCreated = 40,
 
         OnActivityExecuting = 41,

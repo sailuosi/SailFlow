@@ -37,7 +37,14 @@
 - 走 **Gate + 成功 Hook**（旧路径无）
 - 写库用**同一 kit**（旧 `PIM.Cancel/Discard/Terminate(runner)` 曾自开连接）
 
+## 续：Terminate 级联待办通知（同日）
+
+| 项 | 说明 |
+|----|------|
+| `PIM.Terminate(kit, entity, runner)` | 批量收口前读出 Waiting/Reading；update 后逐条 `FireTaskLifecycle(Cancelled)` |
+| `TerminateAction` | 传完整 `Runner`（不再只传 UserId/Name） |
+| 兼容 | `Terminate(kit, entity, userId, userName)` 仍保留，内部构造薄 Runner |
+
 ## 未做
 
-- 产品码表默认开（仍默认关）  
-- Terminate 级联待办的 TaskLifecycle 通知对账
+- 产品码表默认开（仍默认关）

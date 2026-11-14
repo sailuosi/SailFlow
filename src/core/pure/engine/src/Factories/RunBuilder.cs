@@ -168,6 +168,9 @@ public sealed class RunBuilder
 
     public WfExecutedResult Transfer() => Service().TransferProcess(Build());
 
+    /// <summary>减签：需 TaskId + NextActivityPerformers（待移除办理人）。</summary>
+    public WfExecutedResult RemoveAssignee() => Service().RemoveAssigneeProcess(Build());
+
     /// <summary>挂起：需已设 <c>TaskId</c>。</summary>
     public WfExecutedResult Suspend() => Service().SuspendProcess(Build());
 
