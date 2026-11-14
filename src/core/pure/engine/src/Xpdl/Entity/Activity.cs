@@ -87,6 +87,12 @@ namespace sailflow.engine.Xpdl
         /// </summary>
         public string LeaveJudgeParams { get; set; }
 
+        /// <summary>节点业务状态码（BPMN sf:bizState；引擎不解释）。</summary>
+        public int BizState { get; set; }
+
+        /// <summary>节点业务编码（BPMN sf:bizCode；与实例 BizCode 不同命名空间）。</summary>
+        public string BizCode { get; set; }
+
         /// <summary>
         /// Skip Detail
         /// </summary>

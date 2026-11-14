@@ -19,7 +19,7 @@ public sealed class NextStepRouteContext
     public string CurrentActivityCode { get; set; }
     public string ActivityInstanceId { get; set; }
     public string ProcessInstanceId { get; set; }
-    public string AppInstanceId { get; set; }
+    public string BizPK { get; set; }
     public string UserId { get; set; }
 
     /// <summary>可写条件袋（Prepare）；Filter 建议只读。</summary>

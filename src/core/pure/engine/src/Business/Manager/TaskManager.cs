@@ -219,20 +219,20 @@ namespace sailflow.engine.Manager
         /// Based on the application instance and process GUID, process the user Id to obtain the task list
         /// 根据应用实例、流程GUID，办理用户Id获取任务列表
         /// </summary>
-        internal TaskViewEntity GetTaskOfMine(string appInstanceId, string processId, string userId)
+        internal TaskViewEntity GetTaskOfMine(string bizPK, string processId, string userId)
         {
             var kit = Sail.UseRunSQL();
-            return GetTaskOfMine(kit, appInstanceId, processId, userId);
+            return GetTaskOfMine(kit, bizPK, processId, userId);
         }
 
         internal TaskViewEntity GetTaskOfMine(SQLBuilder kit,
-            string appInstanceId,
+            string bizPK,
             string processId,
             string userId)
         {
             var clip = kit.useClip();
             clip.from<TaskViewEntity>(out var t)
-                .where(() => t.AppInstanceId, appInstanceId)
+                .where(() => t.BizPK, bizPK)
                 .where(() => t.ProcessId, processId)
                 .where(() => t.AssignedUserId, userId)
                 .where(() => t.ProcessState, (short)2)
@@ -249,7 +249,7 @@ namespace sailflow.engine.Manager
             {
                 var message = Sail.Messages.GetEngineMessage("taskmanager.gettaskofmine.error");
                 throw new WorkflowException(
-                    string.Format("{0}，AppInstanceId: {1}", message, appInstanceId.ToString())
+                    string.Format("{0}，BizPK: {1}", message, bizPK.ToString())
                 );
             }
             if (list.Count > 1)
@@ -273,7 +273,7 @@ namespace sailflow.engine.Manager
         {
             if (runner.TaskId != null)
                 return GetTaskView(kit, runner.TaskId);
-            return GetTaskOfMine(kit, runner.AppInstanceId, runner.ProcessId, runner.UserId);
+            return GetTaskOfMine(kit, runner.BizPK, runner.ProcessId, runner.UserId);
         }
 
         /// <summary>
@@ -374,8 +374,8 @@ namespace sailflow.engine.Manager
         {
             var entity = new TaskEntity
             {
-                AppName = activityInstance.AppName,
-                AppInstanceId = activityInstance.AppInstanceId,
+                BizChannel = activityInstance.BizChannel,
+                BizPK = activityInstance.BizPK,
                 ActivityInstanceId = activityInstance.ActivityInstanceId,
                 ProcessInstanceId = activityInstance.ProcessInstanceId,
                 ActivityId = activityInstance.ActivityId,
@@ -696,8 +696,8 @@ namespace sailflow.engine.Manager
             var originalTask = GetTask(kit, taskId);
             var newTask = new TaskEntity
             {
-                AppInstanceId = originalTask.AppInstanceId,
-                AppName = originalTask.AppName,
+                BizPK = originalTask.BizPK,
+                BizChannel = originalTask.BizChannel,
                 ProcessInstanceId = originalTask.ProcessInstanceId,
                 ProcessId = originalTask.ProcessId,
                 ActivityId = originalTask.ActivityId,

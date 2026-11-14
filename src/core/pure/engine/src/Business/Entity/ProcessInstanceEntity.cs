@@ -17,16 +17,24 @@ namespace sailflow.engine.Entity
         public string ProcessInstanceId { get; set; }
         [SooColumn(Name = "pi_process_id", Length = 64, Tag = "sail.id")]
         public string ProcessId { get; set; }
+        /// <summary>流程名称（定义名副本；不是实例标题）。</summary>
         [SooColumn(Name = "pi_name", Length = 255)]
         public string ProcessName { get; set; }
+        /// <summary>流程实例标题。</summary>
+        [SooColumn(Name = "pi_title", Length = 255)]
+        public string Title { get; set; }
         [SooColumn(Name = "pi_version", Length = 32)]
         public string Version { get; set; }
-        [SooColumn(Name = "pi_app_name", Length = 128)]
-        public string AppName { get; set; }
-        [SooColumn(Name = "pi_app_instance_id", Length = 128)]
-        public string AppInstanceId { get; set; }
-        [SooColumn(Name = "pi_app_instance_code", Length = 64)]
-        public string AppInstanceCode { get; set; }
+        [SooColumn(Name = "pi_biz_type", Length = 64)]
+        public string BizType { get; set; }
+        [SooColumn(Name = "pi_biz_channel", Length = 128)]
+        public string BizChannel { get; set; }
+        [SooColumn(Name = "pi_biz_pk", Length = 128)]
+        public string BizPK { get; set; }
+        [SooColumn(Name = "pi_biz_code", Length = 64)]
+        public string BizCode { get; set; }
+        [SooColumn(Name = "pi_biz_name", Length = 128)]
+        public string BizName { get; set; }
         [SooColumn(Name = "pi_process_state")]
         public short? ProcessState { get; set; }
         [SooColumn(Name = "pi_sub_proc_type")]

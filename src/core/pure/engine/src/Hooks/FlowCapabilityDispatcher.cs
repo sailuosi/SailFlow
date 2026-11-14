@@ -398,8 +398,8 @@ namespace sailflow.engine.Hooks
         {
             return new FlowHookContext
             {
-                AppName = runner?.AppName,
-                AppInstanceId = runner?.AppInstanceId,
+                BizChannel = runner?.BizChannel,
+                BizPK = runner?.BizPK,
                 ProcessId = runner?.ProcessId ?? activityInstance?.ProcessId,
                 Version = runner?.Version,
                 ProcessInstanceId = processInstanceId,
@@ -465,8 +465,8 @@ namespace sailflow.engine.Hooks
             FlowOperation operation) =>
             new()
             {
-                AppName = task.AppName,
-                AppInstanceId = task.AppInstanceId,
+                BizChannel = task.BizChannel,
+                BizPK = task.BizPK,
                 ProcessId = task.ProcessId,
                 ProcessInstanceId = task.ProcessInstanceId,
                 ActivityId = task.ActivityId,
@@ -485,8 +485,8 @@ namespace sailflow.engine.Hooks
             TaskNotifyKind kind) =>
             new()
             {
-                AppName = task.AppName,
-                AppInstanceId = task.AppInstanceId,
+                BizChannel = task.BizChannel,
+                BizPK = task.BizPK,
                 ProcessId = task.ProcessId,
                 ProcessInstanceId = task.ProcessInstanceId,
                 ActivityId = task.ActivityId,

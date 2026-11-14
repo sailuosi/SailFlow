@@ -57,7 +57,7 @@
   "taskmanager.entrust.error": "任务委托失败,请查看异常信息",
   "transitioninstancemanager.entrust.error": "没有流程结束的流转记录!",
   "transitioninstancemanager.getlasttasktransition.error": "没有符合条件的最后流转任务的实例数据,请查看流程其它信息!",
-  "nextstepparser.getnextactivityroleusertree.error": "应用(AppInstanceId)或流程(ProcessId)参数为空，请重新传入正确参数!",
+  "nextstepparser.getnextactivityroleusertree.error": "应用(BizPK)或流程(ProcessId)参数为空，请重新传入正确参数!",
   "nextstepparser.getnextactivityroleusertree.notrunning.error": "不是运行状态的任务,无法流转!",
   "previousstepchecker.getpreviousactivitylist.error": "无效的节点CompleteOrder数值!",
   "nodemediator.ContinueForwardCurrentNode.warn": "没有匹配的后续流转节点,流程虽然能处理当前节点,但是无法流转到下一步!",

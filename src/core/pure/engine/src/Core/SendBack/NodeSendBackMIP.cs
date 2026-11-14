@@ -53,9 +53,9 @@ namespace sailflow.engine.Runtime
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            var rollbackPreviousActivityInstance = base.ActivityInstanceManager.CreateBackwardActivityInstanceObject(processInstance.AppName,
-                processInstance.AppInstanceId,
-                processInstance.AppInstanceCode,
+            var rollbackPreviousActivityInstance = base.ActivityInstanceManager.CreateBackwardActivityInstanceObject(processInstance.BizChannel,
+                processInstance.BizPK,
+                processInstance.BizCode,
                 processInstance.ProcessInstanceId,
                 processInstance.ProcessId,
                 this.SendBackOperation.BackwardToTaskActivity,

@@ -469,10 +469,10 @@ namespace sailflow.engine.Service
         /// Get process instance by app instance id
         /// 获取流程实例数据
         /// </summary>
-        public IList<ProcessInstanceEntity> GetProcessInstanceListByAppInstance(string appInstanceId)
+        public IList<ProcessInstanceEntity> GetProcessInstanceListByBizPK(string bizPK)
         {
             var pim = Managers.ProcessInstances;
-            var list = pim.GetProcessInstance(appInstanceId).ToList();
+            var list = pim.GetProcessInstance(bizPK).ToList();
             return list;
         }
 
@@ -493,7 +493,7 @@ namespace sailflow.engine.Service
         public ProcessInstanceEntity GetRunningProcessInstance(FlowCommandContext runner)
         {
             var pim = Managers.ProcessInstances;
-            var entity = pim.GetRunningProcessInstance(runner.AppInstanceId, runner.ProcessId);
+            var entity = pim.GetRunningProcessInstance(runner.BizPK, runner.ProcessId);
             return entity;
         }
 
@@ -856,10 +856,10 @@ namespace sailflow.engine.Service
         /// Get task view
         /// 获取任务视图
         /// </summary>
-        public TaskViewEntity GetTaskView(string appInstanceId, string processId, string userId)
+        public TaskViewEntity GetTaskView(string bizPK, string processId, string userId)
         {
             var tm = Sail.ManagerFactory.Tasks;
-            return tm.GetTaskOfMine(appInstanceId, processId, userId);
+            return tm.GetTaskOfMine(bizPK, processId, userId);
         }
         #endregion
     }

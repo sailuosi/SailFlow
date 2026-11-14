@@ -18,14 +18,20 @@ namespace sailflow.engine.Entity
         [SooColumn(Name = "tk_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64)]
         public string TaskId { get; set; }
 
-        [SooColumn(Name = "tk_app_name")]
-        public string AppName { get; set; }
+        [SooColumn(Name = "tk_biz_channel")]
+        public string BizChannel { get; set; }
 
-        [SooColumn(Name = "tk_app_instance_id")]
-        public string AppInstanceId { get; set; }
+        [SooColumn(Name = "tk_biz_pk")]
+        public string BizPK { get; set; }
 
-        [SooColumn(Name = "pi_app_instance_code")]
-        public string AppInstanceCode { get; set; }
+        [SooColumn(Name = "pi_biz_code")]
+        public string BizCode { get; set; }
+
+        [SooColumn(Name = "pi_title")]
+        public string Title { get; set; }
+
+        [SooColumn(Name = "pi_name")]
+        public string ProcessName { get; set; }
 
         [SooColumn(Name = "tk_proc_instance_id", Length = 64)]
         public string ProcessInstanceId { get; set; }

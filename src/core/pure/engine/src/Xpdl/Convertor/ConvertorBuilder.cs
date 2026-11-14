@@ -193,6 +193,11 @@ namespace sailflow.engine.Xpdl
             mActivityEntity.ActivityCode = XMLHelper.GetXmlAttribute(XMLNode, "sf:code");
             mActivityEntity.ActivityUrl = XMLHelper.GetXmlAttribute(XMLNode, "sf:url");
 
+            var bizStateRaw = XMLHelper.GetXmlAttribute(XMLNode, "sf:bizState");
+            if (!string.IsNullOrWhiteSpace(bizStateRaw) && int.TryParse(bizStateRaw, out var bizState))
+                mActivityEntity.BizState = bizState;
+            mActivityEntity.BizCode = XMLHelper.GetXmlAttribute(XMLNode, "sf:bizCode");
+
             //描述信息
             //Description
             XmlNode descNode = XMLNode.SelectSingleNode("documentation");

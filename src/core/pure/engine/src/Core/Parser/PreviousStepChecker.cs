@@ -304,7 +304,7 @@ namespace sailflow.engine.Runtime
         {
             hasPassedGatewayNode = false;
             var tim = Sail.ManagerFactory.Transitions;
-            var transitionList = tim.GetTransitionInstanceListByProcessInstance(runningNode.AppInstanceId,
+            var transitionList = tim.GetTransitionInstanceListByProcessInstance(runningNode.BizPK,
                 runningNode.ProcessId,
                 runningNode.ProcessInstanceId).ToList();
 

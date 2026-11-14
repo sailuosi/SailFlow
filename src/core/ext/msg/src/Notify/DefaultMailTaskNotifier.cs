@@ -32,7 +32,7 @@ namespace sailflow.msg.Notify
                 return;
 
             var title = _options.Subject;
-            var body = string.Format(_options.BodyTemplate, _options.AppBaseUrl, ctx.AppName, ctx.AppInstanceId);
+            var body = string.Format(_options.BodyTemplate, _options.AppBaseUrl, ctx.BizChannel, ctx.BizPK);
 
             var emailSendUtility = new EMailSendUtility(_client, _options, ctx.TaskId);
             await emailSendUtility.SendEMailAsync(title, body, user.EMail).ConfigureAwait(false);

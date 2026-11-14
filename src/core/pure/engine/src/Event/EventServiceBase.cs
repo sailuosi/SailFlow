@@ -100,7 +100,7 @@ namespace sailflow.engine.Event
                 processVariable = new ProcessVariableEntity
                 {
                     VariableScope = ProcessVariableScopeEnum.Process.ToString(),
-                    AppInstanceId = this.EventContext.AppInstanceId,
+                    BizPK = this.EventContext.BizPK,
                     ProcessId = this.EventContext.ProcessId,
                     ProcessInstanceId = this.EventContext.ProcessInstanceId,
                     ActivityInstanceId = this.EventContext.ActivityInstanceId,
@@ -114,7 +114,7 @@ namespace sailflow.engine.Event
                 processVariable = new ProcessVariableEntity
                 {
                     VariableScope = ProcessVariableScopeEnum.Activity.ToString(),
-                    AppInstanceId = this.EventContext.AppInstanceId,
+                    BizPK = this.EventContext.BizPK,
                     ProcessId = this.EventContext.ProcessId,
                     ProcessInstanceId = this.EventContext.ProcessInstanceId,
                     ActivityInstanceId = this.EventContext.ActivityInstanceId,

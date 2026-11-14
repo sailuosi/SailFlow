@@ -162,7 +162,7 @@ namespace sailflow.engine.Pattern
 
                 var eventContext = new EventContext
                 {
-                    AppInstanceId = ActivityForwardContext.ProcessInstance.AppInstanceId,
+                    BizPK = ActivityForwardContext.ProcessInstance.BizPK,
                     ProcessId = ActivityForwardContext.ProcessInstance.ProcessId,
                     ProcessInstanceId = ActivityForwardContext.ProcessInstance.ProcessInstanceId,
                     ActivityId = fromActivityId,
@@ -247,6 +247,14 @@ namespace sailflow.engine.Pattern
                 ActivityForwardContext.TaskId,
                 eventType,
                 FlowOperation.Run);
+            var def = ActivityForwardContext.CurrentActivity
+                ?? LinkContext?.CurrentActivity
+                ?? LinkContext?.FromActivity;
+            if (def != null)
+            {
+                hookCtx.ActivityBizState = def.BizState;
+                hookCtx.ActivityBizCode = def.BizCode;
+            }
             FlowCapabilityPipeline.AfterSuccess(Sail, Kit, hookCtx, eventType);
         }
 
@@ -1055,9 +1063,9 @@ namespace sailflow.engine.Pattern
             ProcessInstanceEntity processInstance,
             FlowCommandContext runner)
         {
-            ActivityInstanceEntity entity = ActivityInstanceManager.CreateActivityInstanceObject(processInstance.AppName,
-                processInstance.AppInstanceId,
-                processInstance.AppInstanceCode,
+            ActivityInstanceEntity entity = ActivityInstanceManager.CreateActivityInstanceObject(processInstance.BizChannel,
+                processInstance.BizPK,
+                processInstance.BizCode,
                 processInstance.ProcessId,
                 processInstance.ProcessInstanceId,
                 activity,
@@ -1235,9 +1243,9 @@ namespace sailflow.engine.Pattern
             FlowCommandContext runner)
         {
             ActivityInstanceEntity entity = ActivityInstanceManager.CreateBackwardActivityInstanceObject(
-                processInstance.AppName,
-                processInstance.AppInstanceId,
-                processInstance.AppInstanceCode,
+                processInstance.BizChannel,
+                processInstance.BizPK,
+                processInstance.BizCode,
                 processInstance.ProcessInstanceId,
                 processInstance.ProcessId,
                 this.BackwardContext.BackwardToTaskActivity,

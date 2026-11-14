@@ -43,9 +43,9 @@ namespace sailflow.engine.Message
 
             var appRunner = new FlowCommandContext();
             appRunner.MessageTopic = topic;
-            appRunner.AppName = throwActivityInstance.AppName;
-            appRunner.AppInstanceId = throwActivityInstance.AppInstanceId;
-            appRunner.AppInstanceCode = throwActivityInstance.AppInstanceCode;
+            appRunner.BizChannel = throwActivityInstance.BizChannel;
+            appRunner.BizPK = throwActivityInstance.BizPK;
+            appRunner.BizCode = throwActivityInstance.BizCode;
             appRunner.UserId = throwActivityInstance.CreatedUserId;
             appRunner.UserName = throwActivityInstance.CreatedUserName;
 
@@ -138,9 +138,9 @@ namespace sailflow.engine.Message
             var runner = new FlowCommandContext();
             runner.ProcessId = jobInfo.ProcessId;
             runner.Version = jobInfo.Version;
-            runner.AppName = msgRunnerView.CommandContext.AppName;
-            runner.AppInstanceId = msgRunnerView.CommandContext.AppInstanceId;
-            runner.AppInstanceCode = msgRunnerView.CommandContext.AppInstanceCode;
+            runner.BizChannel = msgRunnerView.CommandContext.BizChannel;
+            runner.BizPK = msgRunnerView.CommandContext.BizPK;
+            runner.BizCode = msgRunnerView.CommandContext.BizCode;
             runner.UserId = msgRunnerView.CommandContext.UserId;
             runner.UserName = msgRunnerView.CommandContext.UserName;
             return runner;
@@ -199,9 +199,9 @@ namespace sailflow.engine.Message
             var runner = new FlowCommandContext();
             runner.ProcessId = jobInfo.ProcessId;
             runner.Version = jobInfo.Version;
-            runner.AppName = activityInstance.AppName;
-            runner.AppInstanceId = activityInstance.AppInstanceId;
-            runner.AppInstanceCode = activityInstance.AppInstanceCode;
+            runner.BizChannel = activityInstance.BizChannel;
+            runner.BizPK = activityInstance.BizPK;
+            runner.BizCode = activityInstance.BizCode;
             //using activityinstanceid to call RunProcessAuto() method
             runner.ActivityInstanceId = activityInstance.ActivityInstanceId;
             runner.UserId = signalRunner.CommandContext.UserId;

@@ -106,7 +106,7 @@ namespace sailflow.engine.Manager
                 return runningNode;
             }
 
-            var activityInstanceList = GetRunningActivityInstanceList(kit, runner.AppInstanceId, runner.ProcessId, runner.Version).ToList();
+            var activityInstanceList = GetRunningActivityInstanceList(kit, runner.BizPK, runner.ProcessId, runner.Version).ToList();
             if (activityInstanceList == null || activityInstanceList.Count == 0)
             {
                 var message = Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.error");
@@ -170,7 +170,7 @@ namespace sailflow.engine.Manager
             }
 
             var activityInstanceList = (await GetRunningActivityInstanceListAsync(
-                    kit, runner.AppInstanceId, runner.ProcessId, runner.Version, cancellationToken)
+                    kit, runner.BizPK, runner.ProcessId, runner.Version, cancellationToken)
                 .ConfigureAwait(false)).ToList();
 
             if (activityInstanceList == null || activityInstanceList.Count == 0)
@@ -300,15 +300,15 @@ namespace sailflow.engine.Manager
         /// Get Activity Instance Latest
         /// 获取最近的节点实例
         /// </summary>
-        internal ActivityInstanceEntity GetActivityInstanceLatest(string appInstanceId,
+        internal ActivityInstanceEntity GetActivityInstanceLatest(string bizPK,
             string processId,
             string activityId)
         {
             var kit = Sail.UseRunSQL();
-            return GetActivityInstanceLatest(kit, appInstanceId, processId, activityId);
+            return GetActivityInstanceLatest(kit, bizPK, processId, activityId);
         }
 
-        internal ActivityInstanceEntity GetActivityInstanceLatest(SQLBuilder kit, string appInstanceId,
+        internal ActivityInstanceEntity GetActivityInstanceLatest(SQLBuilder kit, string bizPK,
             string processId,
             string activityId)
         {
@@ -316,7 +316,7 @@ namespace sailflow.engine.Manager
             clip.from<ActivityInstanceEntity>(out var ai)
                 .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
                 .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
-                .where(() => ai.AppInstanceId, appInstanceId)
+                .where(() => ai.BizPK, bizPK)
                 .where(() => ai.ProcessId, processId)
                 .where(() => ai.ActivityId, activityId);
             var list = clip.select(ai).queryList().ToList();
@@ -391,7 +391,7 @@ namespace sailflow.engine.Manager
         /// Retrieve nodes that have already completed running
         /// 获取已经运行完成的节点
         /// </summary>
-        public List<ActivityInstanceEntity> GetActivityInstanceListCompleted(string appInstanceId,
+        public List<ActivityInstanceEntity> GetActivityInstanceListCompleted(string bizPK,
             string processId)
         {
             var kit = Sail.UseRunSQL();
@@ -399,7 +399,7 @@ namespace sailflow.engine.Manager
             clip.from<ActivityInstanceEntity>(out var ai)
                 .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
                 .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
-                .where(() => ai.AppInstanceId, appInstanceId)
+                .where(() => ai.BizPK, bizPK)
                 .where(() => ai.ProcessId, processId)
                 .where(() => ai.ActivityState, (short)ActivityStateEnum.Completed);
             return clip.select(ai).queryList().ToList();
@@ -514,19 +514,19 @@ namespace sailflow.engine.Manager
         /// Get the activity nodes running in the process instance
         /// 获取流程实例中运行的活动节点
         /// </summary>
-        public IEnumerable<ActivityInstanceEntity> GetRunningActivityInstanceList(string appInstanceId,
+        public IEnumerable<ActivityInstanceEntity> GetRunningActivityInstanceList(string bizPK,
             string processId,
             string version = null)
         {
             var kit = Sail.UseRunSQL();
-            return GetRunningActivityInstanceList(kit, appInstanceId, processId, version);
+            return GetRunningActivityInstanceList(kit, bizPK, processId, version);
         }
 
         /// <summary>
         /// Get the activity nodes running in the process instance
         /// 获取流程实例中运行的活动节点
         /// </summary>
-        internal IEnumerable<ActivityInstanceEntity> GetRunningActivityInstanceList(SQLBuilder kit, string appInstanceId,
+        internal IEnumerable<ActivityInstanceEntity> GetRunningActivityInstanceList(SQLBuilder kit, string bizPK,
             string processId,
             string version)
         {
@@ -541,7 +541,7 @@ namespace sailflow.engine.Manager
                 })
                 .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
                 .where(() => pi.Version, version)
-                .where(() => ai.AppInstanceId, appInstanceId)
+                .where(() => ai.BizPK, bizPK)
                 .where(() => ai.ProcessId, processId);
             return clip.select(ai).queryList();
         }
@@ -551,7 +551,7 @@ namespace sailflow.engine.Manager
         /// </summary>
         internal async Task<IEnumerable<ActivityInstanceEntity>> GetRunningActivityInstanceListAsync(
             SQLBuilder kit,
-            string appInstanceId,
+            string bizPK,
             string processId,
             string version,
             CancellationToken cancellationToken = default)
@@ -568,7 +568,7 @@ namespace sailflow.engine.Manager
                 })
                 .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
                 .where(() => pi.Version, version)
-                .where(() => ai.AppInstanceId, appInstanceId)
+                .where(() => ai.BizPK, bizPK)
                 .where(() => ai.ProcessId, processId);
             return await clip.select(ai).queryListAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -840,9 +840,9 @@ namespace sailflow.engine.Manager
         /// Create activity instance
         /// 创建活动实例的对象
         /// </summary>
-        internal ActivityInstanceEntity CreateActivityInstanceObject(string appName,
-            string appInstanceId,
-            string appInstanceCode,
+        internal ActivityInstanceEntity CreateActivityInstanceObject(string bizChannel,
+            string bizPK,
+            string bizCode,
             string processId,
             string processInstanceId,
             Activity activity,
@@ -856,9 +856,9 @@ namespace sailflow.engine.Manager
             instance.WorkItemType = (short)activity.WorkItemType;
             instance.GatewayDirectionTypeId = activity.GatewayDetail != null ? (short)activity.GatewayDetail.DirectionType : null;
             instance.ProcessId = processId;
-            instance.AppName = appName;
-            instance.AppInstanceId = appInstanceId;
-            instance.AppInstanceCode = appInstanceCode;
+            instance.BizChannel = bizChannel;
+            instance.BizPK = bizPK;
+            instance.BizCode = bizCode;
             instance.ProcessInstanceId = processInstanceId;
             instance.TokensRequired = 1;
             instance.TokensHad = 1;
@@ -910,9 +910,9 @@ namespace sailflow.engine.Manager
             instance.WorkItemType = main.WorkItemType;
             instance.GatewayDirectionTypeId = main.GatewayDirectionTypeId;
             instance.ProcessId = main.ProcessId;
-            instance.AppName = main.AppName;
-            instance.AppInstanceId = main.AppInstanceId;
-            instance.AppInstanceCode = main.AppInstanceCode;
+            instance.BizChannel = main.BizChannel;
+            instance.BizPK = main.BizPK;
+            instance.BizCode = main.BizCode;
             instance.ProcessInstanceId = main.ProcessInstanceId;
             instance.TokensRequired = 1;
             instance.TokensHad = 1;
@@ -929,9 +929,9 @@ namespace sailflow.engine.Manager
         /// Create an object for the activity instance
         /// 创建活动实例的对象
         /// </summary>
-        internal ActivityInstanceEntity CreateBackwardActivityInstanceObject(string appName,
-            string appInstanceId,
-            string appInstanceCode,
+        internal ActivityInstanceEntity CreateBackwardActivityInstanceObject(string bizChannel,
+            string bizPK,
+            string bizCode,
             string processInstanceId,
             string processId,
             Activity activity,
@@ -948,9 +948,9 @@ namespace sailflow.engine.Manager
             instance.WorkItemType = (short)activity.WorkItemType;
             instance.GatewayDirectionTypeId = activity.GatewayDetail != null ? (short)activity.GatewayDetail.DirectionType : null;
             instance.ProcessId = processId;
-            instance.AppName = appName;
-            instance.AppInstanceId = appInstanceId;
-            instance.AppInstanceCode = appInstanceCode;
+            instance.BizChannel = bizChannel;
+            instance.BizPK = bizPK;
+            instance.BizCode = bizCode;
             instance.ProcessInstanceId = processInstanceId;
             instance.BackwardType = (short)backwardType;
             instance.BackSrcActivityInstanceId = backSrcActivityInstanceId;

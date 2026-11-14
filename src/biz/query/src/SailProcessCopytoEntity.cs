@@ -28,8 +28,8 @@ namespace sailflow.biz.query
         [SooColumn(Name = "ct_proc_name", Length = 255)]
         public string ProcessName { get; set; }
 
-        [SooColumn(Name = "ct_app_instance_id", Length = 128)]
-        public string AppInstanceId { get; set; }
+        [SooColumn(Name = "ct_biz_pk", Length = 128)]
+        public string BizPK { get; set; }
 
         [SooColumn(Name = "ct_task_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string TaskId { get; set; }

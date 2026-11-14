@@ -242,7 +242,7 @@ public static class NextStepRouteRuntime
         };
         if (runner != null)
         {
-            ctx.AppInstanceId = runner.AppInstanceId;
+            ctx.BizPK = runner.BizPK;
             ctx.UserId = runner.UserId;
             if (string.IsNullOrEmpty(ctx.ProcessId))
                 ctx.ProcessId = runner.ProcessId;

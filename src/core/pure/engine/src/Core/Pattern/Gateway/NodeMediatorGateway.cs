@@ -65,9 +65,9 @@ namespace sailflow.engine.Pattern
             FlowCommandContext runner)
         {
             var aim = Sail.ManagerFactory.Activities;
-            this.GatewayActivityInstance = aim.CreateActivityInstanceObject(processInstance.AppName,
-                processInstance.AppInstanceId,
-                processInstance.AppInstanceCode,
+            this.GatewayActivityInstance = aim.CreateActivityInstanceObject(processInstance.BizChannel,
+                processInstance.BizPK,
+                processInstance.BizCode,
                 processInstance.ProcessId,
                 processInstance.ProcessInstanceId,
                 activity,

@@ -55,7 +55,7 @@ namespace sailflow.engine.Runtime
             // 预选办理人依赖运行中 TaskView；发起前预览没有任务，跳过以免 NRE
             if (nextResult.StepList != null
                 && nextResult.StepList.Count > 0
-                && (runner.TaskId != null || !string.IsNullOrEmpty(runner.AppInstanceId)))
+                && (runner.TaskId != null || !string.IsNullOrEmpty(runner.BizPK)))
             {
                 nextStepInfo.NextActivityPerformers = GetNextActivityPerformersPriliminary(runner);
             }
@@ -142,7 +142,7 @@ namespace sailflow.engine.Runtime
             FlowCommandContext runner,
             IDictionary<string, string> condition)
         {
-            // 发起前预览只需 ProcessId；运行中查询才需要 AppInstanceId / TaskId
+            // 发起前预览只需 ProcessId；运行中查询才需要 BizPK / TaskId
             if (string.IsNullOrEmpty(runner.ProcessId))
             {
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("nextstepparser.getnextactivityroleusertree.error"));
@@ -171,16 +171,16 @@ namespace sailflow.engine.Runtime
                     taskView = tm.GetTaskView(runner.TaskId);
                     processInstance = pim.GetById(taskView.ProcessInstanceId);
                 }
-                else if (!string.IsNullOrEmpty(runner.AppInstanceId))
+                else if (!string.IsNullOrEmpty(runner.BizPK))
                 {
                     var kitForPi = kit.useSQL();
                     var processInstanceList = pim.GetProcessInstance(kitForPi,
-                        runner.AppInstanceId,
+                        runner.BizPK,
                         runner.ProcessId,
                         runner.Version).ToList();
                     processInstance = EnumHelper.GetFirst<ProcessInstanceEntity>(processInstanceList);
                 }
-                // AppInstanceId 空：发起前预览，不查实例
+                // BizPK 空：发起前预览，不查实例
 
                 //判断流程是否创建还是已经运行
                 //Determine whether the process has been created or already run

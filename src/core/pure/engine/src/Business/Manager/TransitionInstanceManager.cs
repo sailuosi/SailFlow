@@ -39,8 +39,8 @@ namespace sailflow.engine.Manager
         {
             var entity = new TransitionInstanceEntity
             {
-                AppName = processInstance.AppName,
-                AppInstanceId = processInstance.AppInstanceId,
+                BizChannel = processInstance.BizChannel,
+                BizPK = processInstance.BizPK,
                 ProcessId = processInstance.ProcessId,
                 ProcessInstanceId = processInstance.ProcessInstanceId,
                 TransitionId = transitionId,
@@ -78,37 +78,37 @@ namespace sailflow.engine.Manager
         #region Query
 
 
-        internal TransitionInstanceEntity GetEndTransition(string appName, string appInstanceId, string processId)
+        internal TransitionInstanceEntity GetEndTransition(string bizChannel, string bizPK, string processId)
         {
-            var nodeList = GetTransitonInstance(appInstanceId, processId, ActivityTypeEnum.EndNode).ToList();
+            var nodeList = GetTransitonInstance(bizPK, processId, ActivityTypeEnum.EndNode).ToList();
             if (nodeList == null || nodeList.Count == 0)
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("transitioninstancemanager.entrust.error"));
             return nodeList[0];
         }
 
-        internal TransitionInstanceEntity GetLastTaskTransition(string appName, string appInstanceId, string processId)
+        internal TransitionInstanceEntity GetLastTaskTransition(string bizChannel, string bizPK, string processId)
         {
-            var nodeList = GetWorkItemTransitonInstance(appInstanceId, processId).ToList();
+            var nodeList = GetWorkItemTransitonInstance(bizPK, processId).ToList();
             if (nodeList.Count == 0)
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("transitioninstancemanager.getlasttasktransition.error"));
             return nodeList[0];
         }
 
-        internal IEnumerable<TransitionInstanceEntity> GetWorkItemTransitonInstance(string appInstanceId, string processId)
+        internal IEnumerable<TransitionInstanceEntity> GetWorkItemTransitonInstance(string bizPK, string processId)
         {
             var kit = Sail.UseRunSQL();
-            return GetWorkItemTransitonInstance(kit, appInstanceId, processId);
+            return GetWorkItemTransitonInstance(kit, bizPK, processId);
         }
 
         internal IEnumerable<TransitionInstanceEntity> GetWorkItemTransitonInstance(
-            SQLBuilder kit, string appInstanceId, string processId)
+            SQLBuilder kit, string bizPK, string processId)
         {
             return QueryWithFallback(kit, processId, table =>
             {
                 var clip = kit.useClip();
                 clip.from<TransitionInstanceEntity>(table, out var t)
                     .InnerJoin<ActivityInstanceEntity>(out var a).on(() => t.ToActivityInstanceId == a.ActivityInstanceId)
-                    .where(() => t.AppInstanceId, appInstanceId)
+                    .where(() => t.BizPK, bizPK)
                     .where(() => t.ProcessId, processId)
                     .sinkOR()
                     .whereIn(() => t.ToActivityType, new short?[]
@@ -125,20 +125,20 @@ namespace sailflow.engine.Manager
         }
 
         internal IEnumerable<TransitionInstanceEntity> GetTransitonInstance(
-            string appInstanceId, string processId, ActivityTypeEnum toActivityType)
+            string bizPK, string processId, ActivityTypeEnum toActivityType)
         {
             var kit = Sail.UseRunSQL();
-            return GetTransitonInstance(kit, appInstanceId, processId, toActivityType);
+            return GetTransitonInstance(kit, bizPK, processId, toActivityType);
         }
 
         internal IEnumerable<TransitionInstanceEntity> GetTransitonInstance(
-            SQLBuilder kit, string appInstanceId, string processId, ActivityTypeEnum toActivityType)
+            SQLBuilder kit, string bizPK, string processId, ActivityTypeEnum toActivityType)
         {
             return QueryWithFallback(kit, processId, table =>
             {
                 var clip = kit.useClip();
                 clip.from<TransitionInstanceEntity>(table, out var t)
-                    .where(() => t.AppInstanceId, appInstanceId)
+                    .where(() => t.BizPK, bizPK)
                     .where(() => t.ProcessId, processId)
                     .where(() => t.ToActivityType, (short)toActivityType)
                     .orderByDesc(() => t.CreatedDateTime);
@@ -147,31 +147,31 @@ namespace sailflow.engine.Manager
         }
 
         public IEnumerable<TransitionInstanceEntity> GetTransitionInstanceList(
-            string appInstanceId, string processId, string version)
+            string bizPK, string processId, string version)
         {
             IEnumerable<TransitionInstanceEntity> list = new List<TransitionInstanceEntity>();
             var pim = Sail.ProcessInstances;
-            var pi = pim.GetProcessInstanceCurrent(appInstanceId, processId, version);
+            var pi = pim.GetProcessInstanceCurrent(bizPK, processId, version);
             if (pi != null)
-                list = GetTransitionInstanceListByProcessInstance(appInstanceId, processId, pi.ProcessInstanceId);
+                list = GetTransitionInstanceListByProcessInstance(bizPK, processId, pi.ProcessInstanceId);
             return list;
         }
 
         internal IEnumerable<TransitionInstanceEntity> GetTransitionInstanceListByProcessInstance(
-            string appInstanceId, string processId, string processInstanceId)
+            string bizPK, string processId, string processInstanceId)
         {
             var kit = Sail.UseRunSQL();
-            return GetTransitionInstanceListByProcessInstance(kit, appInstanceId, processId, processInstanceId);
+            return GetTransitionInstanceListByProcessInstance(kit, bizPK, processId, processInstanceId);
         }
 
         internal IEnumerable<TransitionInstanceEntity> GetTransitionInstanceListByProcessInstance(
-            SQLBuilder kit, string appInstanceId, string processId, string processInstanceId)
+            SQLBuilder kit, string bizPK, string processId, string processInstanceId)
         {
             return QueryWithFallback(kit, processId, table =>
             {
                 var clip = kit.useClip();
                 clip.from<TransitionInstanceEntity>(table, out var t)
-                    .where(() => t.AppInstanceId, appInstanceId)
+                    .where(() => t.BizPK, bizPK)
                     .where(() => t.ProcessId, processId)
                     .where(() => t.ProcessInstanceId, processInstanceId)
                     .orderByDesc(() => t.CreatedDateTime);

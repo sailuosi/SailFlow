@@ -40,5 +40,15 @@ namespace sailflow.engine.Hooks
                 return false;
             return activityCodes.Contains(activityCode, StringComparer.OrdinalIgnoreCase);
         }
+
+        /// <summary>空名单=不限；有名单则值须非空且命中。</summary>
+        internal static bool MatchesOptionalList(string[] allowed, string value)
+        {
+            if (allowed == null || allowed.Length == 0)
+                return true;
+            if (string.IsNullOrEmpty(value))
+                return false;
+            return allowed.Contains(value, StringComparer.OrdinalIgnoreCase);
+        }
     }
 }

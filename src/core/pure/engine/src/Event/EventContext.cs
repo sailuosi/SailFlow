@@ -11,7 +11,7 @@ namespace sailflow.engine.Event
     /// </summary>
     public class EventContext
     {
-        public string AppInstanceId { get; set; }
+        public string BizPK { get; set; }
         public string ProcessId { get; set; }
         public string ProcessInstanceId { get; set; }
         public string ActivityInstanceId { get; set; }

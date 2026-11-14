@@ -52,7 +52,7 @@ namespace sailflow.engine.Runtime
             var pim = _sail.ProcessInstances;
             ProcessInstanceEntity processInstance = pim.GetProcessInstanceCurrent(
                 kit,
-                runner.AppInstanceId,
+                runner.BizPK,
                 runner.ProcessId,
                 runner.Version);
 
@@ -120,7 +120,7 @@ namespace sailflow.engine.Runtime
 
             var pim = _sail.ProcessInstances;
             var subProcessInstance = pim.GetSubProcessInstance(kit,
-                runner.AppInstanceId,
+                runner.BizPK,
                 runner.ProcessId,
                 subProcessNode.SubProcessId);
 
@@ -169,8 +169,8 @@ namespace sailflow.engine.Runtime
 
             //检查传入参数是否有效
             //Check if the incoming parameters are valid
-            if (string.IsNullOrEmpty(runner.AppName)
-                || string.IsNullOrEmpty(runner.AppInstanceId)
+            if (string.IsNullOrEmpty(runner.BizChannel)
+                || string.IsNullOrEmpty(runner.BizPK)
                 || runner.ProcessId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -253,8 +253,8 @@ namespace sailflow.engine.Runtime
             rmins.WfExecutedResult = result;
             rmins.Sail = _sail;
 
-            if (string.IsNullOrEmpty(runner.AppName)
-                || string.IsNullOrEmpty(runner.AppInstanceId)
+            if (string.IsNullOrEmpty(runner.BizChannel)
+                || string.IsNullOrEmpty(runner.BizPK)
                 || runner.ProcessId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -331,8 +331,8 @@ namespace sailflow.engine.Runtime
             var rmins = new WfRuntimeManagerRun();
             rmins.WfExecutedResult = result = new WfExecutedResult();
             rmins.Sail = _sail;
-            if (string.IsNullOrEmpty(runner.AppName)
-                || string.IsNullOrEmpty(runner.AppInstanceId)
+            if (string.IsNullOrEmpty(runner.BizChannel)
+                || string.IsNullOrEmpty(runner.BizPK)
                 || runner.ProcessId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -374,8 +374,8 @@ namespace sailflow.engine.Runtime
             var rmins = new WfRuntimeManagerRun();
             rmins.WfExecutedResult = result;
             rmins.Sail = _sail;
-            if (string.IsNullOrEmpty(runner.AppName)
-                || string.IsNullOrEmpty(runner.AppInstanceId)
+            if (string.IsNullOrEmpty(runner.BizChannel)
+                || string.IsNullOrEmpty(runner.BizPK)
                 || runner.ProcessId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -420,8 +420,8 @@ namespace sailflow.engine.Runtime
 
             //检查传入参数是否有效
             //Check if the incoming parameters are valid
-            if (string.IsNullOrEmpty(runner.AppName)
-               || string.IsNullOrEmpty(runner.AppInstanceId)
+            if (string.IsNullOrEmpty(runner.BizChannel)
+               || string.IsNullOrEmpty(runner.BizPK)
                || runner.ProcessId == null
                || runner.NextActivityPerformers == null)
             {
@@ -447,8 +447,8 @@ namespace sailflow.engine.Runtime
             var runningNode = aim.GetRunningNode(runner, out taskView);
 
             rmins.TaskView = taskView;
-            rmins.CmdContext.AppName = runner.AppName;
-            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.BizChannel = runner.BizChannel;
+            rmins.CmdContext.BizPK = runner.BizPK;
             rmins.CmdContext.ProcessId = runner.ProcessId;
             rmins.CmdContext.UserId = runner.UserId;
             rmins.CmdContext.UserName = runner.UserName;
@@ -481,8 +481,8 @@ namespace sailflow.engine.Runtime
 
             //检查传入参数是否有效
             //Check if the incoming parameters are valid
-            if (string.IsNullOrEmpty(runner.AppName)
-               || string.IsNullOrEmpty(runner.AppInstanceId)
+            if (string.IsNullOrEmpty(runner.BizChannel)
+               || string.IsNullOrEmpty(runner.BizPK)
                || runner.ProcessId == null
                || runner.NextActivityPerformers == null)
             {
@@ -507,8 +507,8 @@ namespace sailflow.engine.Runtime
 
             rmins.TaskView = taskView;
             rmins.CmdContext = runner;
-            rmins.CmdContext.AppName = runner.AppName;
-            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.BizChannel = runner.BizChannel;
+            rmins.CmdContext.BizPK = runner.BizPK;
             rmins.CmdContext.ProcessId = runner.ProcessId;
             rmins.CmdContext.UserId = runner.UserId;
             rmins.CmdContext.UserName = runner.UserName;
@@ -534,8 +534,8 @@ namespace sailflow.engine.Runtime
             //Retrieve the previous node of the current running node
             bool hasGatewayNode = false;
             var tim = _sail.ManagerFactory.Transitions;
-            var lastTaskTransitionInstance = tim.GetLastTaskTransition(runner.AppName,
-                runner.AppInstanceId, runner.ProcessId);
+            var lastTaskTransitionInstance = tim.GetLastTaskTransition(runner.BizChannel,
+                runner.BizPK, runner.ProcessId);
 
             var npc = SailFactoryAccess.Managers(_sail).PreviousSteps;
             var previousActivityInstanceList = npc.GetPreviousActivityInstanceList(runningNode, true,
@@ -618,8 +618,8 @@ namespace sailflow.engine.Runtime
 
             //检查传入参数是否有效
             //Check if the incoming parameters are valid
-            if (string.IsNullOrEmpty(runner.AppName)
-               || string.IsNullOrEmpty(runner.AppInstanceId)
+            if (string.IsNullOrEmpty(runner.BizChannel)
+               || string.IsNullOrEmpty(runner.BizPK)
                || runner.ProcessId == null
                || runner.NextActivityPerformers == null)
             {
@@ -646,8 +646,8 @@ namespace sailflow.engine.Runtime
 
             rmins.TaskView = taskView;
             rmins.CmdContext = runner;
-            rmins.CmdContext.AppName = runner.AppName;
-            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.BizChannel = runner.BizChannel;
+            rmins.CmdContext.BizPK = runner.BizPK;
             rmins.CmdContext.ProcessId = runner.ProcessId;
             rmins.CmdContext.UserId = runner.UserId;
             rmins.CmdContext.UserName = runner.UserName;
@@ -799,8 +799,8 @@ namespace sailflow.engine.Runtime
             rmins.ProcessInstance = processInstance;
             rmins.ProcessModel = processModel;
 
-            rmins.CmdContext.AppName = runner.AppName;
-            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.BizChannel = runner.BizChannel;
+            rmins.CmdContext.BizPK = runner.BizPK;
             rmins.CmdContext.UserId = runner.UserId;
             rmins.CmdContext.UserName = runner.UserName;
             rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
@@ -1011,8 +1011,8 @@ namespace sailflow.engine.Runtime
             rmins.ProcessInstance = processInstance;
             rmins.ProcessModel = processModel;
 
-            rmins.CmdContext.AppName = runner.AppName;
-            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.BizChannel = runner.BizChannel;
+            rmins.CmdContext.BizPK = runner.BizPK;
             rmins.CmdContext.UserId = runner.UserId;
             rmins.CmdContext.UserName = runner.UserName;
             rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
@@ -1079,8 +1079,8 @@ namespace sailflow.engine.Runtime
             rmins.RunningActivityInstance = aim.GetById(taskView.ActivityInstanceId);
             rmins.ProcessModel = _sail.ProcessModelFactory.CreateByTask( taskView);
 
-            rmins.CmdContext.AppName = runner.AppName;
-            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.BizChannel = runner.BizChannel;
+            rmins.CmdContext.BizPK = runner.BizPK;
             rmins.CmdContext.UserId = runner.UserId;
             rmins.CmdContext.UserName = runner.UserName;
             if (runner.ControlParameterSheet != null
@@ -1139,8 +1139,8 @@ namespace sailflow.engine.Runtime
             rmins.RunningActivityInstance = aim.GetById(taskView.ActivityInstanceId);
             rmins.ProcessModel = _sail.ProcessModelFactory.CreateByTask( taskView);
 
-            rmins.CmdContext.AppName = runner.AppName;
-            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.BizChannel = runner.BizChannel;
+            rmins.CmdContext.BizPK = runner.BizPK;
             rmins.CmdContext.UserId = runner.UserId;
             rmins.CmdContext.UserName = runner.UserName;
             rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
@@ -1166,7 +1166,7 @@ namespace sailflow.engine.Runtime
             rmins.WfExecutedResult = result = new WfExecutedResult();
             rmins.Sail = _sail;
             var pim = _sail.ProcessInstances;
-            var processInstance = pim.GetProcessInstanceLatest(runner.AppInstanceId, runner.ProcessId, runner.Version);
+            var processInstance = pim.GetProcessInstanceLatest(runner.BizPK, runner.ProcessId, runner.Version);
             if (processInstance == null || processInstance.ProcessState != (short)ProcessStateEnum.Completed)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -1180,7 +1180,7 @@ namespace sailflow.engine.Runtime
             rmins.ProcessInstanceId = processInstance.ProcessInstanceId;
 
             var tim = _sail.ManagerFactory.Transitions;
-            var endTransitionInstance = tim.GetEndTransition(runner.AppName, runner.AppInstanceId, runner.ProcessId);
+            var endTransitionInstance = tim.GetEndTransition(runner.BizChannel, runner.BizPK, runner.ProcessId);
 
             var processModel = _sail.ProcessModelFactory.CreateByProcessInstance( processInstance);
             var endActivity = processModel.GetActivity(endTransitionInstance.ToActivityId);
@@ -1201,8 +1201,8 @@ namespace sailflow.engine.Runtime
                 lastTaskActivityInstance.EndedUserName);
 
             rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
-            rmins.CmdContext.AppName = runner.AppName;
-            rmins.CmdContext.AppInstanceId = runner.AppInstanceId;
+            rmins.CmdContext.BizChannel = runner.BizChannel;
+            rmins.CmdContext.BizPK = runner.BizPK;
             rmins.CmdContext.ProcessId = runner.ProcessId;
             rmins.CmdContext.UserId = runner.UserId;
             rmins.CmdContext.UserName = runner.UserName;
@@ -1235,8 +1235,8 @@ namespace sailflow.engine.Runtime
             rmins.WfExecutedResult = result = new WfExecutedResult();
             rmins.Sail = _sail;
 
-            if (string.IsNullOrEmpty(runner.AppName)
-                || string.IsNullOrEmpty(runner.AppInstanceId)
+            if (string.IsNullOrEmpty(runner.BizChannel)
+                || string.IsNullOrEmpty(runner.BizPK)
                 || runner.ProcessId == null
                 || runner.NextActivityPerformers == null)
             {

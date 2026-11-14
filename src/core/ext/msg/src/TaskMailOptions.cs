@@ -23,7 +23,7 @@ namespace sailflow.msg
 
         /// <summary>
         /// 邮件 HTML 正文模板。占位符与历史一致：
-        /// <c>{0}</c>=AppBaseUrl，<c>{1}</c>=AppName，<c>{2}</c>=AppInstanceId。
+        /// <c>{0}</c>=AppBaseUrl，<c>{1}</c>=BizChannel，<c>{2}</c>=BizPK。
         /// </summary>
         public string BodyTemplate { get; set; } =
             "<h1>新待办任务提醒</h1><p>您有一条新的待办任务:<a href='{0}/{1}'>应用名称:{2}, 单据Id:{1}</a> 请您及时登录业务系统处理!</p>";

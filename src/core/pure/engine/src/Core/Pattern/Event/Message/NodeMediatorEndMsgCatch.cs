@@ -107,9 +107,9 @@ namespace sailflow.engine.Pattern
             var task = Sail.ManagerFactory.Tasks.GetTaskByActivity(kit.useSQL(), mainProcessInstance.ProcessInstanceId, mainActivityInstanceId);
             var runner = new FlowCommandContext
             {
-                AppName = mainProcessInstance.AppName,
-                AppInstanceId = mainProcessInstance.AppInstanceId,
-                AppInstanceCode = mainProcessInstance.AppInstanceCode,
+                BizChannel = mainProcessInstance.BizChannel,
+                BizPK = mainProcessInstance.BizPK,
+                BizCode = mainProcessInstance.BizCode,
                 ProcessId = mainProcessInstance.ProcessId,
                 Version = mainProcessInstance.Version,
                 UserId = task.AssignedUserId,

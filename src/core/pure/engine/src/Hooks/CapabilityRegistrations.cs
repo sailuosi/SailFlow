@@ -45,6 +45,18 @@ namespace sailflow.engine.Hooks
         public NotifyThrottleOptions InProcessThrottle { get; init; }
     }
 
+    public sealed class ProcessInstanceCreateHookRegistration
+    {
+        public string Name { get; init; }
+        public int Order { get; init; }
+        public HookMatch Match { get; init; }
+        public string[] ProcessCodes { get; init; }
+        public string[] ProcessIds { get; init; }
+        public string[] BizChannels { get; init; }
+        public string[] BizTypes { get; init; }
+        public IProcessInstanceCreateHook Handler { get; init; }
+    }
+
     internal sealed class DelegateFlowGate : IFlowGate
     {
         private readonly Func<FlowHookContext, HookResult> _validate;
@@ -85,5 +97,19 @@ namespace sailflow.engine.Hooks
 
         public string Name { get; }
         public Task NotifyAsync(TaskNotifyContext ctx, CancellationToken ct) => _notify(ctx, ct);
+    }
+
+    internal sealed class DelegateProcessInstanceCreateHook : IProcessInstanceCreateHook
+    {
+        private readonly Action<ProcessInstanceCreateContext> _handle;
+
+        public DelegateProcessInstanceCreateHook(string name, Action<ProcessInstanceCreateContext> handle)
+        {
+            Name = name;
+            _handle = handle ?? throw new ArgumentNullException(nameof(handle));
+        }
+
+        public string Name { get; }
+        public void OnCreating(ProcessInstanceCreateContext ctx) => _handle(ctx);
     }
 }

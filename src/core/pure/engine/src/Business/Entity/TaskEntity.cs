@@ -20,10 +20,10 @@ namespace sailflow.engine.Entity
         public string ActivityInstanceId { get; set; }
         [SooColumn(Name = "tk_proc_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string ProcessInstanceId { get; set; }
-        [SooColumn(Name = "tk_app_name", Length = 128)]
-        public string AppName { get; set; }
-        [SooColumn(Name = "tk_app_instance_id", Length = 128)]
-        public string AppInstanceId { get; set; }
+        [SooColumn(Name = "tk_biz_channel", Length = 128)]
+        public string BizChannel { get; set; }
+        [SooColumn(Name = "tk_biz_pk", Length = 128)]
+        public string BizPK { get; set; }
         [SooColumn(Name = "tk_process_id", Length = 64, Tag = "sail.id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "tk_activity_id", Length = 64)]

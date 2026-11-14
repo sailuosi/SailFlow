@@ -43,9 +43,9 @@ namespace sailflow.engine.Message
 
             var appRunner = new FlowCommandContext();
             appRunner.MessageTopic = topic;
-            appRunner.AppName = throwActivityInstance.AppName;
-            appRunner.AppInstanceId = throwActivityInstance.AppInstanceId;
-            appRunner.AppInstanceCode = throwActivityInstance.AppInstanceCode;
+            appRunner.BizChannel = throwActivityInstance.BizChannel;
+            appRunner.BizPK = throwActivityInstance.BizPK;
+            appRunner.BizCode = throwActivityInstance.BizCode;
             appRunner.UserId = throwActivityInstance.CreatedUserId;
             appRunner.UserName = throwActivityInstance.CreatedUserName;
 
@@ -159,16 +159,16 @@ namespace sailflow.engine.Message
             runner.ProcessId = msgRunnerView.ProcessEntity.ProcessId;
             runner.Version = msgRunnerView.ProcessEntity.Version;
             runner.ProcessCode = msgRunnerView.ProcessEntity.ProcessCode;
-            runner.AppName = msgRunnerView.CommandContext.AppName;
-            runner.AppInstanceId = msgRunnerView.CommandContext.AppInstanceId;
-            runner.AppInstanceCode = msgRunnerView.CommandContext.AppInstanceCode;
+            runner.BizChannel = msgRunnerView.CommandContext.BizChannel;
+            runner.BizPK = msgRunnerView.CommandContext.BizPK;
+            runner.BizCode = msgRunnerView.CommandContext.BizCode;
             runner.UserId = msgRunnerView.CommandContext.UserId;
             runner.UserName = msgRunnerView.CommandContext.UserName;
 
             //封装下一步的步骤信息
             //Encapsulate the next step information
             var aim = Sail.ManagerFactory.Activities;
-            var runningActivityInstance = aim.GetActivityInstanceLatest(runner.AppInstanceId, runner.ProcessId, msgRunnerView.ActivityEntity.ActivityId);
+            var runningActivityInstance = aim.GetActivityInstanceLatest(runner.BizPK, runner.ProcessId, msgRunnerView.ActivityEntity.ActivityId);
             if (runningActivityInstance != null)
             {
                 runner.ActivityInstanceId = runningActivityInstance.ActivityInstanceId;

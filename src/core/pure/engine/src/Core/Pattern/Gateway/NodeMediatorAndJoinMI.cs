@@ -27,7 +27,7 @@ namespace sailflow.engine.Pattern
         /// <summary>
         /// 获取需要的Token数目
         /// </summary>
-        internal int GetTokensRequired(string appInstanceId, string processInstanceId, Activity joinNode)
+        internal int GetTokensRequired(string bizPK, string processInstanceId, Activity joinNode)
         {
             int joinCount = 0, splitCount = 0;
             var gatewayNode = base.ProcessModel.GetBackwardGatewayActivity(joinNode, ref joinCount, ref splitCount);
@@ -61,7 +61,7 @@ namespace sailflow.engine.Pattern
                     processInstance, runner);
 
                 //计算所需令牌总数
-                joinActivityInstance.TokensRequired = GetTokensRequired(processInstance.AppInstanceId, processInstance.ProcessInstanceId, base.GatewayActivity);
+                joinActivityInstance.TokensRequired = GetTokensRequired(processInstance.BizPK, processInstance.ProcessInstanceId, base.GatewayActivity);
                 joinActivityInstance.TokensHad = 1;
                 tokensRequired = joinActivityInstance.TokensRequired.Value;
 

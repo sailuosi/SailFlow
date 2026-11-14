@@ -27,7 +27,8 @@ namespace sailflow.engine.Runtime
             var pim = Sail.ProcessInstances;
             var processInstance = pim.CreateNewProcessInstanceObject(base.CmdContext,
                 base.ProcessModel.ProcessEntity,
-                subProcessNode);
+                subProcessNode,
+                kit);
 
             var subStartactivity = base.ProcessModel.GetStartActivity();
             var startExecutionContext = ActivityForwardContext.CreateStartupContext(base.ProcessModel,

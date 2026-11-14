@@ -17,12 +17,12 @@ namespace sailflow.engine.Entity
         public string ActivityInstanceId { get; set; }
         [SooColumn(Name = "ai_proc_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string ProcessInstanceId { get; set; }
-        [SooColumn(Name = "ai_app_name", Length = 128)]
-        public string AppName { get; set; }
-        [SooColumn(Name = "ai_app_instance_id", Length = 128)]
-        public string AppInstanceId { get; set; }
-        [SooColumn(Name = "ai_app_instance_code", Length = 64)]
-        public string AppInstanceCode { get; set; }
+        [SooColumn(Name = "ai_biz_channel", Length = 128)]
+        public string BizChannel { get; set; }
+        [SooColumn(Name = "ai_biz_pk", Length = 128)]
+        public string BizPK { get; set; }
+        [SooColumn(Name = "ai_biz_code", Length = 64)]
+        public string BizCode { get; set; }
         [SooColumn(Name = "ai_process_id", Length = 64, Tag = "sail.id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "ai_activity_id", Length = 64)]

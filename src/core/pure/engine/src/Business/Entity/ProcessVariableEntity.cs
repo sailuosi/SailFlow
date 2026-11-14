@@ -18,8 +18,8 @@ namespace sailflow.engine.Entity
         public string ProcessVariableId { get; set; }
         [SooColumn(Name = "pv_var_scope", Length = 64)]
         public string VariableScope { get; set; }
-        [SooColumn(Name = "pv_app_instance_id", Length = 128)]
-        public string AppInstanceId { get; set; }
+        [SooColumn(Name = "pv_biz_pk", Length = 128)]
+        public string BizPK { get; set; }
         [SooColumn(Name = "pv_process_id", Length = 64, Tag = "sail.id")]
         public string ProcessId { get; set; }
         [SooColumn(Name = "pv_proc_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]

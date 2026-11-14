@@ -27,12 +27,27 @@ public sealed class RunBuilder
 
     WorkflowService Service() => new WorkflowService(_sail);
 
-    public RunBuilder UseApp(string appInstanceId, string appName, string appCode = null)
+    public RunBuilder UseBiz(BizDataDto biz)
     {
-        _runner.AppInstanceId = appInstanceId;
-        _runner.AppName = appName;
-        _runner.AppInstanceCode = appCode;
+        _runner.ApplyBizData(biz);
         return this;
+    }
+
+    public RunBuilder UseBiz(
+        string bizPK,
+        string bizChannel,
+        string bizCode = null,
+        string bizType = null,
+        string bizName = null)
+    {
+        return UseBiz(new BizDataDto
+        {
+            BizPK = bizPK,
+            BizChannel = bizChannel,
+            BizCode = bizCode,
+            BizType = bizType,
+            BizName = bizName
+        });
     }
 
     public RunBuilder UseProcess(string processId, string version = null)

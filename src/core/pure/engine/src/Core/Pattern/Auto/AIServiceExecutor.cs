@@ -122,12 +122,12 @@ namespace sailflow.engine.Pattern
                 var currentOutputVariable = currentActivity.VariableList?
                     .FirstOrDefault(a => a.DirectionType == VariableDirectionTypeEnum.Output);
 
-                var appInstanceId = activityForwardContext.ProcessInstance?.AppInstanceId ?? string.Empty;
+                var bizPK = activityForwardContext.ProcessInstance?.BizPK ?? string.Empty;
                 var processVariable = new ProcessVariableEntity
                 {
                     ProcessInstanceId = processInstanceId,
                     ProcessId = processId,
-                    AppInstanceId = appInstanceId,
+                    BizPK = bizPK,
                     ActivityInstanceId = currentActivityInstance.ActivityInstanceId,
                     ActivityId = currentActivityInstance.ActivityId,
                     ActivityName = currentActivityInstance.ActivityName,
@@ -149,7 +149,7 @@ namespace sailflow.engine.Pattern
                         {
                             ProcessInstanceId = processInstanceId,
                             ProcessId = processId,
-                            AppInstanceId = appInstanceId,
+                            BizPK = bizPK,
                             ActivityInstanceId = currentActivityInstance.ActivityInstanceId,
                             ActivityId = currentActivityInstance.ActivityId,
                             ActivityName = currentActivityInstance.ActivityName,

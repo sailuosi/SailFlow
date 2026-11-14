@@ -30,12 +30,27 @@ public sealed class AutoRunBuilder
             _runner.NextPerformerType = NextPerformerIntTypeEnum.Unattented;
     }
 
-    public AutoRunBuilder UseApp(string appInstanceId, string appName, string appCode = null)
+    public AutoRunBuilder UseBiz(BizDataDto biz)
     {
-        _runner.AppInstanceId = appInstanceId;
-        _runner.AppName = appName;
-        _runner.AppInstanceCode = appCode;
+        _runner.ApplyBizData(biz);
         return this;
+    }
+
+    public AutoRunBuilder UseBiz(
+        string bizPK,
+        string bizChannel,
+        string bizCode = null,
+        string bizType = null,
+        string bizName = null)
+    {
+        return UseBiz(new BizDataDto
+        {
+            BizPK = bizPK,
+            BizChannel = bizChannel,
+            BizCode = bizCode,
+            BizType = bizType,
+            BizName = bizName
+        });
     }
 
     public AutoRunBuilder UseProcess(string processId, string version = null)

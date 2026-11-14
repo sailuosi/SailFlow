@@ -16,30 +16,43 @@ namespace sailflow.engine.Common
     /// {
     ///     "UserId":"10",
     ///     "UserName":"Long",
-    ///     "AppName":"SamplePrice",
-    ///     "AppInstanceId":"100",
+    ///     "BizChannel":"SamplePrice",
+    ///     "BizPK":"100",
     ///     "ProcessId":"072af8c3-482a-4b1c-890b-685ce2fcc75d"
     /// }
     /// </summary>
     public class FlowCommandContext
     {
-        /// <summary>
-        /// Business Data: Application Name
-        /// 业务数据：应用名称
-        /// </summary>
-        public string AppName { get; set; }
+        /// <summary>业务通道（路由/FormCode）。</summary>
+        public string BizChannel { get; set; }
 
-        /// <summary>
-        /// Business data: Application instance Id (such as document number)
-        /// 业务数据：应用实例Id（比如单据票据编号）
-        /// </summary>
-        public string AppInstanceId { get; set; }
+        /// <summary>业务主键。</summary>
+        public string BizPK { get; set; }
 
-        /// <summary>
-        /// Business data: Application instance Id (such as document code)
-        /// 业务数据：应用实例ID（比如单据票据代码）
-        /// </summary>
-        public string AppInstanceCode { get; set; }
+        /// <summary>业务编码。</summary>
+        public string BizCode { get; set; }
+
+        /// <summary>业务类型。</summary>
+        public string BizType { get; set; }
+
+        /// <summary>业务名称。</summary>
+        public string BizName { get; set; }
+
+        /// <summary>业务数据袋；调用 <see cref="ApplyBizData"/> 写入上方扁平字段。</summary>
+        public BizDataDto BizData { get; set; }
+
+        /// <summary>将 <paramref name="data"/>（或已挂的 <see cref="BizData"/>）写入扁平 Biz* 字段；空入参不改。</summary>
+        public void ApplyBizData(BizDataDto data = null)
+        {
+            var src = data ?? BizData;
+            if (src == null) return;
+            BizData = src;
+            if (!string.IsNullOrWhiteSpace(src.BizPK)) BizPK = src.BizPK;
+            if (!string.IsNullOrWhiteSpace(src.BizType)) BizType = src.BizType;
+            if (!string.IsNullOrWhiteSpace(src.BizCode)) BizCode = src.BizCode;
+            if (!string.IsNullOrWhiteSpace(src.BizChannel)) BizChannel = src.BizChannel;
+            if (!string.IsNullOrWhiteSpace(src.BizName)) BizName = src.BizName;
+        }
 
         /// <summary>
         /// Process data: Process GUID

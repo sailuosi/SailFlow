@@ -140,7 +140,7 @@ namespace sailflow.biz.query
         {
             var clip = Sail.UseRunSQL().useClip();
             clip.from<TaskViewEntity>(out var t)
-                .where(() => t.AppInstanceId, runner.AppInstanceId)
+                .where(() => t.BizPK, runner.BizPK)
                 .where(() => t.ProcessId, runner.ProcessId)
                 .where(() => t.ProcessState, (short)2)
                 .where(() => t.ActivityType == 4 || t.WorkItemType == 1)
@@ -355,13 +355,13 @@ namespace sailflow.biz.query
                     .rise();
             }
 
-            clip.whereIf(!string.IsNullOrEmpty(query.AppInstanceId), () => t.AppInstanceId, query.AppInstanceId)
+            clip.whereIf(!string.IsNullOrEmpty(query.BizPK), () => t.BizPK, query.BizPK)
                 .whereIf(!string.IsNullOrEmpty(query.ProcessId), () => t.ProcessId, query.ProcessId)
                 .whereIf(!string.IsNullOrEmpty(query.Version), () => t.Version, query.Version)
                 .whereIf(!string.IsNullOrEmpty(query.UserId), () => t.AssignedUserId, query.UserId)
                 .whereIf(!string.IsNullOrEmpty(query.EndedUserId), () => t.EndedUserId, query.EndedUserId);
-            if (!string.IsNullOrEmpty(query.AppName))
-                clip.whereLike(() => t.AppName, query.AppName);
+            if (!string.IsNullOrEmpty(query.BizChannel))
+                clip.whereLike(() => t.BizChannel, query.BizChannel);
 
             if (activityState == (short)ActivityStateEnum.Completed)
                 clip.orderByDesc(() => t.EndedDateTime);
@@ -383,9 +383,9 @@ namespace sailflow.biz.query
             var clip = Sail.UseRunSQL().useClip();
             clip.from<ProcessInstanceEntity>(out var pi)
                 .whereIf(!string.IsNullOrEmpty(query.ProcessId), () => pi.ProcessId, query.ProcessId)
-                .whereIf(!string.IsNullOrEmpty(query.ApplicationInstanceId), () => pi.AppInstanceId, query.ApplicationInstanceId);
-            if (!string.IsNullOrEmpty(query.AppName))
-                clip.whereLike(() => pi.AppName, query.AppName);
+                .whereIf(!string.IsNullOrEmpty(query.BizPK), () => pi.BizPK, query.BizPK);
+            if (!string.IsNullOrEmpty(query.BizChannel))
+                clip.whereLike(() => pi.BizChannel, query.BizChannel);
             clip.whereIf(!string.IsNullOrEmpty(query.CreatedUserId), () => pi.CreatedUserId, query.CreatedUserId);
             if (query.ProcessState.HasValue)
                 clip.where(() => pi.ProcessState, query.ProcessState.Value);
@@ -452,17 +452,17 @@ namespace sailflow.biz.query
         {
             var tm = new TaskManager(Sail);
             var task = tm.GetTaskView(taskId);
-            return GetActivityInstanceCompleted(task.AppInstanceId, task.ProcessId);
+            return GetActivityInstanceCompleted(task.BizPK, task.ProcessId);
         }
 
         public IList<NodeImage> GetActivityInstanceCompleted(FlowCommandContext runner)
-            => GetActivityInstanceCompleted(runner.AppInstanceId, runner.ProcessId);
+            => GetActivityInstanceCompleted(runner.BizPK, runner.ProcessId);
 
-        public IList<NodeImage> GetActivityInstanceCompleted(string appInstanceId, string processId)
+        public IList<NodeImage> GetActivityInstanceCompleted(string bizPK, string processId)
         {
             IList<NodeImage> imageList = new List<NodeImage>();
             var am = new ActivityInstanceManager(Sail);
-            var list = am.GetActivityInstanceListCompleted(appInstanceId, processId);
+            var list = am.GetActivityInstanceListCompleted(bizPK, processId);
 
             foreach (ActivityInstanceEntity a in list)
             {
@@ -479,7 +479,7 @@ namespace sailflow.biz.query
         {
             IList<TransitionImage> imageList = new List<TransitionImage>();
             var tm = new TransitionInstanceManager(Sail);
-            var list = tm.GetTransitionInstanceList(query.AppInstanceId, query.ProcessId, query.Version).ToList();
+            var list = tm.GetTransitionInstanceList(query.BizPK, query.ProcessId, query.Version).ToList();
 
             foreach (TransitionInstanceEntity t in list)
             {
@@ -495,7 +495,7 @@ namespace sailflow.biz.query
         public IList<ActivityInstanceEntity> GetRunningActivityInstance(TaskQuery query)
         {
             var aim = new ActivityInstanceManager(Sail);
-            return aim.GetRunningActivityInstanceList(query.AppInstanceId, query.ProcessId, query.Version).ToList();
+            return aim.GetRunningActivityInstanceList(query.BizPK, query.ProcessId, query.Version).ToList();
         }
 
         #endregion

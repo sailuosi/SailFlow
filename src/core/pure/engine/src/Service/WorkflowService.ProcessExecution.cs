@@ -45,7 +45,7 @@ namespace sailflow.engine.Service
             return result;
         }
         static string ResolveInstanceLockKey(FlowCommandContext runner)
-            => string.IsNullOrEmpty(runner?.AppInstanceId) ? runner?.ProcessId : runner.AppInstanceId;
+            => string.IsNullOrEmpty(runner?.BizPK) ? runner?.ProcessId : runner.BizPK;
 
         /// <summary>
         /// 办理动词 Async 共用：开事务 → await 实例锁 → 同步 Core → 成功则提交。
@@ -228,7 +228,7 @@ namespace sailflow.engine.Service
         /// <summary>
         /// Running process
         /// Coding example:
-        /// var wfResult = sail.CreateRunBuilder(...).UseApp(...).UseProcess(...).Run();
+        /// var wfResult = sail.CreateRunBuilder(...).UseBiz(...).UseProcess(...).Run();
         /// 或 workflow.RunProcess(runner);
         /// </summary>
 
@@ -1127,7 +1127,7 @@ namespace sailflow.engine.Service
             {
                 var firstActivity = pm.GetFirstActivity();
                 var aim = Sail.ManagerFactory.Activities;
-                var firstActivityInstance = aim.GetActivityInstanceLatest(runner.AppInstanceId, runner.ProcessId, firstActivity.ActivityId);
+                var firstActivityInstance = aim.GetActivityInstanceLatest(runner.BizPK, runner.ProcessId, firstActivity.ActivityId);
                 nextActivityPerformers = new Dictionary<string, PerformerList>();
                 var performer = new Performer(firstActivityInstance.CreatedUserId, firstActivityInstance.CreatedUserName);
                 var performerList = new PerformerList();

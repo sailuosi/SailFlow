@@ -15,6 +15,7 @@ public static class SailFeatureNames
     public const string SailRuntimeDefaults = "sail.runtime.defaults";
     public const string FlowGate = "flow-gate";
     public const string FlowHook = "flow-hook";
+    public const string ProcessInstanceCreateHook = "process-instance-create-hook";
     public const string TaskNotifier = "task-notifier";
     public const string HookOutboxDrain = "HookOutboxDrain";
     public const string HookOutboxDrainAutoStart = "HookOutboxDrain.AutoStart";

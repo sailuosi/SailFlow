@@ -14,6 +14,8 @@ namespace sailflow.engine.Hooks
         private readonly Dictionary<string, GateRegistration> _gates = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, HookRegistration> _hooks = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, NotifierRegistration> _notifiers = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, ProcessInstanceCreateHookRegistration> _createHooks =
+            new(StringComparer.OrdinalIgnoreCase);
 
         public SailClient Client { get; }
 
@@ -25,6 +27,8 @@ namespace sailflow.engine.Hooks
         public IReadOnlyCollection<GateRegistration> Gates => _gates.Values.OrderBy(g => g.Order).ToList();
         public IReadOnlyCollection<HookRegistration> Hooks => _hooks.Values.OrderBy(h => h.Order).ToList();
         public IReadOnlyCollection<NotifierRegistration> Notifiers => _notifiers.Values.OrderBy(n => n.Order).ToList();
+        public IReadOnlyCollection<ProcessInstanceCreateHookRegistration> ProcessInstanceCreateHooks =>
+            _createHooks.Values.OrderBy(h => h.Order).ToList();
 
         public void RegisterGate(IFlowGate gate, HookRegistrationOptions options = null)
         {
@@ -80,6 +84,27 @@ namespace sailflow.engine.Hooks
             _notifiers[registration.Name] = registration;
         }
 
+        public void RegisterProcessInstanceCreateHook(
+            IProcessInstanceCreateHook hook,
+            HookRegistrationOptions options = null)
+        {
+            ArgumentNullException.ThrowIfNull(hook);
+            RegisterProcessInstanceCreateHook(
+                BuildCreateHookRegistration(hook, options ?? new HookRegistrationOptions()));
+        }
+
+        public void RegisterProcessInstanceCreateHook(ProcessInstanceCreateHookRegistration registration)
+        {
+            ArgumentNullException.ThrowIfNull(registration);
+            if (string.IsNullOrWhiteSpace(registration.Name))
+                throw new ArgumentException("ProcessInstanceCreateHook Name is required.", nameof(registration));
+
+            if (_createHooks.ContainsKey(registration.Name))
+                TraceWarning($"ProcessInstanceCreateHook '{registration.Name}' overwritten by a later registration.");
+
+            _createHooks[registration.Name] = registration;
+        }
+
         internal static GateRegistration BuildGateRegistration(IFlowGate gate, HookRegistrationOptions o) =>
             new()
             {
@@ -119,6 +144,21 @@ namespace sailflow.engine.Hooks
                 Mode = o.Mode == HookMode.Sync ? HookMode.AsyncOutbox : o.Mode,
                 Handler = notifier,
                 InProcessThrottle = o.InProcessThrottle,
+            };
+
+        internal static ProcessInstanceCreateHookRegistration BuildCreateHookRegistration(
+            IProcessInstanceCreateHook hook,
+            HookRegistrationOptions o) =>
+            new()
+            {
+                Name = hook.Name,
+                Order = o.Order,
+                Match = o.Match,
+                ProcessCodes = o.ProcessCodes,
+                ProcessIds = o.ProcessIds,
+                BizChannels = o.BizChannels,
+                BizTypes = o.BizTypes,
+                Handler = hook,
             };
 
         private static void TraceWarning(string message) =>

@@ -58,9 +58,9 @@ namespace sailflow.engine.Runtime
             FlowCommandContext runner)
         {
             ActivityInstanceEntity entity = ActivityInstanceManager.CreateBackwardActivityInstanceObject(
-                processInstance.AppName,
-                processInstance.AppInstanceId,
-                processInstance.AppInstanceCode,
+                processInstance.BizChannel,
+                processInstance.BizPK,
+                processInstance.BizCode,
                 processInstance.ProcessInstanceId,
                 processInstance.ProcessId,
                 this.SendBackOperation.BackwardToTaskActivity,
@@ -122,9 +122,9 @@ namespace sailflow.engine.Runtime
             }
 
             var toActivityInstance = this.ActivityInstanceManager.CreateBackwardActivityInstanceObject(
-               processInstance.AppName,
-               processInstance.AppInstanceId,
-               processInstance.AppInstanceCode,
+               processInstance.BizChannel,
+               processInstance.BizPK,
+               processInstance.BizCode,
                processInstance.ProcessInstanceId,
                processInstance.ProcessId,
                backwardToTaskActivity,

@@ -67,9 +67,9 @@ namespace sailflow.engine.Runtime
         {
             //创建回滚到的节点信息
             //Create rollback to node information
-            var rollbackPreviousActivityInstance = base.ActivityInstanceManager.CreateBackwardActivityInstanceObject(processInstance.AppName,
-                processInstance.AppInstanceId,
-                processInstance.AppInstanceCode,
+            var rollbackPreviousActivityInstance = base.ActivityInstanceManager.CreateBackwardActivityInstanceObject(processInstance.BizChannel,
+                processInstance.BizPK,
+                processInstance.BizCode,
                 processInstance.ProcessInstanceId,
                 processInstance.ProcessId,
                 this.SendBackOperation.BackwardToTaskActivity,

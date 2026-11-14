@@ -17,10 +17,10 @@ namespace sailflow.engine.Entity
         public string TransitionInstanceId { get; set; }
         [SooColumn(Name = "ti_tran_id", Length = 64)]
         public string TransitionId { get; set; }
-        [SooColumn(Name = "ti_app_name", Length = 128)]
-        public string AppName { get; set; }
-        [SooColumn(Name = "ti_app_instance_id", Length = 128)]
-        public string AppInstanceId { get; set; }
+        [SooColumn(Name = "ti_biz_channel", Length = 128)]
+        public string BizChannel { get; set; }
+        [SooColumn(Name = "ti_biz_pk", Length = 128)]
+        public string BizPK { get; set; }
         [SooColumn(Name = "ti_proc_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string ProcessInstanceId { get; set; }
         [SooColumn(Name = "ti_process_id", Length = 64, Tag = "sail.id")]

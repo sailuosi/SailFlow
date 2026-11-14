@@ -54,7 +54,7 @@ namespace sailflow.engine.Runtime
 
             //判断应用数据是否缺失
             //Determine whether the application data is missing
-            if (string.IsNullOrEmpty(runner.AppInstanceId)
+            if (string.IsNullOrEmpty(runner.BizPK)
                 || string.IsNullOrEmpty(runner.ProcessId))
             {
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("nextstepparser.getnextactivityroleusertree.error"));

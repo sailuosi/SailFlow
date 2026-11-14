@@ -7,8 +7,8 @@ namespace sailflow.engine.Hooks
     /// <summary>Gate / Hook 统一上下文（Gate 默认只读）。</summary>
     public sealed class FlowHookContext
     {
-        public string AppName { get; set; }
-        public string AppInstanceId { get; set; }
+        public string BizChannel { get; set; }
+        public string BizPK { get; set; }
         public string ProcessId { get; set; }
         public string ProcessCode { get; set; }
         public string Version { get; set; }
@@ -16,6 +16,10 @@ namespace sailflow.engine.Hooks
         public string ActivityId { get; set; }
         public string ActivityCode { get; set; }
         public string ActivityInstanceId { get; set; }
+        /// <summary>当前节点定义 BizState。</summary>
+        public int ActivityBizState { get; set; }
+        /// <summary>当前节点定义 BizCode。</summary>
+        public string ActivityBizCode { get; set; }
         public string TaskId { get; set; }
         public string AssignedUserId { get; set; }
         public string AssignedUserName { get; set; }
@@ -35,8 +39,8 @@ namespace sailflow.engine.Hooks
     /// <summary>待办 Notifier 上下文。</summary>
     public sealed class TaskNotifyContext
     {
-        public string AppName { get; set; }
-        public string AppInstanceId { get; set; }
+        public string BizChannel { get; set; }
+        public string BizPK { get; set; }
         public string ProcessId { get; set; }
         public string ProcessCode { get; set; }
         public string Version { get; set; }
@@ -44,6 +48,10 @@ namespace sailflow.engine.Hooks
         public string ActivityId { get; set; }
         public string ActivityCode { get; set; }
         public string ActivityInstanceId { get; set; }
+        /// <summary>当前节点定义 BizState。</summary>
+        public int ActivityBizState { get; set; }
+        /// <summary>当前节点定义 BizCode。</summary>
+        public string ActivityBizCode { get; set; }
         public string TaskId { get; set; }
         public string AssignedUserId { get; set; }
         public string AssignedUserName { get; set; }

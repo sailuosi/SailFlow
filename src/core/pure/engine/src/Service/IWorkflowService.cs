@@ -188,13 +188,13 @@ namespace sailflow.engine.Service
 
         TaskViewEntity GetTaskView(string taskId);
         TaskViewEntity GetTaskView(string processInstanceId, string activityInstanceId);
-        TaskViewEntity GetTaskView(string appInstanceId, string processId, string userId);
+        TaskViewEntity GetTaskView(string bizPK, string processId, string userId);
         [Obsolete("replaced by the GetRunningTask, mainly used to run forward method internal")]
         ActivityInstanceEntity GetRunningNode(FlowCommandContext runner);
 
         ProcessInstanceEntity GetRunningProcessInstance(FlowCommandContext runner);
         ProcessInstanceEntity GetProcessInstance(string processInstanceId);
-        IList<ProcessInstanceEntity> GetProcessInstanceListByAppInstance(string appInstanceId);
+        IList<ProcessInstanceEntity> GetProcessInstanceListByBizPK(string bizPK);
         ProcessInstanceEntity GetProcessInstanceByActivity(string activityInstanceId);
         void UpdateProcessInstance(ProcessInstanceEntity entity);
 

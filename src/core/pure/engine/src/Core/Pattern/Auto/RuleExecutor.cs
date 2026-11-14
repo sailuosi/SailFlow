@@ -53,7 +53,7 @@ namespace sailflow.engine.Pattern
                 var processVariable = new ProcessVariableEntity
                 {
                     VariableScope = ProcessVariableScopeEnum.Activity.ToString(),
-                    AppInstanceId = processInstance?.AppInstanceId,
+                    BizPK = processInstance?.BizPK,
                     ProcessId = processInstance?.ProcessId,
                     ProcessInstanceId = processInstanceId,
                     ActivityInstanceId = currentActivityInstance.ActivityInstanceId,

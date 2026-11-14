@@ -249,8 +249,8 @@ public sealed class AutoApproveAnchorWorker
                 ProcessId = anchor.ProcessId ?? task.ProcessId,
                 Version = string.IsNullOrWhiteSpace(anchor.Version) ? versionHint : anchor.Version,
                 TaskId = task.TaskId,
-                AppName = task.AppName,
-                AppInstanceId = task.AppInstanceId,
+                BizChannel = task.BizChannel,
+                BizPK = task.BizPK,
                 DynamicVariables = dyn
             };
             // Job 路径走同步 API（草案阶段 0：去掉伪 async 线程池切换）
@@ -265,8 +265,8 @@ public sealed class AutoApproveAnchorWorker
                 ProcessId = anchor.ProcessId ?? readyAct!.ProcessId,
                 Version = string.IsNullOrWhiteSpace(anchor.Version) ? versionHint : anchor.Version,
                 ActivityInstanceId = readyAct!.ActivityInstanceId,
-                AppName = readyAct.AppName,
-                AppInstanceId = readyAct.AppInstanceId,
+                BizChannel = readyAct.BizChannel,
+                BizPK = readyAct.BizPK,
                 DynamicVariables = dyn
             };
             exec = wf.RunProcessAuto(runner);

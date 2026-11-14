@@ -8,6 +8,7 @@ using sailflow.data;
 using sailflow.engine.Entity;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
+using sailflow.engine.Hooks;
 using sailflow.engine.Xpdl;
 using sailflow.hub.Localize;
 using sailflow.hub.Resource;
@@ -28,15 +29,15 @@ namespace sailflow.engine.Manager
 
         protected SailClient Sail { get; }
         #region Query
-        internal ProcessInstanceEntity GetProcessInstanceLatest(string appInstanceId, string processId, string version)
+        internal ProcessInstanceEntity GetProcessInstanceLatest(string bizPK, string processId, string version)
         {
             var kit = Sail.UseRunSQL();
-            return GetProcessInstanceLatest(kit, appInstanceId, processId, version);
+            return GetProcessInstanceLatest(kit, bizPK, processId, version);
         }
 
         internal ProcessInstanceEntity GetProcessInstanceLatest(
-            SQLBuilder kit, string appInstanceId, string processId, string version)
-            => GetProcessInstanceCurrent(kit, appInstanceId, processId, version);
+            SQLBuilder kit, string bizPK, string processId, string version)
+            => GetProcessInstanceCurrent(kit, bizPK, processId, version);
 
         internal ProcessInstanceEntity GetById(string processInstanceId)
             => Sail.UseRunSQL().findRowById<ProcessInstanceEntity>(processInstanceId);
@@ -97,18 +98,18 @@ namespace sailflow.engine.Manager
             return new User { UserId = entity.CreatedUserId, UserName = entity.CreatedUserName };
         }
 
-        internal ProcessInstanceEntity GetProcessInstanceCurrent(string appInstanceId, string processId, string version)
+        internal ProcessInstanceEntity GetProcessInstanceCurrent(string bizPK, string processId, string version)
         {
             var kit = Sail.UseRunSQL();
-            return GetProcessInstanceCurrent(kit, appInstanceId, processId, version);
+            return GetProcessInstanceCurrent(kit, bizPK, processId, version);
         }
 
         internal ProcessInstanceEntity GetProcessInstanceCurrent(
-            SQLBuilder kit, string appInstanceId, string processId, string version)
+            SQLBuilder kit, string bizPK, string processId, string version)
         {
             var clip = kit.useClip();
             clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.AppInstanceId, appInstanceId)
+                .where(() => pi.BizPK, bizPK)
                 .where(() => pi.ProcessId, processId)
                 .where(() => pi.Version, version)
                 .where(() => pi.RecordStatusInvalid, (byte)0)
@@ -116,23 +117,23 @@ namespace sailflow.engine.Manager
             return clip.select(pi).take(1).queryList()?.FirstOrDefault();
         }
 
-        internal IEnumerable<ProcessInstanceEntity> GetProcessInstance(string appInstanceId)
+        internal IEnumerable<ProcessInstanceEntity> GetProcessInstance(string bizPK)
         {
             var kit = Sail.UseRunSQL();
             var clip = kit.useClip();
             clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.AppInstanceId, appInstanceId)
+                .where(() => pi.BizPK, bizPK)
                 .where(() => pi.RecordStatusInvalid, (byte)0)
                 .orderByDesc(() => pi.CreatedDateTime);
             return clip.select(pi).queryList();
         }
 
         internal IEnumerable<ProcessInstanceEntity> GetProcessInstance(
-            SQLBuilder kit, string appInstanceId, string processId, string version)
+            SQLBuilder kit, string bizPK, string processId, string version)
         {
             var clip = kit.useClip();
             clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.AppInstanceId, appInstanceId)
+                .where(() => pi.BizPK, bizPK)
                 .where(() => pi.ProcessId, processId)
                 .where(() => pi.Version, version)
                 .where(() => pi.RecordStatusInvalid, (byte)0)
@@ -141,11 +142,11 @@ namespace sailflow.engine.Manager
         }
 
         internal ProcessInstanceEntity GetSubProcessInstance(
-            SQLBuilder kit, string appInstanceId, string processId, string subProcessId)
+            SQLBuilder kit, string bizPK, string processId, string subProcessId)
         {
             var clip = kit.useClip();
             clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.AppInstanceId, appInstanceId)
+                .where(() => pi.BizPK, bizPK)
                 .where(() => pi.ProcessId, processId)
                 .where(() => pi.SubProcessId, subProcessId)
                 .where(() => pi.RecordStatusInvalid, (byte)0)
@@ -159,12 +160,12 @@ namespace sailflow.engine.Manager
             throw new WorkflowException(Sail.Messages.GetEngineMessage("processinstancemanager.GetSubProcessInstance.error"));
         }
 
-        internal ProcessInstanceEntity GetRunningProcessInstance(string appInstanceId, string processId)
+        internal ProcessInstanceEntity GetRunningProcessInstance(string bizPK, string processId)
         {
             var kit = Sail.UseRunSQL();
             var clip = kit.useClip();
             clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.AppInstanceId, appInstanceId)
+                .where(() => pi.BizPK, bizPK)
                 .where(() => pi.ProcessId, processId)
                 .where(() => pi.RecordStatusInvalid, (byte)0)
                 .whereIn(() => pi.ProcessState, new short?[]
@@ -217,27 +218,33 @@ namespace sailflow.engine.Manager
         internal ProcessInstanceEntity CreateNewProcessInstanceObject(
             FlowCommandContext runner,
             ProcessEntity processEntity,
-            SubProcessNode subProcessNode = null)
+            SubProcessNode subProcessNode = null,
+            SQLBuilder kit = null)
         {
+            runner?.ApplyBizData();
+
             var entity = new ProcessInstanceEntity
             {
                 ProcessId = processEntity.ProcessId,
                 ProcessName = processEntity.ProcessName,
                 Version = processEntity.Version,
-                AppName = runner.AppName,
-                AppInstanceId = runner.AppInstanceId,
-                AppInstanceCode = runner.AppInstanceCode,
+                Title = null,
+                BizType = runner?.BizType,
+                BizChannel = runner?.BizChannel,
+                BizPK = runner?.BizPK,
+                BizCode = runner?.BizCode,
+                BizName = runner?.BizName,
                 ProcessState = (int)ProcessStateEnum.Running,
-                StartUnitId = !string.IsNullOrWhiteSpace(runner.StartUnitId)
+                StartUnitId = !string.IsNullOrWhiteSpace(runner?.StartUnitId)
                     ? runner.StartUnitId
-                    : runner.CompanyId,
-                StartUnitCode = runner.StartUnitCode,
-                StartUnitName = runner.StartUnitName,
-                CreatedUserId = runner.UserId,
-                CreatedUserName = runner.UserName,
+                    : runner?.CompanyId,
+                StartUnitCode = runner?.StartUnitCode,
+                StartUnitName = runner?.StartUnitName,
+                CreatedUserId = runner?.UserId,
+                CreatedUserName = runner?.UserName,
                 CreatedDateTime = DateTime.UtcNow,
-                UpdatedUserId = runner.UserId,
-                UpdatedUserName = runner.UserName,
+                UpdatedUserId = runner?.UserId,
+                UpdatedUserName = runner?.UserName,
                 UpdatedDateTime = DateTime.UtcNow
             };
 
@@ -261,7 +268,55 @@ namespace sailflow.engine.Manager
             if (processEntity.EndType == (short)ProcessEndTypeEnum.Timer)
                 entity.OverdueDateTime = CalculateOverdueDateTime(entity.CreatedDateTime.Value, processEntity.EndExpression);
 
+            RunProcessInstanceCreateHooks(kit, runner, processEntity, entity);
             return entity;
+        }
+
+        private void RunProcessInstanceCreateHooks(
+            SQLBuilder kit,
+            FlowCommandContext runner,
+            ProcessEntity processEntity,
+            ProcessInstanceEntity entity)
+        {
+            var regs = Sail.Capabilities.ProcessInstanceCreateHooks;
+            if (regs.Count == 0) return;
+
+            var ctx = new ProcessInstanceCreateContext
+            {
+                Runner = runner,
+                Process = processEntity,
+                Instance = entity,
+                Kit = kit
+            };
+
+            foreach (var reg in regs)
+            {
+                if (reg?.Handler == null) continue;
+                if (!MatchesCreateHook(reg, processEntity, entity)) continue;
+                reg.Handler.OnCreating(ctx);
+            }
+        }
+
+        private static bool MatchesCreateHook(
+            ProcessInstanceCreateHookRegistration reg,
+            ProcessEntity processEntity,
+            ProcessInstanceEntity entity)
+        {
+            if (!FlowCapabilityMatch.MatchesProcess(
+                    reg.Match,
+                    reg.ProcessCodes,
+                    reg.ProcessIds,
+                    processEntity?.ProcessCode,
+                    processEntity?.ProcessId))
+                return false;
+
+            if (!FlowCapabilityMatch.MatchesOptionalList(reg.BizChannels, entity?.BizChannel))
+                return false;
+
+            if (!FlowCapabilityMatch.MatchesOptionalList(reg.BizTypes, entity?.BizType))
+                return false;
+
+            return true;
         }
 
         private static DateTime CalculateOverdueDateTime(DateTime current, string expression)
@@ -410,7 +465,7 @@ namespace sailflow.engine.Manager
         {
             try
             {
-                var entity = GetProcessInstanceLatest(kit, runner.AppInstanceId, runner.ProcessId, runner.Version);
+                var entity = GetProcessInstanceLatest(kit, runner.BizPK, runner.ProcessId, runner.Version);
                 if (entity == null || entity.ProcessState != (short)ProcessStateEnum.Running)
                     throw new WorkflowException(Sail.Messages.GetEngineMessage("processinstancemanager.cancel.error"));
 
@@ -455,7 +510,7 @@ namespace sailflow.engine.Manager
                 .set(() => pi.UpdatedDateTime, DateTime.UtcNow)
                 .set(() => pi.UpdatedUserId, runner.UserId)
                 .set(() => pi.UpdatedUserName, runner.UserName)
-                .where(() => pi.AppInstanceId, runner.AppInstanceId)
+                .where(() => pi.BizPK, runner.BizPK)
                 .where(() => pi.ProcessId, runner.ProcessId)
                 .where(() => pi.Version, runner.Version)
                 .doUpdate();
@@ -472,7 +527,7 @@ namespace sailflow.engine.Manager
                     if (!string.IsNullOrWhiteSpace(runner.ProcessInstanceId))
                         entity = GetById(kit, runner.ProcessInstanceId);
                     else
-                        entity = GetProcessInstanceLatest(kit, runner.AppInstanceId, runner.ProcessId, runner.Version);
+                        entity = GetProcessInstanceLatest(kit, runner.BizPK, runner.ProcessId, runner.Version);
                     var ok = Terminate(kit, entity, runner.UserId, runner.UserName);
                     kit.commit();
                     return ok;

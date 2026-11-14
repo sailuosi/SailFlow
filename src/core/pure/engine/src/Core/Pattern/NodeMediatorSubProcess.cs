@@ -425,9 +425,9 @@ namespace sailflow.engine.Pattern
         {
             FlowCommandContext subRunner = new FlowCommandContext();
             subRunner.ProcessId = runner.ProcessId;
-            subRunner.AppInstanceCode = runner.AppInstanceCode;
-            subRunner.AppInstanceId = runner.AppInstanceId;
-            subRunner.AppName = runner.AppName;
+            subRunner.BizCode = runner.BizCode;
+            subRunner.BizPK = runner.BizPK;
+            subRunner.BizChannel = runner.BizChannel;
             subRunner.Version = runner.Version;
             subRunner.UserId = performer.UserId;
             subRunner.UserName = performer.UserName;

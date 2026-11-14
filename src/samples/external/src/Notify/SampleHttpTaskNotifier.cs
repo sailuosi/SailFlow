@@ -37,7 +37,7 @@ public sealed class SampleHttpTaskNotifier : TaskNotifyChannelBase
             ctx.ProcessInstanceId,
             ctx.TaskId,
             ctx.AssignedUserId,
-            ctx.AppInstanceId,
+            ctx.BizPK,
         });
 
         using var content = new StringContent(payload, Encoding.UTF8, "application/json");

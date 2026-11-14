@@ -469,6 +469,139 @@ public static class SailFlowCapabilityExtensions
         return client;
     }
 
+    /// <summary>追加流程实例创建 Hook（拼装后、Insert 前；固定 Sync）。</summary>
+    public static ISailCollection AddProcessInstanceCreateHook(
+        this ISailCollection services,
+        IProcessInstanceCreateHook hook,
+        Action<HookRegistrationOptions> configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(hook);
+        var options = new HookRegistrationOptions();
+        configure?.Invoke(options);
+        GetPending(services).Add(r => r.RegisterProcessInstanceCreateHook(hook, options));
+        services.ProvideFeature(SailFeatureNames.ProcessInstanceCreateHook, order: 32);
+        return services;
+    }
+
+    /// <summary>委托形式追加创建 Hook（临时/短逻辑，不必单独建 class）。</summary>
+    public static ISailCollection AddProcessInstanceCreateHook(
+        this ISailCollection services,
+        string name,
+        Action<ProcessInstanceCreateContext> handle,
+        Action<HookRegistrationOptions> configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(handle);
+        return services.AddProcessInstanceCreateHook(
+            new DelegateProcessInstanceCreateHook(name, handle), configure);
+    }
+
+    /// <summary>
+    /// 快捷注册标题规则：<paramref name="titleFactory"/> 返回非空则写入 <c>Instance.Title</c>
+    ///（已有 Title 时不覆盖）。底层仍是创建 Hook。
+    /// </summary>
+    public static ISailCollection AddProcessInstanceTitleRule(
+        this ISailCollection services,
+        string name,
+        Func<ProcessInstanceCreateContext, string> titleFactory,
+        Action<HookRegistrationOptions> configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(titleFactory);
+        return services.AddProcessInstanceCreateHook(name, ctx =>
+        {
+            if (ctx?.Instance == null) return;
+            if (!string.IsNullOrWhiteSpace(ctx.Instance.Title)) return;
+            var title = titleFactory(ctx);
+            if (!string.IsNullOrWhiteSpace(title))
+                ctx.Instance.Title = title.Trim();
+        }, configure);
+    }
+
+    public static ISailCollection AddProcessInstanceCreateHook<THook>(
+        this ISailCollection services,
+        Action<HookRegistrationOptions> configure = null)
+        where THook : class, IProcessInstanceCreateHook, new()
+        => services.AddProcessInstanceCreateHook(new THook(), configure);
+
+    public static SailClientBuilder AddProcessInstanceCreateHook(
+        this SailClientBuilder builder,
+        IProcessInstanceCreateHook hook,
+        Action<HookRegistrationOptions> configure = null)
+    {
+        builder.Services.AddProcessInstanceCreateHook(hook, configure);
+        return builder;
+    }
+
+    public static SailClientBuilder AddProcessInstanceCreateHook(
+        this SailClientBuilder builder,
+        string name,
+        Action<ProcessInstanceCreateContext> handle,
+        Action<HookRegistrationOptions> configure = null)
+    {
+        builder.Services.AddProcessInstanceCreateHook(name, handle, configure);
+        return builder;
+    }
+
+    public static SailClientBuilder AddProcessInstanceTitleRule(
+        this SailClientBuilder builder,
+        string name,
+        Func<ProcessInstanceCreateContext, string> titleFactory,
+        Action<HookRegistrationOptions> configure = null)
+    {
+        builder.Services.AddProcessInstanceTitleRule(name, titleFactory, configure);
+        return builder;
+    }
+
+    public static SailClientBuilder AddProcessInstanceCreateHook<THook>(
+        this SailClientBuilder builder,
+        Action<HookRegistrationOptions> configure = null)
+        where THook : class, IProcessInstanceCreateHook, new()
+    {
+        builder.Services.AddProcessInstanceCreateHook<THook>(configure);
+        return builder;
+    }
+
+    public static SailClient addProcessInstanceCreateHook(
+        this SailClient client,
+        IProcessInstanceCreateHook hook,
+        Action<HookRegistrationOptions> configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+        client.Capabilities.RegisterProcessInstanceCreateHook(hook, ApplyOptions(configure));
+        return client;
+    }
+
+    public static SailClient addProcessInstanceCreateHook(
+        this SailClient client,
+        string name,
+        Action<ProcessInstanceCreateContext> handle,
+        Action<HookRegistrationOptions> configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(handle);
+        client.Capabilities.RegisterProcessInstanceCreateHook(
+            new DelegateProcessInstanceCreateHook(name, handle), ApplyOptions(configure));
+        return client;
+    }
+
+    public static SailClient addProcessInstanceTitleRule(
+        this SailClient client,
+        string name,
+        Func<ProcessInstanceCreateContext, string> titleFactory,
+        Action<HookRegistrationOptions> configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(titleFactory);
+        return client.addProcessInstanceCreateHook(name, ctx =>
+        {
+            if (ctx?.Instance == null) return;
+            if (!string.IsNullOrWhiteSpace(ctx.Instance.Title)) return;
+            var title = titleFactory(ctx);
+            if (!string.IsNullOrWhiteSpace(title))
+                ctx.Instance.Title = title.Trim();
+        }, configure);
+    }
+
     /// <summary>
     /// 取得（或创建）Builder 期 pending 动作列表，键为 <see cref="SailBuilderKeys.FlowCapabilities"/>。
     /// </summary>

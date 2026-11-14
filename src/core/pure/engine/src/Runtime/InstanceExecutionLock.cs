@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace sailflow.engine.Runtime
 {
     /// <summary>
-    /// 本机按业务键（通常 AppInstanceId）串行办理动词（Start/Run/Withdraw/SendBack/…）。
+    /// 本机按业务键（通常 BizPK）串行办理动词（Start/Run/Withdraw/SendBack/…）。
     /// 字典私有；外部仅可 <see cref="CleanupIdle"/> 按空闲 TTL 销户。
     /// </summary>
     public static class InstanceExecutionLock

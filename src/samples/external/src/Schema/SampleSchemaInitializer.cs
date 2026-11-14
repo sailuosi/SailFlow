@@ -194,9 +194,11 @@ public static class SampleSchemaInitializer
         clip.select(() => new
         {
             t.TaskId,
-            t.AppName,
-            t.AppInstanceId,
-            pi.AppInstanceCode,
+            t.BizChannel,
+            t.BizPK,
+            pi.BizCode,
+            pi.Title,
+            pi.ProcessName,
             t.ProcessInstanceId,
             pi.ProcessId,
             pi.Version,

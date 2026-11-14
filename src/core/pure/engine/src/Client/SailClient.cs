@@ -332,6 +332,15 @@ public partial class SailClient
         return this;
     }
 
+    /// <summary>追加流程实例创建 Hook（同名后注册覆盖；固定 Sync）。</summary>
+    public SailClient addProcessInstanceCreateHook(
+        IProcessInstanceCreateHook hook,
+        HookRegistrationOptions options = null)
+    {
+        Capabilities.RegisterProcessInstanceCreateHook(hook, options ?? new HookRegistrationOptions());
+        return this;
+    }
+
     /// <summary>追加待办 Notifier（同名后注册覆盖）。</summary>
     public SailClient addNotifier(ITaskNotifier notifier, HookRegistrationOptions options = null)
     {

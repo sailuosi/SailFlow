@@ -14,6 +14,12 @@ namespace sailflow.engine.Hooks
         public HookMode Mode { get; set; } = HookMode.AsyncOutbox;
         public int Order { get; set; }
 
+        /// <summary>创建 Hook 扩展：按实例 BizChannel 过滤；空=不限。</summary>
+        public string[] BizChannels { get; set; }
+
+        /// <summary>创建 Hook 扩展：按实例 BizType 过滤；空=不限。</summary>
+        public string[] BizTypes { get; set; }
+
         /// <summary>
         /// Notifier 专用：Outbox Drain 认领后的进程内限流。null 表示直调 <c>NotifyAsync</c>。
         /// Gate / Hook 忽略此字段。
