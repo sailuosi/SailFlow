@@ -43,6 +43,10 @@ namespace sailflow.hub.Form
         [SooColumn(Name = "ff_auth_id", Length = 64)]
         public string AuthId { get; set; }
 
+        /// <summary>密级（列 <c>ff_auth_level</c>）。业务侧权限过滤预留；可空非必填。</summary>
+        [SooColumn(Name = "ff_auth_level")]
+        public int? AuthLevel { get; set; }
+
         [SooColumn(Name = "ff_crt_time")]
         public DateTime? CreatedDate { get; set; }
 

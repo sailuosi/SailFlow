@@ -61,6 +61,7 @@ namespace sailflow.engine.tests
             Assert.Contains("[p_auth_type] nvarchar(20)", sql, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("[p_auth_code] nvarchar(200)", sql, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("[p_auth_id] nvarchar(64)", sql, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("[p_auth_level] int", sql, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

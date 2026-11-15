@@ -85,6 +85,13 @@ namespace sailflow.engine.Entity
         public string AuthId { get; set; }
 
         /// <summary>
+        /// 密级（列 <c>p_auth_level</c>）。
+        /// 业务侧权限过滤预留；可空非必填；引擎主路径不强制消费。
+        /// </summary>
+        [SooColumn(Name = "p_auth_level")]
+        public int? AuthLevel { get; set; }
+
+        /// <summary>
         /// 流程包类型（列 <c>p_pkg_type</c>），见 <see cref="sailflow.engine.Common.PackageTypeEnum"/>。
         /// 1=Package 协作流程包；2=Pool 泳道流程。
         /// </summary>

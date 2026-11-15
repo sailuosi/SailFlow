@@ -27,6 +27,8 @@ namespace sailflow.hub.Form
         public string AuthCode { get; set; }
         /// <summary>授权主体 Id；业务侧权限过滤预留。</summary>
         public string AuthId { get; set; }
+        /// <summary>密级；业务侧权限过滤预留。</summary>
+        public int? AuthLevel { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdatedDate { get; set; }
         public IList<FieldActivityEdit> FieldActivityEditList { get; set; }

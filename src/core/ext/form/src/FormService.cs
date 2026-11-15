@@ -67,6 +67,7 @@ namespace sailflow.hub.Form
             entity.AuthType = form.AuthType;
             entity.AuthCode = form.AuthCode;
             entity.AuthId = form.AuthId;
+            entity.AuthLevel = form.AuthLevel;
             entity.TemplateContent = form.Conf;
             entity.HTMLContent = form.FieldsJson;
             entity.FieldSummary = BuildFieldSummary(form.FieldsJson);
@@ -100,6 +101,7 @@ namespace sailflow.hub.Form
                 AuthType = item.AuthType,
                 AuthCode = item.AuthCode,
                 AuthId = item.AuthId,
+                AuthLevel = item.AuthLevel,
                 CreatedDate = item.CreatedDate,
                 LastUpdatedDate = item.LastUpdatedDate
             };
