@@ -21,6 +21,12 @@ namespace sailflow.hub.Form
         /// <summary>form-create fields JSON 数组字符串（存 HTMLContent）。</summary>
         public string FieldsJson { get; set; }
         public string Description { get; set; }
+        /// <summary>授权类型；业务侧权限过滤预留。</summary>
+        public string AuthType { get; set; }
+        /// <summary>授权编码；业务侧权限过滤预留。</summary>
+        public string AuthCode { get; set; }
+        /// <summary>授权主体 Id；业务侧权限过滤预留。</summary>
+        public string AuthId { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdatedDate { get; set; }
         public IList<FieldActivityEdit> FieldActivityEditList { get; set; }

@@ -64,6 +64,9 @@ namespace sailflow.hub.Form
             entity.FormCode = form.FormCode;
             entity.Version = string.IsNullOrEmpty(form.Version) ? "1" : form.Version;
             entity.Description = form.Description;
+            entity.AuthType = form.AuthType;
+            entity.AuthCode = form.AuthCode;
+            entity.AuthId = form.AuthId;
             entity.TemplateContent = form.Conf;
             entity.HTMLContent = form.FieldsJson;
             entity.FieldSummary = BuildFieldSummary(form.FieldsJson);
@@ -94,6 +97,9 @@ namespace sailflow.hub.Form
                 FormName = item.FormName,
                 Version = item.Version,
                 Description = item.Description,
+                AuthType = item.AuthType,
+                AuthCode = item.AuthCode,
+                AuthId = item.AuthId,
                 CreatedDate = item.CreatedDate,
                 LastUpdatedDate = item.LastUpdatedDate
             };

@@ -31,6 +31,18 @@ namespace sailflow.hub.Form
         [SooColumn(Name = "ff_description", Length = 500)]
         public string Description { get; set; }
 
+        /// <summary>授权类型（列 <c>ff_auth_type</c>）。业务侧权限过滤预留；可空非必填。</summary>
+        [SooColumn(Name = "ff_auth_type", Length = 20)]
+        public string AuthType { get; set; }
+
+        /// <summary>授权编码（列 <c>ff_auth_code</c>）。业务侧权限过滤预留；可空非必填。</summary>
+        [SooColumn(Name = "ff_auth_code", Length = 200)]
+        public string AuthCode { get; set; }
+
+        /// <summary>授权主体 Id（列 <c>ff_auth_id</c>）。业务侧权限过滤预留；可空非必填。</summary>
+        [SooColumn(Name = "ff_auth_id", Length = 64)]
+        public string AuthId { get; set; }
+
         [SooColumn(Name = "ff_crt_time")]
         public DateTime? CreatedDate { get; set; }
 
