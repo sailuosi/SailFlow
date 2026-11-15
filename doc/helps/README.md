@@ -7,4 +7,5 @@
 | [博文-骨架成型进入打磨验证.md](./博文-骨架成型进入打磨验证.md) | **第二篇博文底稿**：首篇之后骨架立住、进入打磨验证阶段的进展综述 |
 | [教程-事件体系Gate-Hook-Notifier-Outbox.md](./教程-事件体系Gate-Hook-Notifier-Outbox.md) | Gate / Hook / Notifier / Outbox 完整使用教程（对照已落地 API） |
 | [教程-连线条件与后续节点演算.md](./教程-连线条件与后续节点演算.md) | 连线条件、`IfCondition`、`UseNextStepRoute`、后续演算与网关；与待办人 Filter 边界 |
+| [指南-待办人预选场景.md](./指南-待办人预选场景.md) | **发起时预选后续节点办理人**：预选表 + Resolve 骨架 + 宿主 UX；不改流转内核 |
 | [../sail/特性说明-下一节点过滤器.md](../sail/特性说明-下一节点过滤器.md) | 下一跳管道定型与分期（**S0–S2 已落地**） |

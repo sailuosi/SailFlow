@@ -126,6 +126,20 @@ public static class SailAssigneeExtensions
         registry.Register(new CaptainLeaveJudge());
     }
 
+    /// <summary>
+    /// 启用实例预选算人：注册 Type=<see cref="AssigneeResolveTypeCodes.Preselect"/> 的
+    /// <see cref="PreselectAssigneeResolver"/>（绑定 <paramref name="store"/>）。
+    /// 默认不进内置 RegisterBuiltins；产品宿主显式调用。
+    /// </summary>
+    public static SailClient UsePreselectAssignees(
+        this SailClient client,
+        IPreselectAssigneeStore store)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(store);
+        return client.useAssigneeResolver(new PreselectAssigneeResolver(store));
+    }
+
     /// <summary>注册业务回调（BusinessCallback.Params.callback）。</summary>
     public static SailClient useAssigneeBusinessCallback(
         this SailClient client,

@@ -22,6 +22,12 @@ public static class AssigneeResolveTypeCodes
 
     /// <summary>表达式：Params.expression / userIdsField，从 Conditions 取值。</summary>
     public const string Expression = "Expression";
+
+    /// <summary>
+    /// 实例预选：按 ProcessInstanceId + ActivityId 从 <c>IPreselectAssigneeStore</c> 取人。
+    /// 默认不进 RegisterBuiltins；宿主 <c>UsePreselectAssignees(store)</c> 显式启用。
+    /// </summary>
+    public const string Preselect = "Preselect";
 }
 
 /// <summary>内置 LeaveJudge Type 码（静态 string，禁止改成 enum）。</summary>
