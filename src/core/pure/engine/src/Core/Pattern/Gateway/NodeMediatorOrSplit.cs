@@ -34,7 +34,7 @@ namespace sailflow.engine.Pattern
             SQLBuilder kit)
         {
             var gatewayActivityInstance = base.CreateActivityInstanceObject(base.GatewayActivity, processInstance, runner);
-            gatewayActivityInstance.GatewayDirectionTypeId = (short)GatewayDirectionEnum.OrSplit;
+            gatewayActivityInstance.GateWayTypeId = (short)GatewayDirectionEnum.OrSplit;
 
             base.InsertActivityInstance(gatewayActivityInstance,
                 kit);

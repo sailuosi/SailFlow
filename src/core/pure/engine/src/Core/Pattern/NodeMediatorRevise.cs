@@ -37,7 +37,7 @@ namespace sailflow.engine.Pattern
                 OnBeforeExecuteWorkItem();
 
                 //先获取原始退回节点信息
-                var backSrcActivityInstanceId = base.ActivityForwardContext.FromActivityInstance.BackSrcActivityInstanceId;
+                var backSrcActivityInstanceId = base.ActivityForwardContext.FromActivityInstance.BackSrcActInstanceId;
                 if (backSrcActivityInstanceId != null)
                 {
                     //完成当前的任务节点
@@ -56,7 +56,7 @@ namespace sailflow.engine.Pattern
                         var performerList = nextStep[backSrcActivityInstance.ActivityId];
 
                         //判定不同修订模式
-                        var mainActivityInstanceId = backSrcActivityInstance.MainActivityInstanceId;
+                        var mainActivityInstanceId = backSrcActivityInstance.MainActInstanceId;
                         if (mainActivityInstanceId != null)
                         {
                             //会签模式
@@ -168,9 +168,9 @@ namespace sailflow.engine.Pattern
 
                 //基于主节点复制子节点数据
                 entity = ActivityInstanceManager.CreateActivityInstanceObject(mainActivityInstance);
-                entity.AssignedUserIds = userId;
-                entity.AssignedUserNames = userName;
-                entity.MainActivityInstanceId = mainActivityInstance.ActivityInstanceId;
+                entity.SignIds = userId;
+                entity.SignNames = userName;
+                entity.MainActInstanceId = mainActivityInstance.ActivityInstanceId;
 
                 //设置多实例子节点串行/并行执行顺序
                 if (mainActivityInstance.MergeType == (short)MergeTypeEnum.Sequence)
@@ -205,7 +205,7 @@ namespace sailflow.engine.Pattern
             string userId)
         {
             var isExisted = false;
-            var child = childNodeOfMI.Find(a => a.AssignedUserIds.Contains(userId));
+            var child = childNodeOfMI.Find(a => a.SignIds.Contains(userId));
 
             if (child != null)
                 isExisted = true;
@@ -237,8 +237,8 @@ namespace sailflow.engine.Pattern
                 }
 
                 newChildInstance = ActivityInstanceManager.CreateActivityInstanceObject(toActivityInstance);
-                newChildInstance.AssignedUserIds = userId;
-                newChildInstance.AssignedUserNames = userName;
+                newChildInstance.SignIds = userId;
+                newChildInstance.SignNames = userName;
 
                 newChildInstance.ActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), newChildInstance);
 

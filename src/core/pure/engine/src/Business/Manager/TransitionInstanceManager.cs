@@ -27,7 +27,7 @@ namespace sailflow.engine.Manager
         ISailHotShardRouter Router => Sail.HotShard;
 
         #region Create
-        internal TransitionInstanceEntity CreateTransitionInstanceObject(
+        internal TrackEntity CreateTransitionInstanceObject(
             ProcessInstanceEntity processInstance,
             string transitionId,
             ActivityInstanceEntity fromActivityInstance,
@@ -37,7 +37,7 @@ namespace sailflow.engine.Manager
             FlowCommandContext runner,
             byte conditionParseResult)
         {
-            var entity = new TransitionInstanceEntity
+            var entity = new TrackEntity
             {
                 BizChannel = processInstance.BizChannel,
                 BizPK = processInstance.BizPK,
@@ -46,14 +46,14 @@ namespace sailflow.engine.Manager
                 TransitionId = transitionId,
                 TransitionType = (byte)transitionType,
                 FlyingType = (byte)flyingType,
-                FromActivityId = fromActivityInstance.ActivityId,
-                FromActivityInstanceId = fromActivityInstance.ActivityInstanceId,
-                FromActivityType = fromActivityInstance.ActivityType,
-                FromActivityName = fromActivityInstance.ActivityName,
-                ToActivityId = toActivityInstance.ActivityId,
-                ToActivityInstanceId = toActivityInstance.ActivityInstanceId,
-                ToActivityType = toActivityInstance.ActivityType,
-                ToActivityName = toActivityInstance.ActivityName,
+                FromActId = fromActivityInstance.ActivityId,
+                FromActInstanceId = fromActivityInstance.ActivityInstanceId,
+                FromActType = fromActivityInstance.ActivityType,
+                FromActName = fromActivityInstance.ActivityName,
+                ToActId = toActivityInstance.ActivityId,
+                ToActInstanceId = toActivityInstance.ActivityInstanceId,
+                ToActType = toActivityInstance.ActivityType,
+                ToActName = toActivityInstance.ActivityName,
                 ConditionParsedResult = conditionParseResult,
                 CreatedUserId = runner.UserId,
                 CreatedUserName = runner.UserName,
@@ -65,11 +65,11 @@ namespace sailflow.engine.Manager
 
         #region Insert / Delete
 
-        internal string Insert(SQLBuilder kit, TransitionInstanceEntity entity)
+        internal string Insert(SQLBuilder kit, TrackEntity entity)
         {
             var table = Router.ResolveTransitionTable(entity?.ProcessId);
-            var newId = kit.insertReturnId<TransitionInstanceEntity,string>( entity, table);
-            entity.TransitionInstanceId = newId;
+            var newId = kit.insertReturnId<TrackEntity,string>( entity, table);
+            entity.TrackId = newId;
             return newId;
         }
 
@@ -78,7 +78,7 @@ namespace sailflow.engine.Manager
         #region Query
 
 
-        internal TransitionInstanceEntity GetEndTransition(string bizChannel, string bizPK, string processId)
+        internal TrackEntity GetEndTransition(string bizChannel, string bizPK, string processId)
         {
             var nodeList = GetTransitonInstance(bizPK, processId, ActivityTypeEnum.EndNode).ToList();
             if (nodeList == null || nodeList.Count == 0)
@@ -86,7 +86,7 @@ namespace sailflow.engine.Manager
             return nodeList[0];
         }
 
-        internal TransitionInstanceEntity GetLastTaskTransition(string bizChannel, string bizPK, string processId)
+        internal TrackEntity GetLastTaskTransition(string bizChannel, string bizPK, string processId)
         {
             var nodeList = GetWorkItemTransitonInstance(bizPK, processId).ToList();
             if (nodeList.Count == 0)
@@ -94,24 +94,24 @@ namespace sailflow.engine.Manager
             return nodeList[0];
         }
 
-        internal IEnumerable<TransitionInstanceEntity> GetWorkItemTransitonInstance(string bizPK, string processId)
+        internal IEnumerable<TrackEntity> GetWorkItemTransitonInstance(string bizPK, string processId)
         {
             var kit = Sail.UseRunSQL();
             return GetWorkItemTransitonInstance(kit, bizPK, processId);
         }
 
-        internal IEnumerable<TransitionInstanceEntity> GetWorkItemTransitonInstance(
+        internal IEnumerable<TrackEntity> GetWorkItemTransitonInstance(
             SQLBuilder kit, string bizPK, string processId)
         {
             return QueryWithFallback(kit, processId, table =>
             {
                 var clip = kit.useClip();
-                clip.from<TransitionInstanceEntity>(table, out var t)
-                    .InnerJoin<ActivityInstanceEntity>(out var a).on(() => t.ToActivityInstanceId == a.ActivityInstanceId)
+                clip.from<TrackEntity>(table, out var t)
+                    .InnerJoin<ActivityInstanceEntity>(out var a).on(() => t.ToActInstanceId == a.ActivityInstanceId)
                     .where(() => t.BizPK, bizPK)
                     .where(() => t.ProcessId, processId)
                     .sinkOR()
-                    .whereIn(() => t.ToActivityType, new short?[]
+                    .whereIn(() => t.ToActType, new short?[]
                     {
                         (short)ActivityTypeEnum.TaskNode,
                         (short)ActivityTypeEnum.SubProcessNode,
@@ -124,32 +124,32 @@ namespace sailflow.engine.Manager
             });
         }
 
-        internal IEnumerable<TransitionInstanceEntity> GetTransitonInstance(
+        internal IEnumerable<TrackEntity> GetTransitonInstance(
             string bizPK, string processId, ActivityTypeEnum toActivityType)
         {
             var kit = Sail.UseRunSQL();
             return GetTransitonInstance(kit, bizPK, processId, toActivityType);
         }
 
-        internal IEnumerable<TransitionInstanceEntity> GetTransitonInstance(
+        internal IEnumerable<TrackEntity> GetTransitonInstance(
             SQLBuilder kit, string bizPK, string processId, ActivityTypeEnum toActivityType)
         {
             return QueryWithFallback(kit, processId, table =>
             {
                 var clip = kit.useClip();
-                clip.from<TransitionInstanceEntity>(table, out var t)
+                clip.from<TrackEntity>(table, out var t)
                     .where(() => t.BizPK, bizPK)
                     .where(() => t.ProcessId, processId)
-                    .where(() => t.ToActivityType, (short)toActivityType)
+                    .where(() => t.ToActType, (short)toActivityType)
                     .orderByDesc(() => t.CreatedDateTime);
                 return clip.select(t).queryList().ToList();
             });
         }
 
-        public IEnumerable<TransitionInstanceEntity> GetTransitionInstanceList(
+        public IEnumerable<TrackEntity> GetTransitionInstanceList(
             string bizPK, string processId, string version)
         {
-            IEnumerable<TransitionInstanceEntity> list = new List<TransitionInstanceEntity>();
+            IEnumerable<TrackEntity> list = new List<TrackEntity>();
             var pim = Sail.ProcessInstances;
             var pi = pim.GetProcessInstanceCurrent(bizPK, processId, version);
             if (pi != null)
@@ -157,20 +157,20 @@ namespace sailflow.engine.Manager
             return list;
         }
 
-        internal IEnumerable<TransitionInstanceEntity> GetTransitionInstanceListByProcessInstance(
+        internal IEnumerable<TrackEntity> GetTransitionInstanceListByProcessInstance(
             string bizPK, string processId, string processInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetTransitionInstanceListByProcessInstance(kit, bizPK, processId, processInstanceId);
         }
 
-        internal IEnumerable<TransitionInstanceEntity> GetTransitionInstanceListByProcessInstance(
+        internal IEnumerable<TrackEntity> GetTransitionInstanceListByProcessInstance(
             SQLBuilder kit, string bizPK, string processId, string processInstanceId)
         {
             return QueryWithFallback(kit, processId, table =>
             {
                 var clip = kit.useClip();
-                clip.from<TransitionInstanceEntity>(table, out var t)
+                clip.from<TrackEntity>(table, out var t)
                     .where(() => t.BizPK, bizPK)
                     .where(() => t.ProcessId, processId)
                     .where(() => t.ProcessInstanceId, processInstanceId)
@@ -198,18 +198,18 @@ namespace sailflow.engine.Manager
             var transitions = QueryWithFallback(kit, processId, table =>
             {
                 var clip = kit.useClip();
-                clip.from<TransitionInstanceEntity>(table, out var t)
-                    .where(() => t.FromActivityInstanceId, fromActivityInstanceId);
+                clip.from<TrackEntity>(table, out var t)
+                    .where(() => t.FromActInstanceId, fromActivityInstanceId);
                 return clip.select(t).queryList().ToList();
             });
 
             var targetIDs = new List<dynamic>();
             foreach (var trans in transitions)
             {
-                if (trans.ToActivityType == (int)ActivityTypeEnum.GatewayNode)
-                    targetIDs.AddRange(GetTargetActivityInstanceIDs(kit, trans.ToActivityInstanceId));
+                if (trans.ToActType == (int)ActivityTypeEnum.GatewayNode)
+                    targetIDs.AddRange(GetTargetActivityInstanceIDs(kit, trans.ToActInstanceId));
                 else
-                    targetIDs.Add(trans.ToActivityInstanceId);
+                    targetIDs.Add(trans.ToActInstanceId);
             }
             return targetIDs;
         }
@@ -233,20 +233,20 @@ namespace sailflow.engine.Manager
         /// <summary>
         /// 白名单分表优先；再合并默认表同条件行（启用瞬间旧数据仍在默认表）。
         /// </summary>
-        private List<TransitionInstanceEntity> QueryWithFallback(
+        private List<TrackEntity> QueryWithFallback(
             SQLBuilder kit,
             string processId,
-            Func<string, List<TransitionInstanceEntity>> query)
+            Func<string, List<TrackEntity>> query)
         {
             var primary = Router.ResolveTransitionTable(processId);
-            List<TransitionInstanceEntity> rows;
+            List<TrackEntity> rows;
             try
             {
-                rows = query(primary) ?? new List<TransitionInstanceEntity>();
+                rows = query(primary) ?? new List<TrackEntity>();
             }
             catch
             {
-                rows = new List<TransitionInstanceEntity>();
+                rows = new List<TrackEntity>();
             }
 
             if (!Router.IsSharded(processId))
@@ -256,10 +256,10 @@ namespace sailflow.engine.Manager
             if (string.Equals(primary, def, StringComparison.OrdinalIgnoreCase))
                 return rows;
 
-            List<TransitionInstanceEntity> legacy;
+            List<TrackEntity> legacy;
             try
             {
-                legacy = query(def) ?? new List<TransitionInstanceEntity>();
+                legacy = query(def) ?? new List<TrackEntity>();
             }
             catch
             {
@@ -269,10 +269,10 @@ namespace sailflow.engine.Manager
             if (legacy.Count == 0)
                 return rows;
 
-            var seen = new HashSet<string>(rows.Where(x => !string.IsNullOrWhiteSpace(x.TransitionInstanceId)).Select(x => x.TransitionInstanceId));
+            var seen = new HashSet<string>(rows.Where(x => !string.IsNullOrWhiteSpace(x.TrackId)).Select(x => x.TrackId));
             foreach (var row in legacy)
             {
-                if (!string.IsNullOrWhiteSpace(row.TransitionInstanceId) && seen.Contains(row.TransitionInstanceId))
+                if (!string.IsNullOrWhiteSpace(row.TrackId) && seen.Contains(row.TrackId))
                     continue;
                 rows.Add(row);
             }

@@ -124,7 +124,7 @@ namespace sailflow.engine.Manager
             {
                 foreach (var ai in activityInstanceList)
                 {
-                    if (ai.AssignedUserIds == runner.UserId)
+                    if (ai.SignIds == runner.UserId)
                     {
                         runningNode = ai;
                         break;
@@ -192,7 +192,7 @@ namespace sailflow.engine.Manager
             {
                 foreach (var ai in activityInstanceList)
                 {
-                    if (ai.AssignedUserIds == runner.UserId)
+                    if (ai.SignIds == runner.UserId)
                     {
                         runningNode = ai;
                         break;
@@ -225,7 +225,7 @@ namespace sailflow.engine.Manager
         internal ActivityInstanceEntity GetBackSrcActivityInstance(string currentActivityInstanceId)
         {
             var currentActivityInstance = GetById(currentActivityInstanceId);
-            var backSrcActivityInstance = GetById(currentActivityInstance.BackSrcActivityInstanceId);
+            var backSrcActivityInstance = GetById(currentActivityInstance.BackSrcActInstanceId);
 
             return backSrcActivityInstance;
         }
@@ -237,7 +237,7 @@ namespace sailflow.engine.Manager
         internal bool IsMineTask(ActivityInstanceEntity entity,
             string userId)
         {
-            bool isMine = entity.AssignedUserIds.Contains(userId.ToString());
+            bool isMine = entity.SignIds.Contains(userId.ToString());
             return isMine;
         }
 
@@ -426,9 +426,9 @@ namespace sailflow.engine.Manager
             ActivityInstanceEntity originalRunningNode = null;
             var processInstanceId = runningNode.ProcessInstanceId;
 
-            if (runningNode.BackSrcActivityInstanceId != null)
+            if (runningNode.BackSrcActInstanceId != null)
             {
-                originalRunningNode = GetById(kit, runningNode.BackOrgActivityInstanceId);
+                originalRunningNode = GetById(kit, runningNode.BackOrgActInstanceId);
             }
             else
             {
@@ -437,7 +437,7 @@ namespace sailflow.engine.Manager
 
             var instanceList = GetActivityInstanceListCompletedSimple(kit, processInstanceId, previousActivityId);
 
-            var withoutBackSrcInfoList = instanceList.Where(a => a.BackSrcActivityInstanceId == null);
+            var withoutBackSrcInfoList = instanceList.Where(a => a.BackSrcActInstanceId == null);
 
             var previousList = withoutBackSrcInfoList.Where(a => a.EndedUserId == originalRunningNode.CreatedUserId).ToList();
             if (previousList.Count > 0)
@@ -593,7 +593,7 @@ namespace sailflow.engine.Manager
             clip.from<ActivityInstanceEntity>(out var ai)
                 .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
                 .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
-                .where(() => ai.MainActivityInstanceId, mainActivityInstanceId)
+                .where(() => ai.MainActInstanceId, mainActivityInstanceId)
                 .where(() => ai.ActivityState, (short)ActivityStateEnum.Completed);
             return clip.select(ai).queryList().ToList();
         }
@@ -617,9 +617,9 @@ namespace sailflow.engine.Manager
             string previousActivityId)
         {
             ActivityInstanceEntity originalRunningNode = null;
-            if (runningNode.BackSrcActivityInstanceId != null)
+            if (runningNode.BackSrcActInstanceId != null)
             {
-                originalRunningNode = GetById(kit, runningNode.BackOrgActivityInstanceId);
+                originalRunningNode = GetById(kit, runningNode.BackOrgActInstanceId);
             }
             else
             {
@@ -634,27 +634,24 @@ namespace sailflow.engine.Manager
                 .orderByDesc(() => ai.EndedDateTime);
             var instanceList = clip.select(ai).queryList().ToList();
 
-            var withoutBackSrcInfoList = instanceList.Where(a => a.BackSrcActivityInstanceId == null).ToList();
+            var withoutBackSrcInfoList = instanceList.Where(a => a.BackSrcActInstanceId == null).ToList();
 
             var firstMIChild = withoutBackSrcInfoList.First(a => a.EndedUserId == originalRunningNode.CreatedUserId);
 
-            return GetMultipleInstanceListCompleted(kit, firstMIChild.MainActivityInstanceId);
+            return GetMultipleInstanceListCompleted(kit, firstMIChild.MainActInstanceId);
         }
 
         /// <summary>
-        /// Determine whether the user is the assigned task user
-        /// 判断用户是否是分配下来任务的用户
+        /// 判断用户是否在活动 <see cref="ActivityInstanceEntity.SignIds"/> 汇总中。
         /// </summary>
-        private bool IsAssignedUserInActivityInstance(ActivityInstanceEntity entity,
-            int userId)
+        private bool IsSignInActivityInstance(ActivityInstanceEntity entity, int userId)
         {
-            var assignedUserIDs = entity.AssignedUserIds;
-            var userList = assignedUserIDs.Split(',');
-            var single = userList.FirstOrDefault<string>(a => a == userId.ToString());
-            if (!string.IsNullOrEmpty(single))
-                return true;
-            else
+            var signIds = entity.SignIds;
+            if (string.IsNullOrWhiteSpace(signIds))
                 return false;
+            var userList = signIds.Split(',');
+            var single = userList.FirstOrDefault(a => a == userId.ToString());
+            return !string.IsNullOrEmpty(single);
         }
 
         /// <summary>
@@ -663,7 +660,7 @@ namespace sailflow.engine.Manager
         /// </summary>
         public Boolean IsMultipleInstanceChildren(ActivityInstanceEntity child)
         {
-            return child.MainActivityInstanceId != null;
+            return child.MainActInstanceId != null;
         }
 
         /// <summary>
@@ -673,13 +670,13 @@ namespace sailflow.engine.Manager
         private List<ActivityInstanceEntity> FilteredActivityInstanceInTheSameBatch(List<ActivityInstanceEntity> instanceList)
         {
             var maxBackSrcActivityInstanceId = instanceList
-                .Select(a => a.BackSrcActivityInstanceId)
+                .Select(a => a.BackSrcActInstanceId)
                 .Where(id => !string.IsNullOrWhiteSpace(id))
                 .OrderByDescending(id => id, StringComparer.Ordinal)
                 .FirstOrDefault();
             if (!string.IsNullOrWhiteSpace(maxBackSrcActivityInstanceId))
             {
-                var childrenList = instanceList.Where<ActivityInstanceEntity>(a => a.BackSrcActivityInstanceId == maxBackSrcActivityInstanceId).ToList();
+                var childrenList = instanceList.Where<ActivityInstanceEntity>(a => a.BackSrcActInstanceId == maxBackSrcActivityInstanceId).ToList();
                 return childrenList;
             }
             else
@@ -729,7 +726,7 @@ namespace sailflow.engine.Manager
         {
             var clip = kit.useClip();
             clip.from<ActivityInstanceEntity>(out var ai)
-                .where(() => ai.MainActivityInstanceId, mainActivityInstanceId)
+                .where(() => ai.MainActInstanceId, mainActivityInstanceId)
                 .where(() => ai.ProcessInstanceId, processInstanceId);
             if (activityState.HasValue)
             {
@@ -748,10 +745,10 @@ namespace sailflow.engine.Manager
             string processInstanceId)
         {
             var clip = kit.useClip();
-            clip.from<TransitionInstanceEntity>(out var ti)
+            clip.from<TrackEntity>(out var ti)
                 .where(() => ti.ProcessInstanceId, processInstanceId)
-                .where(() => ti.FromActivityId, splitActivityId)
-                .where(() => ti.FromActivityInstanceId, splitActivityInstanceId);
+                .where(() => ti.FromActId, splitActivityId)
+                .where(() => ti.FromActInstanceId, splitActivityInstanceId);
             var list = clip.select(ti).queryList().ToList();
             return list.Count();
         }
@@ -765,7 +762,7 @@ namespace sailflow.engine.Manager
         {
             var clip = kit.useClip();
             clip.from<ActivityInstanceEntity>(out var ai)
-                .InnerJoin<TransitionInstanceEntity>(out var ti).on(() => ai.ActivityInstanceId == ti.ToActivityInstanceId)
+                .InnerJoin<TrackEntity>(out var ti).on(() => ai.ActivityInstanceId == ti.ToActInstanceId)
                 .whereIn(() => ai.ActivityState, new short?[]
                 {
                     (short)ActivityStateEnum.Ready,
@@ -773,7 +770,7 @@ namespace sailflow.engine.Manager
                     (short)ActivityStateEnum.Completed,
                     (short)ActivityStateEnum.Suspended
                 })
-                .where(() => ti.FromActivityInstanceId, splitGatewayInstanceId);
+                .where(() => ti.FromActInstanceId, splitGatewayInstanceId);
             return clip.select(ai).queryList().ToList();
         }
 
@@ -804,23 +801,23 @@ namespace sailflow.engine.Manager
                     (short)ActivityStateEnum.Completed,
                     (short)ActivityStateEnum.Suspended
                 })
-                .where(() => ai.MainActivityInstanceId, mainActivityInstanceId)
+                .where(() => ai.MainActInstanceId, mainActivityInstanceId)
                 .where(() => ai.ProcessInstanceId, processInstanceId);
             var list = clip.select(ai).queryList().ToList();
 
             var backList = new List<string>();
             foreach (var child in list)
             {
-                if (!string.IsNullOrWhiteSpace(child.BackSrcActivityInstanceId))
+                if (!string.IsNullOrWhiteSpace(child.BackSrcActInstanceId))
                 {
-                    if (backList.Any(a => a == child.BackSrcActivityInstanceId) == false)
-                        backList.Add(child.BackSrcActivityInstanceId);
+                    if (backList.Any(a => a == child.BackSrcActInstanceId) == false)
+                        backList.Add(child.BackSrcActInstanceId);
                 }
 
-                if (!string.IsNullOrWhiteSpace(child.BackOrgActivityInstanceId))
+                if (!string.IsNullOrWhiteSpace(child.BackOrgActInstanceId))
                 {
-                    if (backList.Any(a => a == child.BackOrgActivityInstanceId) == false)
-                        backList.Add(child.BackOrgActivityInstanceId);
+                    if (backList.Any(a => a == child.BackOrgActInstanceId) == false)
+                        backList.Add(child.BackOrgActInstanceId);
                 }
             }
 
@@ -854,7 +851,7 @@ namespace sailflow.engine.Manager
             instance.ActivityCode = activity.ActivityCode;
             instance.ActivityType = (short)activity.ActivityType;
             instance.WorkItemType = (short)activity.WorkItemType;
-            instance.GatewayDirectionTypeId = activity.GatewayDetail != null ? (short)activity.GatewayDetail.DirectionType : null;
+            instance.GateWayTypeId = activity.GatewayDetail != null ? (short)activity.GatewayDetail.DirectionType : null;
             instance.ProcessId = processId;
             instance.BizChannel = bizChannel;
             instance.BizPK = bizPK;
@@ -865,7 +862,7 @@ namespace sailflow.engine.Manager
             instance.CreatedUserId = runner.UserId;
             instance.CreatedUserName = runner.UserName;
             instance.CreatedDateTime = System.DateTime.UtcNow;
-            instance.OverdueDateTime = CalculateActivityOverdueDateTime(activity.BoundaryList, instance.CreatedDateTime.Value);
+            instance.DueAt = CalculateActivityOverdueDateTime(activity.BoundaryList, instance.CreatedDateTime.Value);
             instance.ActivityState = (short)ActivityStateEnum.Ready;
             instance.CanNotRenewInstance = 0;
 
@@ -908,7 +905,7 @@ namespace sailflow.engine.Manager
             instance.ActivityCode = main.ActivityCode;
             instance.ActivityType = main.ActivityType;
             instance.WorkItemType = main.WorkItemType;
-            instance.GatewayDirectionTypeId = main.GatewayDirectionTypeId;
+            instance.GateWayTypeId = main.GateWayTypeId;
             instance.ProcessId = main.ProcessId;
             instance.BizChannel = main.BizChannel;
             instance.BizPK = main.BizPK;
@@ -946,15 +943,15 @@ namespace sailflow.engine.Manager
             instance.ActivityCode = activity.ActivityCode;
             instance.ActivityType = (short)activity.ActivityType;
             instance.WorkItemType = (short)activity.WorkItemType;
-            instance.GatewayDirectionTypeId = activity.GatewayDetail != null ? (short)activity.GatewayDetail.DirectionType : null;
+            instance.GateWayTypeId = activity.GatewayDetail != null ? (short)activity.GatewayDetail.DirectionType : null;
             instance.ProcessId = processId;
             instance.BizChannel = bizChannel;
             instance.BizPK = bizPK;
             instance.BizCode = bizCode;
             instance.ProcessInstanceId = processInstanceId;
             instance.BackwardType = (short)backwardType;
-            instance.BackSrcActivityInstanceId = backSrcActivityInstanceId;
-            instance.BackOrgActivityInstanceId = backOrgActivityInstanceId;
+            instance.BackSrcActInstanceId = backSrcActivityInstanceId;
+            instance.BackOrgActInstanceId = backOrgActivityInstanceId;
             instance.TokensRequired = 1;
             instance.TokensHad = 1;
             instance.CreatedUserId = runner.UserId;
@@ -1213,7 +1210,7 @@ namespace sailflow.engine.Manager
                 .set(() => ai.UpdatedUserId, runner.UserId)
                 .set(() => ai.UpdatedUserName, runner.UserName)
                 .set(() => ai.UpdatedDateTime, System.DateTime.UtcNow)
-                .where(() => ai.MainActivityInstanceId, mainActivityInstanceId)
+                .where(() => ai.MainActInstanceId, mainActivityInstanceId)
                 .whereIn(() => ai.ActivityState, new short?[]
                 {
                     (short)ActivityStateEnum.Ready,
@@ -1245,7 +1242,7 @@ namespace sailflow.engine.Manager
                 .set(() => ai.UpdatedUserId, runner.UserId)
                 .set(() => ai.UpdatedUserName, runner.UserName)
                 .set(() => ai.UpdatedDateTime, System.DateTime.UtcNow)
-                .where(() => ai.MainActivityInstanceId, mainActivityInstanceId)
+                .where(() => ai.MainActInstanceId, mainActivityInstanceId)
                 .whereIn(() => ai.ActivityState, new short?[]
                 {
                     (short)ActivityStateEnum.Ready,
@@ -1355,7 +1352,7 @@ namespace sailflow.engine.Manager
                 var activityInstance = GetById(kit, activityInstanceId);
                 if (IsMultipleInstanceChildren(activityInstance) == true)
                 {
-                    var mainActivityInstance = GetById(kit, activityInstance.MainActivityInstanceId);
+                    var mainActivityInstance = GetById(kit, activityInstance.MainActInstanceId);
                     var nodePassedType = CheckMIPassRateInfo(kit, activityInstance, mainActivityInstance);
                     result = NodePassedResult.Create(nodePassedType);
                 }

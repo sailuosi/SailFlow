@@ -112,7 +112,7 @@ namespace sailflow.engine.Runtime
                             //Internal rollback processing of multiple instance nodes
                             //Serial countersignature nodes read the previous step in descending order of Completed Order
                             var previousAdjacentBrotherNode = GetPreviousOfMultipleInstanceNode(
-                                runningNode.MainActivityInstanceId,
+                                runningNode.MainActInstanceId,
                                 runningNode.ActivityInstanceId,
                                 runningNode.CompleteOrder.Value);
                             if (previousAdjacentBrotherNode != null)
@@ -228,7 +228,7 @@ namespace sailflow.engine.Runtime
             IList<Activity> activityList = new List<Activity>();
             //判断当前节点是否是多实例节点
             //Determine whether the current node is a multi instance node
-            if (runningNode.MainActivityInstanceId != null)
+            if (runningNode.MainActInstanceId != null)
             {
                 if (runningNode.CompleteOrder > 1)
                 {
@@ -262,7 +262,7 @@ namespace sailflow.engine.Runtime
             {
                 //已经是中间节点，只能退回到上一步多实例子节点
                 //It is already an intermediate node and can only be reverted back to the previous step of the multi instance node
-                var entity = GetPreviousOfMultipleInstanceNode(runningNode.MainActivityInstanceId,
+                var entity = GetPreviousOfMultipleInstanceNode(runningNode.MainActInstanceId,
                     runningNode.ActivityInstanceId,
                     runningNode.CompleteOrder.Value);
                 var activity = processModel.GetActivity(entity.ActivityId);
@@ -287,7 +287,7 @@ namespace sailflow.engine.Runtime
             _ = activityInstanceId; // 历史参数保留；原 SQL 未使用
             var clip = Kit().useClip();
             clip.from<ActivityInstanceEntity>(out var a)
-                .where(() => a.MainActivityInstanceId, mainActivityInstanceId)
+                .where(() => a.MainActInstanceId, mainActivityInstanceId)
                 .where(() => a.CompleteOrder, completeOrder - 1)
                 .where(() => a.ActivityState, (short)ActivityStateEnum.Completed)
                 .orderByDesc(() => a.CreatedDateTime);
@@ -313,18 +313,18 @@ namespace sailflow.engine.Runtime
             {
                 //退回情况下的处理
                 //Handling in case of return
-                if (runningNode.MainActivityInstanceId != null && runningNode.CompleteOrder.Value == 1)
+                if (runningNode.MainActInstanceId != null && runningNode.CompleteOrder.Value == 1)
                 {
                     //多实例的第一个子节点，先找到主节点，再到transition记录表中找到上一步节点
                     //The first child node of multiple instances, first find the main node,
                     //and then find the previous node in the transition record table
-                    backSrcActivityInstanceId = runningNode.MainActivityInstanceId;
+                    backSrcActivityInstanceId = runningNode.MainActInstanceId;
                 }
-                else if (runningNode.BackSrcActivityInstanceId != null)
+                else if (runningNode.BackSrcActInstanceId != null)
                 {
                     //节点时曾经发生退回的节点
                     //Nodes that have experienced a sendback in the past
-                    backSrcActivityInstanceId = runningNode.BackSrcActivityInstanceId;
+                    backSrcActivityInstanceId = runningNode.BackSrcActInstanceId;
                 }
                 else
                 {
@@ -338,7 +338,7 @@ namespace sailflow.engine.Runtime
 
             var aim = Sail.ManagerFactory.Activities;
             var runningTransitionList = transitionList
-                .Where(o => o.ToActivityInstanceId == backSrcActivityInstanceId)
+                .Where(o => o.ToActInstanceId == backSrcActivityInstanceId)
                 .ToList();
 
             IList<ActivityInstanceEntity> previousActivityInstanceList = new List<ActivityInstanceEntity>();
@@ -346,14 +346,14 @@ namespace sailflow.engine.Runtime
             {
                 //如果是网关节点，则继续查找
                 //If it is a gateway node, continue searching
-                if (entity.FromActivityType == (short)ActivityTypeEnum.GatewayNode)
+                if (entity.FromActType == (short)ActivityTypeEnum.GatewayNode)
                 {
-                    GetPreviousOfGatewayActivityInstance(transitionList, entity.FromActivityInstanceId, previousActivityInstanceList);
+                    GetPreviousOfGatewayActivityInstance(transitionList, entity.FromActInstanceId, previousActivityInstanceList);
                     hasPassedGatewayNode = true;
                 }
                 else
                 {
-                    previousActivityInstanceList.Add(aim.GetById(entity.FromActivityInstanceId));
+                    previousActivityInstanceList.Add(aim.GetById(entity.FromActInstanceId));
                 }
             }
             return previousActivityInstanceList;
@@ -363,25 +363,25 @@ namespace sailflow.engine.Runtime
         /// Obtain the nodes before the gateway node
         /// 获取网关节点前的节点
         /// </summary>
-        private void GetPreviousOfGatewayActivityInstance(IList<TransitionInstanceEntity> transitionList,
+        private void GetPreviousOfGatewayActivityInstance(IList<TrackEntity> transitionList,
             string toActivityInstanceId,
             IList<ActivityInstanceEntity> previousActivityInstanceList)
         {
             var previousTransitionList = transitionList
-                .Where(o => o.ToActivityInstanceId == toActivityInstanceId)
+                .Where(o => o.ToActInstanceId == toActivityInstanceId)
                 .ToList();
 
             var aim = Sail.ManagerFactory.Activities;
             foreach (var entity in previousTransitionList)
             {
-                var activityType = EnumHelper.ParseEnum<ActivityTypeEnum>(entity.FromActivityType.ToString());
+                var activityType = EnumHelper.ParseEnum<ActivityTypeEnum>(entity.FromActType.ToString());
                 if (XPDLHelper.IsSimpleComponentNode(activityType) == true)
                 {
-                    previousActivityInstanceList.Add(aim.GetById(entity.FromActivityInstanceId));
+                    previousActivityInstanceList.Add(aim.GetById(entity.FromActInstanceId));
                 }
-                else if (entity.FromActivityType == (short)ActivityTypeEnum.GatewayNode)
+                else if (entity.FromActType == (short)ActivityTypeEnum.GatewayNode)
                 {
-                    GetPreviousOfGatewayActivityInstance(transitionList, entity.FromActivityInstanceId, previousActivityInstanceList);
+                    GetPreviousOfGatewayActivityInstance(transitionList, entity.FromActInstanceId, previousActivityInstanceList);
                 }
             }
         }

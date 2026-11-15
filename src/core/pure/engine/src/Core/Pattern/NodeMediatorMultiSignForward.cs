@@ -102,11 +102,11 @@ namespace sailflow.engine.Pattern
             //主节点非空时可正常运行（未发起加签）
             var signforwardType = (SignForwardTypeEnum)Enum.Parse(typeof(SignForwardTypeEnum),
                 base.ActivityForwardContext.FromActivityInstance.SignForwardType.Value.ToString());
-            if (base.LinkContext.FromActivityInstance.MainActivityInstanceId != null
+            if (base.LinkContext.FromActivityInstance.MainActInstanceId != null
                 && signforwardType != SignForwardTypeEnum.None)
             {
                 //获取主节点信息
-                var mainNodeIndex = base.LinkContext.FromActivityInstance.MainActivityInstanceId;
+                var mainNodeIndex = base.LinkContext.FromActivityInstance.MainActInstanceId;
                 var mainActivityInstance = base.ActivityInstanceManager.GetById(mainNodeIndex);
 
                 //检查加签是否全部完成；完成则进入下一步，否则等待

@@ -33,7 +33,7 @@ namespace sailflow.engine.Runtime
         {
             var runner = base.SendBackOperation.ActivityResource.AppRunner;
             var runningNode = base.SendBackOperation.BackwardFromActivityInstance;
-            var runningMainNode = base.ActivityInstanceManager.GetById(runningNode.MainActivityInstanceId);
+            var runningMainNode = base.ActivityInstanceManager.GetById(runningNode.MainActInstanceId);
             var previousActivityInstance = base.ActivityInstanceManager.GetPreviousActivityInstanceSimple(Kit.useSQL(), runningNode, base.SendBackOperation.BackwardToTaskActivity.ActivityId);
 
             //创建撤销到上一步的节点记录
@@ -51,7 +51,7 @@ namespace sailflow.engine.Runtime
             //If the previous node is also a co signing node, update the main node status to running status
             if (previousActivityInstance.ActivityType == (short)ActivityTypeEnum.MultiSignNode)
             {
-                base.ActivityInstanceManager.Rerun(Kit.useSQL(), previousActivityInstance.MainActivityInstanceId, runner);
+                base.ActivityInstanceManager.Rerun(Kit.useSQL(), previousActivityInstance.MainActInstanceId, runner);
             }
         }
 
@@ -75,14 +75,14 @@ namespace sailflow.engine.Runtime
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
-            rollbackPreviousActivityInstance.MainActivityInstanceId = originalBackwardToActivityInstance.MainActivityInstanceId;
+            rollbackPreviousActivityInstance.MainActInstanceId = originalBackwardToActivityInstance.MainActInstanceId;
             rollbackPreviousActivityInstance.CompleteOrder = originalBackwardToActivityInstance.CompleteOrder;
             rollbackPreviousActivityInstance.ComplexType = originalBackwardToActivityInstance.ComplexType;
             rollbackPreviousActivityInstance.SignForwardType = originalBackwardToActivityInstance.SignForwardType;
             //人员来自步骤列表的用户数据
             //User data of performer from the step list
-            rollbackPreviousActivityInstance.AssignedUserIds = base.SendBackOperation.BackwardToTaskPerformer.UserId;     
-            rollbackPreviousActivityInstance.AssignedUserNames = base.SendBackOperation.BackwardToTaskPerformer.UserName;
+            rollbackPreviousActivityInstance.SignIds = base.SendBackOperation.BackwardToTaskPerformer.UserId;     
+            rollbackPreviousActivityInstance.SignNames = base.SendBackOperation.BackwardToTaskPerformer.UserName;
 
             base.ActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
 

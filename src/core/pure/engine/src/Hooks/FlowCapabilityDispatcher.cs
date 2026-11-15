@@ -268,8 +268,8 @@ namespace sailflow.engine.Hooks
                 Version = ctx.Version,
                 ProcessInstanceId = ctx.ProcessInstanceId,
                 TaskId = ctx.TaskId,
-                AssignedUserId = ctx.UserId,
-                AssignedUserName = ctx.UserName,
+                SignId = ctx.UserId,
+                SignName = ctx.UserName,
                 EventType = eventType,
                 Operation = FlowOperation.Run,
                 Kit = kit
@@ -482,8 +482,8 @@ namespace sailflow.engine.Hooks
                 ActivityCode = activityInstance?.ActivityCode,
                 ActivityInstanceId = activityInstance?.ActivityInstanceId,
                 TaskId = taskId,
-                AssignedUserId = runner?.UserId,
-                AssignedUserName = runner?.UserName,
+                SignId = runner?.UserId,
+                SignName = runner?.UserName,
                 EventType = eventType,
                 Operation = operation,
             };
@@ -563,8 +563,8 @@ namespace sailflow.engine.Hooks
                 ActivityCode = activityInstance?.ActivityCode,
                 ActivityInstanceId = task.ActivityInstanceId,
                 TaskId = task.TaskId,
-                AssignedUserId = task.AssignedUserId,
-                AssignedUserName = task.AssignedUserName,
+                SignId = task.SignId,
+                SignName = task.SignName,
                 EventType = eventType,
                 Operation = operation,
             };
@@ -583,8 +583,8 @@ namespace sailflow.engine.Hooks
                 ActivityCode = activityInstance?.ActivityCode,
                 ActivityInstanceId = task.ActivityInstanceId,
                 TaskId = task.TaskId,
-                AssignedUserId = task.AssignedUserId,
-                AssignedUserName = task.AssignedUserName,
+                SignId = task.SignId,
+                SignName = task.SignName,
                 Kind = kind,
             };
 

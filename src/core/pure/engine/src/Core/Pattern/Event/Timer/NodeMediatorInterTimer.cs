@@ -38,9 +38,9 @@ namespace sailflow.engine.Pattern
             timerActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
 
             //逾期时间
-            timerActivityInstance.OverdueDateTime = CalcDataTimeFromVariable(toActivity);
-            timerActivityInstance.AssignedUserIds = WfDefine.SYSTEM_JOBTIMER_USER_ID;
-            timerActivityInstance.AssignedUserNames = WfDefine.SYSTEM_JOBTIMER_USER_NAME;
+            timerActivityInstance.DueAt = CalcDataTimeFromVariable(toActivity);
+            timerActivityInstance.SignIds = WfDefine.SYSTEM_JOBTIMER_USER_ID;
+            timerActivityInstance.SignNames = WfDefine.SYSTEM_JOBTIMER_USER_NAME;
 
             //作业定时器
             timerActivityInstance.JobTimerType = (short)JobTimerTypeEnum.Timer;

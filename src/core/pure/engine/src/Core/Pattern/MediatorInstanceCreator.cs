@@ -219,7 +219,7 @@ namespace sailflow.engine.Pattern
                         return new NodeMediatorTask(forwardContext, kit, _sail);
                     }
                 }
-                else if(forwardContext.FromActivityInstance.MainActivityInstanceId != null)
+                else if(forwardContext.FromActivityInstance.MainActInstanceId != null)
                 {
                     //加签子实例
                     return new NodeMediatorMultiSignForward(forwardContext, kit, _sail);
@@ -245,7 +245,7 @@ namespace sailflow.engine.Pattern
             }
             else if (forwardContext.CurrentActivity.ActivityType == ActivityTypeEnum.MultiSignNode)
             {
-                if (forwardContext.FromActivityInstance.MainActivityInstanceId != null)
+                if (forwardContext.FromActivityInstance.MainActInstanceId != null)
                 {
                     if (forwardContext.CurrentActivity.MultiSignDetail.ComplexType == ComplexTypeEnum.SignTogether)
                     {
@@ -260,7 +260,7 @@ namespace sailflow.engine.Pattern
                         throw new ApplicationException(_sail.Messages.GetEngineMessage("nodemediatorfactory.CreateNodeMediator.error"));
                     }
                 }
-                else if (forwardContext.FromActivityInstance.MainActivityInstanceId == null)
+                else if (forwardContext.FromActivityInstance.MainActInstanceId == null)
                 {
                     //加签主节点分发操作
                     if (forwardContext.CurrentActivity.MultiSignDetail.ComplexType == ComplexTypeEnum.SignForward)

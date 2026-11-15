@@ -84,7 +84,7 @@ public static class SampleSchemaInitializer
             .createTable<ProcessInstanceEntity>()
             .createTable<ActivityInstanceEntity>()
             .createTable<TaskEntity>()
-            .createTable<TransitionInstanceEntity>()
+            .createTable<TrackEntity>()
             .createTable<VariableEntity>()
             .createTable<ProcessVariableEntity>()
             .createTable<LogEntity>()
@@ -109,12 +109,12 @@ public static class SampleSchemaInitializer
         ArgumentNullException.ThrowIfNull(kit);
 
         TryCreateIndex(kit, "IX_wf_task_pi", "wf_task", "tk_proc_instance_id");
-        TryCreateIndex(kit, "IX_wf_task_assignee_state", "wf_task",
-            "tk_asgn_user_id", "tk_task_state", "tk_proc_instance_id");
+        TryCreateIndex(kit, "IX_wf_task_sign_state", "wf_task",
+            "tk_sign_id", "tk_task_state", "tk_proc_instance_id");
         TryCreateIndex(kit, "IX_wf_task_state_created", "wf_task",
             "tk_task_state", "tk_crt_time");
-        TryCreateIndex(kit, "IX_wf_task_state_overdue", "wf_task",
-            "tk_task_state", "tk_overdue_time");
+        TryCreateIndex(kit, "IX_wf_task_state_due", "wf_task",
+            "tk_task_state", "tk_due_at");
         TryCreateIndex(kit, "IX_wf_ai_pi_state", "wf_act_instance",
             "ai_proc_instance_id", "ai_activity_state");
         TryCreateIndex(kit, "IX_wf_pi_state_created", "wf_proc_instance",
@@ -188,7 +188,7 @@ public static class SampleSchemaInitializer
             .InnerJoin<ProcessInstanceEntity>(out var pi)
             .on(() => t.ProcessInstanceId == pi.ProcessInstanceId)
             .LeftJoin<ActivityInstanceEntity>(out var mai)
-            .on(() => ai.MainActivityInstanceId == mai.ActivityInstanceId);
+            .on(() => ai.MainActInstanceId == mai.ActivityInstanceId);
 
         // 投影列名须与 TaskViewEntity SooColumn 一致（带表前缀后不可再混用 t./ai./pi. 同名列）。
         clip.select(() => new
@@ -213,10 +213,14 @@ public static class SampleSchemaInitializer
             pi.SubProcessDefId,
             pi.SubProcessId,
             t.EntrustedTaskId,
-            ai.MainActivityInstanceId,
+            t.AssigneeRole,
+            t.ConsultSrcTaskId,
+            ai.MainActInstanceId,
             ai.CompleteOrder,
-            t.AssignedUserId,
-            t.AssignedUserName,
+            t.SignKind,
+            t.SignId,
+            t.SignName,
+            t.Idx,
             t.GroupId,
             t.GroupName,
             t.GroupRole,
@@ -224,12 +228,18 @@ public static class SampleSchemaInitializer
             t.UnitCode,
             t.UnitName,
             t.IsEMailSent,
+            t.IsRead,
+            t.ReadAt,
+            t.Msg,
+            t.RowPara,
             ai.ApprovalStatus,
             t.CreatedDateTime,
-            t.ActivatedDateTime,
-            t.OverdueDateTime,
+            t.SendAt,
+            t.GotAt,
+            t.ActiveAt,
+            t.DueAt,
             t.UpdatedDateTime,
-            t.EndedDateTime,
+            t.CompletedAt,
             t.EndedUserId,
             t.EndedUserName,
             t.TaskState,

@@ -9,7 +9,7 @@ namespace sailflow.data.HotShard
 {
     /// <summary>
     /// 白名单热分表 ENSURE：优先拷默认表结构；否则按实体
-    /// <see cref="TransitionInstanceEntity"/> / <see cref="ProcessVariableEntity"/> 建表。
+    /// <see cref="TrackEntity"/> / <see cref="ProcessVariableEntity"/> 建表。
     /// </summary>
     public static class HotShardTableEnsurer
     {
@@ -45,7 +45,7 @@ namespace sailflow.data.HotShard
                 kit,
                 shardTable,
                 templateTable,
-                entityType: typeof(TransitionInstanceEntity),
+                entityType: typeof(TrackEntity),
                 configure: TemplateTableEnsurer.ApplySailColumnTags,
                 rethrow: true);
 

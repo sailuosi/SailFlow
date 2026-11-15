@@ -50,7 +50,7 @@ namespace sailflow.engine.Pattern
                     //生成加签节点（同普通任务节点）
                     var toActivityInstance = base.CreateActivityInstanceObject(toActivity, processInstance, activityResource.AppRunner);
                     toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
-                    toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
+                    toActivityInstance = GenerateActivitySignInfo(toActivityInstance, activityResource);
 
                     base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 

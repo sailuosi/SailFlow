@@ -41,7 +41,7 @@ namespace sailflow.data.Lifecycle
                     return ExistsTask(kit, physicalTable, id);
                 if (typeof(T) == typeof(ActivityInstanceEntity))
                     return ExistsActivityInstance(kit, physicalTable, id);
-                if (typeof(T) == typeof(TransitionInstanceEntity))
+                if (typeof(T) == typeof(TrackEntity))
                     return ExistsTransitionInstance(kit, physicalTable, id);
                 if (typeof(T) == typeof(ProcessVariableEntity))
                     return ExistsProcessVariable(kit, physicalTable, id);
@@ -88,8 +88,8 @@ namespace sailflow.data.Lifecycle
         static bool ExistsTransitionInstance(SQLBuilder kit, string physicalTable, string id)
         {
             var clip = kit.useClip();
-            clip.from<TransitionInstanceEntity>(physicalTable, out var row)
-                .where(() => row.TransitionInstanceId, id);
+            clip.from<TrackEntity>(physicalTable, out var row)
+                .where(() => row.TrackId, id);
             return clip.select(row).queryList().Any();
         }
 

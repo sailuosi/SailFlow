@@ -136,8 +136,8 @@ namespace sailflow.engine.Runtime
             toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
             //人员来自步骤列表的用户数据
             //User data of personnel from the step list
-            toActivityInstance.AssignedUserIds = SendBackOperation.BackwardToTaskPerformer.UserId;
-            toActivityInstance.AssignedUserNames = SendBackOperation.BackwardToTaskPerformer.UserName;
+            toActivityInstance.SignIds = SendBackOperation.BackwardToTaskPerformer.UserId;
+            toActivityInstance.SignNames = SendBackOperation.BackwardToTaskPerformer.UserName;
 
             this.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 

@@ -120,8 +120,8 @@ namespace sailflow.engine.Pattern
                 for (var i = 0; i < plist.Count; i++)
                 {
                     entity = base.CreateActivityInstanceObject(toActivity, processInstance, activityResource.AppRunner);
-                    entity.AssignedUserIds = plist[i].UserId;
-                    entity.AssignedUserNames = plist[i].UserName;
+                    entity.SignIds = plist[i].UserId;
+                    entity.SignNames = plist[i].UserName;
                     entity.GroupId = plist[i].GroupId;
                     entity.GroupName = plist[i].GroupName;
                     entity.GroupRole = plist[i].GroupRole;
@@ -153,7 +153,7 @@ namespace sailflow.engine.Pattern
                 WriteBackSrcOrgInformation(toActivityInstance, fromActivityInstance, kit);
 
                 toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
-                toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
+                toActivityInstance = GenerateActivitySignInfo(toActivityInstance, activityResource);
                 
                 base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
@@ -196,11 +196,11 @@ namespace sailflow.engine.Pattern
             ActivityInstanceEntity fromActivityInstance,
             SQLBuilder kit)
         {
-            if (fromActivityInstance.BackSrcActivityInstanceId != null)
+            if (fromActivityInstance.BackSrcActInstanceId != null)
             {
-                var backSrcActivityInstance = base.ActivityInstanceManager.GetById(kit.useSQL(), fromActivityInstance.BackSrcActivityInstanceId);
-                toActivityInstance.BackSrcActivityInstanceId = backSrcActivityInstance.BackSrcActivityInstanceId;
-                toActivityInstance.BackOrgActivityInstanceId = backSrcActivityInstance.BackOrgActivityInstanceId;
+                var backSrcActivityInstance = base.ActivityInstanceManager.GetById(kit.useSQL(), fromActivityInstance.BackSrcActInstanceId);
+                toActivityInstance.BackSrcActInstanceId = backSrcActivityInstance.BackSrcActInstanceId;
+                toActivityInstance.BackOrgActInstanceId = backSrcActivityInstance.BackOrgActInstanceId;
             }
         }
     }

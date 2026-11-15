@@ -43,7 +43,7 @@ namespace sailflow.engine.Pattern
                 activityResource.AppRunner);
 
             toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
-            toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
+            toActivityInstance = GenerateActivitySignInfo(toActivityInstance, activityResource);
 
             base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 

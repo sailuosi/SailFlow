@@ -66,7 +66,7 @@ namespace sailflow.engine.Pattern
         /// </summary>
         private void CheckBeingExecutedInfo()
         {
-            if (LinkContext.FromActivityInstance.OverdueDateTime < DateTime.UtcNow)
+            if (LinkContext.FromActivityInstance.DueAt < DateTime.UtcNow)
             {
                 throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorintertimergo.CheckBeingExecutedInfo.exception"));
             }
@@ -133,8 +133,8 @@ namespace sailflow.engine.Pattern
                 for (var i = 0; i < plist.Count; i++)
                 {
                     entity = CreateActivityInstanceObject(toActivity, processInstance, activityResource.AppRunner);
-                    entity.AssignedUserIds = plist[i].UserId;
-                    entity.AssignedUserNames = plist[i].UserName;
+                    entity.SignIds = plist[i].UserId;
+                    entity.SignNames = plist[i].UserName;
                     entity.GroupId = plist[i].GroupId;
                     entity.GroupName = plist[i].GroupName;
                     entity.GroupRole = plist[i].GroupRole;
@@ -163,7 +163,7 @@ namespace sailflow.engine.Pattern
                 var toActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, activityResource.AppRunner);
 
                 toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
-                toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
+                toActivityInstance = GenerateActivitySignInfo(toActivityInstance, activityResource);
 
                 newActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
                 base.CreateNewTask(toActivityInstance, activityResource, kit);

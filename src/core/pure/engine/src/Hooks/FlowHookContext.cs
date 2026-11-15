@@ -21,8 +21,8 @@ namespace sailflow.engine.Hooks
         /// <summary>当前节点定义 BizCode。</summary>
         public string ActivityBizCode { get; set; }
         public string TaskId { get; set; }
-        public string AssignedUserId { get; set; }
-        public string AssignedUserName { get; set; }
+        public string SignId { get; set; }
+        public string SignName { get; set; }
         public FlowOperation Operation { get; set; }
         public EventFireTypeEnum EventType { get; set; }
 
@@ -53,8 +53,8 @@ namespace sailflow.engine.Hooks
         /// <summary>当前节点定义 BizCode。</summary>
         public string ActivityBizCode { get; set; }
         public string TaskId { get; set; }
-        public string AssignedUserId { get; set; }
-        public string AssignedUserName { get; set; }
+        public string SignId { get; set; }
+        public string SignName { get; set; }
         public TaskNotifyKind Kind { get; set; }
     }
 

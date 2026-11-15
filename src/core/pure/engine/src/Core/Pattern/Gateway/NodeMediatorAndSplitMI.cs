@@ -35,7 +35,7 @@ namespace sailflow.engine.Pattern
         {
             var gatewayActivityInstance = base.CreateActivityInstanceObject(base.GatewayActivity,
                 processInstance, runner);
-            gatewayActivityInstance.GatewayDirectionTypeId = (short)GatewayDirectionEnum.AndSplitMI;
+            gatewayActivityInstance.GateWayTypeId = (short)GatewayDirectionEnum.AndSplitMI;
 
             base.InsertActivityInstance(gatewayActivityInstance,
                 kit);

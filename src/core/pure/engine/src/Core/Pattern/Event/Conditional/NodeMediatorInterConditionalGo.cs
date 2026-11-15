@@ -143,8 +143,8 @@ namespace sailflow.engine.Pattern
                 for (var i = 0; i < plist.Count; i++)
                 {
                     entity = CreateActivityInstanceObject(toActivity, processInstance, activityResource.AppRunner);
-                    entity.AssignedUserIds = plist[i].UserId;
-                    entity.AssignedUserNames = plist[i].UserName;
+                    entity.SignIds = plist[i].UserId;
+                    entity.SignNames = plist[i].UserName;
                     entity.GroupId = plist[i].GroupId;
                     entity.GroupName = plist[i].GroupName;
                     entity.GroupRole = plist[i].GroupRole;
@@ -177,7 +177,7 @@ namespace sailflow.engine.Pattern
                 //进入运行状态
                 //就绪状态
                 toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
-                toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
+                toActivityInstance = GenerateActivitySignInfo(toActivityInstance, activityResource);
 
                 //插入活动实例数据
                 //插入活动实例

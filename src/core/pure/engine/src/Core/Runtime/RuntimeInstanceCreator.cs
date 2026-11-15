@@ -186,8 +186,8 @@ namespace sailflow.engine.Runtime
 
             //判断是否是当前登录用户的任务 
             //Determine whether it is the task of the currently logged in user
-            if (!string.IsNullOrEmpty(runningNode.AssignedUserIds)
-                && runningNode.AssignedUserIds.Contains(runner.UserId.ToString()) == false)
+            if (!string.IsNullOrEmpty(runningNode.SignIds)
+                && runningNode.SignIds.Contains(runner.UserId.ToString()) == false)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_HasNoTask;
@@ -268,8 +268,8 @@ namespace sailflow.engine.Runtime
             var (runningNode, taskView) = await aim.GetRunningNodeAsync(kit, runner, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(runningNode.AssignedUserIds)
-                && runningNode.AssignedUserIds.Contains(runner.UserId.ToString()) == false)
+            if (!string.IsNullOrEmpty(runningNode.SignIds)
+                && runningNode.SignIds.Contains(runner.UserId.ToString()) == false)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_HasNoTask;
@@ -906,7 +906,7 @@ namespace sailflow.engine.Runtime
             }
 
             runner.NextActivityPerformers = NextStepUtility.CreateNextStepPerformerList(taskDone.ActivityId,
-                taskDone.AssignedUserId, taskDone.AssignedUserName);
+                taskDone.SignId, taskDone.SignName);
 
             //没有指定退回节点信息
             //No return node information specified
@@ -956,8 +956,8 @@ namespace sailflow.engine.Runtime
             }
 
             var taskToDo = tm.GetTaskViewByActivity(runningNode.ProcessInstanceId, runningNode.ActivityInstanceId);
-            runner.UserId = taskToDo.AssignedUserId;
-            runner.UserName = taskToDo.AssignedUserName;
+            runner.UserId = taskToDo.SignId;
+            runner.UserName = taskToDo.SignName;
 
             //获取上一步节点信息
             //Obtain the previous node information
@@ -1065,7 +1065,7 @@ namespace sailflow.engine.Runtime
 
             var aim = _sail.ManagerFactory.Activities;
             var runningActivityInstance = aim.GetById(taskView.ActivityInstanceId);
-            if (runningActivityInstance.BackSrcActivityInstanceId == null)
+            if (runningActivityInstance.BackSrcActInstanceId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Resend_WithoutBackSourceNode;
@@ -1073,7 +1073,7 @@ namespace sailflow.engine.Runtime
 
                 return rmins;
             }
-            var backSrcActivityInstance = aim.GetById(runningActivityInstance.BackSrcActivityInstanceId);
+            var backSrcActivityInstance = aim.GetById(runningActivityInstance.BackSrcActInstanceId);
 
             rmins.TaskView = taskView;
             rmins.RunningActivityInstance = aim.GetById(taskView.ActivityInstanceId);
@@ -1183,10 +1183,10 @@ namespace sailflow.engine.Runtime
             var endTransitionInstance = tim.GetEndTransition(runner.BizChannel, runner.BizPK, runner.ProcessId);
 
             var processModel = _sail.ProcessModelFactory.CreateByProcessInstance( processInstance);
-            var endActivity = processModel.GetActivity(endTransitionInstance.ToActivityId);
+            var endActivity = processModel.GetActivity(endTransitionInstance.ToActId);
 
             var aim = _sail.ManagerFactory.Activities;
-            var endActivityInstance = aim.GetById(endTransitionInstance.ToActivityInstanceId);
+            var endActivityInstance = aim.GetById(endTransitionInstance.ToActInstanceId);
 
             bool hasGatewayNode = false;
             var npc = SailFactoryAccess.Managers(_sail).PreviousSteps;
@@ -1262,7 +1262,7 @@ namespace sailflow.engine.Runtime
 
             //判断是否是当前登录用户的任务
             //Determine whether it is the task of the currently logged in user
-            if (runningNode.AssignedUserIds.Contains(runner.UserId.ToString()) == false)
+            if (runningNode.SignIds.Contains(runner.UserId.ToString()) == false)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_HasNoTask;

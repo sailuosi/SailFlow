@@ -160,16 +160,28 @@ namespace sailflow.engine.Entity
         public float? CompleteOrder { get; set; }
 
         /// <summary>
-        /// 办理人 Id（列 <c>tk_asgn_user_id</c>）。
+        /// 办理对象类型（列 <c>tk_sign_kind</c>），见 <see cref="SignKindEnum"/>。
         /// </summary>
-        [SooColumn(Name = "tk_asgn_user_id")]
-        public string AssignedUserId { get; set; }
+        [SooColumn(Name = "tk_sign_kind")]
+        public int? SignKind { get; set; }
 
         /// <summary>
-        /// 办理人姓名（列 <c>tk_asgn_user_name</c>）。
+        /// 办理对象引用 Id（列 <c>tk_sign_id</c>）。
         /// </summary>
-        [SooColumn(Name = "tk_asgn_user_name")]
-        public string AssignedUserName { get; set; }
+        [SooColumn(Name = "tk_sign_id")]
+        public string SignId { get; set; }
+
+        /// <summary>
+        /// 办理对象显示名（列 <c>tk_sign_name</c>）。
+        /// </summary>
+        [SooColumn(Name = "tk_sign_name")]
+        public string SignName { get; set; }
+
+        /// <summary>
+        /// 优先级（列 <c>tk_idx</c>）。
+        /// </summary>
+        [SooColumn(Name = "tk_idx")]
+        public int? Idx { get; set; }
 
         /// <summary>
         /// 组别 Id（列 <c>tk_group_id</c>）。
@@ -214,6 +226,30 @@ namespace sailflow.engine.Entity
         public byte? IsEMailSent { get; set; }
 
         /// <summary>
+        /// 是否已阅（列 <c>tk_is_read</c>）。
+        /// </summary>
+        [SooColumn(Name = "tk_is_read")]
+        public byte? IsRead { get; set; }
+
+        /// <summary>
+        /// 首次已阅时刻（列 <c>tk_read_at</c>）。
+        /// </summary>
+        [SooColumn(Name = "tk_read_at")]
+        public DateTime? ReadAt { get; set; }
+
+        /// <summary>
+        /// 审批/办理意见（列 <c>tk_msg</c>）。
+        /// </summary>
+        [SooColumn(Name = "tk_msg")]
+        public string Msg { get; set; }
+
+        /// <summary>
+        /// 行级扩展参数（列 <c>tk_row_para</c>）。
+        /// </summary>
+        [SooColumn(Name = "tk_row_para")]
+        public string RowPara { get; set; }
+
+        /// <summary>
         /// 活动审批意见态（列 <c>ai_aprv_state</c>），见 <see cref="ApprovalStatusEnum"/>。
         /// </summary>
         [SooColumn(Name = "ai_aprv_state")]
@@ -226,16 +262,28 @@ namespace sailflow.engine.Entity
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// 待办激活时间（列 <c>tk_activated_time</c>）；串行未轮到为 null。
+        /// 发送时间（列 <c>tk_send_at</c>）。
         /// </summary>
-        [SooColumn(Name = "tk_activated_time")]
-        public DateTime? ActivatedDateTime { get; set; }
+        [SooColumn(Name = "tk_send_at")]
+        public DateTime? SendAt { get; set; }
 
         /// <summary>
-        /// 个人应完成时间（列 <c>tk_overdue_time</c>）；未激活为 null。
+        /// 首次下达时间（列 <c>tk_got_at</c>）。
         /// </summary>
-        [SooColumn(Name = "tk_overdue_time")]
-        public DateTime? OverdueDateTime { get; set; }
+        [SooColumn(Name = "tk_got_at")]
+        public DateTime? GotAt { get; set; }
+
+        /// <summary>
+        /// 激活可办时间（列 <c>tk_active_at</c>）；串行未轮到为 null。
+        /// </summary>
+        [SooColumn(Name = "tk_active_at")]
+        public DateTime? ActiveAt { get; set; }
+
+        /// <summary>
+        /// 个人应完成时间（列 <c>tk_due_at</c>）；未激活为 null。
+        /// </summary>
+        [SooColumn(Name = "tk_due_at")]
+        public DateTime? DueAt { get; set; }
 
         /// <summary>
         /// 任务更新时间（列 <c>tk_upd_time</c>）。
@@ -244,10 +292,10 @@ namespace sailflow.engine.Entity
         public DateTime? UpdatedDateTime { get; set; }
 
         /// <summary>
-        /// 任务办结时间（列 <c>tk_end_time</c>）。
+        /// 任务办结时间（列 <c>tk_completed_at</c>）。
         /// </summary>
-        [SooColumn(Name = "tk_end_time")]
-        public DateTime? EndedDateTime { get; set; }
+        [SooColumn(Name = "tk_completed_at")]
+        public DateTime? CompletedAt { get; set; }
 
         /// <summary>
         /// 办结人 Id（列 <c>tk_end_user_id</c>）。

@@ -32,7 +32,7 @@ namespace sailflow.engine.Runtime
             var runningNode = this.RunningActivityInstance;
             var sendbackOperation = base.SendBackOperation;
 
-            if (runningNode.MainActivityInstanceId == null)
+            if (runningNode.MainActInstanceId == null)
             {
                 //普通节点
                 //Normal task
@@ -53,7 +53,7 @@ namespace sailflow.engine.Runtime
                     {
                         var aim = Sail.ManagerFactory.Activities;
                         var prevActivityInstance = aim.GetActivityInstanceLatest(kit.useSQL(), runningNode.ProcessInstanceId, prevActivityId);
-                        if (prevActivityInstance.MainActivityInstanceId == null)
+                        if (prevActivityInstance.MainActInstanceId == null)
                         {
                             //虽然流程定义是加签节点，但是运行时没有加签实例，就当做普通任务节点处理
                             //Although the process definition is a signforward node, there is no signed instance at runtime,

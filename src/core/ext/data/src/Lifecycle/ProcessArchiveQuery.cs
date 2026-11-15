@@ -67,12 +67,12 @@ namespace sailflow.data.Lifecycle
             });
         }
 
-        public IList<TransitionInstanceEntity> GetTransitions(string processInstanceId, int endedYear)
+        public IList<TrackEntity> GetTransitions(string processInstanceId, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.TransitionInstance, endedYear);
-            return LoadByPi<TransitionInstanceEntity>(table, processInstanceId, (clip, tb, pi) =>
+            return LoadByPi<TrackEntity>(table, processInstanceId, (clip, tb, pi) =>
             {
-                clip.from<TransitionInstanceEntity>(tb, out var row)
+                clip.from<TrackEntity>(tb, out var row)
                     .where(() => row.ProcessInstanceId, pi);
                 return clip.select(row).queryList().ToList();
             });

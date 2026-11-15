@@ -134,7 +134,7 @@ namespace sailflow.engine.Pattern
                 joinNode.TokensHad = 1;
 
                 joinNode.ActivityState = (short)ActivityStateEnum.Running;
-                joinNode.GatewayDirectionTypeId = (short)GatewayDirectionEnum.OrJoin;
+                joinNode.GateWayTypeId = (short)GatewayDirectionEnum.OrJoin;
 
                 //写入首步预选默认用户列表
                 joinNode.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);

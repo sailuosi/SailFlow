@@ -194,7 +194,7 @@ public sealed class AutoApproveAnchorWorker
 
             userId = !string.IsNullOrWhiteSpace(anchor.PreferUserId)
                 ? anchor.PreferUserId!
-                : task?.AssignedUserId;
+                : task?.SignId;
             if (string.IsNullOrWhiteSpace(userId))
                 userId = "system.autoApprove";
 
@@ -245,7 +245,7 @@ public sealed class AutoApproveAnchorWorker
             var runner = new FlowCommandContext
             {
                 UserId = userId,
-                UserName = anchor.PreferUserName ?? task.AssignedUserName ?? userId,
+                UserName = anchor.PreferUserName ?? task.SignName ?? userId,
                 ProcessId = anchor.ProcessId ?? task.ProcessId,
                 Version = string.IsNullOrWhiteSpace(anchor.Version) ? versionHint : anchor.Version,
                 TaskId = task.TaskId,
@@ -363,7 +363,7 @@ public sealed class AutoApproveAnchorWorker
         if (!string.IsNullOrWhiteSpace(anchor.PreferUserId))
         {
             return list.FirstOrDefault(x =>
-                string.Equals(x.AssignedUserId, anchor.PreferUserId, StringComparison.OrdinalIgnoreCase));
+                string.Equals(x.SignId, anchor.PreferUserId, StringComparison.OrdinalIgnoreCase));
         }
 
         return list.Count == 1 ? list[0] : null;

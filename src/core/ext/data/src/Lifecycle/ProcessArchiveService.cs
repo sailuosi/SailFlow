@@ -91,7 +91,7 @@ namespace sailflow.data.Lifecycle
             ProcessInstanceEntity pi;
             List<ActivityInstanceEntity> activities;
             List<TaskEntity> tasks;
-            List<TransitionInstanceEntity> transitions;
+            List<TrackEntity> transitions;
             List<ProcessVariableEntity> variables;
 
             using (var hot = Cold.UseHotSQL())
@@ -186,7 +186,7 @@ namespace sailflow.data.Lifecycle
             ProcessInstanceEntity pi,
             List<ActivityInstanceEntity> activities,
             List<TaskEntity> tasks,
-            List<TransitionInstanceEntity> transitions,
+            List<TrackEntity> transitions,
             List<ProcessVariableEntity> variables)
         {
             var opts = Options;
@@ -226,10 +226,10 @@ namespace sailflow.data.Lifecycle
             return clip.select(t).queryList().ToList();
         }
 
-        private List<TransitionInstanceEntity> LoadTransitions(SQLBuilder kit, string processInstanceId)
+        private List<TrackEntity> LoadTransitions(SQLBuilder kit, string processInstanceId)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
-            return LoadByProcessInstanceWithFallback<TransitionInstanceEntity>(
+            return LoadByProcessInstanceWithFallback<TrackEntity>(
                 kit,
                 processInstanceId,
                 Sail.HotShard.ResolveTransitionTable(processId),
@@ -322,10 +322,10 @@ namespace sailflow.data.Lifecycle
         {
             try
             {
-                if (typeof(T) == typeof(TransitionInstanceEntity))
+                if (typeof(T) == typeof(TrackEntity))
                 {
                     var clip = kit.useClip();
-                    clip.from<TransitionInstanceEntity>(table, out var row)
+                    clip.from<TrackEntity>(table, out var row)
                         .where(() => row.ProcessInstanceId, processInstanceId);
                     return clip.select(row).queryList().Cast<T>().ToList();
                 }
@@ -354,7 +354,7 @@ namespace sailflow.data.Lifecycle
             try
             {
                 var clip = kit.useClip();
-                clip.setTable<TransitionInstanceEntity>(out var t)
+                clip.setTable<TrackEntity>(out var t)
                     .useSQL(b => b.setTable(physicalTable))
                     .where(() => t.ProcessInstanceId, processInstanceId)
                     .doDelete();

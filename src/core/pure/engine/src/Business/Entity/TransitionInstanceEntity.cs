@@ -10,14 +10,14 @@ namespace sailflow.engine.Entity
     /// 转移实例实体（表 <c>wf_tran_instance</c>）。
     /// 记录一次从源活动实例到目标活动实例的流转轨迹（含前进、退回、跳转等）。
     /// </summary>
-    [SooTable(Name = "wf_tran_instance", Caption = "转移实例", Type = DBTableType.Table)]
-    public class TransitionInstanceEntity
+    [SooTable(Name = "wf_track", Caption = "转移实例", Type = DBTableType.Table)]
+    public class TrackEntity
     {
         /// <summary>
         /// 转移实例主键（列 <c>ti_id</c>）。
         /// </summary>
         [SooColumn(Name = "ti_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
-        public string TransitionInstanceId { get; set; }
+        public string TrackId { get; set; }
 
         /// <summary>
         /// BPMN 连线/转移定义 Id（列 <c>ti_tran_id</c>），非表外键。
@@ -68,49 +68,49 @@ namespace sailflow.engine.Entity
         /// 来源活动实例 Id（列 <c>ti_f_act_instance_id</c>；角色 f=from）。
         /// </summary>
         [SooColumn(Name = "ti_f_act_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
-        public string FromActivityInstanceId { get; set; }
+        public string FromActInstanceId { get; set; }
 
         /// <summary>
         /// 来源活动定义 Id（列 <c>ti_frm_activity_id</c>）。
         /// </summary>
-        [SooColumn(Name = "ti_frm_activity_id", Length = 64)]
-        public string FromActivityId { get; set; }
+        [SooColumn(Name = "ti_from_act_id", Length = 64)]
+        public string FromActId { get; set; }
 
         /// <summary>
         /// 来源活动类型（列 <c>ti_frm_activity_type</c>），见 <see cref="sailflow.engine.Common.ActivityTypeEnum"/>。
         /// </summary>
-        [SooColumn(Name = "ti_frm_activity_type")]
-        public short? FromActivityType { get; set; }
+        [SooColumn(Name = "ti_from_act_type")]
+        public short? FromActType { get; set; }
 
         /// <summary>
         /// 来源活动名称快照（列 <c>ti_frm_activity_name</c>）。
         /// </summary>
-        [SooColumn(Name = "ti_frm_activity_name", Length = 255)]
-        public string FromActivityName { get; set; }
+        [SooColumn(Name = "ti_from_act_name", Length = 255)]
+        public string FromActName { get; set; }
 
         /// <summary>
         /// 去向活动实例 Id（列 <c>ti_t_act_instance_id</c>；角色 t=to）。
         /// </summary>
-        [SooColumn(Name = "ti_t_act_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
-        public string ToActivityInstanceId { get; set; }
+        [SooColumn(Name = "ti_to_act_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
+        public string ToActInstanceId { get; set; }
 
         /// <summary>
         /// 去向活动定义 Id（列 <c>ti_to_activity_id</c>）。
         /// </summary>
-        [SooColumn(Name = "ti_to_activity_id", Length = 64)]
-        public string ToActivityId { get; set; }
+        [SooColumn(Name = "ti_to_act_id", Length = 64)]
+        public string ToActId { get; set; }
 
         /// <summary>
         /// 去向活动类型（列 <c>ti_to_activity_type</c>），见 <see cref="sailflow.engine.Common.ActivityTypeEnum"/>。
         /// </summary>
-        [SooColumn(Name = "ti_to_activity_type")]
-        public short? ToActivityType { get; set; }
+        [SooColumn(Name = "ti_to_act_type")]
+        public short? ToActType { get; set; }
 
         /// <summary>
         /// 去向活动名称快照（列 <c>ti_to_activity_name</c>）。
         /// </summary>
-        [SooColumn(Name = "ti_to_activity_name", Length = 255)]
-        public string ToActivityName { get; set; }
+        [SooColumn(Name = "ti_to_act_name", Length = 255)]
+        public string ToActName { get; set; }
 
         /// <summary>
         /// 连线条件解析结果（列 <c>ti_cond_result</c>），见 <see cref="sailflow.engine.Common.ConditionParseResultEnum"/>。

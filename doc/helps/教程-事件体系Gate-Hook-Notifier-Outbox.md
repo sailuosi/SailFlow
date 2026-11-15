@@ -195,7 +195,7 @@ public sealed class ConsoleTaskNotifier : ITaskNotifier
 
     public Task NotifyAsync(TaskNotifyContext ctx, CancellationToken ct)
     {
-        Console.WriteLine($"[notify] {ctx.Kind} task={ctx.TaskId} user={ctx.AssignedUserId}");
+        Console.WriteLine($"[notify] {ctx.Kind} task={ctx.TaskId} user={ctx.SignId}");
         return Task.CompletedTask;
     }
 }
@@ -405,7 +405,7 @@ public sealed class DingTalkTaskNotifier : TaskNotifyChannelBase
 
         await DingApi.SendTodoAsync(new
         {
-            ReceiverId = ctx.AssignedUserId,
+            ReceiverId = ctx.SignId,
             Title = "待审批",
             Content = $"单据 {ctx.AppInstanceId} 等待您审批",
             InstanceId = ctx.ProcessInstanceId,
@@ -550,7 +550,7 @@ Gate 构建上下文时 `EventType = OnValidating`。
 
 ### `FlowHookContext`
 
-`AppName` · `AppInstanceId` · `ProcessId` · `ProcessCode` · `Version` · `ProcessInstanceId` · `ActivityId` · `ActivityCode` · `ActivityInstanceId` · `TaskId` · `AssignedUserId` · `AssignedUserName` · `Operation` · `EventType`
+`BizChannel` · `BizPK` · `ProcessId` · `ProcessCode` · `Version` · `ProcessInstanceId` · `ActivityId` · `ActivityCode` · `ActivityInstanceId` · `TaskId` · `SignId` · `SignName` · `Operation` · `EventType`
 
 ### `TaskNotifyContext`
 

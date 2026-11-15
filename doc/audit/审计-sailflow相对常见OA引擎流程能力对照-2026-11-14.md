@@ -101,9 +101,9 @@
 | 外部系统 / SaaS 接入             | 🟡       | ✅   | OA 侧多模式接入文档齐全；Sail 偏引擎嵌入                      |
 | 消息通知                       | ✅        | ✅   |                                               |
 | Gate / Hook / Outbox 可靠副作用 | ✅        | 🟡  | Sail 三线分离成熟；OA 侧有回调/消息，少见同级 Outbox 模型         |
-| 审批意见                       | 🟡       | ✅   | OA 侧一等字段；Sail 多在 Host                         |
+| 审批意见                       | ✅        | ✅   | Sail=`wf_task.tk_msg`（`Msg`）；亦可 Host/`Conditions.comment` |
 | 附件                         | ❌/弱      | 🟡  | 两边都非强一等公民                                     |
-| 加急（优先级）                    | ❌        | ❌   | 两边都无；**勿与催办** `Urge` **混称**                   |
+| 加急（优先级）                    | 🟡       | ❌   | Sail=`wf_task.tk_idx`（`Idx`）已落列；产品按钮仍弱；**勿与催办** `Urge` **混称** |
 | 分表 / 冷热归档                  | ✅        | ❌   | Sail=`ProcessArchiveService` + HotShard；运维向能力 |
 
 ---

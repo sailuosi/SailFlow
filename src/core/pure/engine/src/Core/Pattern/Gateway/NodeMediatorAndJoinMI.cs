@@ -66,7 +66,7 @@ namespace sailflow.engine.Pattern
                 tokensRequired = joinActivityInstance.TokensRequired.Value;
 
                 joinActivityInstance.ActivityState = (short)ActivityStateEnum.Running;
-                joinActivityInstance.GatewayDirectionTypeId = (short)GatewayDirectionEnum.AndJoinMI;
+                joinActivityInstance.GateWayTypeId = (short)GatewayDirectionEnum.AndJoinMI;
 
                 //写入首步预选默认用户列表
                 joinActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);

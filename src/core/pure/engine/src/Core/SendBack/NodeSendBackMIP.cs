@@ -65,14 +65,14 @@ namespace sailflow.engine.Runtime
                 activityResource.AppRunner);
 
             rollbackPreviousActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
-            rollbackPreviousActivityInstance.MainActivityInstanceId = originalBackwardToActivityInstance.MainActivityInstanceId;
+            rollbackPreviousActivityInstance.MainActInstanceId = originalBackwardToActivityInstance.MainActInstanceId;
             rollbackPreviousActivityInstance.CompleteOrder = originalBackwardToActivityInstance.CompleteOrder;
             rollbackPreviousActivityInstance.ComplexType = originalBackwardToActivityInstance.ComplexType;
             rollbackPreviousActivityInstance.SignForwardType = originalBackwardToActivityInstance.SignForwardType;
             //人员来自步骤列表的用户数据
             //User data of performer from the step list
-            rollbackPreviousActivityInstance.AssignedUserIds = base.SendBackOperation.BackwardToTaskPerformer.UserId;      
-            rollbackPreviousActivityInstance.AssignedUserNames = base.SendBackOperation.BackwardToTaskPerformer.UserName;
+            rollbackPreviousActivityInstance.SignIds = base.SendBackOperation.BackwardToTaskPerformer.UserId;      
+            rollbackPreviousActivityInstance.SignNames = base.SendBackOperation.BackwardToTaskPerformer.UserName;
 
             base.ActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
 

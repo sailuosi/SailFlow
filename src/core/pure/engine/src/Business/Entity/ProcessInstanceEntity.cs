@@ -113,7 +113,7 @@ namespace sailflow.engine.Entity
         /// 子流程创建时写入父节点活动实例。
         /// </summary>
         [SooColumn(Name = "pi_i_act_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
-        public string InvokedActivityInstanceId { get; set; }
+        public string InvokedActInstanceId { get; set; }
 
         /// <summary>
         /// 唤起方活动定义 Id（列 <c>pi_i_activity_id</c>），BPMN 节点 id，非表外键。
@@ -145,14 +145,14 @@ namespace sailflow.engine.Entity
         /// 实例应完成/超期时点（列 <c>pi_overdue_time</c>）。
         /// 定义 EndType=Timer 时由 EndExpression 计算写入。
         /// </summary>
-        [SooColumn(Name = "pi_overdue_time")]
-        public DateTime? OverdueDateTime { get; set; }
+        [SooColumn(Name = "pi_dueat")]
+        public DateTime? DueAt { get; set; }
 
         /// <summary>
         /// 作业定时器已处理时间（列 <c>pi_timer_trt_time</c>），标记定时逻辑已消费。
         /// </summary>
-        [SooColumn(Name = "pi_timer_trt_time")]
-        public DateTime? JobTimerTreatedDateTime { get; set; }
+        [SooColumn(Name = "pi_doneat")]
+        public DateTime? JobDoneAt { get; set; }
 
         /// <summary>
         /// 发起单位 Id（列 <c>pi_start_unit_id</c>）。

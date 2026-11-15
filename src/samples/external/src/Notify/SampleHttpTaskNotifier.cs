@@ -36,7 +36,7 @@ public sealed class SampleHttpTaskNotifier : TaskNotifyChannelBase
             ctx.ProcessCode,
             ctx.ProcessInstanceId,
             ctx.TaskId,
-            ctx.AssignedUserId,
+            ctx.SignId,
             ctx.BizPK,
         });
 

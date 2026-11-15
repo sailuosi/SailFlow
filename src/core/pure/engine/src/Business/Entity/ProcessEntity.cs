@@ -127,7 +127,7 @@ namespace sailflow.engine.Entity
         /// <summary>
         /// 流程结束类型（列 <c>p_end_type</c>），见 <see cref="sailflow.engine.Common.ProcessEndTypeEnum"/>。
         /// 0=None；1=Timer 定时结束；2=Message 消息结束。
-        /// Timer 时创建实例会据 EndExpression 计算 <see cref="ProcessInstanceEntity.OverdueDateTime"/>。
+        /// Timer 时创建实例会据 EndExpression 计算 <see cref="ProcessInstanceEntity.DueAt"/>。
         /// </summary>
         [SooColumn(Name = "p_end_type")]
         public byte? EndType { get; set; }

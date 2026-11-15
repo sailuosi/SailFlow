@@ -36,8 +36,8 @@ namespace sailflow.engine.Pattern
             var condActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, runner);
             //保存下一步办理人信息
             condActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
-            condActivityInstance.AssignedUserIds = WfDefine.SYSTEM_JOBTIMER_USER_ID;
-            condActivityInstance.AssignedUserNames = WfDefine.SYSTEM_JOBTIMER_USER_NAME;
+            condActivityInstance.SignIds = WfDefine.SYSTEM_JOBTIMER_USER_ID;
+            condActivityInstance.SignNames = WfDefine.SYSTEM_JOBTIMER_USER_NAME;
 
             //作业定时器信息
             condActivityInstance.JobTimerType = (short)JobTimerTypeEnum.Conditional;

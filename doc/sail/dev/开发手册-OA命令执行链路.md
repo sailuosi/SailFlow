@@ -123,7 +123,7 @@ WfRuntimeManagerRun.ExecuteInstanceImp
 
 写下一跳待办时（`NodeMediatorTask.CreateActivityTaskTransitionInstance`）：
 
-1. `CreateActivityInstanceObject` / `GenerateActivityAssignedUserInfo`（**Assignee 管道**）
+1. `CreateActivityInstanceObject` / `GenerateActivitySignInfo`（**Assignee 管道**）
 2. `ActivityInstanceManager.Insert`
 3. `CreateNewTask` → `TaskManager.Insert`
 4. `InsertTransitionInstance` → `TransitionInstanceManager` 写转移
@@ -307,7 +307,7 @@ Transition 族 `SignForwardAction`。
 |------|---------|
 | API | `SignForwardProcess` → `RunAction` → `SignForwardAction.Execute` |
 | Factory | `CreateRuntimeInstanceSignForward` |
-| Factory 读库 | `GetRunningNode`（校验 AssignedUserIds）· `client.ProcessModelFactory.CreateByTask` |
+| Factory 读库 | `GetRunningNode`（校验 SignIds）· `client.ProcessModelFactory.CreateByTask` |
 | Gate | `FlowOperation.SignForward` |
 | Runtime | `WfRuntimeManagerSignForward.ExecuteInstanceImp` |
 | Mediator | `CreateRunningContextByTask` → `MediatorInstanceCreator`（加签类型节点 Mediator）→ `ExecuteWorkItem`（生成前/后/并加签 AI+Task） |
@@ -323,7 +323,7 @@ Transition 族 `SignForwardAction`。
 | 族群时序 | `AssigneeActionBase`：Load → `TryGate` → `ExecuteCore` → `OnProcessTransferred` |
 | 读库 | `TaskManager.GetTaskView` · `ActivityInstanceManager.GetById`（在 `TransferAction.TryLoadContext`） |
 | Gate | `FlowOperation.Transfer` |
-| 写库 | `TaskManager.Transfer`：原待办 `Closed` + `Update`；目标 `Insert` 同 Activity 新待办；`RefreshActivityAssignedUsersFromOpenTasks`；`CapabilityDispatcher.FireTaskLifecycle(Entrusted)`（仍在 Manager 内；族内不重复） |
+| 写库 | `TaskManager.Transfer`：原待办 `Closed` + `Update`；目标 `Insert` 同 Activity 新待办；`RefreshActivitySignFromOpenTasks`；`CapabilityDispatcher.FireTaskLifecycle(Entrusted)`（仍在 Manager 内；族内不重复） |
 | Hook | `OnProcessTransferred`（族群 `OnFireFlowHook`） |
 | 设计 | [草案-非流转动作骨架.md](../草案-非流转动作骨架.md) · [progress/2026-11-15-动作骨架-A1-Transfer.md](../progress/2026-11-15-动作骨架-A1-Transfer.md) |
 
@@ -336,7 +336,7 @@ Assignee 族 `RemoveAssigneeAction`（A4；**引擎 API 已有，Host 办理条�
 | API | `RemoveAssigneeProcess` → `RunAction` → `RemoveAssigneeAction.Execute` |
 | 定位 | `TaskId` → 活动；`NextActivityPerformers` = 待移除人 |
 | Gate | `FlowOperation.RemoveAssignee` |
-| 写库 | `TaskManager.RemoveAssignees`：匹配未办待办 → `Closed` + `Cancelled`；刷新 AssignedUser*；禁减至 0 |
+| 写库 | `TaskManager.RemoveAssignees`：匹配未办待办 → `Closed` + `Cancelled`；刷新 SignIds/Names；禁减至 0 |
 | Hook | `OnAssigneeRemoved` |
 | 设计 | [progress/2026-11-15-动作骨架-A4-RemoveAssignee.md](../progress/2026-11-15-动作骨架-A4-RemoveAssignee.md) |
 
@@ -349,7 +349,7 @@ Assignee 族 `ChangeAssigneeAction`（A4 续）。
 | API | `ChangeAssigneeProcess` → `RunAction` → `ChangeAssigneeAction.Execute` |
 | 定位 | `TaskId` → 活动；`NextActivityPerformers` = **新办理人全集** |
 | Gate | `FlowOperation.ChangeAssignee` |
-| 写库 | `TaskManager.ChangeAssignees`：不在新集合 → Closed+Cancelled；缺开待办 → Insert+Created；刷新 AssignedUser* |
+| 写库 | `TaskManager.ChangeAssignees`：不在新集合 → Closed+Cancelled；缺开待办 → Insert+Created；刷新 SignIds/Names |
 | Hook | `OnAssigneeChanged` |
 
 ### 5.12d UrgeProcess（催办，不推进）
@@ -386,7 +386,7 @@ Assignee 族三动词。字段：`tk_assignee_role`（0/null 常规，1 参与�
 | 阅办 API | `AcknowledgeProcess` → `AcknowledgeAction` → `TaskManager.Acknowledge` |
 | 收回 API | `RecallConsultProcess` → `RecallConsultAction` → `TaskManager.RecallConsult` |
 | 硬锁 | `ConsultPendingGuard`：源 Task 有打开参与者时拦截 Run/Reject/SendBack/SignForward/Transfer/Delegate/… |
-| AssignedUser | `RefreshActivityAssignedUsersFromOpenTasks` **排除**参与者 |
+| SignIds/Names | `RefreshActivitySignFromOpenTasks` **排除**参与者 |
 | 节点离开 | `CompleteActivityInstance` → `CancelOpenParticipantsOnActivity` |
 | Hook | `OnProcessConsulted` / `OnTaskAcknowledged` / `OnConsultRecalled` |
 | Host | 码表 `Consult`/`Acknowledge`/`RecallConsult`；Workbench 下发 `AssigneeRole`/`ConsultPending` |
@@ -524,7 +524,7 @@ WfExecutedResult FinishRunCore(SQLBuilder kit, FlowCommandContext runner,
 // RuntimeInstanceCreator.CreateRuntimeInstanceAppRunning（经 ManagerFactory / ProcessInstances）
 var aim = _sail.ManagerFactory.Activities;
 var runningNode = aim.GetRunningNode(SailSqlAccess.Sibling(kit), runner, out taskView);
-// 校验 AssignedUserIds 含当前用户、Task 处于 Running
+// 校验 SignIds 含当前用户、Task 处于 Running
 var processInstance = _sail.ProcessInstances.GetById(kitForPi, runningNode.ProcessInstanceId.Value);
 var processModel = _sail.ProcessModelFactory.CreateByTask(SailSqlAccess.Sibling(kit), taskView);
 // ProcessVariableResolver.CheckVariableRequired …
@@ -594,7 +594,7 @@ ContinueForwardCurrentNodeRecurisivly(/* root = next tree */);
 ```csharp
 // NodeMediatorTask.CreateActivityTaskTransitionInstance（普通任务）
 var toActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, runner);
-toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource); // Assignee 管道
+toActivityInstance = GenerateActivitySignInfo(toActivityInstance, activityResource); // Assignee 管道
 ActivityInstanceManager.Insert(Sibling(kit), toActivityInstance);
     // → Sibling(kit).useRepo<ActivityInstanceEntity, int>().InsertReturnId(entity)
 CreateNewTask(toActivityInstance, activityResource, kit);
@@ -660,7 +660,7 @@ FlowCapabilityPipeline.AfterSuccess(/* OnActivityCreated */);
 2. **卡在 Gate**：`TryGate` Reject，事务不提交；查宿主注册的 Gate。
 3. **卡在 Mediator / Assignee**：`WfAssigneeException` → `ApplyAssigneeException`（`ReasonCode`）；或下一跳 Insert 失败。
 4. **Withdraw vs SendBack**：同一 Runtime，差在 Factory 预装的 `BackwardType` / 下一跳定位（已办 TaskId → 目标运行节点）。
-5. **Transfer 未流转**：预期行为；只改 Task + AssignedUser*，无 `ContinueForward`。
+5. **Transfer 未流转**：预期行为；只改 Task + SignIds/Names，无 `ContinueForward`。
 6. **Async**：`*Async` 可取消等锁；Mediator `ExecuteWorkItem` 仍同步（见异步化草案）。
 
 ---

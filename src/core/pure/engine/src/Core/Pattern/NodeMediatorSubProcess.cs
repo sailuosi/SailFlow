@@ -106,7 +106,7 @@ namespace sailflow.engine.Pattern
             {
                 //取出主节点信息
                 //获取主节点信息
-                var mainNodeIndex = base.LinkContext.FromActivityInstance.MainActivityInstanceId;
+                var mainNodeIndex = base.LinkContext.FromActivityInstance.MainActInstanceId;
                 var mainActivityInstance = base.ActivityInstanceManager.GetById(mainNodeIndex);
 
                 //取出多实例节点列表
@@ -245,14 +245,14 @@ namespace sailflow.engine.Pattern
             {
                 //并行容器中的子流程节点，每个人发起一个子流程
                 //并行容器中的子流程节点，每个办理人发起一个子流程
-                toActivityInstance.AssignedUserIds = performer.UserId;
-                toActivityInstance.AssignedUserNames = performer.UserName;
+                toActivityInstance.SignIds = performer.UserId;
+                toActivityInstance.SignNames = performer.UserName;
                 base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
                 this.TaskManager.Insert(kit.useSQL(), toActivityInstance, performer, activityResource.AppRunner);
             }
             else
             {
-                toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
+                toActivityInstance = GenerateActivitySignInfo(toActivityInstance, activityResource);
                 base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
                 base.CreateNewTask(toActivityInstance, activityResource, kit);
             }
@@ -325,7 +325,7 @@ namespace sailflow.engine.Pattern
             {
                 toActivityInstance.CompleteOrder = toActivity.MultiSignDetail.CompleteOrder;
             }
-            toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
+            toActivityInstance = GenerateActivitySignInfo(toActivityInstance, activityResource);
 
             if (activityResource.AutoApprovePending)
             {
@@ -361,15 +361,15 @@ namespace sailflow.engine.Pattern
             for (short i = 0; i < plist.Count; i++)
             {
                 entity = base.ActivityInstanceManager.CreateActivityInstanceObject(toActivityInstance);
-                entity.AssignedUserIds = plist[i].UserId;
-                entity.AssignedUserNames = plist[i].UserName;
+                entity.SignIds = plist[i].UserId;
+                entity.SignNames = plist[i].UserName;
                 entity.GroupId = plist[i].GroupId;
                 entity.GroupName = plist[i].GroupName;
                 entity.GroupRole = plist[i].GroupRole;
                 entity.UnitId = plist[i].UnitId;
                 entity.UnitCode = plist[i].UnitCode;
                 entity.UnitName = plist[i].UnitName;
-                entity.MainActivityInstanceId = toActivityInstance.ActivityInstanceId;
+                entity.MainActInstanceId = toActivityInstance.ActivityInstanceId;
                 entity.CompleteOrder = (short)(i + 1);
 
                 //只有第一个节点处于运行状态，其它节点挂起

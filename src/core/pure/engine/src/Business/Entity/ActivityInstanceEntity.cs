@@ -89,17 +89,17 @@ namespace sailflow.engine.Entity
         public short? WorkItemType { get; set; }
 
         /// <summary>
-        /// 已分配办理人 Id 列表（列 <c>ai_asgn_user_ids</c>，JSON）。
-        /// 活动级汇总；个人待办以 <see cref="TaskEntity.AssignedUserId"/> 为准。
+        /// 办理对象 Id 汇总（列 <c>ai_sign_ids</c>，JSON/逗号列表）。
+        /// 活动级；个人待办以 <see cref="TaskEntity.SignId"/> 为准。
         /// </summary>
-        [SooColumn(Name = "ai_asgn_user_ids", DataType = DataFam.Json, Tag = "sail.xml")]
-        public string AssignedUserIds { get; set; }
+        [SooColumn(Name = "ai_sign_ids", DataType = DataFam.Json, Tag = "sail.xml")]
+        public string SignIds { get; set; }
 
         /// <summary>
-        /// 已分配办理人姓名列表（列 <c>ai_asgn_user_names</c>，JSON），与 AssignedUserIds 对应。
+        /// 办理对象显示名汇总（列 <c>ai_sign_names</c>），与 <see cref="SignIds"/> 对应。
         /// </summary>
-        [SooColumn(Name = "ai_asgn_user_names", DataType = DataFam.Json, Tag = "sail.xml")]
-        public string AssignedUserNames { get; set; }
+        [SooColumn(Name = "ai_sign_names", DataType = DataFam.Json, Tag = "sail.xml")]
+        public string SignNames { get; set; }
 
         /// <summary>
         /// 组别 Id（列 <c>ai_group_id</c>）。
@@ -143,8 +143,8 @@ namespace sailflow.engine.Entity
         /// 分支：OrSplit/XOrSplit/AndSplit/AndSplitMI/ApprovalOrSplit；
         /// 合并：OrJoin/XOrJoin/EOrJoin/AndJoin/AndJoinMI。
         /// </summary>
-        [SooColumn(Name = "ai_gw_dir_type_id")]
-        public short? GatewayDirectionTypeId { get; set; }
+        [SooColumn(Name = "ai_gateway_type_id")]
+        public short? GateWayTypeId { get; set; }
 
         /// <summary>
         /// 禁止再续活本活动实例（列 <c>ai_no_renew_inst</c>）。
@@ -195,20 +195,20 @@ namespace sailflow.engine.Entity
         /// <summary>
         /// 活动应完成/超期时点（列 <c>ai_overdue_time</c>）。
         /// </summary>
-        [SooColumn(Name = "ai_overdue_time")]
-        public DateTime? OverdueDateTime { get; set; }
+        [SooColumn(Name = "ai_dueat")]
+        public DateTime? DueAt { get; set; }
 
         /// <summary>
         /// 活动定时器已处理时间（列 <c>ai_timer_trt_time</c>）。
         /// </summary>
-        [SooColumn(Name = "ai_timer_trt_time")]
-        public DateTime? JobTimerTreatedDateTime { get; set; }
+        [SooColumn(Name = "ai_job_doneat")]
+        public DateTime? JobDoneAt { get; set; }
 
         /// <summary>
         /// 会签/加签复杂类型（列 <c>ai_cplx_type</c>），见 <see cref="sailflow.engine.Xpdl.ComplexTypeEnum"/>。
         /// 1=SignTogether 会签；2=SignForward 加签。
         /// </summary>
-        [SooColumn(Name = "ai_cplx_type")]
+        [SooColumn(Name = "ai_sign_type")]
         public short? ComplexType { get; set; }
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace sailflow.engine.Entity
         /// 子实例指向主实例；主实例自身通常为空或自指策略以运行代码为准。
         /// </summary>
         [SooColumn(Name = "ai_m_act_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
-        public string MainActivityInstanceId { get; set; }
+        public string MainActInstanceId { get; set; }
 
         /// <summary>
         /// 会签通过率比较类型（列 <c>ai_cmp_type</c>），见 <see cref="sailflow.engine.Xpdl.CompareTypeEnum"/>。
@@ -259,14 +259,14 @@ namespace sailflow.engine.Entity
         /// 发起退回/撤销的那次活动实例。
         /// </summary>
         [SooColumn(Name = "ai_s_act_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
-        public string BackSrcActivityInstanceId { get; set; }
+        public string BackSrcActInstanceId { get; set; }
 
         /// <summary>
         /// 退回原点活动实例（列 <c>ai_o_act_instance_id</c>；角色 o=back_org）。
         /// 退回到的目标/原始活动实例。
         /// </summary>
         [SooColumn(Name = "ai_o_act_instance_id", Length = 64, Tag = "sail.id", IsFK = true)]
-        public string BackOrgActivityInstanceId { get; set; }
+        public string BackOrgActInstanceId { get; set; }
 
         /// <summary>
         /// 下一步办理人预选序列化（列 <c>ai_nxt_perf</c>，JSON）。

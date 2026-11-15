@@ -28,7 +28,7 @@ namespace sailflow.engine.Entity
         public string RunnerName { get; set; }
 
         /// <summary>
-        /// 受托人用户 Id（新待办 AssignedUserId）。
+        /// 受托人用户 Id（新待办 SignId）。
         /// </summary>
         public string EntrustToUserId { get; set; }
 

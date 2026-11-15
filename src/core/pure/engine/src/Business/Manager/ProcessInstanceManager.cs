@@ -84,7 +84,7 @@ namespace sailflow.engine.Manager
         }
 
         internal bool IsSubProcess(ProcessInstanceEntity entity)
-            => !string.IsNullOrWhiteSpace(entity.InvokedActivityInstanceId) && !string.IsNullOrEmpty(entity.InvokedActivityId);
+            => !string.IsNullOrWhiteSpace(entity.InvokedActInstanceId) && !string.IsNullOrEmpty(entity.InvokedActivityId);
 
         internal User GetProcessInitiator(string processInstanceId)
         {
@@ -182,7 +182,7 @@ namespace sailflow.engine.Manager
         {
             var clip = kit.useClip();
             clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.InvokedActivityInstanceId, activityInstanceId)
+                .where(() => pi.InvokedActInstanceId, activityInstanceId)
                 .where(() => pi.InvokedActivityId, activityId)
                 .where(() => pi.RecordStatusInvalid, (byte)0)
                 .where(() => pi.ProcessState, (short)ProcessStateEnum.Completed)
@@ -252,7 +252,7 @@ namespace sailflow.engine.Manager
             {
                 entity.SubProcessId = subProcessNode.SubProcessId;
                 entity.InvokedActivityId = subProcessNode.ActivityInstance.ActivityId;
-                entity.InvokedActivityInstanceId = subProcessNode.ActivityInstance.ActivityInstanceId;
+                entity.InvokedActInstanceId = subProcessNode.ActivityInstance.ActivityInstanceId;
                 if (subProcessNode.SubProcessNested != null)
                 {
                     entity.ProcessId = subProcessNode.ActivityInstance.ProcessId;
@@ -266,7 +266,7 @@ namespace sailflow.engine.Manager
             }
 
             if (processEntity.EndType == (short)ProcessEndTypeEnum.Timer)
-                entity.OverdueDateTime = CalculateOverdueDateTime(entity.CreatedDateTime.Value, processEntity.EndExpression);
+                entity.DueAt = CalculateOverdueDateTime(entity.CreatedDateTime.Value, processEntity.EndExpression);
 
             RunProcessInstanceCreateHooks(kit, runner, processEntity, entity);
             return entity;
@@ -410,7 +410,7 @@ namespace sailflow.engine.Manager
         {
             var clip = kit.useClip();
             clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.InvokedActivityInstanceId, invokedActivityInstanceId)
+                .where(() => pi.InvokedActInstanceId, invokedActivityInstanceId)
                 .where(() => pi.ProcessState, (short)ProcessStateEnum.Suspended)
                 .orderByDesc(() => pi.CreatedDateTime);
             var list = clip.select(pi).queryList().ToList();
@@ -597,7 +597,7 @@ namespace sailflow.engine.Manager
                 taskClip.setTable<TaskEntity>(out var t)
                     .set(() => t.TaskState, (short)TaskStateEnum.Canceled)
                     .set(() => t.RecordStatusInvalid, (byte)1)
-                    .set(() => t.EndedDateTime, DateTime.UtcNow)
+                    .set(() => t.CompletedAt, DateTime.UtcNow)
                     .set(() => t.EndedUserId, userId)
                     .set(() => t.EndedUserName, userName)
                     .where(() => t.ProcessInstanceId, entity.ProcessInstanceId)
@@ -612,7 +612,7 @@ namespace sailflow.engine.Manager
                 {
                     task.TaskState = (short)TaskStateEnum.Canceled;
                     task.RecordStatusInvalid = 1;
-                    task.EndedDateTime = DateTime.UtcNow;
+                    task.CompletedAt = DateTime.UtcNow;
                     task.EndedUserId = userId;
                     task.EndedUserName = userName;
                     Sail.CapabilityDispatcher.FireTaskLifecycle(
@@ -637,7 +637,7 @@ namespace sailflow.engine.Manager
                 || entity.ProcessState == (int)ProcessStateEnum.Ready
                 || entity.ProcessState == (int)ProcessStateEnum.Suspended)
             {
-                entity.OverdueDateTime = overdueDateTime;
+                entity.DueAt = overdueDateTime;
                 entity.UpdatedUserId = runner.UserId;
                 entity.UpdatedUserName = runner.UserName;
                 entity.UpdatedDateTime = DateTime.UtcNow;
@@ -699,7 +699,7 @@ namespace sailflow.engine.Manager
             try
             {
                 var clip = kit.useClip();
-                clip.setTable<TransitionInstanceEntity>(out var t)
+                clip.setTable<TrackEntity>(out var t)
                     .useSQL(b => b.setTable(physicalTable))
                     .where(() => t.ProcessInstanceId, processInstanceId)
                     .doDelete();

@@ -12,12 +12,12 @@ public class TaskTimeoutFieldsTests
     {
         var task = new TaskEntity
         {
-            ActivatedDateTime = DateTime.UtcNow,
-            OverdueDateTime = DateTime.UtcNow.AddMinutes(10)
+            ActiveAt = DateTime.UtcNow,
+            DueAt = DateTime.UtcNow.AddMinutes(10)
         };
-        Assert.NotNull(task.ActivatedDateTime);
-        Assert.NotNull(task.OverdueDateTime);
-        Assert.True(task.OverdueDateTime > task.ActivatedDateTime);
+        Assert.NotNull(task.ActiveAt);
+        Assert.NotNull(task.DueAt);
+        Assert.True(task.DueAt > task.ActiveAt);
     }
 
     [Fact]
@@ -25,11 +25,11 @@ public class TaskTimeoutFieldsTests
     {
         var view = new TaskViewEntity
         {
-            ActivatedDateTime = DateTime.UtcNow,
-            OverdueDateTime = DateTime.UtcNow.AddHours(1)
+            ActiveAt = DateTime.UtcNow,
+            DueAt = DateTime.UtcNow.AddHours(1)
         };
-        Assert.NotNull(view.ActivatedDateTime);
-        Assert.NotNull(view.OverdueDateTime);
+        Assert.NotNull(view.ActiveAt);
+        Assert.NotNull(view.DueAt);
     }
 
     [Fact]

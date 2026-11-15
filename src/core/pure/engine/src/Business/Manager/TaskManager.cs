@@ -164,11 +164,11 @@ namespace sailflow.engine.Manager
             var clip = kit.useClip();
             clip.from<TaskViewEntity>(out var t)
                 .where(() => t.ActivityInstanceId, activityInstanceId)
-                .where(() => t.AssignedUserId, userId)
+                .where(() => t.SignId, userId)
                 .where(() => t.ProcessState, (short)2)
                 .whereIn(() => t.ActivityType, new short?[] { (short)4, (short)5, (short)6 })
                 .whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 })
-                .orderByDesc(() => t.ActivatedDateTime)
+                .orderByDesc(() => t.ActiveAt)
                 .top(1);
             var list = clip.select(t).queryList().ToList();
 
@@ -188,11 +188,11 @@ namespace sailflow.engine.Manager
             var clip = kit.useClip();
             clip.from<TaskViewEntity>(out var t)
                 .where(() => t.ActivityInstanceId, activityInstanceId)
-                .where(() => t.AssignedUserId, userId)
+                .where(() => t.SignId, userId)
                 .where(() => t.ProcessState, (short)2)
                 .whereIn(() => t.ActivityType, new short?[] { (short)4, (short)5, (short)6 })
                 .whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 })
-                .orderByDesc(() => t.ActivatedDateTime)
+                .orderByDesc(() => t.ActiveAt)
                 .top(1);
             var list = (await clip.select(t).queryListAsync(cancellationToken).ConfigureAwait(false)).ToList();
             return ResolveTaskOfMineByActivityInstance(list, activityInstanceId);
@@ -234,14 +234,14 @@ namespace sailflow.engine.Manager
             clip.from<TaskViewEntity>(out var t)
                 .where(() => t.BizPK, bizPK)
                 .where(() => t.ProcessId, processId)
-                .where(() => t.AssignedUserId, userId)
+                .where(() => t.SignId, userId)
                 .where(() => t.ProcessState, (short)2)
                 .sinkOR()
                 .whereIn(() => t.ActivityType, new short?[] { (short)4, (short)5, (short)6 })
                 .where(() => t.WorkItemType, (short)1)
                 .rise()
                 .whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 })
-                .orderByDesc(() => t.ActivatedDateTime)
+                .orderByDesc(() => t.ActiveAt)
                 .top(1);
             var list = clip.select(t).queryList().ToList();
 
@@ -283,7 +283,7 @@ namespace sailflow.engine.Manager
         internal bool IsMine(TaskViewEntity entity, string userId)
         {
             var isMine = false;
-            if (entity.AssignedUserId == userId) isMine = true;
+            if (entity.SignId == userId) isMine = true;
             return isMine;
         }
 
@@ -382,8 +382,8 @@ namespace sailflow.engine.Manager
                 ActivityName = activityInstance.ActivityName,
                 ProcessId = activityInstance.ProcessId,
                 TaskType = (short)TaskTypeEnum.Manual,
-                AssignedUserId = performer?.UserId,
-                AssignedUserName = performer?.UserName,
+                SignId = performer?.UserId,
+                SignName = performer?.UserName,
                 GroupId = !string.IsNullOrEmpty(performer?.GroupId) ? performer.GroupId : activityInstance.GroupId,
                 GroupName = !string.IsNullOrEmpty(performer?.GroupName) ? performer.GroupName : activityInstance.GroupName,
                 GroupRole = !string.IsNullOrEmpty(performer?.GroupRole) ? performer.GroupRole : activityInstance.GroupRole,
@@ -393,11 +393,14 @@ namespace sailflow.engine.Manager
                 TaskState = 1,
                 // 业务邮件标记：未发送（sailflow.biz.query.TaskEMailSentStatusEnum.UnSent）
                 IsEMailSent = 0,
+                Idx = 0,
+                IsRead = 0,
                 CreatedUserId = runnerId,
                 CreatedUserName = runnerName,
                 CreatedDateTime = DateTime.UtcNow,
                 RecordStatusInvalid = 0
             };
+            StampNewTaskClocks(entity, activateNow: true);
             if (!string.IsNullOrWhiteSpace(entrustedTaskId))
                 entity.EntrustedTaskId = entrustedTaskId;
 
@@ -415,8 +418,8 @@ namespace sailflow.engine.Manager
             ActivityInstanceEntity newInstance,
             FlowCommandContext runner)
         {
-            var performer = new Performer(sourceActivityInstance.AssignedUserIds,
-                sourceActivityInstance.AssignedUserNames)
+            var performer = new Performer(sourceActivityInstance.SignIds,
+                sourceActivityInstance.SignNames)
             {
                 GroupId = sourceActivityInstance.GroupId,
                 GroupName = sourceActivityInstance.GroupName,
@@ -437,6 +440,48 @@ namespace sailflow.engine.Manager
         public void Update(SQLBuilder kit, TaskEntity entity)
             => kit.update(entity);
 
+        /// <summary>
+        /// 新待办时钟：发送/首次下达；可立即办理时写 ActiveAt。
+        /// </summary>
+        static void StampNewTaskClocks(TaskEntity entity, bool activateNow)
+        {
+            var now = DateTime.UtcNow;
+            entity.SendAt = now;
+            if (entity.GotAt == null)
+                entity.GotAt = now;
+            if (activateNow && entity.ActiveAt == null)
+                entity.ActiveAt = now;
+            if (entity.Idx == null)
+                entity.Idx = 0;
+            if (entity.IsRead == null)
+                entity.IsRead = 0;
+        }
+
+        /// <summary>
+        /// 幂等标记已阅：首次写入 IsRead=1 与 ReadAt（不单独落库，由调用方 Update）。
+        /// </summary>
+        public static void ApplyMarkRead(TaskEntity task)
+        {
+            if (task == null)
+                return;
+            if (task.IsRead == 1 && task.ReadAt != null)
+                return;
+            task.IsRead = 1;
+            task.ReadAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// 幂等标记已阅并落库。
+        /// </summary>
+        public void MarkRead(SQLBuilder kit, string taskId)
+        {
+            var task = GetTask(kit, taskId);
+            if (task == null)
+                return;
+            ApplyMarkRead(task);
+            Update(kit, task);
+        }
+
         internal void SetTaskType(SQLBuilder kit, string taskId, TaskTypeEnum taskType)
         {
             var task = GetTask(kit, taskId);
@@ -452,6 +497,7 @@ namespace sailflow.engine.Manager
                 try
                 {
                     var task = GetTask(kit, taskRunner.TaskId);
+                    ApplyMarkRead(task);
                     SetTaskState(kit, task, taskRunner.UserId, taskRunner.UserName, TaskStateEnum.Reading);
                     Sail.ManagerFactory.Activities.Read(kit, task.ActivityInstanceId, taskRunner);
                     kit.commit();
@@ -481,7 +527,7 @@ namespace sailflow.engine.Manager
         {
             var task = GetTask(kit, taskId);
             task.TaskState = (byte)taskState;
-            task.EndedDateTime = DateTime.UtcNow;
+            task.CompletedAt = DateTime.UtcNow;
             task.EndedUserId = runner.UserId;
             task.EndedUserName = runner.UserName;
             Update(kit, task);
@@ -515,7 +561,7 @@ namespace sailflow.engine.Manager
             return true;
         }
 
-        /// <summary>委派：关闭原人待办并为受托人建待办（挂 <c>EntrustedTaskId</c>）；不刷新 AssignedUser*（原人仍为责任锚点）。</summary>
+        /// <summary>委派：关闭原人待办并为受托人建待办（挂 <c>EntrustedTaskId</c>）；不刷新 SignIds/Names（原人仍为责任锚点）。</summary>
         internal WfDataManagedResult Delegate(
             SQLBuilder kit,
             string taskId,
@@ -532,7 +578,7 @@ namespace sailflow.engine.Manager
             if (!string.IsNullOrWhiteSpace(task.EntrustedTaskId))
                 return WfDataManagedResult.Exception("Delegate cannot nest: task is already a delegated task.");
 
-            if (!string.Equals(task.AssignedUserId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(task.SignId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
                 return WfDataManagedResult.Exception("Delegate is only allowed on the current user's task.");
 
             if (task.TaskState != (short)TaskStateEnum.Waiting
@@ -564,7 +610,7 @@ namespace sailflow.engine.Manager
             var existing = GetTaskListByActivity(
                 kit, activityInstance.ProcessInstanceId, activityInstance.ActivityInstanceId);
             if (existing.Any(t =>
-                    string.Equals(t.AssignedUserId, target.UserId, StringComparison.OrdinalIgnoreCase)
+                    string.Equals(t.SignId, target.UserId, StringComparison.OrdinalIgnoreCase)
                     && (t.TaskState == (short)TaskStateEnum.Waiting
                         || t.TaskState == (short)TaskStateEnum.Reading)))
             {
@@ -573,7 +619,7 @@ namespace sailflow.engine.Manager
             }
 
             task.TaskState = (short)TaskStateEnum.Closed;
-            task.EndedDateTime = DateTime.UtcNow;
+            task.CompletedAt = DateTime.UtcNow;
             task.EndedUserId = runner.UserId;
             task.EndedUserName = runner.UserName;
             Update(kit, task);
@@ -603,8 +649,8 @@ namespace sailflow.engine.Manager
                 ActivityId = originalTask.ActivityId,
                 ActivityName = originalTask.ActivityName,
                 ActivityInstanceId = originalTask.ActivityInstanceId,
-                AssignedUserId = originalTask.AssignedUserId,
-                AssignedUserName = originalTask.AssignedUserName,
+                SignId = originalTask.SignId,
+                SignName = originalTask.SignName,
                 GroupId = originalTask.GroupId,
                 GroupName = originalTask.GroupName,
                 GroupRole = originalTask.GroupRole,
@@ -613,10 +659,14 @@ namespace sailflow.engine.Manager
                 UnitName = originalTask.UnitName,
                 TaskState = (short)TaskStateEnum.Waiting,
                 TaskType = originalTask.TaskType,
+                SignKind = originalTask.SignKind,
+                Idx = originalTask.Idx ?? 0,
+                IsRead = 0,
                 CreatedDateTime = DateTime.UtcNow,
                 CreatedUserId = runner?.UserId ?? originalTask.CreatedUserId,
                 CreatedUserName = runner?.UserName ?? originalTask.CreatedUserName
             };
+            StampNewTaskClocks(newTask, activateNow: true);
             Insert(kit, newTask);
             FireTaskLifecycle(kit, newTask, runner, TaskNotifyKind.Created);
         }
@@ -685,7 +735,7 @@ namespace sailflow.engine.Manager
             }
 
             var taskList = GetTaskListByActivity(kit, activityInstance.ProcessInstanceId, activityInstance.ActivityInstanceId);
-            if (taskList.Where(t => t.AssignedUserId == entity.EntrustToUserId).Any())
+            if (taskList.Where(t => t.SignId == entity.EntrustToUserId).Any())
             {
                 return WfDataManagedResult.Exception(Sail.Messages.GetEngineMessage("taskmanager.entrust.notagain.warn"));
             }
@@ -696,7 +746,7 @@ namespace sailflow.engine.Manager
         }
 
         /// <summary>
-        /// 转办：结束本人待办（Closed，不计入会签完成），在本活动实例为接收人建待办，并刷新 AssignedUser*。
+        /// 转办：结束本人待办（Closed，不计入会签完成），在本活动实例为接收人建待办，并刷新 SignIds/Names。
         /// 不推进下一节点。与 <see cref="Entrust"/> 相近，但面向产品 Transfer 命令且强制换写活动办理人集合。
         /// </summary>
         internal WfDataManagedResult Transfer(
@@ -712,7 +762,7 @@ namespace sailflow.engine.Manager
             if (task == null)
                 return WfDataManagedResult.Exception("Transfer task not found.");
 
-            if (!string.Equals(task.AssignedUserId, runner.UserId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(task.SignId, runner.UserId, StringComparison.OrdinalIgnoreCase))
                 return WfDataManagedResult.Exception("Transfer is only allowed on the current user's task.");
 
             if (task.TaskState != (short)TaskStateEnum.Waiting
@@ -729,7 +779,7 @@ namespace sailflow.engine.Manager
 
             // 关闭原人待办：Closed（勿用 Completed，避免被会签计为已办）
             task.TaskState = (short)TaskStateEnum.Closed;
-            task.EndedDateTime = DateTime.UtcNow;
+            task.CompletedAt = DateTime.UtcNow;
             task.EndedUserId = runner.UserId;
             task.EndedUserName = runner.UserName;
             Update(kit, task);
@@ -749,7 +799,7 @@ namespace sailflow.engine.Manager
                     return WfDataManagedResult.Exception("Cannot transfer to self.");
 
                 var hasOpen = existing.Any(t =>
-                    string.Equals(t.AssignedUserId, target.UserId, StringComparison.OrdinalIgnoreCase)
+                    string.Equals(t.SignId, target.UserId, StringComparison.OrdinalIgnoreCase)
                     && (t.TaskState == (short)TaskStateEnum.Waiting
                         || t.TaskState == (short)TaskStateEnum.Reading));
                 if (hasOpen)
@@ -760,8 +810,8 @@ namespace sailflow.engine.Manager
                     runner.UserId, runner.UserName, taskId, runner);
             }
 
-            // 按仍打开的待办重写活动 AssignedUser*，转出人不再占用会签名额
-            RefreshActivityAssignedUsersFromOpenTasks(kit, activityInstance);
+            // 按仍打开的待办重写活动 SignIds/Names，转出人不再占用会签名额
+            RefreshActivitySignFromOpenTasks(kit, activityInstance);
             return WfDataManagedResult.Success();
         }
 
@@ -798,7 +848,7 @@ namespace sailflow.engine.Manager
             if (filterUserIds != null && filterUserIds.Count > 0)
             {
                 open = open
-                    .Where(t => filterUserIds.Contains(t.AssignedUserId))
+                    .Where(t => filterUserIds.Contains(t.SignId))
                     .ToList();
             }
 
@@ -815,7 +865,7 @@ namespace sailflow.engine.Manager
         }
 
         /// <summary>
-        /// 改派：将当前活动未办待办差量对齐到新办理人集合（关旧 Cancelled / 建新 Created），刷新 AssignedUser*。
+        /// 改派：将当前活动未办待办差量对齐到新办理人集合（关旧 Cancelled / 建新 Created），刷新 SignIds/Names。
         /// 新集合至少一人；已在集合内且仍打开的待办保留。不推进下一节点。
         /// </summary>
         internal WfDataManagedResult ChangeAssignees(
@@ -857,10 +907,10 @@ namespace sailflow.engine.Manager
 
             foreach (var t in open)
             {
-                if (desired.ContainsKey(t.AssignedUserId))
+                if (desired.ContainsKey(t.SignId))
                     continue;
                 t.TaskState = (short)TaskStateEnum.Closed;
-                t.EndedDateTime = DateTime.UtcNow;
+                t.CompletedAt = DateTime.UtcNow;
                 t.EndedUserId = runner?.UserId;
                 t.EndedUserName = runner?.UserName;
                 Update(kit, t);
@@ -873,7 +923,7 @@ namespace sailflow.engine.Manager
                         kit,
                         activityInstance.ProcessInstanceId,
                         activityInstance.ActivityInstanceId)
-                    .Select(t => t.AssignedUserId),
+                    .Select(t => t.SignId),
                 StringComparer.OrdinalIgnoreCase);
 
             foreach (var kv in desired)
@@ -884,12 +934,12 @@ namespace sailflow.engine.Manager
                     runner?.UserId, runner?.UserName, taskId, runner);
             }
 
-            RefreshActivityAssignedUsersFromOpenTasks(kit, activityInstance);
+            RefreshActivitySignFromOpenTasks(kit, activityInstance);
             return WfDataManagedResult.Success();
         }
 
         /// <summary>
-        /// 减签：取消指定办理人在本活动上的未办待办（Closed + Cancelled 通知），并刷新 AssignedUser*。
+        /// 减签：取消指定办理人在本活动上的未办待办（Closed + Cancelled 通知），并刷新 SignIds/Names。
         /// 至少保留一名打开待办；不推进下一节点。
         /// </summary>
         internal WfDataManagedResult RemoveAssignees(
@@ -929,7 +979,7 @@ namespace sailflow.engine.Manager
                 activityInstance.ActivityInstanceId);
 
             var toClose = open
-                .Where(t => removeIds.Contains(t.AssignedUserId))
+                .Where(t => removeIds.Contains(t.SignId))
                 .ToList();
             if (toClose.Count == 0)
                 return WfDataManagedResult.Exception("RemoveAssignee: no open task matched the targets.");
@@ -940,7 +990,7 @@ namespace sailflow.engine.Manager
             foreach (var t in toClose)
             {
                 t.TaskState = (short)TaskStateEnum.Closed;
-                t.EndedDateTime = DateTime.UtcNow;
+                t.CompletedAt = DateTime.UtcNow;
                 t.EndedUserId = runner?.UserId;
                 t.EndedUserName = runner?.UserName;
                 Update(kit, t);
@@ -948,12 +998,12 @@ namespace sailflow.engine.Manager
                     kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
             }
 
-            RefreshActivityAssignedUsersFromOpenTasks(kit, activityInstance);
+            RefreshActivitySignFromOpenTasks(kit, activityInstance);
             return WfDataManagedResult.Success();
         }
 
-        /// <summary>用 Waiting/Reading 的<strong>常规办理人</strong>待办重建活动 AssignedUserIds/Names（排除沟通参与者）。</summary>
-        internal void RefreshActivityAssignedUsersFromOpenTasks(
+        /// <summary>用 Waiting/Reading 的<strong>常规办理人</strong>待办重建活动 SignIds/Names（排除沟通参与者）。</summary>
+        internal void RefreshActivitySignFromOpenTasks(
             SQLBuilder kit,
             ActivityInstanceEntity activityInstance)
         {
@@ -968,11 +1018,11 @@ namespace sailflow.engine.Manager
             {
                 if (ids.Length > 0) ids.Append(',');
                 if (names.Length > 0) names.Append(',');
-                ids.Append(t.AssignedUserId);
-                names.Append(t.AssignedUserName);
+                ids.Append(t.SignId);
+                names.Append(t.SignName);
             }
-            activityInstance.AssignedUserIds = ids.ToString();
-            activityInstance.AssignedUserNames = names.ToString();
+            activityInstance.SignIds = ids.ToString();
+            activityInstance.SignNames = names.ToString();
             Sail.ManagerFactory.Activities.Update(kit, activityInstance);
         }
 
@@ -1017,7 +1067,7 @@ namespace sailflow.engine.Manager
 
         /// <summary>
         /// 沟通：在当前活动为选中人建参与者待办（role=1，ConsultSrcTaskId=源 Task）。
-        /// 同轮同人已有打开参与者待办则跳过（幂等）。不刷新 AssignedUser*。
+        /// 同轮同人已有打开参与者待办则跳过（幂等）。不刷新 SignIds/Names。
         /// </summary>
         internal WfDataManagedResult Consult(
             SQLBuilder kit,
@@ -1033,7 +1083,7 @@ namespace sailflow.engine.Manager
                 return WfDataManagedResult.Exception("Consult source task not found.");
             if (AssigneeRoleHelper.IsParticipant(srcTask.AssigneeRole))
                 return WfDataManagedResult.Exception("Consult cannot be started from a participant task.");
-            if (!string.Equals(srcTask.AssignedUserId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(srcTask.SignId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
                 return WfDataManagedResult.Exception("Consult requires the current user's to-do.");
             if (srcTask.TaskState != (short)TaskStateEnum.Waiting
                 && srcTask.TaskState != (short)TaskStateEnum.Reading)
@@ -1049,7 +1099,7 @@ namespace sailflow.engine.Manager
 
             var existingOpen = GetOpenParticipantsBySrc(kit, srcTaskId);
             var existingUsers = new HashSet<string>(
-                existingOpen.Select(t => t.AssignedUserId),
+                existingOpen.Select(t => t.SignId),
                 StringComparer.OrdinalIgnoreCase);
 
             var created = 0;
@@ -1057,7 +1107,7 @@ namespace sailflow.engine.Manager
             {
                 if (p == null || string.IsNullOrWhiteSpace(p.UserId))
                     continue;
-                if (string.Equals(p.UserId, srcTask.AssignedUserId, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(p.UserId, srcTask.SignId, StringComparison.OrdinalIgnoreCase))
                     continue;
                 if (existingUsers.Contains(p.UserId))
                     continue;
@@ -1074,8 +1124,8 @@ namespace sailflow.engine.Manager
                     TaskType = (short)TaskTypeEnum.Manual,
                     AssigneeRole = (int)AssigneeRoleEnum.Participant,
                     ConsultSrcTaskId = srcTaskId,
-                    AssignedUserId = p.UserId,
-                    AssignedUserName = p.UserName,
+                    SignId = p.UserId,
+                    SignName = p.UserName,
                     GroupId = !string.IsNullOrEmpty(p.GroupId) ? p.GroupId : activityInstance.GroupId,
                     GroupName = !string.IsNullOrEmpty(p.GroupName) ? p.GroupName : activityInstance.GroupName,
                     GroupRole = !string.IsNullOrEmpty(p.GroupRole) ? p.GroupRole : activityInstance.GroupRole,
@@ -1084,12 +1134,14 @@ namespace sailflow.engine.Manager
                     UnitName = !string.IsNullOrEmpty(p.UnitName) ? p.UnitName : activityInstance.UnitName,
                     TaskState = (short)TaskStateEnum.Waiting,
                     IsEMailSent = 0,
+                    Idx = 0,
+                    IsRead = 0,
                     CreatedUserId = runner?.UserId,
                     CreatedUserName = runner?.UserName,
                     CreatedDateTime = DateTime.UtcNow,
-                    ActivatedDateTime = DateTime.UtcNow,
                     RecordStatusInvalid = 0
                 };
+                StampNewTaskClocks(entity, activateNow: true);
                 var newId = Insert(kit, entity);
                 entity.TaskId = newId;
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
@@ -1115,7 +1167,7 @@ namespace sailflow.engine.Manager
                 return WfDataManagedResult.Exception("Acknowledge task not found.");
             if (!AssigneeRoleHelper.IsParticipant(task.AssigneeRole))
                 return WfDataManagedResult.Exception("Acknowledge requires a participant task.");
-            if (!string.Equals(task.AssignedUserId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(task.SignId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
                 return WfDataManagedResult.Exception("Acknowledge requires the current user's to-do.");
             if (task.TaskState != (short)TaskStateEnum.Waiting
                 && task.TaskState != (short)TaskStateEnum.Reading)
@@ -1135,7 +1187,7 @@ namespace sailflow.engine.Manager
             var srcTask = GetTask(kit, srcTaskId);
             if (srcTask == null)
                 return WfDataManagedResult.Exception("RecallConsult source task not found.");
-            if (!string.Equals(srcTask.AssignedUserId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(srcTask.SignId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
                 return WfDataManagedResult.Exception("RecallConsult requires the current user's to-do.");
 
             var open = GetOpenParticipantsBySrc(kit, srcTaskId);
@@ -1147,7 +1199,7 @@ namespace sailflow.engine.Manager
             foreach (var t in open)
             {
                 t.TaskState = (short)TaskStateEnum.Canceled;
-                t.EndedDateTime = DateTime.UtcNow;
+                t.CompletedAt = DateTime.UtcNow;
                 t.EndedUserId = runner?.UserId;
                 t.EndedUserName = runner?.UserName;
                 Update(kit, t);
@@ -1179,7 +1231,7 @@ namespace sailflow.engine.Manager
             foreach (var t in open)
             {
                 t.TaskState = (short)TaskStateEnum.Canceled;
-                t.EndedDateTime = DateTime.UtcNow;
+                t.CompletedAt = DateTime.UtcNow;
                 t.EndedUserId = runner?.UserId;
                 t.EndedUserName = runner?.UserName;
                 Update(kit, t);
@@ -1226,8 +1278,8 @@ namespace sailflow.engine.Manager
                 ActivityId = originalTask.ActivityId,
                 ActivityName = originalTask.ActivityName,
                 ActivityInstanceId = originalTask.ActivityInstanceId,
-                AssignedUserId = originalTask.AssignedUserId,
-                AssignedUserName = originalTask.AssignedUserName,
+                SignId = originalTask.SignId,
+                SignName = originalTask.SignName,
                 GroupId = originalTask.GroupId,
                 GroupName = originalTask.GroupName,
                 GroupRole = originalTask.GroupRole,
@@ -1236,10 +1288,14 @@ namespace sailflow.engine.Manager
                 UnitName = originalTask.UnitName,
                 TaskState = (short)TaskStateEnum.Waiting,
                 TaskType = originalTask.TaskType,
+                SignKind = originalTask.SignKind,
+                Idx = originalTask.Idx ?? 0,
+                IsRead = 0,
                 CreatedDateTime = DateTime.UtcNow,
                 CreatedUserId = originalTask.CreatedUserId,
                 CreatedUserName = originalTask.CreatedUserName
             };
+            StampNewTaskClocks(newTask, activateNow: true);
             Insert(kit, newTask);
             FireTaskLifecycle(kit, newTask, null, TaskNotifyKind.Created);
         }
@@ -1267,15 +1323,15 @@ namespace sailflow.engine.Manager
             CancelTask(kit, activityInstanceId);
             var aim = Sail.ManagerFactory.Activities;
             var activityInstance = aim.GetById(kit, activityInstanceId);
-            activityInstance.AssignedUserIds = GenerateActivityAssignedUserIDs(replaced);
-            activityInstance.AssignedUserNames = GenerateActivityAssignedUserNames(replaced);
+            activityInstance.SignIds = GenerateActivitySignIds(replaced);
+            activityInstance.SignNames = GenerateActivitySignNames(replaced);
             foreach (var user in replaced)
             {
                 Insert(kit, activityInstance, user.ReplacedByUserId, user.ReplacedByUserName, runner.UserId, runner.UserName);
             }
         }
 
-        private string GenerateActivityAssignedUserIDs(List<TaskReplacedEntity> userList)
+        private string GenerateActivitySignIds(List<TaskReplacedEntity> userList)
         {
             var strBuilder = new StringBuilder(1024);
             foreach (var user in userList)
@@ -1287,7 +1343,7 @@ namespace sailflow.engine.Manager
             return strBuilder.ToString();
         }
 
-        private string GenerateActivityAssignedUserNames(List<TaskReplacedEntity> userList)
+        private string GenerateActivitySignNames(List<TaskReplacedEntity> userList)
         {
             var strBuilder = new StringBuilder(1024);
             foreach (var user in userList)

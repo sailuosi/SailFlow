@@ -59,7 +59,7 @@ namespace sailflow.engine.Common
         /// </summary>
         /// <param name="performerList"></param>
         /// <returns></returns>
-        internal static string GenerateActivityAssignedUserIDs(PerformerList performerList)
+        internal static string GenerateActivitySignIds(PerformerList performerList)
         {
             StringBuilder strBuilder = new StringBuilder(1024);
             foreach (var performer in performerList)
@@ -77,7 +77,7 @@ namespace sailflow.engine.Common
         /// </summary>
         /// <param name="performerList"></param>
         /// <returns></returns>
-        internal static string GenerateActivityAssignedUserNames(PerformerList performerList)
+        internal static string GenerateActivitySignNames(PerformerList performerList)
         {
             StringBuilder strBuilder = new StringBuilder(1024);
             foreach (var performer in performerList)

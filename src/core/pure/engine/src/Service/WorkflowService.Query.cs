@@ -597,7 +597,7 @@ namespace sailflow.engine.Service
             var pim = Managers.ProcessInstances;
             var processInstance = pim.GetById(processInstanceId);
             processInstance.JobTimerStatus = (short)JobTimerStatusEnum.Completed;
-            processInstance.JobTimerTreatedDateTime = System.DateTime.UtcNow;
+            processInstance.JobDoneAt = System.DateTime.UtcNow;
             pim.Update(processInstance);
         }
 
@@ -612,7 +612,7 @@ namespace sailflow.engine.Service
             var aim = Sail.ManagerFactory.Activities;
             var activityInstance = aim.GetById(activityInstanceId);
             activityInstance.JobTimerStatus = (short)JobTimerStatusEnum.Completed;
-            activityInstance.JobTimerTreatedDateTime = System.DateTime.UtcNow;
+            activityInstance.JobDoneAt = System.DateTime.UtcNow;
             aim.Update(activityInstance);
         }
 

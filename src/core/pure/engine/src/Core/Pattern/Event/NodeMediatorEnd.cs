@@ -62,7 +62,7 @@ namespace sailflow.engine.Pattern
             SQLBuilder kit)
         {
             //读取流程下一步人员列表
-            var runner = FillNextActivityPerformersByRoleList(processInstance.InvokedActivityInstanceId, 
+            var runner = FillNextActivityPerformersByRoleList(processInstance.InvokedActInstanceId, 
                 processInstance.InvokedActivityId, 
                 kit);
 
@@ -111,8 +111,8 @@ namespace sailflow.engine.Pattern
                 BizCode = mainProcessInstance.BizCode,
                 ProcessId = mainProcessInstance.ProcessId,
                 Version = mainProcessInstance.Version,
-                UserId = task.AssignedUserId,
-                UserName = task.AssignedUserName
+                UserId = task.SignId,
+                UserName = task.SignName
             };
 
             foreach (var node in nextSteps)

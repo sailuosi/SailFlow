@@ -9,7 +9,7 @@ namespace sailflow.engine.Entity
 {
     /// <summary>
     /// 任务/待办实体（表 <c>wf_task</c>）。
-    /// 活动实例下按办理人拆分的个人工作项；含委托、沟通参与者、激活与个人超期。
+    /// 活动实例下按办理对象拆分的工作项；含委托、沟通参与者、发送/下达/激活与个人超期。
     /// </summary>
     [SooTable(Name = "wf_task", Caption = "任务", Type = DBTableType.Table)]
     public class TaskEntity
@@ -99,16 +99,30 @@ namespace sailflow.engine.Entity
         public string ConsultSrcTaskId { get; set; }
 
         /// <summary>
-        /// 办理人用户 Id（列 <c>tk_asgn_user_id</c>）。
+        /// 办理对象类型（列 <c>tk_sign_kind</c>），见 <see cref="SignKindEnum"/>。
+        /// null/0=User 人；1=Dept；2=Role；3=Group；4=Custom。
         /// </summary>
-        [SooColumn(Name = "tk_asgn_user_id", Length = 64)]
-        public string AssignedUserId { get; set; }
+        [SooColumn(Name = "tk_sign_kind")]
+        public int? SignKind { get; set; }
 
         /// <summary>
-        /// 办理人用户姓名（列 <c>tk_asgn_user_name</c>）。
+        /// 办理对象引用 Id（列 <c>tk_sign_id</c>）。
+        /// Kind=人时为用户 Id；非人时为 Dept/Role/Group/Custom 的平台引用。
         /// </summary>
-        [SooColumn(Name = "tk_asgn_user_name", Length = 128)]
-        public string AssignedUserName { get; set; }
+        [SooColumn(Name = "tk_sign_id", Length = 64)]
+        public string SignId { get; set; }
+
+        /// <summary>
+        /// 办理对象显示名（列 <c>tk_sign_name</c>）。
+        /// </summary>
+        [SooColumn(Name = "tk_sign_name", Length = 128)]
+        public string SignName { get; set; }
+
+        /// <summary>
+        /// 优先级（列 <c>tk_idx</c>）；默认 0。
+        /// </summary>
+        [SooColumn(Name = "tk_idx")]
+        public int? Idx { get; set; }
 
         /// <summary>
         /// 组别 Id（列 <c>tk_group_id</c>），来自 Performer.GroupId。
@@ -154,6 +168,30 @@ namespace sailflow.engine.Entity
         public byte? IsEMailSent { get; set; }
 
         /// <summary>
+        /// 是否已阅（列 <c>tk_is_read</c>）：0/null=未阅；1=已阅。
+        /// </summary>
+        [SooColumn(Name = "tk_is_read")]
+        public byte? IsRead { get; set; }
+
+        /// <summary>
+        /// 首次已阅时刻（列 <c>tk_read_at</c>）。
+        /// </summary>
+        [SooColumn(Name = "tk_read_at")]
+        public DateTime? ReadAt { get; set; }
+
+        /// <summary>
+        /// 审批/办理意见（列 <c>tk_msg</c>）。
+        /// </summary>
+        [SooColumn(Name = "tk_msg", Length = 500)]
+        public string Msg { get; set; }
+
+        /// <summary>
+        /// 行级扩展参数（列 <c>tk_row_para</c>，varchar 1000）；对齐 ddflow RowPara。
+        /// </summary>
+        [SooColumn(Name = "tk_row_para", Length = 1000)]
+        public string RowPara { get; set; }
+
+        /// <summary>
         /// 创建人 Id（列 <c>tk_crt_user_id</c>）。
         /// </summary>
         [SooColumn(Name = "tk_crt_user_id", Length = 64)]
@@ -172,18 +210,30 @@ namespace sailflow.engine.Entity
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// 待办激活（可办）时间（列 <c>tk_activated_time</c>）。
-        /// 串行会签未轮到时为 null；轮到后写入，方可办理。
+        /// 发送时间（列 <c>tk_send_at</c>）：待办发出去的时刻；再发送只更新本字段。
         /// </summary>
-        [SooColumn(Name = "tk_activated_time")]
-        public DateTime? ActivatedDateTime { get; set; }
+        [SooColumn(Name = "tk_send_at")]
+        public DateTime? SendAt { get; set; }
 
         /// <summary>
-        /// 个人应完成时间（列 <c>tk_overdue_time</c>）。
+        /// 首次下达时间（列 <c>tk_got_at</c>）；本行第一次下达写入，之后不覆盖。
+        /// </summary>
+        [SooColumn(Name = "tk_got_at")]
+        public DateTime? GotAt { get; set; }
+
+        /// <summary>
+        /// 激活可办时间（列 <c>tk_active_at</c>）。
+        /// 串行会签未轮到时为 null；轮到后写入，方可办理。
+        /// </summary>
+        [SooColumn(Name = "tk_active_at")]
+        public DateTime? ActiveAt { get; set; }
+
+        /// <summary>
+        /// 个人应完成时间（列 <c>tk_due_at</c>）。
         /// 未激活为 null；激活后按时限策略计算。
         /// </summary>
-        [SooColumn(Name = "tk_overdue_time")]
-        public DateTime? OverdueDateTime { get; set; }
+        [SooColumn(Name = "tk_due_at")]
+        public DateTime? DueAt { get; set; }
 
         /// <summary>
         /// 更新时间（列 <c>tk_upd_time</c>）。
@@ -216,10 +266,10 @@ namespace sailflow.engine.Entity
         public string EndedUserName { get; set; }
 
         /// <summary>
-        /// 办结时间（列 <c>tk_end_time</c>）。
+        /// 办结时间（列 <c>tk_completed_at</c>）。
         /// </summary>
-        [SooColumn(Name = "tk_end_time")]
-        public DateTime? EndedDateTime { get; set; }
+        [SooColumn(Name = "tk_completed_at")]
+        public DateTime? CompletedAt { get; set; }
 
         /// <summary>
         /// 记录作废标记（列 <c>tk_rec_invalid</c>）：0=有效；1=软删（废弃实例等联动）。

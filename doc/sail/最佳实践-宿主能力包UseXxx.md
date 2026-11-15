@@ -648,7 +648,7 @@ public sealed class SailFormBizLifecycleHook : IFlowHook
 ```csharp
 builder.UseNodePolicyTimeoutStamp();
 // PostBuild → addHook(SailNodePolicyTimeoutStampHook)
-// 写 wf_task.ActivatedDateTime / OverdueDateTime
+// 写 wf_task.ActiveAt / DueAt
 ```
 
 ---

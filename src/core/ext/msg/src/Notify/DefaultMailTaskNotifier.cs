@@ -27,7 +27,7 @@ namespace sailflow.msg.Notify
                 return;
 
             var rm = ResourceServiceLocator.Resolve();
-            var user = rm.GetUserById(ctx.AssignedUserId);
+            var user = rm.GetUserById(ctx.SignId);
             if (user == null || string.IsNullOrEmpty(user.EMail))
                 return;
 

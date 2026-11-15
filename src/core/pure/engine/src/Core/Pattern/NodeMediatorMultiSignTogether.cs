@@ -93,11 +93,11 @@ namespace sailflow.engine.Pattern
             //主节点非空时可正常运行（未发起加签）
             var complexType = base.LinkContext.FromActivity.MultiSignDetail.ComplexType;
             if (complexType == ComplexTypeEnum.SignTogether
-                || complexType == ComplexTypeEnum.SignForward && base.LinkContext.FromActivityInstance.MainActivityInstanceId != null)
+                || complexType == ComplexTypeEnum.SignForward && base.LinkContext.FromActivityInstance.MainActInstanceId != null)
             {
                 //取出主节点信息
                 //获取主活动实例
-                var mainNodeIndex = base.LinkContext.FromActivityInstance.MainActivityInstanceId;
+                var mainNodeIndex = base.LinkContext.FromActivityInstance.MainActInstanceId;
                 var mainActivityInstance = base.ActivityInstanceManager.GetById(mainNodeIndex);
 
                 //串行会签和并行会签的处理

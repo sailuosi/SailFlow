@@ -1113,7 +1113,7 @@ namespace sailflow.engine.Pattern
                 processInstance, activityResource.AppRunner);
 
             // 经 Assignee 管道定范围（补齐原先未走 Generate 的缺口）
-            toActivityInstance = GenerateActivityAssignedUserInfo(toActivityInstance, activityResource);
+            toActivityInstance = GenerateActivitySignInfo(toActivityInstance, activityResource);
 
             // R10：会签须有子办理人；零 Performer 自动过不适用 SignTogether
             if (activityResource.AutoApprovePending)
@@ -1145,8 +1145,8 @@ namespace sailflow.engine.Pattern
             toActivityInstance.CompareType = (short)toActivity.MultiSignDetail.CompareType;
             toActivityInstance.CompleteOrder = toActivity.MultiSignDetail.CompleteOrder;
 
-            toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(plist);
-            toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(plist);
+            toActivityInstance.SignIds = PerformerBuilder.GenerateActivitySignIds(plist);
+            toActivityInstance.SignNames = PerformerBuilder.GenerateActivitySignNames(plist);
 
             ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
             InsertTransitionInstance(processInstance,
@@ -1165,15 +1165,15 @@ namespace sailflow.engine.Pattern
             for (short i = 0; i < plist.Count; i++)
             {
                 entity = ActivityInstanceManager.CreateActivityInstanceObject(toActivityInstance);
-                entity.AssignedUserIds = plist[i].UserId;
-                entity.AssignedUserNames = plist[i].UserName;
+                entity.SignIds = plist[i].UserId;
+                entity.SignNames = plist[i].UserName;
                 entity.GroupId = plist[i].GroupId;
                 entity.GroupName = plist[i].GroupName;
                 entity.GroupRole = plist[i].GroupRole;
                 entity.UnitId = plist[i].UnitId;
                 entity.UnitCode = plist[i].UnitCode;
                 entity.UnitName = plist[i].UnitName;
-                entity.MainActivityInstanceId = toActivityInstance.ActivityInstanceId;
+                entity.MainActInstanceId = toActivityInstance.ActivityInstanceId;
 
                 // 设置多实例子节点执行顺序（串行 / 并行）
                 if (toActivityInstance.MergeType == (short)MergeTypeEnum.Sequence)
@@ -1290,7 +1290,7 @@ namespace sailflow.engine.Pattern
         /// <summary>
         /// 解析并写入目标活动的办理人信息（经 Assignee 管道）
         /// </summary>
-        protected ActivityInstanceEntity GenerateActivityAssignedUserInfo(ActivityInstanceEntity toActivityInstance,
+        protected ActivityInstanceEntity GenerateActivitySignInfo(ActivityInstanceEntity toActivityInstance,
             ActivityResource activityResource)
         {
             // R2/R4：已挂管道时只走 Assignee，禁止回落 Definition/Specific/Single
@@ -1319,8 +1319,8 @@ namespace sailflow.engine.Pattern
                 {
                     activityResource.NextActivityPerformers ??= new Dictionary<string, PerformerList>();
                     activityResource.NextActivityPerformers[toActivityInstance.ActivityId] = resolved;
-                    toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(resolved);
-                    toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(resolved);
+                    toActivityInstance.SignIds = PerformerBuilder.GenerateActivitySignIds(resolved);
+                    toActivityInstance.SignNames = PerformerBuilder.GenerateActivitySignNames(resolved);
                     activityResource.AutoApprovePending = false;
                     return toActivityInstance;
                 }
@@ -1331,8 +1331,8 @@ namespace sailflow.engine.Pattern
                     activityResource.NextActivityPerformers ??= new Dictionary<string, PerformerList>();
                     activityResource.NextActivityPerformers[toActivityInstance.ActivityId] =
                         resolved ?? new PerformerList();
-                    toActivityInstance.AssignedUserIds = null;
-                    toActivityInstance.AssignedUserNames = null;
+                    toActivityInstance.SignIds = null;
+                    toActivityInstance.SignNames = null;
                     activityResource.AutoApprovePending = true;
                     return toActivityInstance;
                 }
@@ -1359,18 +1359,18 @@ namespace sailflow.engine.Pattern
 
             // 旧双轨（已废弃，保留注释备查）：
             // {
-            //     toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(
+            //     toActivityInstance.SignIds = PerformerBuilder.GenerateActivitySignIds(
             //         activityResource.NextActivityPerformers[toActivityInstance.ActivityId]);
-            //     toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(
+            //     toActivityInstance.SignNames = PerformerBuilder.GenerateActivitySignNames(
             //         activityResource.NextActivityPerformers[toActivityInstance.ActivityId]);
             // }
             // else if (activityResource.AppRunner.NextPerformerType == NextPerformerIntTypeEnum.Definition)
             // {
             //     var performers = ActivityForwardContext.ProcessModel.GetActivityPerformers(toActivityInstance.ActivityId);
             //     activityResource.NextActivityPerformers = performers;
-            //     toActivityInstance.AssignedUserIds = PerformerBuilder.GenerateActivityAssignedUserIDs(
+            //     toActivityInstance.SignIds = PerformerBuilder.GenerateActivitySignIds(
             //         performers[toActivityInstance.ActivityId]);
-            //     toActivityInstance.AssignedUserNames = PerformerBuilder.GenerateActivityAssignedUserNames(
+            //     toActivityInstance.SignNames = PerformerBuilder.GenerateActivitySignNames(
             //         performers[toActivityInstance.ActivityId]);
             // }
             // else if (activityResource.AppRunner.NextPerformerType == NextPerformerIntTypeEnum.Single)
@@ -1379,8 +1379,8 @@ namespace sailflow.engine.Pattern
             //         toActivityInstance.ActivityId,
             //         activityResource.AppRunner.UserId,
             //         activityResource.AppRunner.UserName);
-            //     toActivityInstance.AssignedUserIds = activityResource.AppRunner.UserId;
-            //     toActivityInstance.AssignedUserNames = activityResource.AppRunner.UserName;
+            //     toActivityInstance.SignIds = activityResource.AppRunner.UserId;
+            //     toActivityInstance.SignNames = activityResource.AppRunner.UserName;
             // }
             // else
             // {

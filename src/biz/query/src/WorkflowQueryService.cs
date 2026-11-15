@@ -36,7 +36,7 @@ namespace sailflow.biz.query
                 .where(() => t.ActivityType == 4 || t.WorkItemType == 1)
                 .where(() => t.ActivityState, (short)1)
                 .where(() => t.TaskState, (short)32, "<>")
-                .orderByDesc(() => t.ActivatedDateTime)
+                .orderByDesc(() => t.ActiveAt)
                 .top(10);
             return clip.select(t).queryList().ToList();
         }
@@ -50,7 +50,7 @@ namespace sailflow.biz.query
                 .where(() => t.ActivityType == 4 || t.WorkItemType == 1)
                 .where(() => t.ActivityState, (short)4)
                 .where(() => t.TaskState, (short)32, "<>")
-                .orderByDesc(() => t.EndedDateTime)
+                .orderByDesc(() => t.CompletedAt)
                 .top(10);
             return clip.select(t).queryList().ToList();
         }
@@ -131,7 +131,7 @@ namespace sailflow.biz.query
             IList<Performer> performerList = new List<Performer>();
             foreach (var task in tasks)
             {
-                performerList.Add(new Performer(task.AssignedUserId, task.AssignedUserName));
+                performerList.Add(new Performer(task.SignId, task.SignName));
             }
             return performerList;
         }
@@ -145,7 +145,7 @@ namespace sailflow.biz.query
                 .where(() => t.ProcessState, (short)2)
                 .where(() => t.ActivityType == 4 || t.WorkItemType == 1)
                 .where(() => t.ActivityState, (short)1)
-                .orderByDesc(() => t.ActivatedDateTime);
+                .orderByDesc(() => t.ActiveAt);
             return clip.select(t).queryList();
         }
 
@@ -162,7 +162,7 @@ namespace sailflow.biz.query
 
             if (aim.IsMultipleInstanceChildren(activityInstance) == true)
             {
-                var mainActivityInstance = aim.GetById(activityInstance.MainActivityInstanceId);
+                var mainActivityInstance = aim.GetById(activityInstance.MainActInstanceId);
                 var complexType = EnumHelper.ParseEnum<ComplexTypeEnum>(mainActivityInstance.ComplexType.Value.ToString());
 
                 if (complexType == ComplexTypeEnum.SignTogether)
@@ -174,7 +174,7 @@ namespace sailflow.biz.query
                             mainActivityInstance.ActivityInstanceId,
                             mainActivityInstance.ProcessInstanceId,
                             (short)ActivityStateEnum.Suspended).ToList();
-                        short allNum = (short)mainActivityInstance.AssignedUserIds.Split(',').Length;
+                        short allNum = (short)mainActivityInstance.SignIds.Split(',').Length;
                         short maxOrder = 0;
 
                         if (sqList != null && sqList.Count > 0)
@@ -213,7 +213,7 @@ namespace sailflow.biz.query
                             null).ToList();
                         var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed).ToList().Count();
                         var completedCount = sqList
-                            .Where(w => w.ActivityState == (short)ActivityStateEnum.Completed || w.AssignedUserIds == task.AssignedUserId)
+                            .Where(w => w.ActivityState == (short)ActivityStateEnum.Completed || w.SignIds == task.SignId)
                             .ToList()
                             .Count();
                         if (mainActivityInstance.CompareType == null
@@ -288,7 +288,7 @@ namespace sailflow.biz.query
 
                         var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed).ToList().Count();
                         var completedCount = sqList
-                            .Where(w => w.ActivityState == (short)ActivityStateEnum.Completed || w.AssignedUserIds == task.AssignedUserId)
+                            .Where(w => w.ActivityState == (short)ActivityStateEnum.Completed || w.SignIds == task.SignId)
                             .ToList()
                             .Count();
                         if (mainActivityInstance.CompareType == null
@@ -358,15 +358,15 @@ namespace sailflow.biz.query
             clip.whereIf(!string.IsNullOrEmpty(query.BizPK), () => t.BizPK, query.BizPK)
                 .whereIf(!string.IsNullOrEmpty(query.ProcessId), () => t.ProcessId, query.ProcessId)
                 .whereIf(!string.IsNullOrEmpty(query.Version), () => t.Version, query.Version)
-                .whereIf(!string.IsNullOrEmpty(query.UserId), () => t.AssignedUserId, query.UserId)
+                .whereIf(!string.IsNullOrEmpty(query.UserId), () => t.SignId, query.UserId)
                 .whereIf(!string.IsNullOrEmpty(query.EndedUserId), () => t.EndedUserId, query.EndedUserId);
             if (!string.IsNullOrEmpty(query.BizChannel))
                 clip.whereLike(() => t.BizChannel, query.BizChannel);
 
             if (activityState == (short)ActivityStateEnum.Completed)
-                clip.orderByDesc(() => t.EndedDateTime);
+                clip.orderByDesc(() => t.CompletedAt);
             else
-                clip.orderByDesc(() => t.ActivatedDateTime);
+                clip.orderByDesc(() => t.ActiveAt);
             // 库端分页（禁止全量 queryList 再内存切页）
             var page = clip.select(t).setPage(pageSize, pageIndex).queryPage();
             var items = (IList<TaskViewEntity>)(page.Items?.ToList() ?? new List<TaskViewEntity>());
@@ -481,11 +481,11 @@ namespace sailflow.biz.query
             var tm = new TransitionInstanceManager(Sail);
             var list = tm.GetTransitionInstanceList(query.BizPK, query.ProcessId, query.Version).ToList();
 
-            foreach (TransitionInstanceEntity t in list)
+            foreach (TrackEntity t in list)
             {
                 imageList.Add(new TransitionImage
                 {
-                    Id = t.TransitionInstanceId,
+                    Id = t.TrackId,
                     TransitionId = t.TransitionId
                 });
             }

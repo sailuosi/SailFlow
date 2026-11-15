@@ -9,7 +9,7 @@
 |----|------|
 | `FlowOperation.RemoveAssignee` | `HookEnums.cs` |
 | `OnAssigneeRemoving` / `OnAssigneeRemoved` | `EventFireTypeEnum` |
-| `TaskManager.RemoveAssignees` | Closed 待移除未办待办 + `Cancelled` Notifier；刷新 AssignedUser*；禁减至 0 |
+| `TaskManager.RemoveAssignees` | Closed 待移除未办待办 + `Cancelled` Notifier；刷新 SignIds/Names；禁减至 0 |
 | `RemoveAssigneeAction` | Assignee 族；`FireTaskLifecycleAfterCore=false` |
 | Service / IF / RunBuilder | `RemoveAssigneeProcess*` / `RemoveAssignee()` |
 
@@ -24,7 +24,7 @@
 | 项 | 说明 |
 |----|------|
 | `FlowOperation.ChangeAssignee` | + `OnAssigneeChanged` |
-| `TaskManager.ChangeAssignees` | 差量：不在新集合 → Closed+Cancelled；缺开待办 → Insert+Created；刷新 AssignedUser* |
+| `TaskManager.ChangeAssignees` | 差量：不在新集合 → Closed+Cancelled；缺开待办 → Insert+Created；刷新 SignIds/Names |
 | `ChangeAssigneeAction` / Service / RunBuilder | 同减签约定：`TaskId` 定位；`NextActivityPerformers` = **新全集** |
 
 ## 续：Urge（同日）
@@ -40,7 +40,7 @@
 | 项 | 说明 |
 |----|------|
 | 拍板 | 委派办结**必须**自动回转原人；否则用 Transfer |
-| `TaskManager.Delegate` | 关原人 + 建受托待办（`EntrustedTaskId`）；不刷新 AssignedUser* |
+| `TaskManager.Delegate` | 关原人 + 建受托待办（`EntrustedTaskId`）；不刷新 SignIds/Names |
 | `TryCompleteAsDelegationReturn` | 受托人 Complete → 回转原人 Waiting；Mediator **不**完结 AI / 不 ContinueForward |
 | 挂点 | `NodeMediatorTask` / MultiSignTogether / MultiSignForward / Revise |
 | `DelegateAction` / `DelegateProcess*` | Assignee 族 |

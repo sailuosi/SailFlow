@@ -101,9 +101,9 @@ namespace sailflow.engine.Pattern
 
             //基于当前活动实例新建加签人记录，并相应修改 CompleteOrder
             var newActivityInstance = base.ActivityInstanceManager.CreateActivityInstanceObject(base.ActivityForwardContext.FromActivityInstance);
-            newActivityInstance.AssignedUserIds = activityResource.AppRunner.UserId;
-            newActivityInstance.AssignedUserNames = activityResource.AppRunner.UserName;
-            newActivityInstance.MainActivityInstanceId = base.ActivityForwardContext.FromActivityInstance.ActivityInstanceId;
+            newActivityInstance.SignIds = activityResource.AppRunner.UserId;
+            newActivityInstance.SignNames = activityResource.AppRunner.UserName;
+            newActivityInstance.MainActInstanceId = base.ActivityForwardContext.FromActivityInstance.ActivityInstanceId;
             newActivityInstance.SignForwardType = (short)signForwardType;
 
             if (signForwardType == SignForwardTypeEnum.SignForwardParallel)
@@ -156,15 +156,15 @@ namespace sailflow.engine.Pattern
             {
                 signforwardActivityInstance = base.ActivityInstanceManager.CreateActivityInstanceObject(base.ActivityForwardContext.FromActivityInstance);
                 signforwardActivityInstance.ComplexType = (short)ComplexTypeEnum.SignForward;
-                signforwardActivityInstance.AssignedUserIds = plist[i].UserId;
-                signforwardActivityInstance.AssignedUserNames = plist[i].UserName;
+                signforwardActivityInstance.SignIds = plist[i].UserId;
+                signforwardActivityInstance.SignNames = plist[i].UserName;
                 signforwardActivityInstance.GroupId = plist[i].GroupId;
                 signforwardActivityInstance.GroupName = plist[i].GroupName;
                 signforwardActivityInstance.GroupRole = plist[i].GroupRole;
                 signforwardActivityInstance.UnitId = plist[i].UnitId;
                 signforwardActivityInstance.UnitCode = plist[i].UnitCode;
                 signforwardActivityInstance.UnitName = plist[i].UnitName;
-                signforwardActivityInstance.MainActivityInstanceId = base.ActivityForwardContext.FromActivityInstance.ActivityInstanceId;
+                signforwardActivityInstance.MainActInstanceId = base.ActivityForwardContext.FromActivityInstance.ActivityInstanceId;
                 
                 if (signForwardType == SignForwardTypeEnum.SignForwardBefore)
                 {
