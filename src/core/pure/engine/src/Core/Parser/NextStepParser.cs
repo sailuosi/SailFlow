@@ -82,9 +82,9 @@ namespace sailflow.engine.Runtime
             //读取活动实例中记录的步骤预选数据
             //Read the pre selected data of the steps recorded in the activity instance
             var aim = Sail.ManagerFactory.Activities;
-            if (taskView.MainActivityInstanceId != null)
+            if (taskView.MainActInstanceId != null)
             {
-                var mainActivityInstanceId = taskView.MainActivityInstanceId;
+                var mainActivityInstanceId = taskView.MainActInstanceId;
                 var mainActivityInstance = aim.GetById(mainActivityInstanceId);
                 if (mainActivityInstance != null)
                 {

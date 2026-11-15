@@ -151,7 +151,7 @@ namespace sailflow.engine.Entity
         /// 会签主活动实例 Id（列 <c>ai_m_act_instance_id</c>）。
         /// </summary>
         [SooColumn(Name = "ai_m_act_instance_id", Length = 64)]
-        public string MainActivityInstanceId { get; set; }
+        public string MainActInstanceId { get; set; }
 
         /// <summary>
         /// 会签序/通过阈值（列 <c>ai_cmp_order</c>）；串行 1,2,3…，并行子实例常 -1。
