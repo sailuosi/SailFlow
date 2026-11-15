@@ -412,6 +412,27 @@ namespace sailflow.engine.Service
         public Task<WfExecutedResult> DelegateProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunActionAsync(runner, cancellationToken, (kit, r) => new DelegateAction(Sail, kit, r).Execute());
 
+        /// <summary>沟通（Assignee 族）：建参与者待办并锁定发起人审批。</summary>
+        public WfExecutedResult ConsultProcess(FlowCommandContext runner)
+            => RunAction(runner, (kit, r) => new ConsultAction(Sail, kit, r).Execute());
+
+        public Task<WfExecutedResult> ConsultProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new ConsultAction(Sail, kit, r).Execute());
+
+        /// <summary>阅办（Assignee 族）：参与者关闭自己的沟通待办。</summary>
+        public WfExecutedResult AcknowledgeProcess(FlowCommandContext runner)
+            => RunAction(runner, (kit, r) => new AcknowledgeAction(Sail, kit, r).Execute());
+
+        public Task<WfExecutedResult> AcknowledgeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new AcknowledgeAction(Sail, kit, r).Execute());
+
+        /// <summary>收回沟通（Assignee 族）。</summary>
+        public WfExecutedResult RecallConsultProcess(FlowCommandContext runner)
+            => RunAction(runner, (kit, r) => new RecallConsultAction(Sail, kit, r).Execute());
+
+        public Task<WfExecutedResult> RecallConsultProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new RecallConsultAction(Sail, kit, r).Execute());
+
         #endregion
 
         #region Process Resume Suspend Cancel Discard Terminate

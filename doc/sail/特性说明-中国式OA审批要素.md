@@ -31,6 +31,9 @@
 | 驳回 / 拒绝 | `Reject` | `RejectProcess` | **极简**：办理人不选目标/不选人；设计期 `RejectMode`=Terminate\|Previous（默认）\|Starter\|Specified；人取历史办结人。**≠** 作废（`Discard`）；**≠** 退回两维；ApprovalOrSplit 拒绝边仍是网关分流 |
 | 退回 / 回退 / 打回 | `SendBack` | `SendBackProcess` | 运行时可选目标（Prev/Starter/History）× 再发送（`sendBackTarget` × `resubmitMode`）；流程多继续可再提交 |
 | 加签 | `SignForward` | `SignForwardProcess` | 在会签/加签语义下增加审批人（与 AntFlow「加批生新节点」需区分，见 §4） |
+| 沟通 | `Consult` | `ConsultProcess` | 建参与者待办（`AssigneeRole=1`）；锁定发起人审批至全员阅办或收回；阅办=`Acknowledge`，收回=`RecallConsult` |
+| 阅办 | `Acknowledge` | `AcknowledgeProcess` | 参与者关闭自己的沟通待办（无审批推进权） |
+| 收回沟通 | `RecallConsult` | `RecallConsultProcess` | 发起人取消未反馈的参与者待办并解锁 |
 | 抄送 | `Copyto` | `WfCopyto/Create` + `FireCopytoLifecycle` | 知会他人，**不产生**推进权待办；**专用** `ICopytoNotifier` / `OnCopytoCreated`（≠ 待办 TaskNotifier） |
 | 撤回 | `Withdraw` | `WithdrawProcess` | 已办人在允许条件下收回上一步办理（常见：下一手尚未办） |
 | 重发 | `Resend` | `ResendProcess` | Sail 特色：按重发语义再次送出（常与退回后修正配套；≠ 简单再点同意） |
@@ -124,7 +127,7 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 办理上下文 | 典型动词（码表） | 说明 |
 |------------|------------------|------|
 | 发起页 | （无码表 Id）`StartProcess` | 选定义、填表、选人后启动 |
-| 待办 `handle` | `Approve` `Reject` `SendBack` `SignForward` `Transfer` `Copyto` `Revise` | 当前用户有待办 |
+| 待办 `handle` | `Approve` `Reject` `SendBack` `SignForward` `Transfer` `Consult` `Acknowledge` `RecallConsult` `Copyto` `Revise` | 当前用户有待办；参与者仅 `Acknowledge` |
 | 已办 `done` | `Withdraw` `Resend` | 本人已办且流程仍运行 |
 | 管理 `admin` | `Jump` `Close` `Reverse` | 运维/有权跳转关闭 |
 | 候选扩展 | `Transfer` `Delegate` `Claim` `Terminate` `Discard` … | 见 §4 |
@@ -144,6 +147,7 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 转办 | 委派 | `Transfer`＝交人不再回；`Delegate`＝代办完**自动回转**原人 |
 | 承办 | 通过 / 越过会签 | 仅或签认领；见存疑文档；Leave=`Race` |
 | 抄送 | 算人 / 待办 | Host `Copyto`；禁止塞进 Resolve Type |
+| 沟通 | 抄送 / 前加签 | `Consult` 建参与者 `wf_task` 并锁审批；抄送不锁、不加签无审批权 |
 | 关闭 | 终止 / 作废 | `Close` vs 候选 `Terminate`/`Discard` |
 
 ---
@@ -167,4 +171,5 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 2026-11-01 | 退回改为两维定型（目标 × 再发送）；AntFlow 五码降为对照别名 |
 | 2026-11-01 | 转办 `TransferProcess` 接线：码表 + Host ButtonsOperation + 办理条 |
 | 2026-11-15 | **拍板**：委派办完自动回转；不回转则用转办；`DelegateProcess` 引擎落地 |
+| 2026-11-15 | 沟通入码表：`Consult`/`Acknowledge`/`RecallConsult`；参与者 `AssigneeRole=1` + 等待协议 |
 | 2026-11-15 | 驳回定型：极简 + `RejectMode` 四态；与退回两维划界；Host 不再转调 SendBack |

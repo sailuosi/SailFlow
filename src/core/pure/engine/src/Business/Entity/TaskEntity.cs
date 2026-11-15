@@ -36,6 +36,14 @@ namespace sailflow.engine.Entity
         public short? TaskState { get; set; }
         [SooColumn(Name = "tk_entr_task_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string EntrustedTaskId { get; set; }        //被委托任务Id
+        /// <summary>
+        /// 办理人角色：null/0=常规办理人；1=沟通参与者（见 <see cref="AssigneeRoleEnum"/>）。
+        /// </summary>
+        [SooColumn(Name = "tk_assignee_role")]
+        public int? AssigneeRole { get; set; }
+        /// <summary>沟通参与者待办指向的源审批 TaskId（锁与收回按此聚合）。</summary>
+        [SooColumn(Name = "tk_consult_src_task_id", Length = 64, Tag = "sail.id", IsFK = true)]
+        public string ConsultSrcTaskId { get; set; }
         [SooColumn(Name = "tk_asgn_user_id", Length = 64)]
         public string AssignedUserId { get; set; }
         [SooColumn(Name = "tk_asgn_user_name", Length = 128)]

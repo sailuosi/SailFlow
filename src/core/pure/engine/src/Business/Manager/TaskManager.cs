@@ -849,13 +849,11 @@ namespace sailflow.engine.Manager
             if (desired.Count == 0)
                 return WfDataManagedResult.Exception("ChangeAssignee requires at least one target performer.");
 
-            var open = GetTaskListByActivity(
-                    kit,
-                    activityInstance.ProcessInstanceId,
-                    activityInstance.ActivityInstanceId)
-                .Where(t => t.TaskState == (short)TaskStateEnum.Waiting
-                    || t.TaskState == (short)TaskStateEnum.Reading)
-                .ToList();
+            // 仅改常规办理人；沟通参与者不动
+            var open = GetOpenApproverTasks(
+                kit,
+                activityInstance.ProcessInstanceId,
+                activityInstance.ActivityInstanceId);
 
             foreach (var t in open)
             {
@@ -871,12 +869,10 @@ namespace sailflow.engine.Manager
             }
 
             var stillOpenIds = new HashSet<string>(
-                GetTaskListByActivity(
+                GetOpenApproverTasks(
                         kit,
                         activityInstance.ProcessInstanceId,
                         activityInstance.ActivityInstanceId)
-                    .Where(t => t.TaskState == (short)TaskStateEnum.Waiting
-                        || t.TaskState == (short)TaskStateEnum.Reading)
                     .Select(t => t.AssignedUserId),
                 StringComparer.OrdinalIgnoreCase);
 
@@ -926,13 +922,11 @@ namespace sailflow.engine.Manager
             if (removeIds.Count == 0)
                 return WfDataManagedResult.Exception("RemoveAssignee requires at least one target performer.");
 
-            var open = GetTaskListByActivity(
-                    kit,
-                    activityInstance.ProcessInstanceId,
-                    activityInstance.ActivityInstanceId)
-                .Where(t => t.TaskState == (short)TaskStateEnum.Waiting
-                    || t.TaskState == (short)TaskStateEnum.Reading)
-                .ToList();
+            // 仅减常规办理人；沟通参与者不计名额、不可当减签目标语义主体
+            var open = GetOpenApproverTasks(
+                kit,
+                activityInstance.ProcessInstanceId,
+                activityInstance.ActivityInstanceId);
 
             var toClose = open
                 .Where(t => removeIds.Contains(t.AssignedUserId))
@@ -958,18 +952,15 @@ namespace sailflow.engine.Manager
             return WfDataManagedResult.Success();
         }
 
-        /// <summary>用 Waiting/Reading 待办重建活动 AssignedUserIds/Names。</summary>
+        /// <summary>用 Waiting/Reading 的<strong>常规办理人</strong>待办重建活动 AssignedUserIds/Names（排除沟通参与者）。</summary>
         internal void RefreshActivityAssignedUsersFromOpenTasks(
             SQLBuilder kit,
             ActivityInstanceEntity activityInstance)
         {
-            var open = GetTaskListByActivity(
-                    kit,
-                    activityInstance.ProcessInstanceId,
-                    activityInstance.ActivityInstanceId)
-                .Where(t => t.TaskState == (short)TaskStateEnum.Waiting
-                    || t.TaskState == (short)TaskStateEnum.Reading)
-                .ToList();
+            var open = GetOpenApproverTasks(
+                kit,
+                activityInstance.ProcessInstanceId,
+                activityInstance.ActivityInstanceId);
 
             var ids = new StringBuilder(256);
             var names = new StringBuilder(256);
@@ -983,6 +974,218 @@ namespace sailflow.engine.Manager
             activityInstance.AssignedUserIds = ids.ToString();
             activityInstance.AssignedUserNames = names.ToString();
             Sail.ManagerFactory.Activities.Update(kit, activityInstance);
+        }
+
+        /// <summary>打开中的常规办理人待办（Waiting/Reading 且非参与者）。</summary>
+        internal List<TaskEntity> GetOpenApproverTasks(
+            SQLBuilder kit,
+            string processInstanceId,
+            string activityInstanceId) =>
+            GetTaskListByActivity(kit, processInstanceId, activityInstanceId)
+                .Where(t => (t.TaskState == (short)TaskStateEnum.Waiting
+                        || t.TaskState == (short)TaskStateEnum.Reading)
+                    && AssigneeRoleHelper.IsApprover(t.AssigneeRole))
+                .ToList();
+
+        /// <summary>源审批 Task 下是否仍有打开的沟通参与者待办。</summary>
+        public bool HasOpenParticipants(SQLBuilder kit, string consultSrcTaskId)
+        {
+            if (string.IsNullOrWhiteSpace(consultSrcTaskId))
+                return false;
+            return GetOpenParticipantsBySrc(kit, consultSrcTaskId).Count > 0;
+        }
+
+        /// <summary>按沟通源 Task 取打开的参与者待办。</summary>
+        public List<TaskEntity> GetOpenParticipantsBySrc(SQLBuilder kit, string consultSrcTaskId)
+        {
+            if (string.IsNullOrWhiteSpace(consultSrcTaskId))
+                return new List<TaskEntity>();
+
+            var clip = kit.useClip();
+            clip.from<TaskEntity>(out var t)
+                .where(() => t.ConsultSrcTaskId, consultSrcTaskId)
+                .whereIn(() => t.TaskState, new short?[]
+                {
+                    (short)TaskStateEnum.Waiting,
+                    (short)TaskStateEnum.Reading
+                });
+            return clip.select(t).queryList()
+                ?.Where(x => AssigneeRoleHelper.IsParticipant(x.AssigneeRole))
+                .ToList()
+                ?? new List<TaskEntity>();
+        }
+
+        /// <summary>
+        /// 沟通：在当前活动为选中人建参与者待办（role=1，ConsultSrcTaskId=源 Task）。
+        /// 同轮同人已有打开参与者待办则跳过（幂等）。不刷新 AssignedUser*。
+        /// </summary>
+        internal WfDataManagedResult Consult(
+            SQLBuilder kit,
+            string srcTaskId,
+            FlowCommandContext runner,
+            PerformerList targets)
+        {
+            if (targets == null || targets.Count == 0)
+                return WfDataManagedResult.Exception("Consult requires at least one target performer.");
+
+            var srcTask = GetTask(kit, srcTaskId);
+            if (srcTask == null)
+                return WfDataManagedResult.Exception("Consult source task not found.");
+            if (AssigneeRoleHelper.IsParticipant(srcTask.AssigneeRole))
+                return WfDataManagedResult.Exception("Consult cannot be started from a participant task.");
+            if (!string.Equals(srcTask.AssignedUserId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
+                return WfDataManagedResult.Exception("Consult requires the current user's to-do.");
+            if (srcTask.TaskState != (short)TaskStateEnum.Waiting
+                && srcTask.TaskState != (short)TaskStateEnum.Reading)
+                return WfDataManagedResult.Exception("Consult task is not ready/running.");
+
+            var am = Sail.ManagerFactory.Activities;
+            var activityInstance = am.GetById(kit, srcTask.ActivityInstanceId);
+            if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
+                && activityInstance.ActivityState != (short)ActivityStateEnum.Running)
+            {
+                return WfDataManagedResult.Exception("Consult activity is not ready/running.");
+            }
+
+            var existingOpen = GetOpenParticipantsBySrc(kit, srcTaskId);
+            var existingUsers = new HashSet<string>(
+                existingOpen.Select(t => t.AssignedUserId),
+                StringComparer.OrdinalIgnoreCase);
+
+            var created = 0;
+            foreach (var p in targets)
+            {
+                if (p == null || string.IsNullOrWhiteSpace(p.UserId))
+                    continue;
+                if (string.Equals(p.UserId, srcTask.AssignedUserId, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (existingUsers.Contains(p.UserId))
+                    continue;
+
+                var entity = new TaskEntity
+                {
+                    BizChannel = activityInstance.BizChannel,
+                    BizPK = activityInstance.BizPK,
+                    ActivityInstanceId = activityInstance.ActivityInstanceId,
+                    ProcessInstanceId = activityInstance.ProcessInstanceId,
+                    ActivityId = activityInstance.ActivityId,
+                    ActivityName = activityInstance.ActivityName,
+                    ProcessId = activityInstance.ProcessId,
+                    TaskType = (short)TaskTypeEnum.Manual,
+                    AssigneeRole = (int)AssigneeRoleEnum.Participant,
+                    ConsultSrcTaskId = srcTaskId,
+                    AssignedUserId = p.UserId,
+                    AssignedUserName = p.UserName,
+                    GroupId = !string.IsNullOrEmpty(p.GroupId) ? p.GroupId : activityInstance.GroupId,
+                    GroupName = !string.IsNullOrEmpty(p.GroupName) ? p.GroupName : activityInstance.GroupName,
+                    GroupRole = !string.IsNullOrEmpty(p.GroupRole) ? p.GroupRole : activityInstance.GroupRole,
+                    UnitId = !string.IsNullOrEmpty(p.UnitId) ? p.UnitId : activityInstance.UnitId,
+                    UnitCode = !string.IsNullOrEmpty(p.UnitCode) ? p.UnitCode : activityInstance.UnitCode,
+                    UnitName = !string.IsNullOrEmpty(p.UnitName) ? p.UnitName : activityInstance.UnitName,
+                    TaskState = (short)TaskStateEnum.Waiting,
+                    IsEMailSent = 0,
+                    CreatedUserId = runner?.UserId,
+                    CreatedUserName = runner?.UserName,
+                    CreatedDateTime = DateTime.UtcNow,
+                    ActivatedDateTime = DateTime.UtcNow,
+                    RecordStatusInvalid = 0
+                };
+                var newId = Insert(kit, entity);
+                entity.TaskId = newId;
+                Sail.CapabilityDispatcher.FireTaskLifecycle(
+                    kit, entity, activityInstance, runner, TaskNotifyKind.Created);
+                existingUsers.Add(p.UserId);
+                created++;
+            }
+
+            if (created == 0 && existingOpen.Count == 0)
+                return WfDataManagedResult.Exception("Consult: no valid participant created.");
+
+            return WfDataManagedResult.Success();
+        }
+
+        /// <summary>阅办：仅参与者办结自己的待办（Completed）。</summary>
+        internal WfDataManagedResult Acknowledge(
+            SQLBuilder kit,
+            string taskId,
+            FlowCommandContext runner)
+        {
+            var task = GetTask(kit, taskId);
+            if (task == null)
+                return WfDataManagedResult.Exception("Acknowledge task not found.");
+            if (!AssigneeRoleHelper.IsParticipant(task.AssigneeRole))
+                return WfDataManagedResult.Exception("Acknowledge requires a participant task.");
+            if (!string.Equals(task.AssignedUserId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
+                return WfDataManagedResult.Exception("Acknowledge requires the current user's to-do.");
+            if (task.TaskState != (short)TaskStateEnum.Waiting
+                && task.TaskState != (short)TaskStateEnum.Reading)
+                return WfDataManagedResult.Exception("Acknowledge task is not ready/running.");
+
+            EndTaskState(kit, taskId, TaskStateEnum.Completed, runner);
+            FireTaskLifecycle(kit, GetTask(kit, taskId), runner, TaskNotifyKind.Completed);
+            return WfDataManagedResult.Success();
+        }
+
+        /// <summary>收回沟通：取消源 Task 下仍打开的参与者待办。</summary>
+        internal WfDataManagedResult RecallConsult(
+            SQLBuilder kit,
+            string srcTaskId,
+            FlowCommandContext runner)
+        {
+            var srcTask = GetTask(kit, srcTaskId);
+            if (srcTask == null)
+                return WfDataManagedResult.Exception("RecallConsult source task not found.");
+            if (!string.Equals(srcTask.AssignedUserId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
+                return WfDataManagedResult.Exception("RecallConsult requires the current user's to-do.");
+
+            var open = GetOpenParticipantsBySrc(kit, srcTaskId);
+            if (open.Count == 0)
+                return WfDataManagedResult.Exception("RecallConsult: no open participants.");
+
+            var am = Sail.ManagerFactory.Activities;
+            var activityInstance = am.GetById(kit, srcTask.ActivityInstanceId);
+            foreach (var t in open)
+            {
+                t.TaskState = (short)TaskStateEnum.Canceled;
+                t.EndedDateTime = DateTime.UtcNow;
+                t.EndedUserId = runner?.UserId;
+                t.EndedUserName = runner?.UserName;
+                Update(kit, t);
+                Sail.CapabilityDispatcher.FireTaskLifecycle(
+                    kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
+            }
+
+            return WfDataManagedResult.Success();
+        }
+
+        /// <summary>节点离开时：取消同活动上未关闭的沟通参与者待办（避免孤儿阅办）。</summary>
+        internal void CancelOpenParticipantsOnActivity(
+            SQLBuilder kit,
+            ActivityInstanceEntity activityInstance,
+            FlowCommandContext runner)
+        {
+            if (activityInstance == null)
+                return;
+
+            var open = GetTaskListByActivity(
+                    kit,
+                    activityInstance.ProcessInstanceId,
+                    activityInstance.ActivityInstanceId)
+                .Where(t => (t.TaskState == (short)TaskStateEnum.Waiting
+                        || t.TaskState == (short)TaskStateEnum.Reading)
+                    && AssigneeRoleHelper.IsParticipant(t.AssigneeRole))
+                .ToList();
+
+            foreach (var t in open)
+            {
+                t.TaskState = (short)TaskStateEnum.Canceled;
+                t.EndedDateTime = DateTime.UtcNow;
+                t.EndedUserId = runner?.UserId;
+                t.EndedUserName = runner?.UserName;
+                Update(kit, t);
+                Sail.CapabilityDispatcher.FireTaskLifecycle(
+                    kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
+            }
         }
 
         internal void CancelEntrustedTask(string taskId)

@@ -56,6 +56,12 @@ namespace sailflow.engine.Hooks
         Urge,
         /// <summary>委派：请人代办；受托人办结后自动回转原责任人（≠ Transfer）。</summary>
         Delegate,
+        /// <summary>沟通：为选中人建参与者待办（阅办），锁定发起人审批直至全员阅办或收回。</summary>
+        Consult,
+        /// <summary>阅办：参与者关闭自己的沟通待办。</summary>
+        Acknowledge,
+        /// <summary>收回沟通：取消源 Task 下未关闭的参与者待办。</summary>
+        RecallConsult,
         /// <summary>挂起流程实例。</summary>
         Suspend,
         /// <summary>恢复已挂起的流程实例。</summary>

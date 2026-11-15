@@ -376,6 +376,21 @@ Assignee 族 `DelegateAction`。**拍板：** 受托人办结必须回转原人�
 | 办结 | 受托人 `Approve/Run` → `TryCompleteAsDelegationReturn`：受托 Completed + 原人重建 Waiting；**不**完结 AI、**不** ContinueForward |
 | Hook | `OnProcessDelegated`（发起时） |
 
+### 5.12f Consult / Acknowledge / RecallConsult（沟通等待协议）
+
+Assignee 族三动词。字段：`tk_assignee_role`（0/null 常规，1 参与者）、`tk_consult_src_task_id`。
+
+| 步骤 | 类·方法 |
+|------|---------|
+| 沟通 API | `ConsultProcess` → `ConsultAction` → `TaskManager.Consult` |
+| 阅办 API | `AcknowledgeProcess` → `AcknowledgeAction` → `TaskManager.Acknowledge` |
+| 收回 API | `RecallConsultProcess` → `RecallConsultAction` → `TaskManager.RecallConsult` |
+| 硬锁 | `ConsultPendingGuard`：源 Task 有打开参与者时拦截 Run/Reject/SendBack/SignForward/Transfer/Delegate/… |
+| AssignedUser | `RefreshActivityAssignedUsersFromOpenTasks` **排除**参与者 |
+| 节点离开 | `CompleteActivityInstance` → `CancelOpenParticipantsOnActivity` |
+| Hook | `OnProcessConsulted` / `OnTaskAcknowledged` / `OnConsultRecalled` |
+| Host | 码表 `Consult`/`Acknowledge`/`RecallConsult`；Workbench 下发 `AssigneeRole`/`ConsultPending` |
+
 ### 5.13 Suspend / Resume（Lifecycle 族，A2）
 
 **不经** Runtime/Mediator。走动作骨架。

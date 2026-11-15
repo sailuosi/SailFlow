@@ -112,6 +112,18 @@ namespace sailflow.engine.Event
 
         OnProcessDelegated = 111,
 
+        OnProcessConsulting = 112,
+
+        OnProcessConsulted = 113,
+
+        OnTaskAcknowledging = 114,
+
+        OnTaskAcknowledged = 115,
+
+        OnConsultRecalling = 116,
+
+        OnConsultRecalled = 117,
+
         OnActivityCreated = 40,
 
         OnActivityExecuting = 41,

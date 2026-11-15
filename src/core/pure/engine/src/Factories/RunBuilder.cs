@@ -180,6 +180,15 @@ public sealed class RunBuilder
     /// <summary>委派：需 TaskId + NextActivityPerformers（受托人）；办结自动回转。</summary>
     public WfExecutedResult Delegate() => Service().DelegateProcess(Build());
 
+    /// <summary>沟通：需 TaskId + NextActivityPerformers（参与者）。</summary>
+    public WfExecutedResult Consult() => Service().ConsultProcess(Build());
+
+    /// <summary>阅办：需参与者 TaskId。</summary>
+    public WfExecutedResult Acknowledge() => Service().AcknowledgeProcess(Build());
+
+    /// <summary>收回沟通：需发起人审批 TaskId。</summary>
+    public WfExecutedResult RecallConsult() => Service().RecallConsultProcess(Build());
+
     /// <summary>挂起：需已设 <c>TaskId</c>。</summary>
     public WfExecutedResult Suspend() => Service().SuspendProcess(Build());
 

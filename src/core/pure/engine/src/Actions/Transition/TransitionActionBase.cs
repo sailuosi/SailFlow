@@ -79,6 +79,9 @@ namespace sailflow.engine.Actions.Transition
         {
             if (!SkipGate)
             {
+                if (!ConsultPendingGuard.TryAllow(Sail, Kit, ctx.TaskId, Operation, result))
+                    return result;
+
                 var gateCtx = BuildGateContext(ctx.ProcessInstanceId, ctx.RunningActivityInstance, ctx.TaskId);
                 EnrichGateContext(gateCtx, ctx);
                 if (!TryGate(gateCtx, result))

@@ -193,6 +193,21 @@ namespace sailflow.engine.Service
         WfExecutedResult DelegateProcess(FlowCommandContext runner);
         Task<WfExecutedResult> DelegateProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// 沟通：为选中人建参与者待办（阅办）；锁定发起人审批直至全员阅办或收回。
+        /// <c>TaskId</c> + <c>NextActivityPerformers</c>。
+        /// </summary>
+        WfExecutedResult ConsultProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> ConsultProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
+
+        /// <summary>阅办：参与者办结自己的沟通待办。<c>TaskId</c>。</summary>
+        WfExecutedResult AcknowledgeProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> AcknowledgeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
+
+        /// <summary>收回沟通：取消源 Task 下未关闭的参与者待办。<c>TaskId</c>=发起人审批待办。</summary>
+        WfExecutedResult RecallConsultProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> RecallConsultProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
+
         //审批决策
         //Approval
         void AgreeTask(string taskId);

@@ -39,6 +39,9 @@ namespace sailflow.engine.Actions.Assignee
                 if (!TryLoadContext(out var ctx, result))
                     return result;
 
+                if (!ConsultPendingGuard.TryAllow(Sail, Kit, ctx.TaskId, Operation, result))
+                    return result;
+
                 var gateCtx = BuildGateContext(ctx.ProcessInstanceId, ctx.ActivityInstance, ctx.TaskId);
                 if (!TryGate(gateCtx, result))
                     return result;

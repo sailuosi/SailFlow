@@ -49,6 +49,7 @@
 | 重发 / 返送退回人 | ✅ | 🟡 | Sail 特色 `ResendProcess`；OA 侧靠「打回后重新提交」组合 |
 | 修订 / 反转 | 🟡 | ❌ | Sail 有、码表默认关；OA 侧少见对等动词 |
 | 催办 | 🟡 | 🟡 | Sail 引擎=`UrgeProcess`（A4，不改状态）；Host 未挂；≠「加急」优先级 |
+| 沟通 / 征询 | ✅ | 🟡 | Sail=`Consult`+参与者 `AssigneeRole=1`+等待锁；阅办=`Acknowledge`；收回=`RecallConsult`；≠ 抄送 |
 
 \* 承办：Sail 文档明确「默认不抄常见 OA 引擎按钮」，不算缺口债。
 

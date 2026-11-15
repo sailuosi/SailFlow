@@ -225,6 +225,25 @@ namespace sailflow.engine.Result
         public const string Delegate_Nested = "Delegate_Nested";
         public const string Delegate_RuntimeError = "Delegate_RuntimeError";
 
+        // 沟通 / 阅办 / 收回
+        public const string Consult_ErrorArguments = "Consult_ErrorArguments";
+        public const string Consult_NoneTargets = "Consult_NoneTargets";
+        public const string Consult_NotMineTask = "Consult_NotMineTask";
+        public const string Consult_NotInRunning = "Consult_NotInRunning";
+        public const string Consult_RuntimeError = "Consult_RuntimeError";
+        public const string Acknowledge_ErrorArguments = "Acknowledge_ErrorArguments";
+        public const string Acknowledge_NotParticipant = "Acknowledge_NotParticipant";
+        public const string Acknowledge_NotMineTask = "Acknowledge_NotMineTask";
+        public const string Acknowledge_NotInRunning = "Acknowledge_NotInRunning";
+        public const string Acknowledge_RuntimeError = "Acknowledge_RuntimeError";
+        public const string RecallConsult_ErrorArguments = "RecallConsult_ErrorArguments";
+        public const string RecallConsult_NoneOpen = "RecallConsult_NoneOpen";
+        public const string RecallConsult_NotMineTask = "RecallConsult_NotMineTask";
+        public const string RecallConsult_RuntimeError = "RecallConsult_RuntimeError";
+        /// <summary>存在未关闭的沟通参与者，禁止推进/改责任。</summary>
+        public const string ConsultPending = "ConsultPending";
+
+
         // 挂起 / 恢复
         public const string Suspend_ErrorArguments = "Suspend_ErrorArguments";
         public const string Suspend_RuntimeError = "Suspend_RuntimeError";

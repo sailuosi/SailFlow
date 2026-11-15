@@ -1090,7 +1090,11 @@ namespace sailflow.engine.Pattern
             FlowCommandContext runner,
             SQLBuilder kit)
         {
-            ActivityInstanceManager.Complete(kit.useSQL(), ActivityInstanceId, runner);
+            var sql = kit.useSQL();
+            var ai = ActivityInstanceManager.GetById(sql, ActivityInstanceId);
+            if (ai != null)
+                TaskManager.CancelOpenParticipantsOnActivity(sql, ai, runner);
+            ActivityInstanceManager.Complete(sql, ActivityInstanceId, runner);
         }
 
         /// <summary>
