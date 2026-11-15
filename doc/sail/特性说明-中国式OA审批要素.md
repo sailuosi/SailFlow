@@ -28,8 +28,8 @@
 | 场景 / 常用名 | Sail 编码 | 引擎 / Host | 执行含义（产品语义） |
 |---------------|-----------|-------------|----------------------|
 | 通过 / 同意 / 审批通过 | `Approve` | `RunProcess` | 当前待办人办结本任务并按图推进；受 Leave（抢办/会签等）约束 |
-| 驳回 / 拒绝 | `Reject` | `RejectProcess` | 不同意并走驳回路径（**≠** 部分产品「驳回即整单作废」；具体落点看配置/图） |
-| 退回 / 回退 / 打回 | `SendBack` | `SendBackProcess` | 退到可选历史节点（常配合上一跳树）；流程多继续可再提交 |
+| 驳回 / 拒绝 | `Reject` | `RejectProcess` | **极简**：办理人不选目标/不选人；设计期 `RejectMode`=Terminate\|Previous（默认）\|Starter\|Specified；人取历史办结人。**≠** 作废（`Discard`）；**≠** 退回两维；ApprovalOrSplit 拒绝边仍是网关分流 |
+| 退回 / 回退 / 打回 | `SendBack` | `SendBackProcess` | 运行时可选目标（Prev/Starter/History）× 再发送（`sendBackTarget` × `resubmitMode`）；流程多继续可再提交 |
 | 加签 | `SignForward` | `SignForwardProcess` | 在会签/加签语义下增加审批人（与 AntFlow「加批生新节点」需区分，见 §4） |
 | 抄送 | `Copyto` | `WfCopyto/Create` + `FireCopytoLifecycle` | 知会他人，**不产生**推进权待办；**专用** `ICopytoNotifier` / `OnCopytoCreated`（≠ 待办 TaskNotifier） |
 | 撤回 | `Withdraw` | `WithdrawProcess` | 已办人在允许条件下收回上一步办理（常见：下一手尚未办） |
@@ -106,6 +106,17 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 
 落地：并入 `sf:NodePolicy.json`（`sendBackTarget` + `resubmitMode`，默认 Starter + ReturnToSender）+ `SendBack` / `Resend` / `Run`；办理台见 todo **§G/§J**。
 
+### 4.2 驳回落点（配置要素，非运行时自选）
+
+| 项 | 说明 |
+|----|------|
+| 产品口径 | 办理 UX **不选**目标、**不选**办理人；落点仅设计期配置 |
+| 引擎控制袋 | `ControlParameterSheet.RejectMode` · `RejectReturnActivityId`（仅 Specified） |
+| 码 | `Terminate` / `Previous`（默认）/ `Starter` / `Specified` |
+| Host `rejectHandlerType` | `1`→Terminate · `2`→Specified（+`returnNodeId`）· `3`→Previous · `4`→Starter；旧「1=结束」纠偏为 Terminate（breaking：旧实现实际曾回 Startup） |
+| 红线 | 不写 `BackSrc`、不启用 `Resend`；Specified **禁止**转调 `SendBackProcess` |
+| ReasonCode | `RejectModeInvalid` · `RejectTargetMissing` · Terminate 成功时 `RejectModeTerminate`（事件以 Terminate 为准） |
+
 ---
 
 ## 5. 场景速查（谁在什么时候点）
@@ -126,7 +137,8 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 
 | 说法 | 别当成 | Sail 正确锚点 |
 |------|--------|----------------|
-| 驳回 | 整单作废 | `Reject`；作废用候选 `Discard` |
+| 驳回 | 整单作废 | `Reject` + `RejectMode`；作废用 `Discard` |
+| 驳回 | 退回 | `Reject` 配置落点、无 Resend；`SendBack` 可选目标 × 再发送 |
 | 退回 | 反转 | `SendBack` ≠ `Reverse` |
 | 加签 | 加批（生新节点） | 现 `SignForward`；加批待拆 |
 | 转办 | 委派 | `Transfer`＝交人不再回；`Delegate`＝代办完**自动回转**原人 |
@@ -155,3 +167,4 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 2026-11-01 | 退回改为两维定型（目标 × 再发送）；AntFlow 五码降为对照别名 |
 | 2026-11-01 | 转办 `TransferProcess` 接线：码表 + Host ButtonsOperation + 办理条 |
 | 2026-11-15 | **拍板**：委派办完自动回转；不回转则用转办；`DelegateProcess` 引擎落地 |
+| 2026-11-15 | 驳回定型：极简 + `RejectMode` 四态；与退回两维划界；Host 不再转调 SendBack |

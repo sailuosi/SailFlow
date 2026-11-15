@@ -52,5 +52,16 @@ namespace sailflow.engine.Common
         /// 是否取消相邻节点
         /// </summary>
         public byte IsCancellingBrothersNode { get; set; }
+
+        /// <summary>
+        /// 驳回落点：Terminate / Previous / Starter / Specified（见 <see cref="RejectModeCodes"/>）。
+        /// 缺省按 Previous。由 Host 从节点策略注入；引擎不解析 sf:NodePolicy。
+        /// </summary>
+        public string RejectMode { get; set; }
+
+        /// <summary>
+        /// 仅 <see cref="RejectModeCodes.Specified"/>：回跳目标活动定义 Id。
+        /// </summary>
+        public string RejectReturnActivityId { get; set; }
     }
 }

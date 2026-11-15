@@ -83,7 +83,7 @@ Manager 经 `Sail.ManagerFactory` / `SailFactoryAccess.Managers`；模型经 `Sa
 | ButtonId | Handler | `IWorkflowService` |
 |----------|---------|----------------------|
 | `Approve` | `ApproveOperationHandler` | `RunProcessAsync` |
-| `Reject` | `RejectOperationHandler` | `RejectProcessAsync` 或（策略）`SendBackProcessAsync` |
+| `Reject` | `RejectOperationHandler` | 注入 `RejectMode` 后 **只** `RejectProcessAsync`（不再转调 SendBack） |
 | `SendBack` | `SendBackOperationHandler` | `SendBackProcessAsync` |
 | `Withdraw` | `WithdrawOperationHandler` | `WithdrawProcessAsync` |
 | `Resend` | `ResendOperationHandler` | `ResendProcessAsync` |
@@ -206,19 +206,32 @@ A3 起走 Transition 动作骨架（`SendBackAction`）。
 
 ### 5.5 RejectProcess（驳回）
 
-Transition 族 `RejectAction`（先 `TransitionNextPerformers.Fill(Startup)`）。
+Transition 族 `RejectAction`：按控制袋 `RejectMode` 分发（默认 `Previous`）。
 
 | 步骤 | 类·方法 |
 |------|---------|
 | API | `RejectProcess` → `RunAction` → `RejectAction.Execute` |
-| Factory | `CreateRuntimeInstanceReject` |
-| Factory 读库 | `GetRunningNode` · `GetActivityInstanceLatest`（目标）· `ProcessInstanceManager.GetById` · `TransitionInstanceManager.GetLastTaskTransition` · `PreviousStepChecker.GetPreviousActivityInstanceList` |
-| Gate | `FlowOperation.Reject` |
-| Runtime | `WfRuntimeManagerReject.ExecuteInstanceImp` |
-| 写库 | `TaskManager.Complete` · `ActivityInstanceManager.GetRunningActivityInstanceList` + `Cancel`（兄弟）· `NodeMediatorBackward.CreateBackwardActivityTaskTransitionInstance` · `ActivityInstanceManager.SendBack` |
-| Hook | `OnProcessRejected` |
+| 控制袋 | `ControlParameterSheet.RejectMode` · `RejectReturnActivityId`（仅 Specified） |
+| 解析 | `RejectTargetResolver` → 唯一 `activityId` + 历史 `PerformerList`，**覆盖**客户端 `NextActivityPerformers` |
+| Terminate | 委托 `TerminateAction`；成功事件 **OnProcessTerminated**；`ReasonCode=RejectModeTerminate`，Message 带 `RejectMode=Terminate` |
+| 回跳三态 | Previous / Starter / Specified → Factory `CreateRuntimeInstanceReject` |
+| Factory 读库 | `GetRunningNode` · `GetActivityInstanceLatest`（目标）· `ProcessInstanceManager.GetById` · `PreviousStepChecker`（Previous）· 首活动/指定活动办结人 |
+| Gate | `FlowOperation.Reject`（Terminate 路径与 `TerminateAction` Gate 约定对齐，避免双套横切漏挂） |
+| Runtime | `WfRuntimeManagerReject.ExecuteInstanceImp`（回跳） |
+| 写库 | `TaskManager.Complete` · 兄弟 `Cancel` · `NodeMediatorBackward` · `ActivityInstanceManager.SendBack`（回跳写库复用，**无** BackSrc/Resend 语义） |
+| Hook | 回跳：`OnProcessRejected`；Terminate 模式：Terminate 成功事件 |
+| ReasonCode | `RejectModeInvalid` · `RejectTargetMissing` · `RejectModeTerminate` |
 
-Host `RejectOperationHandler` 可能按节点策略改走 `SendBackProcessAsync`（驳回到指定 `returnNodeId`），以 Handler 为准。
+Host：`RejectOperationHandler` 读 NodePolicy → `SailRejectModeMapper.ApplyToRunner` → **只**调 `RejectProcessAsync`（Specified 亦不再转调 `SendBack`）。
+
+| Host `rejectHandlerType` | `RejectMode` |
+|--------------------------|--------------|
+| `1` | `Terminate`（旧文案「结束流程」纠偏；旧实现曾 `Fill(Startup)` 回发起，属 breaking） |
+| `2` + `returnNodeId` | `Specified` |
+| `3`（默认） | `Previous` |
+| `4` | `Starter` |
+
+**红线：** 驳回 ≠ 退回两维；不开放 History 自选；ApprovalOrSplit 拒绝边仍是网关分流，不是本枚举。
 
 ### 5.6 ResendProcess（返送退回人）
 
