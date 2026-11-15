@@ -8,7 +8,7 @@ namespace sailflow.engine.Actions.Lifecycle
     /// </summary>
     public sealed class LifecycleActionContext
     {
-        public required string ProcessInstanceId { get; init; }
+        public string ProcessInstanceId { get; init; }
         public ProcessInstanceEntity ProcessInstance { get; init; }
         public string TaskId { get; init; }
         public ActivityInstanceEntity ActivityInstance { get; init; }

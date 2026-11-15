@@ -9,7 +9,7 @@ namespace sailflow.engine.Actions.Transition
     /// </summary>
     public sealed class TransitionActionContext
     {
-        public required string ProcessInstanceId { get; init; }
+        public string ProcessInstanceId { get; init; }
         public ActivityInstanceEntity RunningActivityInstance { get; init; }
         public string TaskId { get; init; }
 

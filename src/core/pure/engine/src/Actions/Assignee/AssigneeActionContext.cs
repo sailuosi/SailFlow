@@ -8,9 +8,9 @@ namespace sailflow.engine.Actions.Assignee
     /// </summary>
     public sealed class AssigneeActionContext
     {
-        public required TaskViewEntity TaskView { get; init; }
-        public required ActivityInstanceEntity ActivityInstance { get; init; }
-        public required string ProcessInstanceId { get; init; }
-        public required string TaskId { get; init; }
+        public TaskViewEntity TaskView { get; init; }
+        public ActivityInstanceEntity ActivityInstance { get; init; }
+        public string ProcessInstanceId { get; init; }
+        public string TaskId { get; init; }
     }
 }
