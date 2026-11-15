@@ -239,13 +239,13 @@ public partial class SailClient
     /// </summary>
     public RuleEngineRegistry RuleEngines => _ruleEngines ??= new RuleEngineRegistry();
 
-    /// <summary>Action 方法注册表（LocalService/SQL/WebApi 等内置；Python 由 sailflow.action 挂载）。</summary>
+    /// <summary>Action 方法注册表（WebApi/SQL/… 由 runtime <c>UseSailRuntimeDefaults</c>；Python 由 sailflow.action）。</summary>
     public ActionMethodRegistry ActionMethods => _actionMethods ??= new ActionMethodRegistry();
 
-    /// <summary>Script 方法注册表（SQL 内置；Python 由 sailflow.action 挂载）。</summary>
+    /// <summary>Script 方法注册表（SQL 由 runtime <c>UseSailRuntimeDefaults</c>；Python 由 sailflow.action）。</summary>
     public ScriptMethodRegistry ScriptMethods => _scriptMethods ??= new ScriptMethodRegistry();
 
-    /// <summary>Service 方法注册表（LocalService/WebApi 等内置）。</summary>
+    /// <summary>Service 方法注册表（LocalService/WebApi/… 由 runtime <c>UseSailRuntimeDefaults</c>）。</summary>
     public ServiceMethodRegistry ServiceMethods => _serviceMethods ??= new ServiceMethodRegistry();
 
     /// <summary>
@@ -400,7 +400,7 @@ public partial class SailClient
         if (_serviceMethods == null)
             _serviceMethods = new ServiceMethodRegistry();
 
-        BuiltinActionMethods.RegisterAll(_actionMethods, _scriptMethods, _serviceMethods);
+        // 内置 Action/Script/Service 见 runtime UseSailRuntimeDefaults（BuiltinActionMethods）
         // 双注册 SailId + Guid → Ids.NextEntityRowId（覆盖 moo 内置 Guid 对象路径）
         SailIdExtensions.RegisterMooKeyGenerators(this);
     }

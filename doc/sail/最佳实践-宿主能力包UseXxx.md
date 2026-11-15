@@ -513,15 +513,17 @@ builder.ConfigureServices(s =>
 ### 9.5 Action / Script / Service / RuleEngine（`Add*` 多次追加）
 
 ```csharp
+// WebApi / SQL / LocalService / CSharpLibrary 等 pure 内置：
+builder.UseBizRuntimeDefaults();   // → UseSailRuntimeDefaults → BuiltinActionMethods
+
 builder.ConfigureServices(s =>
 {
-    s.AddActionMethod(new WebApiActionHandler());
-    s.AddScriptMethod(new SqlScriptHandler());
-    s.AddServiceMethod(new LocalServiceServiceHandler());
+    // 自定义 Handler（同 Method 后注册覆盖内置）
+    s.AddActionMethod(myCustomActionHandler);
     s.AddRuleEngine(myNRulesEngine);
 });
 
-// 语言包总开（内含上述 Handler 注册）
+// 语言包总开（IronPython / 规则引擎）
 builder.UseBizAction();   // → UseIronPython
 builder.UseBizRules();    // → UseBizRuleEngines
 ```

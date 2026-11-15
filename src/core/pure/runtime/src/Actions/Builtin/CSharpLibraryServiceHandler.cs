@@ -1,0 +1,41 @@
+using sailflow.engine.Actions;
+using sailflow.engine.Common;
+using sailflow.engine.Event;
+using sailflow.engine.Utility;
+using sailflow.engine.Xpdl;
+
+namespace sailflow.runtime.Actions;
+
+internal sealed class CSharpLibraryServiceHandler : IServiceMethodHandler
+{
+    public ServiceMethodEnum Method => ServiceMethodEnum.CSharpLibrary;
+
+    public void Execute(ServiceDetail service, IEventService eventService)
+    {
+        try
+        {
+            var methodInfo = service.MethodInfo;
+            var assemblyFullName = methodInfo.AssemblyFullName;
+            var methodName = methodInfo.MethodName;
+            var executingPath = ConfigHelper.GetExecutingDirectory();
+            var pluginAssemblyName = string.Format("{0}\\{1}\\{2}.dll", executingPath, "plugin", assemblyFullName);
+            var pluginAssemblyTypes = System.Reflection.Assembly.LoadFile(pluginAssemblyName).GetTypes();
+            Type outerClass = pluginAssemblyTypes
+                .Single(t => !t.IsInterface && t.FullName == methodInfo.TypeFullName);
+            object instance = Activator.CreateInstance(outerClass)!;
+            System.Reflection.MethodInfo mi = outerClass.GetMethod(methodName)!;
+
+            object[]? methodParams = null;
+            if (!string.IsNullOrEmpty(service.Arguments.Trim()))
+            {
+                methodParams = EventUtil.CompositeParameterValues(service.Arguments, eventService);
+            }
+            mi.Invoke(instance, methodParams);
+        }
+        catch (Exception ex)
+        {
+            throw new WorkflowException(eventService.Sail.Messages.GetEngineMessage(
+                "actionexecutor.ExecuteCSharpLibraryMethod.exception", ex.Message));
+        }
+    }
+}
