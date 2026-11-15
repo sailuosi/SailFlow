@@ -16,7 +16,6 @@
 | [特性设计-回调与事件.md](./特性设计-回调与事件.md) | Gate / Hook / Notifier / Outbox 设计 |
 | [特性说明-副作用可靠性.md](./特性说明-副作用可靠性.md) | **旁路可靠性**：Outbox / Channel / 对账分档；批量推送削峰 |
 | [草案-挂起与统一Resume.md](./草案-挂起与统一Resume.md) | **草案引子**：Bookmark 思想 → WaitToken / ResumeWaiting；不改 UserTask |
-| [草案-命令执行管道.md](./草案-命令执行管道.md) | **已吸收**：原 Command Pipeline 引子；横切 DRY 并入动作骨架，不再单独立项 |
 | [草案-非流转动作骨架.md](./草案-非流转动作骨架.md) | **草案（A1–A4）**：三族 Assignee 动词齐（含委派自动回转）；Host / Copyto 独立 |
 | [草案-引擎异步化.md](./草案-引擎异步化.md) | **草案专题（0–2 首包已落地）**：假 Async 禁令 + Clip/`ct` + 锁/Manager async；下一刀 Mediator 深链 |
 | [目录-扩展插件.md](./目录-扩展插件.md) | **扩展目录**：pure/ext/biz + sleveen-admin 的 UseXxx / Resolver / Filter / Hook / Handler 与核心代码 |
@@ -28,7 +27,8 @@
 | [dev/专题-主键与设计键发号契约.md](./dev/专题-主键与设计键发号契约.md) | **P0+P1 已落地**：`ISailIdSource` / `SailId` AutoKey + BPMN codec；P2 Guid7 / P3 非 Guid 待续 |
 | [done/专题-对象生命周期与复用边界-分析归档.md](./done/专题-对象生命周期与复用边界-分析归档.md) | **归档**：寿命专题动机 / 利弊 / 纪要 / 修订流水 |
 | [done/残旧口径清出-OA手册与基线-2026-11-06.md](./done/残旧口径清出-OA手册与基线-2026-11-06.md) | **归档**：自 OA 手册/基线清出的 D3 前样例 |
+| [done/草案-命令执行管道.md](./done/草案-命令执行管道.md) | **归档**：原 Command Pipeline 引子；横切 DRY 已并入动作骨架 |
 | [progress/](./progress/) | 分期落地记录（Hook、Feature DependsOn 等） |
-| [done/](./done/) | 已落地专题的分析归档 / 残旧口径 |
+| [done/](./done/) | 已落地专题的分析归档 / 残旧口径 / 已吸收草案 |
 
 产品壳（菜单、Host API、办理 UX）见宿主仓 `sleveen-admin/doc/sailflow-features.md`。
