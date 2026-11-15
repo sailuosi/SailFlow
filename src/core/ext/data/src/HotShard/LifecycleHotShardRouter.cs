@@ -48,7 +48,7 @@ namespace sailflow.data.HotShard
 
         public SailClient Client { get; }
 
-        public string DefaultTransitionTable => "wf_tran_instance";
+        public string DefaultTransitionTable => "wf_track";
         public string DefaultVariableTable => "wf_proc_variable";
 
         public IReadOnlyList<string> TransitionLookupTables => _transitionLookup;

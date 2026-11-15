@@ -123,7 +123,7 @@ public static class SampleSchemaInitializer
             "pi_crt_user_id", "pi_process_state", "pi_crt_time");
         TryCreateIndex(kit, "IX_wf_pv_pi_name", "wf_proc_variable",
             "pv_proc_instance_id", "pv_name");
-        TryCreateIndex(kit, "IX_wf_ti_pi", "wf_tran_instance",
+        TryCreateIndex(kit, "IX_wf_ti_pi", "wf_track",
             "ti_proc_instance_id");
         TryCreateIndex(kit, "IX_wf_hook_outbox_status", "wf_hook_outbox",
             "ho_status", "ho_nxt_retry_at");

@@ -75,7 +75,7 @@ public sealed class SailDataLifecycleOptions
 
     /// <summary>
     /// 热分表名：{0}=逻辑基名（tran_instance / proc_variable），{1}=清洗后的 process_id 后缀。
-    /// 例：wf_tran_instance__abc123。
+    /// 例：wf_track__abc123。
     /// </summary>
     public string HotShardTableNameFormat { get; set; } = "wf_{0}__{1}";
 
