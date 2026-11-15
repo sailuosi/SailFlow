@@ -64,6 +64,27 @@ namespace sailflow.engine.Entity
         public string AppType { get; set; }
 
         /// <summary>
+        /// 授权类型（列 <c>p_auth_type</c>）。
+        /// 业务侧权限过滤预留；引擎主路径不强制消费。
+        /// </summary>
+        [SooColumn(Name = "p_auth_type", Length = 20)]
+        public string AuthType { get; set; }
+
+        /// <summary>
+        /// 授权编码（列 <c>p_auth_code</c>）。
+        /// 业务侧权限过滤预留；引擎主路径不强制消费。
+        /// </summary>
+        [SooColumn(Name = "p_auth_code", Length = 200)]
+        public string AuthCode { get; set; }
+
+        /// <summary>
+        /// 授权主体 Id（列 <c>p_auth_id</c>）。
+        /// 业务侧权限过滤预留；引擎主路径不强制消费。
+        /// </summary>
+        [SooColumn(Name = "p_auth_id", Length = 64)]
+        public string AuthId { get; set; }
+
+        /// <summary>
         /// 流程包类型（列 <c>p_pkg_type</c>），见 <see cref="sailflow.engine.Common.PackageTypeEnum"/>。
         /// 1=Package 协作流程包；2=Pool 泳道流程。
         /// </summary>

@@ -58,6 +58,9 @@ namespace sailflow.engine.tests
             Assert.Contains("[p_description] nvarchar(500)", sql, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("[p_name] nvarchar(255)", sql, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("[p_start_expression] nvarchar(2000)", sql, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("[p_auth_type] nvarchar(20)", sql, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("[p_auth_code] nvarchar(200)", sql, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("[p_auth_id] nvarchar(64)", sql, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
