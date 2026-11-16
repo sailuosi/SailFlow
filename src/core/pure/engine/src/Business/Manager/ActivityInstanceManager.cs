@@ -1204,6 +1204,23 @@ namespace sailflow.engine.Manager
         /// </summary>
         internal void CancelUnCompletedMultipleInstance(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner)
         {
+            var main = GetById(kit, mainActivityInstanceId);
+            var processInstanceId = main?.ProcessInstanceId;
+
+            // 先收集将被取消的子 AI，便于同步关闭其上打开待办（RaceTaken）
+            var openChildren = string.IsNullOrWhiteSpace(processInstanceId)
+                ? new List<ActivityInstanceEntity>()
+                : GetActivityMulitipleInstanceWithStateBatch(
+                        kit,
+                        processInstanceId,
+                        mainActivityInstanceId,
+                        null)
+                    .Where(c => c != null
+                        && (c.ActivityState == (short)ActivityStateEnum.Ready
+                            || c.ActivityState == (short)ActivityStateEnum.Running
+                            || c.ActivityState == (short)ActivityStateEnum.Suspended))
+                    .ToList();
+
             var clip = kit.useClip();
             clip.setTable<ActivityInstanceEntity>(out var ai)
                 .set(() => ai.ActivityState, (short)ActivityStateEnum.Cancelled)
@@ -1218,6 +1235,16 @@ namespace sailflow.engine.Manager
                     (short)ActivityStateEnum.Suspended
                 })
                 .doUpdate();
+
+            if (!string.IsNullOrWhiteSpace(processInstanceId) && openChildren.Count > 0)
+            {
+                Sail.ManagerFactory.Tasks.CloseOpenApproverTasksOnActivityIds(
+                    kit,
+                    processInstanceId,
+                    openChildren.Select(c => c.ActivityInstanceId),
+                    runner,
+                    TaskEndTypes.RaceTaken);
+            }
         }
 
         /// <summary>
@@ -1391,6 +1418,21 @@ namespace sailflow.engine.Manager
 
             if (pipeline != null)
             {
+                var childIds = childActivityInstanceList?
+                    .Select(c => c?.ActivityInstanceId)
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .ToList() ?? new List<string>();
+                // 当前子也可能在列表外时仍纳入
+                if (!string.IsNullOrWhiteSpace(currentActivityInstance?.ActivityInstanceId)
+                    && !childIds.Contains(currentActivityInstance.ActivityInstanceId))
+                    childIds.Add(currentActivityInstance.ActivityInstanceId);
+
+                var tasks = Sail.ManagerFactory.Tasks.GetTaskListByActivityIds(
+                    kit,
+                    mainActivityInstance.ProcessInstanceId,
+                    childIds);
+                var seats = LeaveSeatProjector.BuildSeats(childActivityInstanceList, tasks);
+
                 if (pipeline.TryCanLeave(
                         new LeaveInvokeRequest
                         {
@@ -1400,7 +1442,8 @@ namespace sailflow.engine.Manager
                             Version = leaveVersion,
                             CurrentActivityInstance = currentActivityInstance,
                             MainActivityInstance = mainActivityInstance,
-                            ChildActivityInstances = childActivityInstanceList
+                            ChildActivityInstances = childActivityInstanceList,
+                            Seats = seats
                         },
                         out var leave)
                     && leave != null)

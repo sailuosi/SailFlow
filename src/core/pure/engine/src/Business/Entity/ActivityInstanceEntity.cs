@@ -139,6 +139,18 @@ namespace sailflow.engine.Entity
         public string UnitName { get; set; }
 
         /// <summary>
+        /// 票权（列 <c>ai_weight</c>）；会签子实例与 Task 双写；默认 1。
+        /// </summary>
+        [SooColumn(Name = "ai_weight")]
+        public decimal? Weight { get; set; }
+
+        /// <summary>
+        /// 委托代批根 SignId（列 <c>ai_proxy_sign_id</c>）；可与 Task 双写。
+        /// </summary>
+        [SooColumn(Name = "ai_proxy_sign_id", Length = 64)]
+        public string ProxySignId { get; set; }
+
+        /// <summary>
         /// 网关方向类型（列 <c>ai_gw_dir_type_id</c>），见 <see cref="sailflow.engine.Common.GatewayDirectionEnum"/>。
         /// 分支：OrSplit/XOrSplit/AndSplit/AndSplitMI/ApprovalOrSplit；
         /// 合并：OrJoin/XOrJoin/EOrJoin/AndJoin/AndJoinMI。

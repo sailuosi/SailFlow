@@ -36,6 +36,7 @@ public class CollaborateLeaveJudge : IActivityLeaveJudge
         return MiPassRateHelper.Evaluate(
             main,
             children ?? Array.Empty<ActivityInstanceEntity>(),
+            ctx.Request?.Seats,
             overrideThreshold,
             compareOverride);
     }

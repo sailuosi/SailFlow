@@ -47,6 +47,19 @@ namespace sailflow.hub.Form
         [SooColumn(Name = "ff_auth_level")]
         public int? AuthLevel { get; set; }
 
+        [SooColumn(Name = "ff_creator", Length = 64)]
+        public string Creator { get; set; }
+
+        [SooColumn(Name = "ff_creator_name", Length = 128)]
+        public string CreatorName { get; set; }
+
+        /// <summary>逻辑删除：0=有效，1=已删。</summary>
+        [SooColumn(Name = "ff_deleted")]
+        public int Deleted { get; set; }
+
+        [SooColumn(Name = "ff_delete_time")]
+        public DateTime? DeleteTime { get; set; }
+
         [SooColumn(Name = "ff_crt_time")]
         public DateTime? CreatedDate { get; set; }
 

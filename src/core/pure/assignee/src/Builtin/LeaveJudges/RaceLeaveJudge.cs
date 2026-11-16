@@ -19,6 +19,9 @@ public class RaceLeaveJudge : IActivityLeaveJudge
             return LeaveJudgeResult.Waiting("RaceNoChildren", "No children; waiting.");
         }
 
+        var seats = ctx.Request?.Seats;
+        if (seats != null && seats.Count > 0)
+            return MiPassRateHelper.EvaluateRace(seats);
         return MiPassRateHelper.EvaluateRace(children);
     }
 }

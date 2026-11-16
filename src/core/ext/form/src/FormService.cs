@@ -68,6 +68,10 @@ namespace sailflow.hub.Form
             entity.AuthCode = form.AuthCode;
             entity.AuthId = form.AuthId;
             entity.AuthLevel = form.AuthLevel;
+            entity.Creator = form.Creator;
+            entity.CreatorName = form.CreatorName;
+            entity.Deleted = form.Deleted;
+            entity.DeleteTime = form.DeleteTime;
             entity.TemplateContent = form.Conf;
             entity.HTMLContent = form.FieldsJson;
             entity.FieldSummary = BuildFieldSummary(form.FieldsJson);
@@ -102,6 +106,10 @@ namespace sailflow.hub.Form
                 AuthCode = item.AuthCode,
                 AuthId = item.AuthId,
                 AuthLevel = item.AuthLevel,
+                Creator = item.Creator,
+                CreatorName = item.CreatorName,
+                Deleted = item.Deleted,
+                DeleteTime = item.DeleteTime,
                 CreatedDate = item.CreatedDate,
                 LastUpdatedDate = item.LastUpdatedDate
             };

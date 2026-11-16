@@ -15,8 +15,10 @@ namespace sailflow.engine.Assignee
         public string Version { get; set; }
         public ActivityInstanceEntity CurrentActivityInstance { get; set; }
         public ActivityInstanceEntity MainActivityInstance { get; set; }
-        /// <summary>会签子活动快照（由 AIM 预加载）；LeaveJudge 只读。</summary>
+        /// <summary>会签子活动快照（由 AIM 预加载）；过渡兼容；计权优先 <see cref="Seats"/>。</summary>
         public IList<ActivityInstanceEntity> ChildActivityInstances { get; set; }
+        /// <summary>计权主输入：席位窄投影（Task / 子 AI）；LeaveJudge 只读。</summary>
+        public IList<LeaveSeatSnapshot> Seats { get; set; }
         public FlowCommandContext Runner { get; set; }
     }
 }

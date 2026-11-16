@@ -135,6 +135,22 @@ namespace sailflow.engine.Entity
         [SooColumn(Name = "tk_entr_task_id", Length = 64)]
         public string EntrustedTaskId { get; set; }
 
+        /// <summary>票权（列 <c>tk_weight</c>）。</summary>
+        [SooColumn(Name = "tk_weight")]
+        public decimal? Weight { get; set; }
+
+        /// <summary>委托代批根 SignId（列 <c>tk_proxy_sign_id</c>）。</summary>
+        [SooColumn(Name = "tk_proxy_sign_id", Length = 64)]
+        public string ProxySignId { get; set; }
+
+        /// <summary>结束类型码（列 <c>tk_end_type</c>）。</summary>
+        [SooColumn(Name = "tk_end_type", Length = 64)]
+        public string EndType { get; set; }
+
+        /// <summary>办结简约描述（列 <c>tk_end_text</c>）。</summary>
+        [SooColumn(Name = "tk_end_text", Length = 255)]
+        public string EndText { get; set; }
+
         /// <summary>
         /// 办理人角色（列 <c>tk_assignee_role</c>）：null/0=常规；1=沟通参与者。见 <see cref="AssigneeRoleEnum"/>。
         /// </summary>

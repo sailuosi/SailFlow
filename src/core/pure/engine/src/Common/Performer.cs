@@ -62,6 +62,14 @@ namespace sailflow.engine.Common
 
         /// <summary>企业单位名称（string，可空）。</summary>
         public string UnitName { get; set; }
+
+        /// <summary>票权；默认 1。委托代批/加权会签用。</summary>
+        public decimal Weight { get; set; } = 1m;
+
+        /// <summary>
+        /// 所代理根办理人 SignId；空=自己是根席。委托代批 Filter 写入。
+        /// </summary>
+        public string ProxySignId { get; set; }
     }
 
     /// <summary>

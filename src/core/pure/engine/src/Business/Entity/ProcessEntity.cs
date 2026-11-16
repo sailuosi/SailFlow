@@ -190,5 +190,13 @@ namespace sailflow.engine.Entity
         /// </summary>
         [SooColumn(Name = "p_upd_time")]
         public DateTime? UpdatedDateTime { get; set; }
+
+        /// <summary>逻辑删除标记（列 <c>p_deleted</c>）；0=有效，1=已删。</summary>
+        [SooColumn(Name = "p_deleted")]
+        public int Deleted { get; set; }
+
+        /// <summary>逻辑删除时间（列 <c>p_delete_time</c>）。</summary>
+        [SooColumn(Name = "p_delete_time")]
+        public DateTime? DeleteTime { get; set; }
     }
 }

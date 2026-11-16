@@ -85,6 +85,30 @@ namespace sailflow.engine.Entity
         public string EntrustedTaskId { get; set; }
 
         /// <summary>
+        /// 票权（列 <c>tk_weight</c>）；默认 1。Leave EffectiveWeight 用。
+        /// </summary>
+        [SooColumn(Name = "tk_weight")]
+        public decimal? Weight { get; set; }
+
+        /// <summary>
+        /// 委托代批所代理的根办理人 SignId（列 <c>tk_proxy_sign_id</c>）；空=根席。
+        /// </summary>
+        [SooColumn(Name = "tk_proxy_sign_id", Length = 64)]
+        public string ProxySignId { get; set; }
+
+        /// <summary>
+        /// 结束类型码（列 <c>tk_end_type</c>），见 <see cref="TaskEndTypes"/>；打开态为空。
+        /// </summary>
+        [SooColumn(Name = "tk_end_type", Length = 64)]
+        public string EndType { get; set; }
+
+        /// <summary>
+        /// 办结简约描述（列 <c>tk_end_text</c>）；Host 本地化写入；≠ Msg 审批意见。
+        /// </summary>
+        [SooColumn(Name = "tk_end_text", Length = 255)]
+        public string EndText { get; set; }
+
+        /// <summary>
         /// 办理人角色（列 <c>tk_assignee_role</c>），见 <see cref="AssigneeRoleEnum"/>。
         /// null/0=Approver 常规审批办理人；1=Participant 沟通参与者（仅阅办，无审批推进权）。
         /// </summary>

@@ -90,6 +90,26 @@ namespace sailflow.engine.Manager
             return clip.select(t).queryList().ToList();
         }
 
+        /// <summary>按多个活动实例 Id 拉取任务（Leave Seats 投影用）。</summary>
+        internal List<TaskEntity> GetTaskListByActivityIds(
+            SQLBuilder kit,
+            string processInstanceId,
+            IEnumerable<string> activityInstanceIds)
+        {
+            var ids = activityInstanceIds?
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList() ?? new List<string>();
+            if (ids.Count == 0 || string.IsNullOrWhiteSpace(processInstanceId))
+                return new List<TaskEntity>();
+
+            var clip = kit.useClip();
+            clip.from<TaskEntity>(out var t)
+                .where(() => t.ProcessInstanceId, processInstanceId)
+                .whereIn(() => t.ActivityInstanceId, ids);
+            return clip.select(t).queryList().ToList();
+        }
+
         /// <summary>
         /// Obtain tasks based on process information
         /// 根据流程信息获取任务
@@ -390,6 +410,12 @@ namespace sailflow.engine.Manager
                 UnitId = !string.IsNullOrEmpty(performer?.UnitId) ? performer.UnitId : activityInstance.UnitId,
                 UnitCode = !string.IsNullOrEmpty(performer?.UnitCode) ? performer.UnitCode : activityInstance.UnitCode,
                 UnitName = !string.IsNullOrEmpty(performer?.UnitName) ? performer.UnitName : activityInstance.UnitName,
+                Weight = performer != null && performer.Weight > 0
+                    ? performer.Weight
+                    : (activityInstance.Weight is > 0 ? activityInstance.Weight : 1m),
+                ProxySignId = !string.IsNullOrWhiteSpace(performer?.ProxySignId)
+                    ? performer.ProxySignId
+                    : activityInstance.ProxySignId,
                 TaskState = 1,
                 // 业务邮件标记：未发送（sailflow.biz.query.TaskEMailSentStatusEnum.UnSent）
                 IsEMailSent = 0,
@@ -523,21 +549,84 @@ namespace sailflow.engine.Manager
 
         internal void EndTaskState(SQLBuilder kit, string taskId,
             TaskStateEnum taskState,
-            FlowCommandContext runner)
+            FlowCommandContext runner,
+            string endType = null)
         {
             var task = GetTask(kit, taskId);
+            ApplyTaskEnd(task, taskState, runner, endType);
+            Update(kit, task);
+        }
+
+        internal static void ApplyTaskEnd(
+            TaskEntity task,
+            TaskStateEnum taskState,
+            FlowCommandContext runner,
+            string endType = null)
+        {
+            if (task == null)
+                return;
             task.TaskState = (byte)taskState;
             task.CompletedAt = DateTime.UtcNow;
-            task.EndedUserId = runner.UserId;
-            task.EndedUserName = runner.UserName;
-            Update(kit, task);
+            if (runner != null)
+            {
+                task.EndedUserId = runner.UserId;
+                task.EndedUserName = runner.UserName;
+            }
+            if (!string.IsNullOrWhiteSpace(endType))
+                task.EndType = endType;
         }
 
         internal void Complete(SQLBuilder kit, string taskId, FlowCommandContext runner)
         {
-            EndTaskState(kit, taskId, TaskStateEnum.Completed, runner);
+            EndTaskState(kit, taskId, TaskStateEnum.Completed, runner, TaskEndTypes.SelfComplete);
             var task = GetTask(kit, taskId);
             FireTaskLifecycle(kit, task, runner, TaskNotifyKind.Completed);
+            // 代批同链：关其余打开待办（不改 Weight）
+            CloseProxyChainOpenTasks(kit, task, runner);
+        }
+
+        /// <summary>
+        /// 关闭同活动打开待办中与 <paramref name="completed"/> 同代理根的其余人（代批旁关）。
+        /// </summary>
+        internal void CloseProxyChainOpenTasks(
+            SQLBuilder kit,
+            TaskEntity completed,
+            FlowCommandContext runner)
+        {
+            if (completed == null || string.IsNullOrWhiteSpace(completed.ActivityInstanceId))
+                return;
+
+            var open = GetTaskListByActivity(
+                kit, completed.ProcessInstanceId, completed.ActivityInstanceId);
+            var rootSign = string.IsNullOrWhiteSpace(completed.ProxySignId)
+                ? completed.SignId
+                : completed.ProxySignId;
+
+            foreach (var t in open)
+            {
+                if (t == null || string.Equals(t.TaskId, completed.TaskId, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (t.TaskState != (short)TaskStateEnum.Waiting
+                    && t.TaskState != (short)TaskStateEnum.Reading)
+                    continue;
+                if (AssigneeRoleHelper.IsParticipant(t.AssigneeRole))
+                    continue;
+
+                var tRoot = string.IsNullOrWhiteSpace(t.ProxySignId) ? t.SignId : t.ProxySignId;
+                var sameChain =
+                    string.Equals(tRoot, rootSign, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(t.SignId, rootSign, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(t.ProxySignId, completed.SignId, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(completed.ProxySignId, t.SignId, StringComparison.OrdinalIgnoreCase);
+                if (!sameChain)
+                    continue;
+
+                ApplyTaskEnd(t, TaskStateEnum.Closed, runner, TaskEndTypes.ProxyTaken);
+                Update(kit, t);
+                var ai = Sail.ManagerFactory.Activities.GetById(kit, t.ActivityInstanceId);
+                Sail.CapabilityDispatcher.FireTaskLifecycle(
+                    kit, t, ai, runner, TaskNotifyKind.Cancelled);
+            }
         }
 
         /// <summary>
@@ -618,10 +707,7 @@ namespace sailflow.engine.Manager
                     $"Delegate target already has an open task: {target.UserId}");
             }
 
-            task.TaskState = (short)TaskStateEnum.Closed;
-            task.CompletedAt = DateTime.UtcNow;
-            task.EndedUserId = runner.UserId;
-            task.EndedUserName = runner.UserName;
+            ApplyTaskEnd(task, TaskStateEnum.Closed, runner, TaskEndTypes.DelegatedOut);
             Update(kit, task);
             Sail.CapabilityDispatcher.FireTaskLifecycle(
                 kit, task, activityInstance, runner, TaskNotifyKind.Entrusted);
@@ -673,13 +759,13 @@ namespace sailflow.engine.Manager
 
         internal void Withdraw(SQLBuilder kit, string taskId, FlowCommandContext runner)
         {
-            EndTaskState(kit, taskId, TaskStateEnum.Withdrawed, runner);
+            EndTaskState(kit, taskId, TaskStateEnum.Withdrawed, runner, TaskEndTypes.Withdrawn);
             FireTaskLifecycle(kit, GetTask(kit, taskId), runner, TaskNotifyKind.Cancelled);
         }
 
         internal void SendBack(SQLBuilder kit, string taskId, FlowCommandContext runner)
         {
-            EndTaskState(kit, taskId, TaskStateEnum.SendBacked, runner);
+            EndTaskState(kit, taskId, TaskStateEnum.SendBacked, runner, TaskEndTypes.SendBacked);
             FireTaskLifecycle(kit, GetTask(kit, taskId), runner, TaskNotifyKind.Cancelled);
         }
 
@@ -728,7 +814,7 @@ namespace sailflow.engine.Manager
             if (cancelOriginalTask)
             {
                 var task = GetTask(kit, entity.TaskId);
-                task.TaskState = (short)TaskStateEnum.Closed;
+                ApplyTaskEnd(task, TaskStateEnum.Closed, null, TaskEndTypes.DelegatedOut);
                 Update(kit, task);
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
                     kit, task, activityInstance, null, TaskNotifyKind.Cancelled);
@@ -778,10 +864,7 @@ namespace sailflow.engine.Manager
             }
 
             // 关闭原人待办：Closed（勿用 Completed，避免被会签计为已办）
-            task.TaskState = (short)TaskStateEnum.Closed;
-            task.CompletedAt = DateTime.UtcNow;
-            task.EndedUserId = runner.UserId;
-            task.EndedUserName = runner.UserName;
+            ApplyTaskEnd(task, TaskStateEnum.Closed, runner, TaskEndTypes.TransferredOut);
             Update(kit, task);
             Sail.CapabilityDispatcher.FireTaskLifecycle(
                 kit, task, activityInstance, runner, TaskNotifyKind.Entrusted);
@@ -909,10 +992,7 @@ namespace sailflow.engine.Manager
             {
                 if (desired.ContainsKey(t.SignId))
                     continue;
-                t.TaskState = (short)TaskStateEnum.Closed;
-                t.CompletedAt = DateTime.UtcNow;
-                t.EndedUserId = runner?.UserId;
-                t.EndedUserName = runner?.UserName;
+                ApplyTaskEnd(t, TaskStateEnum.Closed, runner, TaskEndTypes.Removed);
                 Update(kit, t);
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
                     kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
@@ -989,10 +1069,7 @@ namespace sailflow.engine.Manager
 
             foreach (var t in toClose)
             {
-                t.TaskState = (short)TaskStateEnum.Closed;
-                t.CompletedAt = DateTime.UtcNow;
-                t.EndedUserId = runner?.UserId;
-                t.EndedUserName = runner?.UserName;
+                ApplyTaskEnd(t, TaskStateEnum.Closed, runner, TaskEndTypes.Removed);
                 Update(kit, t);
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
                     kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
@@ -1230,13 +1307,98 @@ namespace sailflow.engine.Manager
 
             foreach (var t in open)
             {
-                t.TaskState = (short)TaskStateEnum.Canceled;
-                t.CompletedAt = DateTime.UtcNow;
-                t.EndedUserId = runner?.UserId;
-                t.EndedUserName = runner?.UserName;
+                ApplyTaskEnd(t, TaskStateEnum.Canceled, runner, TaskEndTypes.ActivityCancelled);
                 Update(kit, t);
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
                     kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
+            }
+        }
+
+        /// <summary>
+        /// 节点离开 / 会签阈值已达：关闭同活动剩余打开办理人待办。
+        /// 同代理链优先 <see cref="TaskEndTypes.ProxyTaken"/>，否则 <see cref="TaskEndTypes.RaceTaken"/>。
+        /// </summary>
+        internal void CloseOpenApproverTasksOnActivity(
+            SQLBuilder kit,
+            ActivityInstanceEntity activityInstance,
+            FlowCommandContext runner,
+            string preferredEndType = null,
+            string completedSignId = null,
+            string completedProxySignId = null)
+        {
+            if (activityInstance == null)
+                return;
+
+            var open = GetOpenApproverTasks(
+                kit,
+                activityInstance.ProcessInstanceId,
+                activityInstance.ActivityInstanceId);
+            if (open.Count == 0)
+                return;
+
+            var triggerRoot = string.IsNullOrWhiteSpace(completedProxySignId)
+                ? completedSignId
+                : completedProxySignId;
+
+            foreach (var t in open)
+            {
+                var endType = preferredEndType ?? TaskEndTypes.RaceTaken;
+                if (!string.IsNullOrWhiteSpace(triggerRoot))
+                {
+                    var tRoot = string.IsNullOrWhiteSpace(t.ProxySignId) ? t.SignId : t.ProxySignId;
+                    var sameChain =
+                        string.Equals(tRoot, triggerRoot, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(t.SignId, triggerRoot, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(t.ProxySignId, completedSignId, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(completedProxySignId, t.SignId, StringComparison.OrdinalIgnoreCase);
+                    if (sameChain)
+                        endType = TaskEndTypes.ProxyTaken;
+                }
+
+                ApplyTaskEnd(t, TaskStateEnum.Closed, runner, endType);
+                Update(kit, t);
+                Sail.CapabilityDispatcher.FireTaskLifecycle(
+                    kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
+            }
+        }
+
+        /// <summary>
+        /// 会签未完成子节点取消时：按子 AI 关掉打开办理人待办（默认 RaceTaken）。
+        /// </summary>
+        internal void CloseOpenApproverTasksOnActivityIds(
+            SQLBuilder kit,
+            string processInstanceId,
+            IEnumerable<string> activityInstanceIds,
+            FlowCommandContext runner,
+            string endType = null)
+        {
+            if (string.IsNullOrWhiteSpace(processInstanceId) || activityInstanceIds == null)
+                return;
+
+            var ids = activityInstanceIds
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            if (ids.Count == 0)
+                return;
+
+            var tasks = GetTaskListByActivityIds(kit, processInstanceId, ids);
+            var end = string.IsNullOrWhiteSpace(endType) ? TaskEndTypes.RaceTaken : endType;
+            foreach (var t in tasks)
+            {
+                if (t == null)
+                    continue;
+                if (t.TaskState != (short)TaskStateEnum.Waiting
+                    && t.TaskState != (short)TaskStateEnum.Reading)
+                    continue;
+                if (AssigneeRoleHelper.IsParticipant(t.AssigneeRole))
+                    continue;
+
+                ApplyTaskEnd(t, TaskStateEnum.Closed, runner, end);
+                Update(kit, t);
+                var ai = Sail.ManagerFactory.Activities.GetById(kit, t.ActivityInstanceId);
+                Sail.CapabilityDispatcher.FireTaskLifecycle(
+                    kit, t, ai, runner, TaskNotifyKind.Cancelled);
             }
         }
 

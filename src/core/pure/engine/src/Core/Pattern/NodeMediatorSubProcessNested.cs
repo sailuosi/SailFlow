@@ -374,6 +374,8 @@ namespace sailflow.engine.Pattern
                 entity.UnitId = plist[i].UnitId;
                 entity.UnitCode = plist[i].UnitCode;
                 entity.UnitName = plist[i].UnitName;
+                entity.Weight = plist[i].Weight > 0 ? plist[i].Weight : 1m;
+                entity.ProxySignId = plist[i].ProxySignId;
                 entity.MainActInstanceId = toActivityInstance.ActivityInstanceId;
                 entity.CompleteOrder = (short)(i + 1);
 

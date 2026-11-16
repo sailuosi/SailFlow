@@ -29,6 +29,14 @@ namespace sailflow.hub.Form
         public string AuthId { get; set; }
         /// <summary>密级；业务侧权限过滤预留。</summary>
         public int? AuthLevel { get; set; }
+        /// <summary>创建人 Id。</summary>
+        public string Creator { get; set; }
+        /// <summary>创建人姓名。</summary>
+        public string CreatorName { get; set; }
+        /// <summary>逻辑删除：0=有效，1=已删。</summary>
+        public int Deleted { get; set; }
+        /// <summary>逻辑删除时间。</summary>
+        public DateTime? DeleteTime { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdatedDate { get; set; }
         public IList<FieldActivityEdit> FieldActivityEditList { get; set; }

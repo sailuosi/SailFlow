@@ -1093,7 +1093,14 @@ namespace sailflow.engine.Pattern
             var sql = kit.useSQL();
             var ai = ActivityInstanceManager.GetById(sql, ActivityInstanceId);
             if (ai != null)
+            {
+                // 抢办/或签旁人：关剩余办理人（同链 ProxyTaken，否则 RaceTaken）
+                TaskManager.CloseOpenApproverTasksOnActivity(
+                    sql, ai, runner,
+                    preferredEndType: TaskEndTypes.RaceTaken,
+                    completedSignId: runner?.UserId);
                 TaskManager.CancelOpenParticipantsOnActivity(sql, ai, runner);
+            }
             ActivityInstanceManager.Complete(sql, ActivityInstanceId, runner);
         }
 
@@ -1160,42 +1167,62 @@ namespace sailflow.engine.Pattern
             FireActivityLifecycle(kit, processInstance, toActivityInstance, activityResource.AppRunner,
                 EventFireTypeEnum.OnActivityCreated);
 
-            // 插入会签子节点实例
-            ActivityInstanceEntity entity = new ActivityInstanceEntity();
-            for (short i = 0; i < plist.Count; i++)
+            // 会签子节点：仅「根席」（无 ProxySignId）建子 AI；
+            // 委托代批代理人（有 ProxySignId）只在原人子 AI 上追加 Task（扁平多 Task）。
+            var roots = new List<Performer>();
+            var proxies = new List<Performer>();
+            foreach (var p in plist)
             {
+                if (p == null || string.IsNullOrWhiteSpace(p.UserId))
+                    continue;
+                if (string.IsNullOrWhiteSpace(p.ProxySignId))
+                    roots.Add(p);
+                else
+                    proxies.Add(p);
+            }
+            if (roots.Count == 0)
+            {
+                throw new WfAssigneeException(
+                    AssigneeReasonCodes.AssigneeEmpty,
+                    "SignTogether requires at least one root performer (without ProxySignId).");
+            }
+
+            ActivityInstanceEntity entity = new ActivityInstanceEntity();
+            for (short i = 0; i < roots.Count; i++)
+            {
+                var root = roots[i];
                 entity = ActivityInstanceManager.CreateActivityInstanceObject(toActivityInstance);
-                entity.SignIds = plist[i].UserId;
-                entity.SignNames = plist[i].UserName;
-                entity.GroupId = plist[i].GroupId;
-                entity.GroupName = plist[i].GroupName;
-                entity.GroupRole = plist[i].GroupRole;
-                entity.UnitId = plist[i].UnitId;
-                entity.UnitCode = plist[i].UnitCode;
-                entity.UnitName = plist[i].UnitName;
+                entity.SignIds = root.UserId;
+                entity.SignNames = root.UserName;
+                entity.GroupId = root.GroupId;
+                entity.GroupName = root.GroupName;
+                entity.GroupRole = root.GroupRole;
+                entity.UnitId = root.UnitId;
+                entity.UnitCode = root.UnitCode;
+                entity.UnitName = root.UnitName;
+                entity.Weight = root.Weight > 0 ? root.Weight : 1m;
+                entity.ProxySignId = null;
                 entity.MainActInstanceId = toActivityInstance.ActivityInstanceId;
 
-                // 设置多实例子节点执行顺序（串行 / 并行）
                 if (toActivityInstance.MergeType == (short)MergeTypeEnum.Sequence)
-                {
                     entity.CompleteOrder = (short)(i + 1);
-                }
                 else if (toActivityInstance.MergeType == (short)MergeTypeEnum.Parallel)
-                {
-                    // 并行模式下完成顺序相同，统一为 -1
-                    entity.CompleteOrder = -1;       
-                }
+                    entity.CompleteOrder = -1;
 
-                // 串行会签：仅首个子节点运行，其余挂起
                 if ((i > 0) && (toActivity.MultiSignDetail.MergeType == MergeTypeEnum.Sequence))
-                {
                     entity.ActivityState = (short)ActivityStateEnum.Suspended;
-                }
 
                 entity.ActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), entity);
-                TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
+                TaskManager.Insert(kit.useSQL(), entity, root, activityResource.AppRunner);
                 FireActivityLifecycle(kit, processInstance, entity, activityResource.AppRunner,
                     EventFireTypeEnum.OnActivityCreated);
+
+                foreach (var proxy in proxies)
+                {
+                    if (!string.Equals(proxy.ProxySignId, root.UserId, StringComparison.OrdinalIgnoreCase))
+                        continue;
+                    TaskManager.Insert(kit.useSQL(), entity, proxy, activityResource.AppRunner);
+                }
             }
         }
 
