@@ -22,6 +22,7 @@
 | [todo-产品缺口.md](./todo-产品缺口.md) | **活动缺口**：联调 + 余债；已接线见 [progress/2026-11-04-产品缺口接线归档.md](./progress/2026-11-04-产品缺口接线归档.md) |
 | [存疑参考功能点.md](./存疑参考功能点.md) | **存疑对照**：外来引擎功能点（如 AntFlow 承办）；不默认纳入基线 |
 | [特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md) | **OA 动词**：场景/名称、Sail 编码、执行含义；含候选未入码表项 |
+| [../helps/解说-OA委托动词.md](../helps/解说-OA委托动词.md) | **委托一族解说**：转办 / 委派（现行）/ 委托代批（候选） |
 | [dev/开发手册-OA命令执行链路.md](./dev/开发手册-OA命令执行链路.md) | **开发手册**：Host → WorkflowService → Factory → Runtime → Mediator/Manager → DB（D3+D4） |
 | [dev/专题-对象生命周期与复用边界.md](./dev/专题-对象生命周期与复用边界.md) | **规范**：A/B/C/H、四槽、入参袋 vs 编排袋（D3 + D4-a/b 已落地） |
 | [dev/专题-主键与设计键发号契约.md](./dev/专题-主键与设计键发号契约.md) | **P0+P1 已落地**：`ISailIdSource` / `SailId` AutoKey + BPMN codec；P2 Guid7 / P3 非 Guid 待续 |

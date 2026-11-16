@@ -144,7 +144,7 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 驳回 | 退回 | `Reject` 配置落点、无 Resend；`SendBack` 可选目标 × 再发送 |
 | 退回 | 反转 | `SendBack` ≠ `Reverse` |
 | 加签 | 加批（生新节点） | 现 `SignForward`；加批待拆 |
-| 转办 | 委派 | `Transfer`＝交人不再回；`Delegate`＝代办完**自动回转**原人 |
+| 转办 | 委派 | `Transfer`＝交人不再回；`Delegate`＝代办完**自动回转**原人；配置型「委托代批」见 [解说-OA委托动词.md](../helps/解说-OA委托动词.md) |
 | 承办 | 通过 / 越过会签 | 仅或签认领；见存疑文档；Leave=`Race` |
 | 抄送 | 算人 / 待办 | Host `Copyto`；禁止塞进 Resolve Type |
 | 沟通 | 抄送 / 前加签 | `Consult` 建参与者 `wf_task` 并锁审批；抄送不锁、不加签无审批权 |
@@ -173,3 +173,4 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 2026-11-15 | **拍板**：委派办完自动回转；不回转则用转办；`DelegateProcess` 引擎落地 |
 | 2026-11-15 | 沟通入码表：`Consult`/`Acknowledge`/`RecallConsult`；参与者 `AssigneeRole=1` + 等待协议 |
 | 2026-11-15 | 驳回定型：极简 + `RejectMode` 四态；与退回两维划界；Host 不再转调 SendBack |
+| 2026-11-16 | 委托一族专项解说：[解说-OA委托动词.md](../helps/解说-OA委托动词.md)（转办/委派现行 + 委托代批候选） |
