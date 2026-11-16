@@ -180,6 +180,18 @@ namespace sailflow.engine.Entity
         public string Description { get; set; }
 
         /// <summary>
+        /// 创建人账号（列 <c>p_creator</c>）。
+        /// </summary>
+        [SooColumn(Name = "p_creator", Length = 128)]
+        public string Creator { get; set; }
+
+        /// <summary>
+        /// 创建人显示名（列 <c>p_creator_name</c>）。
+        /// </summary>
+        [SooColumn(Name = "p_creator_name", Length = 128)]
+        public string CreatorName { get; set; }
+
+        /// <summary>
         /// 定义创建时间（列 <c>p_crt_time</c>）。
         /// </summary>
         [SooColumn(Name = "p_crt_time")]
