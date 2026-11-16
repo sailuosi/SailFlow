@@ -11,9 +11,9 @@
 
 | 序 | 项 | 优先级 | 说明 |
 |----|----|--------|------|
-| 1 | 联调 A–J | P0 | 清单勾选；通过后回写本文件 |
-| 2 | R10 收口：去掉魔法 skip 兜底 | P1 | 主路径已是锚点 + 零 Performer |
-| 3 | `BackSrcUserId` / 退回单测 | P1 | §G/J 余债 |
+| 1 | 联调 A–J / Extra 场景 | P0 | 代码债已清；运行时场景见清单（环境就绪后勾） |
+| 2 | ~~R10 收口~~ | ✅ | `LegacySkipDrain` 默认 false；仅 `LegacyDrain=true` 回滚 |
+| 3 | ~~`BackSrcUserId`~~ | ✅ | Workbench 取 BackSrc.`EndedUser*` |
 | 4 | 空人整单 Reject 选项 | P2 | 与默认 `=2` 分离；未拍板开做 |
 | 5 | Cancel / Suspend；「其他」拆 view | 暂缓 | 产品未要 |
 
@@ -23,7 +23,7 @@
 
 ### 联调（全部块共用）
 
-见 [联调清单-产品缺口.md](./联调清单-产品缺口.md)。通过后在本表勾选：
+见 [联调清单-产品缺口.md](./联调清单-产品缺口.md)。接线已归档；**真人场景**待 API 环境勾选：
 
 - [ ] **A** 空人/同人/超时（含 A5 锚点/`RunProcessAuto`、A10 approveType）
 - [ ] **B** 终止/作废显隐与调用
@@ -31,6 +31,9 @@
 - [ ] **F** 转办同节点交人 + 轨迹
 - [ ] **G/J** 返送落点；ForwardNormal 沿出边；旧图 merge 默认
 - [ ] **H** 请假发起→同意→Status=通过
+- [ ] **Extra** 撤回闸 / 撤销 / 标题 / 编码 / 去重 / HTTP / 打印模板
+
+Sprint1 代码债（2026-11-16）：R10 LegacyDrain 默认关；`BackSrcUserId`←EndedUser*；ExtraJson 闭环。烟雾脚本就绪。
 
 ### 产品决策（未开做）
 
@@ -41,8 +44,8 @@
 
 | 项 | 说明 |
 |----|------|
-| `__sail_policy_skip__` 兜底 | JobWorker 仍扫遗留魔法待办；目标只留锚点 Job |
-| `BackSrcUserId` | 退回人身份勿只靠 `CreatedUser*` |
+| ~~`__sail_policy_skip__` 兜底~~ | ✅ 默认关闭 LegacyDrain；紧急 `Sail:PolicySkip:LegacyDrain=true` |
+| ~~`BackSrcUserId`~~ | ✅ 取 BackSrc 活动 `EndedUserId/Name` |
 | 流程级退回默认 | 覆盖节点 NodePolicy 的流程级策略 |
 | J 单测矩阵 | 两维 × 边界；非法组合 Reason |
 | Cancel / Suspend | 引擎有 API，码表/办理条未产品化 |

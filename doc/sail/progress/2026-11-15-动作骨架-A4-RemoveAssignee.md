@@ -47,6 +47,6 @@
 
 ## 未做（产品面 / 候选）
 
-- Host Handler + 办理条码表（减签/改派/催办/委派均未挂）  
+- Host：减签已挂（码表 `RemoveAssignee` + Handler + Workbench `RemovableAssignees` + 办理条）；改派/催办/委派仍未产品化  
 - Host 侧注册 `TaskKinds` 含 `Urged` 的 Notifier 通道  
 - `Copyto` 保持 Host 独立体系

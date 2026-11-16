@@ -329,7 +329,7 @@ Transition 族 `SignForwardAction`。
 
 ### 5.12b RemoveAssigneeProcess（减签，不推进）
 
-Assignee 族 `RemoveAssigneeAction`（A4；**引擎 API 已有，Host 办理条待产品**）。
+Assignee 族 `RemoveAssigneeAction`（A4；**Host 办理条已接线**：码表 + Handler + RemovableAssignees）。
 
 | 步骤 | 类·方法 |
 |------|---------|
