@@ -598,6 +598,7 @@ namespace sailflow.engine.Runtime
             var activityResourceBack = SailFactoryAccess.Runtime(_sail).CreateActivityResource(rmins.CmdContext,
                 rmins.CmdContext.NextActivityPerformers,
                 runner.Conditions);
+            activityResourceBack.AllowSameAsStarterPolicy = false;
             rmins.ActivityResource = activityResourceBack;
 
             return rmins;
@@ -813,6 +814,7 @@ namespace sailflow.engine.Runtime
             sendbackOperation.BackwardFromActivityInstance = runningNode;
             sendbackOperation.HasGatewayPassed = hasGatewayPassed;
             sendbackOperation.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            sendbackOperation.ActivityResource.AllowSameAsStarterPolicy = false;
             sendbackOperation.ProcessModel = processModel;
             sendbackOperation.IsCancellingBrothersNode = (runner.ControlParameterSheet != null 
                     && runner.ControlParameterSheet.IsCancellingBrothersNode == 1) ? true : false;
@@ -1025,6 +1027,7 @@ namespace sailflow.engine.Runtime
             sendbackOperation.BackwardFromActivityInstance = runningNode;
             sendbackOperation.HasGatewayPassed = hasGatewayPassed;
             sendbackOperation.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            sendbackOperation.ActivityResource.AllowSameAsStarterPolicy = false;
             sendbackOperation.ProcessModel = processModel;
 
             //撤销时默认撤销各个并行分支
@@ -1201,6 +1204,7 @@ namespace sailflow.engine.Runtime
                 lastTaskActivityInstance.EndedUserName);
 
             rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            rmins.ActivityResource.AllowSameAsStarterPolicy = false;
             rmins.CmdContext.BizChannel = runner.BizChannel;
             rmins.CmdContext.BizPK = runner.BizPK;
             rmins.CmdContext.ProcessId = runner.ProcessId;

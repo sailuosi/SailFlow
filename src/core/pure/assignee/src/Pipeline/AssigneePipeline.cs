@@ -420,38 +420,23 @@ public class AssigneePipeline : IAssigneePipeline
         var processId = ctx.Request.ProcessId ?? ctx.Request.Runner?.ProcessId;
         var version = ctx.Request.Version ?? ctx.Request.Runner?.Version ?? "1";
         var fromActivityId = ctx.Request.ActivityId;
-        string? pickReason = null;
-        var needsManual = NextActivityPickProbe.RequiresManualPick(
-            Sail, processId, version, fromActivityId, out pickReason);
 
-        var enriched = ctx.Anchors.Select(a =>
+        // 选人/多出口是否可过交由后续 RunProcess 主路径校验，此处不再预判 nextPerformersIncomplete。
+        var enriched = ctx.Anchors.Select(a => new AutoApproveAnchor
         {
-            var extra = a.Extra;
-            if (needsManual)
-                extra = NextActivityPickProbe.MergeIncompleteExtra(extra, pickReason ?? "");
-            return new AutoApproveAnchor
-            {
-                StrategyCode = a.StrategyCode,
-                Reason = a.Reason,
-                ProcessId = a.ProcessId ?? processId,
-                Version = a.Version ?? version,
-                ProcessInstanceId = a.ProcessInstanceId ?? ctx.Request.ProcessInstanceId,
-                ActivityId = a.ActivityId ?? fromActivityId,
-                ActivityCode = a.ActivityCode ?? ctx.Request.ActivityCode,
-                ActivityInstanceId = a.ActivityInstanceId,
-                TaskId = a.TaskId,
-                PreferUserId = a.PreferUserId,
-                PreferUserName = a.PreferUserName,
-                Extra = extra
-            };
+            StrategyCode = a.StrategyCode,
+            Reason = a.Reason,
+            ProcessId = a.ProcessId ?? processId,
+            Version = a.Version ?? version,
+            ProcessInstanceId = a.ProcessInstanceId ?? ctx.Request.ProcessInstanceId,
+            ActivityId = a.ActivityId ?? fromActivityId,
+            ActivityCode = a.ActivityCode ?? ctx.Request.ActivityCode,
+            ActivityInstanceId = a.ActivityInstanceId,
+            TaskId = a.TaskId,
+            PreferUserId = a.PreferUserId,
+            PreferUserName = a.PreferUserName,
+            Extra = a.Extra
         }).ToList();
-
-        if (needsManual)
-        {
-            Trace.TraceInformation(
-                "[Assignee] AutoApprove anchors marked nextPerformersIncomplete Activity={0} reason={1}",
-                fromActivityId, pickReason);
-        }
 
         try
         {

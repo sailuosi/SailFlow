@@ -5,8 +5,9 @@ using sailflow.engine.Xpdl;
 namespace sailflow.assignee.Job;
 
 /// <summary>
-/// §11.3：探测下一跳是否要求运行时选人 / 多出口人工（供打锚点 Extra 与 Worker 共用）。
+/// 遗留：曾用于 AutoApprove 入队前预判下一跳选人。新产品改为发送主路径校验，不再作门禁。
 /// </summary>
+[Obsolete("Auto-approve no longer pre-checks next pick; RunProcess validates instead.")]
 public static class NextActivityPickProbe
 {
     public const string ExtraIncompleteKey = "nextPerformersIncomplete";

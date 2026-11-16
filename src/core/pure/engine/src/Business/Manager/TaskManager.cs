@@ -571,6 +571,21 @@ namespace sailflow.engine.Manager
             {
                 task.EndedUserId = runner.UserId;
                 task.EndedUserName = runner.UserName;
+                // 办理意见：优先 sail.comment（自动审批），否则 Conditions.comment（办理台）
+                if (string.IsNullOrWhiteSpace(task.Msg))
+                {
+                    string comment = null;
+                    if (runner.DynamicVariables != null
+                        && runner.DynamicVariables.TryGetValue("sail.comment", out var dynComment)
+                        && !string.IsNullOrWhiteSpace(dynComment))
+                        comment = dynComment;
+                    else if (runner.Conditions != null
+                             && runner.Conditions.TryGetValue("comment", out var condComment)
+                             && !string.IsNullOrWhiteSpace(condComment))
+                        comment = condComment;
+                    if (!string.IsNullOrWhiteSpace(comment))
+                        task.Msg = comment;
+                }
             }
             if (!string.IsNullOrWhiteSpace(endType))
                 task.EndType = endType;

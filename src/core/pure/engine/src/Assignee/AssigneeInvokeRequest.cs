@@ -22,9 +22,14 @@ namespace sailflow.engine.Assignee
         public SQLBuilder Kit { get; set; }
 
         /// <summary>
-        /// Pipeline 出参：已入队自动审批锚点且无真人办理人（R10 零 Performer）。
-        /// Mediator 可跳过建待办，由 Job 经 <c>RunProcessAuto</c> 代办。
+        /// Pipeline 出参：已入队自动审批锚点且无真人办理人（遗留零 Performer 路径）。
+        /// 新产品：建待办 + Hook 入队，不再依赖本标志。
         /// </summary>
         public bool ResultAutoApprovePending { get; set; }
+
+        /// <summary>
+        /// 是否允许同人策略 Filter（跳过/换人）。退回等 Backward 建任务为 false。
+        /// </summary>
+        public bool AllowSameAsStarterPolicy { get; set; } = true;
     }
 }

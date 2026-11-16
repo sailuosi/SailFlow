@@ -46,9 +46,16 @@ namespace sailflow.engine.Common
         }
 
         /// <summary>
-        /// R10：自动审批锚点已入队、无真人待办。CreateNewTask 应跳过插任务。
+        /// 遗留：自动审批锚点已入队、无真人待办时 CreateNewTask 跳过插任务。
+        /// 新产品路径改为「建待办 + Hook 入队」，不再置 true。
         /// </summary>
         public bool AutoApprovePending { get; set; }
+
+        /// <summary>
+        /// 是否允许同人策略（assignStartUserHandlerType 跳过/换人）。
+        /// 退回/撤回/驳回等 Backward 建任务时应为 false，避免落点被改写。
+        /// </summary>
+        public bool AllowSameAsStarterPolicy { get; set; } = true;
 
         /// <summary>
         /// Construct function

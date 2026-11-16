@@ -1337,7 +1337,8 @@ namespace sailflow.engine.Pattern
                     ActivityCode = toActivityInstance.ActivityCode,
                     Runner = activityResource.AppRunner,
                     NextActivityPerformers = activityResource.NextActivityPerformers,
-                    Kit = Kit
+                    Kit = Kit,
+                    AllowSameAsStarterPolicy = activityResource.AllowSameAsStarterPolicy
                 };
 
                 var handled = pipeline.TryResolveForTaskCreate(invoke, out var resolved);
