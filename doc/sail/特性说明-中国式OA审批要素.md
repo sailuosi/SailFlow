@@ -69,8 +69,8 @@
 | 场景 / 常用名 | 建议 Sail 编码 | 建议引擎落点 | 执行含义 | 现状 |
 |---------------|----------------|--------------|----------|------|
 | 转办 | `Transfer` | `TransferProcess` | **个人办结 + 本节点交人，不发生节点流转**（原人待办 Closed，新人同 Activity 待办；刷新 SignIds/Names；≠ 委派回转） | **已接线**（码表 + Host `ButtonsOperation`）；见 [todo-产品缺口.md](./todo-产品缺口.md) **§F** |
-| 委派 / 委托 | `Delegate` | `DelegateProcess` | 请他人代办；**受托人办结后自动回转**原责任人待办（不推进）。若办完不回转 → 用 `Transfer`。审计走审批轨迹，不默认单独流水表 | 引擎落地中；Host 待产品 |
-| 变更处理人 | `ChangeAssignee` | `ChangeAssigneeProcess` | 管理员/有权人改当前节点办理人集合（差量） | 引擎 API 已有；办理条码表未挂 |
+| 委派 / 委托 | `Delegate` | `DelegateProcess` | 请他人代办；**受托人办结后自动回转**原责任人待办（不推进）。若办完不回转 → 用 `Transfer`。审计走审批轨迹，不默认单独流水表 | **已接线**（码表默认关 + Handler + 办理条；≠ Surrogate 出差代批） |
+| 变更处理人 | `ChangeAssignee` | `ChangeAssigneeProcess` | 管理员/有权人改当前节点办理人集合（差量） | **已接线**（码表默认关 + Handler + Workbench `CurrentAssignees` + 办理条） |
 | 承办 / 认领 | `Claim`（勿用 Undertake 当万能名） | 待定认领命令；**仅** `Leave=Race` | 或签多人时先独占待办，**不推进**；再 `Approve`/`Reject` | 存疑，默认不跟 AntFlow 按钮 |
 | 加批 | `SignAddNode`（候选） | 与 `SignForward` 拆语义后定 | **生成新审批节点/段**再审（AntFlow JP） | 现揉在加签，未拆 |
 | 当前节点加签 | `AddAssignee` | 可落 `SignForward` 子选项 | 不改图结构，仅当前节点增加办理人 | 语义待从 `SignForward` 拆清 |

@@ -23,17 +23,22 @@
 
 ### 联调（全部块共用）
 
-见 [联调清单-产品缺口.md](./联调清单-产品缺口.md)。接线已归档；**真人场景**待 API 环境勾选：
+见 [联调清单-产品缺口.md](./联调清单-产品缺口.md)。接线已归档；**烟雾 P1–P3 已通过**；**API 场景**已补验一批：
 
-- [ ] **A** 空人/同人/超时（含 A5 锚点/`RunProcessAuto`、A10 approveType）
-- [ ] **B** 终止/作废显隐与调用
-- [ ] **C** 字段 mode（含 masked）
-- [ ] **F** 转办同节点交人 + 轨迹
-- [ ] **G/J** 返送落点；ForwardNormal 沿出边；旧图 merge 默认
-- [ ] **H** 请假发起→同意→Status=通过
-- [ ] **Extra** 撤回闸 / 撤销 / 标题 / 编码 / 去重 / HTTP / 打印模板
+- [x] **A** 空人策略图 `sail-uat-a`：无办理人首跳失败；NodePolicy 空人=2 + 短超时可读（A5/A7–A12 全矩阵未逐条真人点完）
+- [x] **B** `sail-uat-b` Terminate/Discard 显隐 + Terminate 成功
+- [x] **C** `sail-uat-c` fieldModes editable/readonly/hidden/masked + signEnable
+- [x] **F** 转办同节点交人（API：Transfer admin→zhangsan）
+- [x] **G** `sail-uat-g` 双人工 SendBack 成功（返送/SB1/SB2 浏览器细点仍可补）
+- [x] **J** SendBack 无目标 → `SendBackTargetMissing`
+- [x] **H** Leave Create→Approve→Status=2（FormBiz 首跳默认办理人 + OnFinish 同事务 Kit）
+- [x] **Extra E1** 撤回闸 `WithdrawNotAllowed`（AllowWithdrawTask 默认 false）
+- [x] **R2** UAT-C `signEnable=true`（办理弹窗强制签名产品点验可补）
+- [x] **CA1 / R1 / U1 / R3** 改派、减签、催办、常用语（API）
 
-Sprint1 代码债（2026-11-16）：R10 LegacyDrain 默认关；`BackSrcUserId`←EndedUser*；ExtraJson 闭环。烟雾脚本就绪。
+脚本：`sleveen-admin/doc/scripts/sail-uat-core.ps1`（2026-11-16 晚 fails=0）。
+
+szkfpt 体验包：常用语 / 时间线意见·签名 / 附件面板 / 分类排序 API / 委托·常用语菜单已落地；分类列表本环境不足 2 条时 sort 烟跳过。
 
 ### 产品决策（未开做）
 
@@ -46,8 +51,8 @@ Sprint1 代码债（2026-11-16）：R10 LegacyDrain 默认关；`BackSrcUserId`�
 |----|------|
 | ~~`__sail_policy_skip__` 兜底~~ | ✅ 默认关闭 LegacyDrain；紧急 `Sail:PolicySkip:LegacyDrain=true` |
 | ~~`BackSrcUserId`~~ | ✅ 取 BackSrc 活动 `EndedUserId/Name` |
-| 流程级退回默认 | 覆盖节点 NodePolicy 的流程级策略 |
-| J 单测矩阵 | 两维 × 边界；非法组合 Reason |
+| ~~流程级退回默认~~ | ✅ Extra.`sendBackTarget`/`resubmitMode` 非空覆盖节点；空则节点优先 |
+| ~~J 单测矩阵~~ | ✅ `SailSendBackPolicyTests` Normalize + Resolve + FilterPrevious |
 | Cancel / Suspend | 引擎有 API，码表/办理条未产品化 |
 | 「其他」再拆 `view` | 设计器分组暂缓 |
 

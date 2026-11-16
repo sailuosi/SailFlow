@@ -24,7 +24,7 @@
 | 能力 | 产品名 | 触发 | 原人 | 对方 | 办完之后 | 现状 |
 |------|--------|------|------|------|----------|------|
 | [转办](#1-转办本节点交人我不办了) | 转办 `Transfer` | 办理条 · **这一张**待办 | **关闭** | 同节点新待办 | **对方推进**；**不**还回 | 码表已开 |
-| [委派](#2-委派请他代办办完必须还给我) | 委派 `Delegate` | 办理条候选 · **这一张**待办 | **关闭**（责任锚点仍在） | 新待办挂 `EntrustedTaskId` | **自动回转原人**；**不**推进节点 | 现行引擎；Host 未挂 |
+| [委派](#2-委派请他代办办完必须还给我) | 委派 `Delegate` | 办理条 · **这一张**待办 | **关闭**（责任锚点仍在） | 新待办挂 `EntrustedTaskId` | **自动回转原人**；**不**推进节点 | **已接线**（码表默认关） |
 | [委托代批](#3-委托代批事先配置建任务时并入代理人) | 委托代批（建议产品名） | **事先配置** · 建任务时自动 | **保留** | **追加**进参与者 | **任一可办**则推进（受 Leave） | **引擎+Host Filter 已挂**；「我的委托」页待 |
 | 遗留 Entrust | （勿新产品化） | API `EntrustTask` | 可选关原待办 | 新建 | 与 Transfer 相近、口径旧 | 遗留；新代码走 Transfer / Delegate |
 
@@ -96,8 +96,8 @@
 
 | 项 | 值 |
 |----|-----|
-| 码表 / 命令 | 候选 `Delegate` → `DelegateProcess` |
-| Host 入口 | **未挂**（引擎 API 直调；禁止空壳进办理条） |
+| 码表 / 命令 | `Delegate` → `DelegateProcess`（默认 enable=false） |
+| Host 入口 | `ButtonsOperation` → `DelegateOperationHandler` |
 | 引擎 API | `IWorkflowService.DelegateProcess[Async]` |
 | 动作骨架 | Assignee 族 · `DelegateAction` |
 | Gate | `FlowOperation.Delegate` |

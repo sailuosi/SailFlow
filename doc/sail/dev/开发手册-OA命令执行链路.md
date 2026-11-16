@@ -367,14 +367,16 @@ Assignee 族 `UrgeAction`（A4 续）。**不改** TaskState。
 
 ### 5.12e DelegateProcess（委派，办完自动回转）
 
-Assignee 族 `DelegateAction`。**拍板：** 受托人办结必须回转原人；否则用 Transfer。
+Assignee 族 `DelegateAction`。**拍板：** 受托人办结必须回转原人；否则用 Transfer。**Host 已接线**（码表默认关 + `DelegateOperationHandler` + 办理条）。
 
 | 步骤 | 类·方法 |
 |------|---------|
 | API | `DelegateProcess` → `RunAction` → `DelegateAction.Execute` |
+| Host | `ButtonsOperation` → `DelegateOperationHandler`；直调 `POST …/DelegateProcess` |
 | 发起 | `TaskManager.Delegate`：原人 Closed + `Entrusted`；受托人新建（`EntrustedTaskId`=原 TaskId） |
 | 办结 | 受托人 `Approve/Run` → `TryCompleteAsDelegationReturn`：受托 Completed + 原人重建 Waiting；**不**完结 AI、**不** ContinueForward |
 | Hook | `OnProcessDelegated`（发起时） |
+| Notifier | Portal/Debug `TaskKinds` 含 `Entrusted` |
 
 ### 5.12f Consult / Acknowledge / RecallConsult（沟通等待协议）
 
