@@ -98,7 +98,7 @@ namespace sailflow.engine.Runtime
             {
                 rmins.CmdContext.NextActivityPerformers = new Dictionary<string, PerformerList>();
             }
-            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers, runner.Conditions);
+            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers, runner.Conditions);
 
             return rmins;
         }
@@ -148,7 +148,7 @@ namespace sailflow.engine.Runtime
             //The subprocess automatically retrieves the list of performers on the first processing node
             rmins.CmdContext.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(subFirstActivity.ActivityId, 
                 performerList);
-            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
 
             return rmins;
         }
@@ -228,7 +228,7 @@ namespace sailflow.engine.Runtime
                 return rmins;
             }
 
-            var activityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner,
+            var activityResource = _sail.RuntimeFactory.CreateActivityResource(runner,
                 runner.NextActivityPerformers,
                 runner.Conditions);
 
@@ -304,7 +304,7 @@ namespace sailflow.engine.Runtime
                 return (rmins, result);
             }
 
-            var activityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner,
+            var activityResource = _sail.RuntimeFactory.CreateActivityResource(runner,
                 runner.NextActivityPerformers,
                 runner.Conditions);
 
@@ -351,7 +351,7 @@ namespace sailflow.engine.Runtime
             var processInstance = _sail.ProcessInstances.GetById(kitForPi, runningNode.ProcessInstanceId);
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
             var processModel = _sail.ProcessModelFactory.CreateByProcess( processInstance.ProcessId, processInstance.Version);
-            var activityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner,
+            var activityResource = _sail.RuntimeFactory.CreateActivityResource(runner,
                 runner.NextActivityPerformers,
                 runner.Conditions);
 
@@ -394,7 +394,7 @@ namespace sailflow.engine.Runtime
                 .ConfigureAwait(false);
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
             var processModel = _sail.ProcessModelFactory.CreateByProcess( processInstance.ProcessId, processInstance.Version);
-            var activityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner,
+            var activityResource = _sail.RuntimeFactory.CreateActivityResource(runner,
                 runner.NextActivityPerformers,
                 runner.Conditions);
 
@@ -458,7 +458,7 @@ namespace sailflow.engine.Runtime
             //Provide process instance Id for process registration events
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
             rmins.RunningActivityInstance = runningNode;
-            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
 
             var processModel = _sail.ProcessModelFactory.CreateByTask( taskView);
             rmins.ProcessModel = processModel;
@@ -595,7 +595,7 @@ namespace sailflow.engine.Runtime
                     jumpBackActivityInstance.EndedUserName);
             }
 
-            var activityResourceBack = SailFactoryAccess.Runtime(_sail).CreateActivityResource(rmins.CmdContext,
+            var activityResourceBack = _sail.RuntimeFactory.CreateActivityResource(rmins.CmdContext,
                 rmins.CmdContext.NextActivityPerformers,
                 runner.Conditions);
             activityResourceBack.AllowSameAsStarterPolicy = false;
@@ -661,7 +661,7 @@ namespace sailflow.engine.Runtime
             rmins.ProcessModel = processModel;
 
             var endActivityId = runner.NextActivityPerformers.First().Key;
-            var activityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, runner.NextActivityPerformers);
+            var activityResource = _sail.RuntimeFactory.CreateActivityResource(runner, runner.NextActivityPerformers);
             rmins.ActivityResource = activityResource;
             rmins.RunningActivityInstance = runningNode;
 
@@ -813,7 +813,7 @@ namespace sailflow.engine.Runtime
             sendbackOperation.ProcessInstance = processInstance;
             sendbackOperation.BackwardFromActivityInstance = runningNode;
             sendbackOperation.HasGatewayPassed = hasGatewayPassed;
-            sendbackOperation.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            sendbackOperation.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
             sendbackOperation.ActivityResource.AllowSameAsStarterPolicy = false;
             sendbackOperation.ProcessModel = processModel;
             sendbackOperation.IsCancellingBrothersNode = (runner.ControlParameterSheet != null 
@@ -1026,7 +1026,7 @@ namespace sailflow.engine.Runtime
             sendbackOperation.ProcessInstance = processInstance;
             sendbackOperation.BackwardFromActivityInstance = runningNode;
             sendbackOperation.HasGatewayPassed = hasGatewayPassed;
-            sendbackOperation.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            sendbackOperation.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
             sendbackOperation.ActivityResource.AllowSameAsStarterPolicy = false;
             sendbackOperation.ProcessModel = processModel;
 
@@ -1100,7 +1100,7 @@ namespace sailflow.engine.Runtime
                     runningActivityInstance.CreatedUserId,
                     runningActivityInstance.CreatedUserName);
             }
-            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
 
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
@@ -1147,7 +1147,7 @@ namespace sailflow.engine.Runtime
             rmins.CmdContext.UserId = runner.UserId;
             rmins.CmdContext.UserName = runner.UserName;
             rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
-            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
 
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
@@ -1203,7 +1203,7 @@ namespace sailflow.engine.Runtime
                 lastTaskActivityInstance.EndedUserId,
                 lastTaskActivityInstance.EndedUserName);
 
-            rmins.ActivityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
             rmins.ActivityResource.AllowSameAsStarterPolicy = false;
             rmins.CmdContext.BizChannel = runner.BizChannel;
             rmins.CmdContext.BizPK = runner.BizPK;
@@ -1279,7 +1279,7 @@ namespace sailflow.engine.Runtime
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
 
             var processModel = _sail.ProcessModelFactory.CreateByTask( taskView);
-            var activityResource = SailFactoryAccess.Runtime(_sail).CreateActivityResource(runner, 
+            var activityResource = _sail.RuntimeFactory.CreateActivityResource(runner, 
                 runner.NextActivityPerformers, 
                 runner.Conditions);
 

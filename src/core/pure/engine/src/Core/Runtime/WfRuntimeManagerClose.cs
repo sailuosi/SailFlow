@@ -37,7 +37,7 @@ namespace sailflow.engine.Runtime
                 base.ProcessModel, processInstance, base.ActivityResource);
             jumpforwardExecutionContext.FromActivityInstance = base.RunningActivityInstance;
 
-            NodeMediator mediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediator(jumpforwardExecutionContext, kit);
+            INodeMediator mediator = Sail.MediatorFactory.CreateNodeMediator(jumpforwardExecutionContext, kit);
             mediator.LinkContext.FromActivityInstance = base.RunningActivityInstance;
             mediator.LinkContext.CurrentActivity = jumpforwardActivity;
 

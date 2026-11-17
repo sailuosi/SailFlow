@@ -39,7 +39,7 @@ namespace sailflow.engine.Pattern
         /// <summary>
         /// 执行工作项
         /// </summary>
-        internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
+        public override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
             try
             {
@@ -179,7 +179,7 @@ namespace sailflow.engine.Pattern
         /// <summary>
         /// 创建活动任务转移数据
         /// </summary>
-        internal override void CreateActivityTaskTransitionInstance(Activity toActivity,
+        public override void CreateActivityTaskTransitionInstance(Activity toActivity,
            ProcessInstanceEntity processInstance,
            ActivityInstanceEntity fromActivityInstance,
            string transitionId,
@@ -292,7 +292,7 @@ namespace sailflow.engine.Pattern
                 performerList = activityResource.NextActivityPerformers[toActivity.ActivityId];
             }
 
-            var runtimeInstance = SailFactoryAccess.Runtime(Sail).CreateRuntimeInstanceStartupSub(subRunner,
+            var runtimeInstance = Sail.RuntimeFactory.CreateRuntimeInstanceStartupSub(subRunner,
                 processInstance,
                 subProcessNode,
                 performerList,
@@ -399,7 +399,7 @@ namespace sailflow.engine.Pattern
                     kit);
 
                 WfExecutedResult startedResult = WfExecutedResult.Default();
-                var runtimeInstance = SailFactoryAccess.Runtime(Sail).CreateRuntimeInstanceStartupSub(subRunner,
+                var runtimeInstance = Sail.RuntimeFactory.CreateRuntimeInstanceStartupSub(subRunner,
                     processInstance,
                     subProcessNode,
                     plist,

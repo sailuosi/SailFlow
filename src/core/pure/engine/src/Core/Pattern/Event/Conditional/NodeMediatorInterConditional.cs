@@ -50,7 +50,7 @@ namespace sailflow.engine.Pattern
             return condActivityInstance;
         }
 
-        internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
+        public override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
             try
             {

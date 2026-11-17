@@ -88,7 +88,7 @@ namespace sailflow.engine.Actions.Transition
                 [resolved.ActivityId!] = resolved.Performers!
             };
 
-            var runtime = SailFactoryAccess.Runtime(Sail).CreateRuntimeInstanceReject(Runner, ref result);
+            var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceReject(Runner, ref result);
             if (result.Status == WfExecutedStatus.Exception || runtime == null)
                 return false;
 

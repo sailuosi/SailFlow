@@ -28,7 +28,7 @@ namespace sailflow.engine.Pattern
         /// <summary>
         /// 执行工作项
         /// </summary>
-        internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
+        public override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
             OnBeforeExecuteWorkItem();
 
@@ -48,7 +48,7 @@ namespace sailflow.engine.Pattern
         /// <summary>
         /// 结束节点活动及转移实例化，没有任务数据
         /// </summary>
-        internal override void CreateActivityTaskTransitionInstance(Activity toActivity,
+        public override void CreateActivityTaskTransitionInstance(Activity toActivity,
             ProcessInstanceEntity processInstance,
             ActivityInstanceEntity fromActivityInstance,
             string transitionId,

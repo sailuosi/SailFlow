@@ -31,7 +31,7 @@ namespace sailflow.engine.Pattern
         /// <summary>
         /// 执行工作项
         /// </summary>
-        internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
+        public override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
             try
             {

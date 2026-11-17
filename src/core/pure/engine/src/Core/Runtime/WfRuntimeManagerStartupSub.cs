@@ -36,7 +36,7 @@ namespace sailflow.engine.Runtime
                 subStartactivity,
                 base.ActivityResource);
 
-            NodeMediator mediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediator(startExecutionContext, kit);
+            INodeMediator mediator = Sail.MediatorFactory.CreateNodeMediator(startExecutionContext, kit);
             mediator.LinkContext.FromActivityInstance = RunningActivityInstance;
             mediator.ExecuteWorkItem(null);
 

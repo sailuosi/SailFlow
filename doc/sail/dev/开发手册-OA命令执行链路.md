@@ -14,10 +14,10 @@
 Host API / ButtonsOperation
   → IWorkflowService.*Process[Async]
     → UseRunSQL + beginTransaction + InstanceExecutionLock
-      → SailFactoryAccess.Runtime(Sail).Create* / Runtimes.Create*
+      → Sail.RuntimeFactory.Create* / Runtimes.Create*
         → FlowCapabilityPipeline.TryGate
-          → WfRuntimeManager.Execute → ExecuteInstanceImp
-            → NodeMediator* / NodeSendBack* / TaskManager.*
+          → IWfRuntime.Execute → ExecuteInstanceImp
+            → INodeMediator* / INodeSendBack* / TaskManager.*
               → *Manager（mooSQL useRepo / useClip）
 ```
 
@@ -107,7 +107,7 @@ Manager 经 `Sail.ManagerFactory` / `SailFactoryAccess.Managers`；模型经 `Sa
 ```text
 WfRuntimeManagerRun.ExecuteInstanceImp
   → ActivityForwardContext.CreateRunningContextByTask|ByActivity
-  → SailFactoryAccess.Mediator(Sail).CreateNodeMediator(...)
+  → Sail.MediatorFactory.CreateNodeMediator(...)
   → NodeMediator.ExecuteWorkItem
        （任务节点 → NodeMediatorTask）
          → OnBeforeExecuteWorkItem
@@ -150,7 +150,7 @@ Transition 族 `StartAction`（A3 续）。
 | Gate | `FlowOperation.Start` |
 | Runtime | `WfRuntimeManagerStartup.ExecuteInstanceImp` |
 | 建实例对象 | `ProcessInstanceManager.CreateNewProcessInstanceObject`（内存实体，尚未 Insert） |
-| Mediator | `ActivityForwardContext.CreateStartupContext` → `SailFactoryAccess.Mediator(Sail).CreateNodeMediator` → 通常 `NodeMediatorStart.ExecuteWorkItem` |
+| Mediator | `ActivityForwardContext.CreateStartupContext` → `Sail.MediatorFactory.CreateNodeMediator` → 通常 `NodeMediatorStart.ExecuteWorkItem` |
 | Start 写库 | `ProcessInstanceManager.Insert` · `ActivityInstanceManager.Insert` + `Complete`（开始节点自动完）· `ContinueForwardCurrentNode` → 首任务 AI/Task/Transition |
 | Hook | `OnProcessStarted` |
 
@@ -554,7 +554,7 @@ if (taskId != null && taskId.Value > 0)
 // WfRuntimeManagerRun.ExecuteInstanceImp
 var runningExecutionContext = ActivityForwardContext.CreateRunningContextByTask(
     TaskView, ProcessModel, ActivityResource, false, kit, Sail);
-NodeMediator mediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediator(runningExecutionContext, kit);
+INodeMediator mediator = Sail.MediatorFactory.CreateNodeMediator(runningExecutionContext, kit);
 mediator.LinkContext.FromActivityInstance = RunningActivityInstance;
 mediator.ExecuteWorkItem(null);
 ```

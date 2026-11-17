@@ -18,7 +18,7 @@ namespace sailflow.engine.Runtime
     /// <summary>
     /// B · 退回节点执行编排袋（L-Cmd）。对 A Managers 只读转发，不缓存字段。
     /// </summary>
-    internal abstract class NodeSendBack
+    internal abstract class NodeSendBack : INodeSendBack
     {
         #region Property and Constructor
         internal NodeSendBack(SendBackOperation sendbackOperation, SQLBuilder kit, SailClient client)
@@ -44,7 +44,7 @@ namespace sailflow.engine.Runtime
         #endregion
 
         #region Abstract Method
-        internal abstract void Execute();
+        public abstract void Execute();
         #endregion
 
         /// <summary>

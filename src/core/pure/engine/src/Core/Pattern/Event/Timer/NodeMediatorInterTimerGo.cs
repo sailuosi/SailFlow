@@ -30,7 +30,7 @@ namespace sailflow.engine.Pattern
         /// <summary>
         /// 执行工作项
         /// </summary>
-        internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
+        public override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
             try
             {
@@ -103,7 +103,7 @@ namespace sailflow.engine.Pattern
         /// <summary>
         /// 创建活动任务转移实例数据
         /// </summary>
-        internal override void CreateActivityTaskTransitionInstance(Activity toActivity,
+        public override void CreateActivityTaskTransitionInstance(Activity toActivity,
             ProcessInstanceEntity processInstance,
             ActivityInstanceEntity fromActivityInstance,
             string transitionId,

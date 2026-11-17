@@ -16,11 +16,11 @@ namespace sailflow.engine.Pattern
     /// <summary>
     /// B · 网关节点执行编排袋（L-Cmd）。对 A Managers 只读转发，不缓存字段。
     /// </summary>
-    internal class NodeMediatorGateway
+    internal class NodeMediatorGateway : INodeMediatorGateway
     {
         #region Property and constructor
         private Activity _gatewayActivity;
-        internal Activity GatewayActivity
+        public Activity GatewayActivity
         {
             get { return _gatewayActivity; }
         }
@@ -37,7 +37,7 @@ namespace sailflow.engine.Pattern
             get { return _kit; }
         }
 
-        internal ActivityInstanceEntity GatewayActivityInstance
+        public ActivityInstanceEntity GatewayActivityInstance
         {
             get;
             set;

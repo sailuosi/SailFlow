@@ -17,7 +17,7 @@ namespace sailflow.engine.Runtime
     /// 持本命令导航态 + 对 A（<see cref="Sail"/>）的只读引用；用毕即弃。
     /// 入参袋是 <see cref="FlowCommandContext"/>——本类不是入参 Context。
     /// </summary>
-    internal abstract class WfRuntimeManager
+    internal abstract class WfRuntimeManager : IWfRuntime
     {
         #region Abstract Method
         internal abstract void ExecuteInstanceImp(SQLBuilder kit);
@@ -26,20 +26,20 @@ namespace sailflow.engine.Runtime
         #region Property and Basic Method
         /// <summary>本命令入参袋（B）；通常来自 RunBuilder.Build。</summary>
         internal FlowCommandContext CmdContext { get; set; }
-        internal IProcessModel ProcessModel { get; set; }
+        public IProcessModel ProcessModel { get; set; }
         internal ProcessInstanceEntity ParentProcessInstance { get; set; }
         internal NodeBase InvokedSubProcessNode { get; set; }
         internal ActivityResource ActivityResource { get; set; }
-        internal TaskViewEntity TaskView { get; set; }
-        internal ActivityInstanceEntity RunningActivityInstance { get; set; }
-        internal string ProcessInstanceId { get; set; }
+        public TaskViewEntity TaskView { get; set; }
+        public ActivityInstanceEntity RunningActivityInstance { get; set; }
+        public string ProcessInstanceId { get; set; }
         internal ProcessInstanceEntity ProcessInstance { get; set; }
         
         internal BackwardContext BackwardContext { get; set; }
         internal Boolean IsBackward { get; set; }
         internal SendBackOperation SendBackOperation { get; set; }
 
-        internal WfExecutedResult WfExecutedResult { get; set; }
+        public WfExecutedResult WfExecutedResult { get; set; }
         internal SailClient Sail { get; set; }
 
         internal WfRuntimeManager()
@@ -55,7 +55,7 @@ namespace sailflow.engine.Runtime
         /// 执行方法
         /// </summary>
         /// <returns></returns>
-        internal bool Execute(SQLBuilder kit)
+        public bool Execute(SQLBuilder kit)
         {
             try
             {
@@ -101,7 +101,7 @@ namespace sailflow.engine.Runtime
         #region Runtime Executed Callback
         // 子流程等内部仍用 OnWfProcessExecuted；生命周期对外扩展统一走 Gate/Hook/Notifier
         private event EventHandler<WfEventArgs> _onWfProcessExecuted;
-        internal event EventHandler<WfEventArgs> OnWfProcessExecuted
+        public event EventHandler<WfEventArgs> OnWfProcessExecuted
         {
             add { _onWfProcessExecuted += value; }
             remove { _onWfProcessExecuted -= value; }

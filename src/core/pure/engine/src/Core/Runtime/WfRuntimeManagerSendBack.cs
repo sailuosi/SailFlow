@@ -158,7 +158,7 @@ namespace sailflow.engine.Runtime
         {
             foreach (var performer in performerList)
             {
-                var nodeSendBack = SailFactoryAccess.Mediator(Sail).CreateNodeSendBack(sendbackOperation, kit);
+                var nodeSendBack = Sail.MediatorFactory.CreateNodeSendBack(sendbackOperation, kit);
                 sendbackOperation.BackwardToTaskPerformer = performer;
                 nodeSendBack.Execute();
             }

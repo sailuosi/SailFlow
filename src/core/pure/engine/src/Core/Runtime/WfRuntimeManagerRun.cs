@@ -50,7 +50,7 @@ namespace sailflow.engine.Runtime
 
                 // 推进前校验已由 WorkflowService.TryGate 完成；不再触发 EventSubscription OnProcessRunning
 
-                NodeMediator mediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediator(runningExecutionContext, kit);
+                INodeMediator mediator = Sail.MediatorFactory.CreateNodeMediator(runningExecutionContext, kit);
                 mediator.LinkContext.FromActivityInstance = RunningActivityInstance;
                 mediator.ExecuteWorkItem(null);
 

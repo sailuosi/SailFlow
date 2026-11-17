@@ -27,7 +27,7 @@ namespace sailflow.engine.Actions.Transition
         {
             ctx = null!;
             Runner.NextActivityPerformers = TransitionNextPerformers.Fill(Sail, Runner, JumpOptionEnum.End);
-            var runtime = SailFactoryAccess.Runtime(Sail).CreateRuntimeInstanceClose(Runner, ref result);
+            var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceClose(Runner, ref result);
             if (result.Status == WfExecutedStatus.Exception || runtime == null)
                 return false;
 

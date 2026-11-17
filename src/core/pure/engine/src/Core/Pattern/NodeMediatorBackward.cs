@@ -19,7 +19,7 @@ namespace sailflow.engine.Pattern
         {
         }
 
-        internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
+        public override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
             throw new NotImplementedException();
         }

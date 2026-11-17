@@ -35,7 +35,7 @@ namespace sailflow.engine.Pattern
         /// <summary>
         /// 执行工作项
         /// </summary>
-        internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
+        public override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
             //工作项执行前
             OnBeforeExecuteWorkItem();
@@ -75,7 +75,7 @@ namespace sailflow.engine.Pattern
 
             //开始执行下一步
             var runAppResult = WfExecutedResult.Default();
-            var runtimeInstance = SailFactoryAccess.Runtime(Sail).CreateRuntimeInstanceAppRunning(runner, kit, ref runAppResult);
+            var runtimeInstance = Sail.RuntimeFactory.CreateRuntimeInstanceAppRunning(runner, kit, ref runAppResult);
             if (runAppResult.Status == WfExecutedStatus.Exception)
             {
                 throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorend.ContinueMainProcessRunning.warn", runAppResult.Message));
@@ -143,7 +143,7 @@ namespace sailflow.engine.Pattern
         /// <summary>
         /// 结束节点活动与转移实例化（无任务数据）
         /// </summary>
-        internal override void CreateActivityTaskTransitionInstance(Activity toActivity,
+        public override void CreateActivityTaskTransitionInstance(Activity toActivity,
             ProcessInstanceEntity processInstance,
             ActivityInstanceEntity fromActivityInstance,
             string transitionId,

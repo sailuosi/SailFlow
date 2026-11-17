@@ -24,7 +24,7 @@ namespace sailflow.engine.Actions.Transition
         protected override bool TryLoadContext(out TransitionActionContext ctx, WfExecutedResult result)
         {
             ctx = null!;
-            var runtime = SailFactoryAccess.Runtime(Sail).CreateRuntimeInstanceAppRunning(Runner, Kit, ref result);
+            var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceAppRunning(Runner, Kit, ref result);
             if (result.Status == WfExecutedStatus.Exception || runtime == null)
                 return false;
             ctx = ToContext(runtime);

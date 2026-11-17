@@ -9,7 +9,7 @@ namespace sailflow.engine.Runtime
     /// <summary>
     /// Sendback Operation Data
     /// </summary>
-    internal class SendBackOperation
+    public class SendBackOperation
     {
         internal SendBackOperationTypeEnum CurrentNodeOperationType { get; set; }
         internal SendBackOperationTypeEnum CurrentMultipleInstanceDetailType { get; set; }

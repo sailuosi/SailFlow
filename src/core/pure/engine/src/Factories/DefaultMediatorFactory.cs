@@ -24,7 +24,7 @@ public class DefaultMediatorFactory : IMediatorFactory
         _mediators = new MediatorInstanceCreator(_sail);
     }
 
-    internal virtual EventServiceBase CreateEventService(
+    public virtual EventServiceBase CreateEventService(
         EventScopeTypeEnum scopeType, SQLBuilder kit, EventContext context)
     {
         if (scopeType == EventScopeTypeEnum.Process)
@@ -35,7 +35,7 @@ public class DefaultMediatorFactory : IMediatorFactory
             _sail.Messages.GetEngineMessage("eventservicefactory.CreateEventService.error"));
     }
 
-    internal virtual NodeSendBack CreateNodeSendBack(
+    public virtual INodeSendBack CreateNodeSendBack(
         SendBackOperation sendbackOperation, SQLBuilder kit)
     {
         NodeSendBack nodeSendBack = null;
@@ -84,31 +84,31 @@ public class DefaultMediatorFactory : IMediatorFactory
         return nodeSendBack;
     }
 
-    internal virtual NodeMediator CreateNodeMediator(
+    public virtual INodeMediator CreateNodeMediator(
         ActivityForwardContext forwardContext, SQLBuilder kit)
         => _mediators.CreateNodeMediator(forwardContext, kit);
 
-    internal virtual NodeMediatorGateway CreateNodeMediatorGateway(
+    public virtual INodeMediatorGateway CreateNodeMediatorGateway(
         Activity gActivity, IProcessModel processModel, SQLBuilder kit)
         => _mediators.CreateNodeMediatorGateway(gActivity, processModel, kit);
 
-    internal virtual NodeMediator CreateNodeMediatorEvent(
+    public virtual INodeMediator CreateNodeMediatorEvent(
         ActivityForwardContext forwardContext,
         Activity eventActivity,
         IProcessModel processModel,
         SQLBuilder kit)
         => _mediators.CreateNodeMediatorEvent(forwardContext, eventActivity, processModel, kit);
 
-    internal virtual NodeMediator CreateNodeMediatorEnd(
+    public virtual INodeMediator CreateNodeMediatorEnd(
         ActivityForwardContext forwardContext,
         Activity endActivity,
         SQLBuilder kit)
         => _mediators.CreateNodeMediatorEnd(forwardContext, endActivity, kit);
 
-    internal virtual NodeMediator CreateNodeMediatorSubProcess(
+    public virtual INodeMediator CreateNodeMediatorSubProcess(
         ActivityForwardContext forwardContext, Activity activity, SQLBuilder kit)
         => _mediators.CreateNodeMediatorSubProcess(forwardContext, activity, kit);
 
-    internal virtual NodeMediator CreateNodeMediatorSubProcess(Activity activity, SQLBuilder kit)
+    public virtual INodeMediator CreateNodeMediatorSubProcess(Activity activity, SQLBuilder kit)
         => _mediators.CreateNodeMediatorSubProcess(activity, kit);
 }

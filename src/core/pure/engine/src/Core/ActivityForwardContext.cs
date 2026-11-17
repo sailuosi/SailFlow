@@ -12,7 +12,7 @@ namespace sailflow.engine.Core
     /// <summary>
     /// Activity node execution context object
     /// </summary>
-    internal class ActivityForwardContext
+    public class ActivityForwardContext
     {
         #region ActivityForwardContext Property
 

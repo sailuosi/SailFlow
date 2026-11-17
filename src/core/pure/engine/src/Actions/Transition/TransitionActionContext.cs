@@ -13,7 +13,7 @@ namespace sailflow.engine.Actions.Transition
         public ActivityInstanceEntity RunningActivityInstance { get; init; }
         public string TaskId { get; init; }
 
-        /// <summary>本命令 Runtime（internal 类型；仅 Transition 族可见用法）。</summary>
-        internal WfRuntimeManager Runtime { get; init; }
+        /// <summary>本命令 Runtime（<see cref="IWfRuntime"/>；仅 Transition 族可见用法）。</summary>
+        internal IWfRuntime Runtime { get; init; }
     }
 }

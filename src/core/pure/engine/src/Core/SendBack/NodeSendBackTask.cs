@@ -28,7 +28,7 @@ namespace sailflow.engine.Runtime
         /// <summary>
         /// Execute method
         /// </summary>
-        internal override void Execute()
+        public override void Execute()
         {
             if (base.SendBackOperation.IsCancellingBrothersNode == true)
             {

@@ -30,7 +30,7 @@ namespace sailflow.engine.Runtime
         /// <summary>
         /// Execute method
         /// </summary>
-        internal override void Execute()
+        public override void Execute()
         {
             var runningNode = base.SendBackOperation.BackwardFromActivityInstance;
             //创建撤销到上一步的节点记录

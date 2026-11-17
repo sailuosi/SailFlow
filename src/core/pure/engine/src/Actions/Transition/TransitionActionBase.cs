@@ -46,9 +46,8 @@ namespace sailflow.engine.Actions.Transition
 
         /// <summary>
         /// Factory 已预载（如 Run Async）时走同一 Gate→Core→Hook，避免重复 Create。
-        /// WfRuntimeManager 为 internal，本方法仅供同程序集 Service 调用。
         /// </summary>
-        internal WfExecutedResult ExecuteWithRuntime(WfRuntimeManager runtime, WfExecutedResult factoryResult)
+        internal WfExecutedResult ExecuteWithRuntime(IWfRuntime runtime, WfExecutedResult factoryResult)
         {
             var result = factoryResult ?? WfExecutedResult.Default();
             try
@@ -65,8 +64,8 @@ namespace sailflow.engine.Actions.Transition
             }
         }
 
-        /// <summary>WfRuntimeManager 为 internal；同程序集 Transition 动词可用。</summary>
-        internal static TransitionActionContext ToContext(WfRuntimeManager runtime) =>
+        /// <summary>同程序集 Transition 动词可用。</summary>
+        internal static TransitionActionContext ToContext(IWfRuntime runtime) =>
             new()
             {
                 ProcessInstanceId = runtime.ProcessInstanceId,

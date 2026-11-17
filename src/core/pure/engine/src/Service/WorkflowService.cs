@@ -18,8 +18,8 @@ namespace sailflow.engine.Service
         /// </summary>
         protected SailClient Sail { get; }
 
-        /// <summary>A · Runtime 工厂（默认转发旧 static）。</summary>
-        protected DefaultRuntimeFactory Runtimes => SailFactoryAccess.Runtime(Sail);
+        /// <summary>A · Runtime 工厂。</summary>
+        protected IRuntimeFactory Runtimes => Sail.RuntimeFactory;
 
         /// <summary>A · Manager 工厂（含 internal ProcessInstances）。</summary>
         protected DefaultManagerFactory Managers => SailFactoryAccess.Managers(Sail);

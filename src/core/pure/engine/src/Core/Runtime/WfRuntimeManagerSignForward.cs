@@ -32,7 +32,7 @@ namespace sailflow.engine.Runtime
                     false,
                     kit, Sail);
 
-                NodeMediator mediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediator(signforwardExecutionContext, kit);
+                INodeMediator mediator = Sail.MediatorFactory.CreateNodeMediator(signforwardExecutionContext, kit);
                 mediator.ExecuteWorkItem(null);
 
                 var result = base.WfExecutedResult;

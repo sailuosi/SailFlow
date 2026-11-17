@@ -26,14 +26,14 @@ namespace sailflow.engine.Pattern
         {
         }
 
-        internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
+        public override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
         }
 
         /// <summary>
         /// 创建活动任务转移实例
         /// </summary>
-        internal override void CreateActivityTaskTransitionInstance(Activity toActivity,
+        public override void CreateActivityTaskTransitionInstance(Activity toActivity,
             ProcessInstanceEntity processInstance,
             ActivityInstanceEntity fromActivityInstance,
             string transitionId,

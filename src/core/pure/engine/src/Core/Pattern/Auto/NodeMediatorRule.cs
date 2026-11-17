@@ -32,7 +32,7 @@ namespace sailflow.engine.Pattern
             return activityInstance;
         }
 
-        internal override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
+        public override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
             var currentActivity = LinkContext.CurrentActivity;
             if (currentActivity == null

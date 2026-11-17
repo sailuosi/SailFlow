@@ -42,7 +42,7 @@ namespace sailflow.engine.Runtime
             jumpforwardExecutionContext.TaskId = this.TaskView.TaskId;
             jumpforwardExecutionContext.FromActivityInstance = base.RunningActivityInstance;
 
-            NodeMediator mediator = SailFactoryAccess.Mediator(Sail).CreateNodeMediator(jumpforwardExecutionContext, kit);
+            INodeMediator mediator = Sail.MediatorFactory.CreateNodeMediator(jumpforwardExecutionContext, kit);
             mediator.LinkContext.FromActivityInstance = base.RunningActivityInstance;
             mediator.LinkContext.CurrentActivity = jumpforwardActivity;
 

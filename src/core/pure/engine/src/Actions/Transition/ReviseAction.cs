@@ -23,7 +23,7 @@ namespace sailflow.engine.Actions.Transition
         protected override bool TryLoadContext(out TransitionActionContext ctx, WfExecutedResult result)
         {
             ctx = null!;
-            var runtime = SailFactoryAccess.Runtime(Sail).CreateRuntimeInstanceRevise(Runner, ref result);
+            var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceRevise(Runner, ref result);
             // 保留原 Service 语义：Factory 已 Success 则直接返回（不跑 Gate/Execute）
             if (result.Status == WfExecutedStatus.Success)
                 return false;

@@ -30,7 +30,7 @@ namespace sailflow.engine.Actions.Transition
         {
             ctx = null!;
             Runner.NextActivityPerformers = TransitionNextPerformers.Fill(Sail, Runner, _jumpOption);
-            var runtime = SailFactoryAccess.Runtime(Sail).CreateRuntimeInstanceJump(Runner, ref result);
+            var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceJump(Runner, ref result);
             if (result.Status == WfExecutedStatus.Exception || runtime == null)
                 return false;
 
