@@ -3,7 +3,7 @@
 > 状态：**草案 / 未立项**（2026-11-02）  
 > 用途：从 Elsa Bookmark / Stimulus 对照中抽出**可吸收的运行时原语**，供后续演进挂钩；**不**纳入现行能力基线，**禁止**据此改 UserTask / 办理命令。  
 > 灵感来源：elsa-core `Bookmark` + `Stimulus` + `RunTask`；对照 Sail `NodeMediator*Timer*|Msg*|Signal*`、任务表、JobTimer。  
-> 关联：[特性说明-引擎能力基线.md](./特性说明-引擎能力基线.md) · [特性设计-回调与事件.md](./特性设计-回调与事件.md) · [草案-命令执行管道.md](./done/草案-命令执行管道.md)（已归档） · [专题-流转动作骨架.md](./专题-流转动作骨架.md)（人点 Suspend/Resume） · [存疑参考功能点.md](./存疑参考功能点.md) · Elsa 对照画布（会话产物）
+> 关联：[特性说明-引擎能力基线.md](../特性说明-引擎能力基线.md) · [特性设计-回调与事件.md](../特性设计-回调与事件.md) · [草案-命令执行管道.md](../done/草案-命令执行管道.md)（已归档） · [专题-流转动作骨架.md](../专题-流转动作骨架.md)（人点 Suspend/Resume） · [存疑参考功能点.md](./存疑参考功能点.md) · Elsa 对照画布（会话产物）
 
 ---
 
@@ -12,7 +12,7 @@
 把「非办理条的等待」从各 Mediator / 作业各自为政，收敛成：**挂起登记 → 按 Kind+Key 匹配 → 统一 Resume 续 AIM**。  
 人机审批（UserTask + Assignee + OA 动词）**不在本草案范围**。
 
-> **勿混：** 本文 `ResumeWaiting` ≠ 办理条 [Lifecycle `ResumeProcess`](./专题-流转动作骨架.md)（人点挂起恢复）。后者改 `ProcessState`；前者是自动节点/边界事件的等待刺激恢复。
+> **勿混：** 本文 `ResumeWaiting` ≠ 办理条 [Lifecycle `ResumeProcess`](../专题-流转动作骨架.md)（人点挂起恢复）。后者改 `ProcessState`；前者是自动节点/边界事件的等待刺激恢复。
 
 ---
 

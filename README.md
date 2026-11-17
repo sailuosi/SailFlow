@@ -1,4 +1,4 @@
-# sailflow
+﻿# sailflow
 
 > **致敬 [Slickflow](https://github.com/besley/slickflow)**  
 > 本仓库基于开源工作流引擎 [Slickflow](https://github.com/besley/slickflow) 二次改造而来。感谢 Besley / 杭州砺工科技及社区的杰出贡献。原项目采用 MIT 协议，源授权说明见 [NOTICE](./NOTICE)。
@@ -105,7 +105,7 @@ Gate（校验拦截）/ Hook（生命周期副作用）/ Task Notifier（待办�
 - 引擎日志契约化，默认 Sink 的库位置与分表粒度可配  
 - `UseDataLifecycle` / `UseSailData` / 立即归档 Hook 等按需挂载
 
-详见 [分析-流程运转表存储与分表策略.md](./doc/sail/分析-流程运转表存储与分表策略.md)。
+详见 [分析-流程运转表存储与分表策略.md](./doc/sail/talk/分析-流程运转表存储与分表策略.md)。
 
 ### 9. 多种示例 · 轻松 UseXxx 增强
 
