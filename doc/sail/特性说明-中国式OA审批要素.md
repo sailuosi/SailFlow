@@ -156,7 +156,7 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 
 1. **禁止空壳**：无引擎命令 + Host API，不得进办理条码表。  
 2. **Leave 正交**：认领/转办不得默认可绕过 `Collaborate` / 会签。  
-3. **抄送独立通道**：不与 Assignee ConfigPair、Task Notifier 混用；用 `AddCopytoNotifier` + `CopytoNotifyKind`。  
+3. **抄送独立通道**：不与 Assignee ConfigPair、Task Notifier 混用；用 `AddCopytoNotifier` + `CopytoNotifyKind`。待办推送见 [OA/专题-待办推送.md](./OA/专题-待办推送.md)。  
 4. **存疑先记文档**：怪异 UX（如 AntFlow 承办）进 [talk/存疑参考功能点.md](./talk/存疑参考功能点.md)，不默许进基线。  
 5. **文案可本地化**：码表 `DisplayName` 可改「同意/通过」；**Id 与 Engine 稳定**。
 

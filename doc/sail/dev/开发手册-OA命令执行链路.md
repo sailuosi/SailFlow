@@ -420,7 +420,7 @@ Assignee 族三动词。字段：`tk_assignee_role`（0/null 常规，1 参与�
 
 ### 5.15 Notifier / Hook 对账（防双响）
 
-命令级 AfterSuccess **只**在动作骨架各族 `OnFireFlowHook`；路径内 `FireTaskLifecycle`（Created/Completed/Cancelled/Entrusted）与节点级 Hook **保留**。全表见 [progress/2026-11-15-动作骨架-A3-SendBack.md](../progress/2026-11-15-动作骨架-A3-SendBack.md)「Notifier / Hook 对账表」。
+命令级 AfterSuccess **只**在动作骨架各族 `OnFireFlowHook`；路径内 `FireTaskLifecycle`（Created/Completed/Cancelled/Entrusted）与节点级 Hook **保留**。全表见 [progress/2026-11-15-动作骨架-A3-SendBack.md](../progress/2026-11-15-动作骨架-A3-SendBack.md)「Notifier / Hook 对账表」。产品细表：[OA/专题-待办推送.md](../OA/专题-待办推送.md)。
 
 ### 5.16 抄送专用钩子（≠ 待办 Notifier）
 
