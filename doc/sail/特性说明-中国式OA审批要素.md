@@ -75,9 +75,9 @@
 | 加批 | `SignAddNode`（候选） | 与 `SignForward` 拆语义后定 | **生成新审批节点/段**再审（AntFlow JP） | 现揉在加签，未拆 |
 | 当前节点加签 | `AddAssignee` | 可落 `SignForward` 子选项 | 不改图结构，仅当前节点增加办理人 | 语义待从 `SignForward` 拆清 |
 | 减签 | `RemoveAssignee` | `RemoveAssigneeProcess` | 从当前多人节点移除尚未办完的办理人 | **已接线**（码表 + Host Handler + Workbench 候选人 + 办理条弹窗）；与加签/改派见 [OA/专题-改签.md](./OA/专题-改签.md) |
-| 未来节点加签 | `AddFutureAssignee` | 待定 | 改尚未到达节点的预定办理人（加人） | 无 |
-| 未来节点减签 | `RemoveFutureAssignee` | 待定 | 同上，减人 | 无 |
-| 未来节点换人 | `ChangeFutureAssignee` | 待定 | 同上，替换 | 无 |
+| 未来节点加签 | `AddFutureAssignee` | 待定 | 改尚未到达节点的预定办理人（加人） | 无；主场景用预选表，见 [OA/专题-超前选人.md](./OA/专题-超前选人.md) |
+| 未来节点减签 | `RemoveFutureAssignee` | 待定 | 同上，减人 | 无；改/清预选表 |
+| 未来节点换人 | `ChangeFutureAssignee` | 待定 | 同上，替换 | 无；`WfPreselect/Replace` 覆盖 |
 | 打回修改 | （多用 `SendBack`） | `SendBackProcess` + 策略 | 退回修改态；常要求发起人/原节点改完再来 | 有退回；缺「再提交落点」策略 |
 | 重新提交 | `Resubmit`（候选） | 常组合 `Resend` / `Run` | 被打回后再次提交；落点由 Disagree 策略决定 | 有 `Resend`；缺策略枚举 |
 | 终止 | `Terminate` | `TerminateProcess` | 强行结束运行实例 | 码表默认关；Host Handler 已挂 |
