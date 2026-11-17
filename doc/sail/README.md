@@ -30,6 +30,8 @@
 | [专题-多人办理模式.md](./OA/专题-多人办理模式.md) | Leave：会签/或签/抢办/组/队长 · 时刻 B · ≠ 按钮 |
 | [专题-流转分支条件.md](./OA/专题-流转分支条件.md) | 连线条件 · 网关 · 条件袋 · UseNextStepRoute |
 | [专题-超前选人.md](./OA/专题-超前选人.md) | 发起预选后续人 · Preselect · ≠ FutureAssignee 动词 |
+| [专题-业务状态回写.md](./OA/专题-业务状态回写.md) | FormBiz · Sync 终态 Status · ≠ 待办推送 |
+| [专题-业务状态回写.md](./OA/专题-业务状态回写.md) | FormBiz · Sync 终态 Status · ≠ 待办推送 |
 
 ## 内部专题 · [theme/](./theme/)
 

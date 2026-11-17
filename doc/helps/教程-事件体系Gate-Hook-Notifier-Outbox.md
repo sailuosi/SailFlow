@@ -369,7 +369,7 @@ builder.AddHook(new UpdateBillStatusHook(bills), o =>
 
 **建议**
 
-1. 本地 DB 强一致回写 → Sync Hook（短逻辑）。  
+1. 本地 DB 强一致回写 → Sync Hook（短逻辑）；产品路径见 [OA/专题-业务状态回写.md](../sail/OA/专题-业务状态回写.md)。  
 2. 跨服务 / 慢调用 → AsyncOutbox，或放到 Notifier。  
 3. Async 消费路径按 `ProcessInstanceId` + `EventType`（或业务幂等键）做幂等。
 
