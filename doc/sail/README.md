@@ -11,7 +11,7 @@
 |------|------|
 | [特性说明-引擎能力基线.md](./特性说明-引擎能力基线.md) | **演进基准**：现行命令、查询、节点、Assignee、回调、插槽与 Host 边界 |
 | [特性说明-待办人管道.md](./特性说明-待办人管道.md) | **Assignee 专项**：两大时刻、R1–R10、Filter/EmptyAction/锚点 Job（§11）、`UseAssign`、扩展红线 |
-| [特性说明-下一节点过滤器.md](./特性说明-下一节点过滤器.md) | **下一跳节点计算管道（已落地 S0–S2）**：`UseNextStepRoute` = Prepare + `IConditionEvaluator` + Filter |
+| [特性说明-下一节点过滤器.md](./特性说明-下一节点过滤器.md) | **下一跳节点计算管道（已落地 S0–S2）**：`UseNextStepRoute` = Prepare + `IConditionEvaluator` + Filter；产品细表见 [OA/专题-流转分支条件.md](./OA/专题-流转分支条件.md) |
 | [特性说明-副作用可靠性.md](./特性说明-副作用可靠性.md) | **旁路可靠性**：Outbox / Channel / 对账分档；批量推送削峰；产品细表见 [OA/专题-待办推送.md](./OA/专题-待办推送.md) |
 | [特性说明-中国式OA审批要素.md](./特性说明-中国式OA审批要素.md) | **OA 动词**：场景/名称、Sail 编码、执行含义；含候选未入码表项 |
 
@@ -28,6 +28,7 @@
 | [专题-转办.md](./OA/专题-转办.md) | 本节点交人、不还回 · Transfer · 与委派/改派划界 |
 | [专题-待办推送.md](./OA/专题-待办推送.md) | TaskNotifier · Outbox/Reliable · 门户日程/邮件 · ≠ 抄送 |
 | [专题-多人办理模式.md](./OA/专题-多人办理模式.md) | Leave：会签/或签/抢办/组/队长 · 时刻 B · ≠ 按钮 |
+| [专题-流转分支条件.md](./OA/专题-流转分支条件.md) | 连线条件 · 网关 · 条件袋 · UseNextStepRoute |
 
 ## 内部专题 · [theme/](./theme/)
 
