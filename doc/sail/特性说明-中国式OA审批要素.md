@@ -68,7 +68,7 @@
 
 | 场景 / 常用名 | 建议 Sail 编码 | 建议引擎落点 | 执行含义 | 现状 |
 |---------------|----------------|--------------|----------|------|
-| 转办 | `Transfer` | `TransferProcess` | **个人办结 + 本节点交人，不发生节点流转**（原人待办 Closed，新人同 Activity 待办；刷新 SignIds/Names；≠ 委派回转） | **已接线**（码表 + Host `ButtonsOperation`）；见 [todo-产品缺口.md](./dev/todo-产品缺口.md) **§F** |
+| 转办 | `Transfer` | `TransferProcess` | **个人办结 + 本节点交人，不发生节点流转**（原人待办 Closed，新人同 Activity 待办；刷新 SignIds/Names；≠ 委派回转） | **已接线**（码表 + Host `ButtonsOperation`）；见 [todo-产品缺口.md](./dev/todo-产品缺口.md) **§F** · [OA/专题-转办.md](./OA/专题-转办.md) |
 | 委派 / 委托 | `Delegate` | `DelegateProcess` | 请他人代办；**受托人办结后自动回转**原责任人待办（不推进）。若办完不回转 → 用 `Transfer`。审计走审批轨迹，不默认单独流水表 | **已接线**（码表默认关 + Handler + 办理条；≠ Surrogate 出差代批） |
 | 变更处理人 | `ChangeAssignee` | `ChangeAssigneeProcess` | 管理员/有权人改当前节点办理人集合（差量） | **已接线**（码表默认关 + Handler + Workbench `CurrentAssignees` + 办理条） |
 | 承办 / 认领 | `Claim`（勿用 Undertake 当万能名） | 待定认领命令；**仅** `Leave=Race` | 或签多人时先独占待办，**不推进**；再 `Approve`/`Reject` | 存疑，默认不跟 AntFlow 按钮 |
@@ -144,7 +144,7 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 驳回 | 退回 | `Reject` 配置落点、无 Resend；`SendBack` 可选目标 × 再发送 |
 | 退回 | 反转 | `SendBack` ≠ `Reverse` |
 | 加签 | 加批（生新节点） | 现 `SignForward`；加批待拆；办理细表 [OA/专题-改签.md](./OA/专题-改签.md) |
-| 转办 | 委派 | `Transfer`＝交人不再回；`Delegate`＝代办完**自动回转**原人；配置型「委托代批」见 [解说-OA委托动词.md](../helps/解说-OA委托动词.md) · [OA/专题-委托代办.md](./OA/专题-委托代办.md) |
+| 转办 | 委派 | `Transfer`＝交人不再回；`Delegate`＝代办完**自动回转**原人；细表 [OA/专题-转办.md](./OA/专题-转办.md)；配置型「委托代批」见 [解说-OA委托动词.md](../helps/解说-OA委托动词.md) · [OA/专题-委托代办.md](./OA/专题-委托代办.md) |
 | 承办 | 通过 / 越过会签 | 仅或签认领；见存疑文档；Leave=`Race` |
 | 抄送 | 算人 / 待办 | Host `Copyto`；禁止塞进 Resolve Type |
 | 沟通 | 抄送 / 前加签 | `Consult` 建参与者 `sf_task` 并锁审批；抄送不锁、不加签无审批权 |

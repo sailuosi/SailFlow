@@ -315,7 +315,7 @@ Transition 族 `SignForwardAction`。产品细表：[OA/专题-改签.md](../OA/
 
 ### 5.12 TransferProcess（转办，不推进）
 
-**不经** `WfRuntimeManager` / `NodeMediator`。A1 起走动作骨架（Assignee 族）。
+**不经** `WfRuntimeManager` / `NodeMediator`。A1 起走动作骨架（Assignee 族）。产品细表：[OA/专题-转办.md](../OA/专题-转办.md)。
 
 | 步骤 | 类·方法 |
 |------|---------|

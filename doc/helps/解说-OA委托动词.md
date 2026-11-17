@@ -67,7 +67,7 @@
 | 写库 | `TaskManager.Transfer`（原 Closed + 同 Activity 新待办；刷新 SignIds/Names） |
 | 通知 | `FireTaskLifecycle(Entrusted)` + 目标 `Created` |
 | 现状 | **码表已开** |
-| 详链 | [解说-办理动词 §7](./解说-办理动词.md#7-转办这事交给他我不办了) · OA 手册 §5.12 |
+| 详链 | [解说-办理动词 §7](./解说-办理动词.md#7-转办这事交给他我不办了) · OA 手册 §5.12 · [OA/专题-转办.md](../sail/OA/专题-转办.md) |
 
 ---
 
