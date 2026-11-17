@@ -1,4 +1,4 @@
-# sailflow · doc/sail
+﻿# sailflow · doc/sail
 
 引擎侧设计与能力说明索引。
 
@@ -16,7 +16,7 @@
 | [特性设计-回调与事件.md](./特性设计-回调与事件.md) | Gate / Hook / Notifier / Outbox 设计 |
 | [特性说明-副作用可靠性.md](./特性说明-副作用可靠性.md) | **旁路可靠性**：Outbox / Channel / 对账分档；批量推送削峰 |
 | [草案-挂起与统一Resume.md](./草案-挂起与统一Resume.md) | **草案引子**：Bookmark 思想 → WaitToken / ResumeWaiting；不改 UserTask |
-| [草案-非流转动作骨架.md](./草案-非流转动作骨架.md) | **草案（A1–A4）**：三族 Assignee 动词齐（含委派自动回转）；Host / Copyto 独立 |
+| [专题-流转动作骨架.md](./专题-流转动作骨架.md) | **已落地**：三族动作骨架（含沟通/委派）；Host 减签办理条 / Copyto 独立 |
 | [草案-引擎异步化.md](./草案-引擎异步化.md) | **草案专题（0–2 首包已落地）**：假 Async 禁令 + Clip/`ct` + 锁/Manager async；下一刀 Mediator 深链 |
 | [目录-扩展插件.md](./目录-扩展插件.md) | **扩展目录**：pure/ext/biz + sleveen-admin 的 UseXxx / Resolver / Filter / Hook / Handler 与核心代码 |
 | [todo-产品缺口.md](./todo-产品缺口.md) | **活动缺口**：联调 + 余债；已接线见 [progress/2026-11-04-产品缺口接线归档.md](./progress/2026-11-04-产品缺口接线归档.md) |

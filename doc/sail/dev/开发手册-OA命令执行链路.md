@@ -1,9 +1,9 @@
-# 开发手册 · OA 命令执行链路（类 / 方法级）
+﻿# 开发手册 · OA 命令执行链路（类 / 方法级）
 
 > 状态：**现行实现对齐说明**（2026-11-06；**D3 + D4-a/b**）  
 > 用途：从宿主调度入口追到 DB 读写，固化主要办理动词的**类·方法**链路，方便排障与改命令。  
 > **读法**：装配经 `SailClient` 四槽（`RuntimeFactory` / `MediatorFactory` / `ProcessModelFactory` / `ManagerFactory`）；Runtime/Mediator 内部为 `RuntimeInstanceCreator` / `MediatorInstanceCreator`；Manager 经 `ManagerFactory`；Service **无状态**（不扣 Runner）。寿命立法见 [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md)。  
-> 关联：[特性说明-中国式OA审批要素.md](../特性说明-中国式OA审批要素.md) · [特性说明-引擎能力基线.md](../特性说明-引擎能力基线.md) · [特性设计-回调与事件.md](../特性设计-回调与事件.md) · [草案-非流转动作骨架.md](../草案-非流转动作骨架.md)（未立项） · [草案-命令执行管道.md](../done/草案-命令执行管道.md)（已归档吸收） · [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) · [架构设计-项目依赖与分层.md](../架构设计-项目依赖与分层.md)  
+> 关联：[特性说明-中国式OA审批要素.md](../特性说明-中国式OA审批要素.md) · [特性说明-引擎能力基线.md](../特性说明-引擎能力基线.md) · [特性设计-回调与事件.md](../特性设计-回调与事件.md) · [专题-流转动作骨架.md](../专题-流转动作骨架.md)（已落地） · [草案-命令执行管道.md](../done/草案-命令执行管道.md)（已归档吸收） · [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) · [架构设计-项目依赖与分层.md](../架构设计-项目依赖与分层.md)  
 > D3 前残旧样例（`_wfAppRunner` / `new *Manager` / `NodeSendBackFactory`）已迁 [../done/残旧口径清出-OA手册与基线-2026-11-06.md](../done/残旧口径清出-OA手册与基线-2026-11-06.md)。
 
 ---
@@ -187,7 +187,7 @@ A3 起走 Transition 动作骨架（`SendBackAction`）。
 | 退回执行 | `DistributeEachPerformerTask` → `CreateNodeSendBack` → `NodeSendBack*.Execute` |
 | 收尾写库 | `SetRunningNodeSendBack` → `TaskManager.SendBack` · `ActivityInstanceManager.SendBack` |
 | Hook | `OnProcessSendBacked`（族群 `OnFireFlowHook`；路径内 TaskNotifier 不在此重复） |
-| 设计 | [草案-非流转动作骨架.md](../草案-非流转动作骨架.md) · [progress/2026-11-15-动作骨架-A3-SendBack.md](../progress/2026-11-15-动作骨架-A3-SendBack.md) |
+| 设计 | [专题-流转动作骨架.md](../专题-流转动作骨架.md) · [progress/2026-11-15-动作骨架-A3-SendBack.md](../progress/2026-11-15-动作骨架-A3-SendBack.md) |
 
 ### 5.4 WithdrawProcess（撤回）
 
@@ -325,7 +325,7 @@ Transition 族 `SignForwardAction`。
 | Gate | `FlowOperation.Transfer` |
 | 写库 | `TaskManager.Transfer`：原待办 `Closed` + `Update`；目标 `Insert` 同 Activity 新待办；`RefreshActivitySignFromOpenTasks`；`CapabilityDispatcher.FireTaskLifecycle(Entrusted)`（仍在 Manager 内；族内不重复） |
 | Hook | `OnProcessTransferred`（族群 `OnFireFlowHook`） |
-| 设计 | [草案-非流转动作骨架.md](../草案-非流转动作骨架.md) · [progress/2026-11-15-动作骨架-A1-Transfer.md](../progress/2026-11-15-动作骨架-A1-Transfer.md) |
+| 设计 | [专题-流转动作骨架.md](../专题-流转动作骨架.md) · [progress/2026-11-15-动作骨架-A1-Transfer.md](../progress/2026-11-15-动作骨架-A1-Transfer.md) |
 
 ### 5.12b RemoveAssigneeProcess（减签，不推进）
 
