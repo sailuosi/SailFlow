@@ -187,7 +187,7 @@ A3 起走 Transition 动作骨架（`SendBackAction`）。
 | 退回执行 | `DistributeEachPerformerTask` → `CreateNodeSendBack` → `NodeSendBack*.Execute` |
 | 收尾写库 | `SetRunningNodeSendBack` → `TaskManager.SendBack` · `ActivityInstanceManager.SendBack` |
 | Hook | `OnProcessSendBacked`（族群 `OnFireFlowHook`；路径内 TaskNotifier 不在此重复） |
-| 设计 | [专题-流转动作骨架.md](../theme/专题-流转动作骨架.md) · [progress/2026-11-15-动作骨架-A3-SendBack.md](../progress/2026-11-15-动作骨架-A3-SendBack.md) |
+| 设计 | [专题-流转动作骨架.md](../theme/专题-流转动作骨架.md) · [progress/2026-11-15-动作骨架-A3-SendBack.md](../progress/2026-11-15-动作骨架-A3-SendBack.md) · [OA/专题-退回.md](../OA/专题-退回.md) |
 
 ### 5.4 WithdrawProcess（撤回）
 

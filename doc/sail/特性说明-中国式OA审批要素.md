@@ -107,7 +107,7 @@ Prev | Starter | History  ×  ForwardNormal | ReturnToSender
 
 AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`BackPrevThenNext` 等），见 [todo-产品缺口.md](./dev/todo-产品缺口.md) **§J**。对外落盘用两维字段。
 
-落地：并入 `sf:NodePolicy.json`（`sendBackTarget` + `resubmitMode`，默认 Starter + ReturnToSender）+ `SendBack` / `Resend` / `Run`；办理台见 todo **§G/§J**。
+落地：并入 `sf:NodePolicy.json`（`sendBackTarget` + `resubmitMode`，默认 Starter + ReturnToSender）+ `SendBack` / `Resend` / `Run`；办理台见 todo **§G/§J**；细表见 [OA/专题-退回.md](./OA/专题-退回.md)。
 
 ### 4.2 驳回落点（配置要素，非运行时自选）
 
