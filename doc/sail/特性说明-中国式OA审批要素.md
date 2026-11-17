@@ -30,7 +30,7 @@
 | 通过 / 同意 / 审批通过 | `Approve` | `RunProcess` | 当前待办人办结本任务并按图推进；受 Leave（抢办/会签等）约束 |
 | 驳回 / 拒绝 | `Reject` | `RejectProcess` | **极简**：办理人不选目标/不选人；设计期 `RejectMode`=Terminate\|Previous（默认）\|Starter\|Specified；人取历史办结人。**≠** 作废（`Discard`）；**≠** 退回两维；ApprovalOrSplit 拒绝边仍是网关分流 |
 | 退回 / 回退 / 打回 | `SendBack` | `SendBackProcess` | 运行时可选目标（Prev/Starter/History）× 再发送（`sendBackTarget` × `resubmitMode`）；流程多继续可再提交 |
-| 加签 | `SignForward` | `SignForwardProcess` | 在会签/加签语义下增加审批人（与 AntFlow「加批生新节点」需区分，见 §4） |
+| 加签 | `SignForward` | `SignForwardProcess` | 在会签/加签语义下增加审批人（与 AntFlow「加批生新节点」需区分，见 §4）；细表见 [OA/专题-改签.md](./OA/专题-改签.md) |
 | 沟通 | `Consult` | `ConsultProcess` | 建参与者待办（`AssigneeRole=1`）；锁定发起人审批至全员阅办或收回；阅办=`Acknowledge`，收回=`RecallConsult` |
 | 阅办 | `Acknowledge` | `AcknowledgeProcess` | 参与者关闭自己的沟通待办（无审批推进权） |
 | 收回沟通 | `RecallConsult` | `RecallConsultProcess` | 发起人取消未反馈的参与者待办并解锁 |
@@ -74,7 +74,7 @@
 | 承办 / 认领 | `Claim`（勿用 Undertake 当万能名） | 待定认领命令；**仅** `Leave=Race` | 或签多人时先独占待办，**不推进**；再 `Approve`/`Reject` | 存疑，默认不跟 AntFlow 按钮 |
 | 加批 | `SignAddNode`（候选） | 与 `SignForward` 拆语义后定 | **生成新审批节点/段**再审（AntFlow JP） | 现揉在加签，未拆 |
 | 当前节点加签 | `AddAssignee` | 可落 `SignForward` 子选项 | 不改图结构，仅当前节点增加办理人 | 语义待从 `SignForward` 拆清 |
-| 减签 | `RemoveAssignee` | `RemoveAssigneeProcess` | 从当前多人节点移除尚未办完的办理人 | **已接线**（码表 + Host Handler + Workbench 候选人 + 办理条弹窗） |
+| 减签 | `RemoveAssignee` | `RemoveAssigneeProcess` | 从当前多人节点移除尚未办完的办理人 | **已接线**（码表 + Host Handler + Workbench 候选人 + 办理条弹窗）；与加签/改派见 [OA/专题-改签.md](./OA/专题-改签.md) |
 | 未来节点加签 | `AddFutureAssignee` | 待定 | 改尚未到达节点的预定办理人（加人） | 无 |
 | 未来节点减签 | `RemoveFutureAssignee` | 待定 | 同上，减人 | 无 |
 | 未来节点换人 | `ChangeFutureAssignee` | 待定 | 同上，替换 | 无 |
@@ -143,7 +143,7 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 驳回 | 整单作废 | `Reject` + `RejectMode`；作废用 `Discard` |
 | 驳回 | 退回 | `Reject` 配置落点、无 Resend；`SendBack` 可选目标 × 再发送 |
 | 退回 | 反转 | `SendBack` ≠ `Reverse` |
-| 加签 | 加批（生新节点） | 现 `SignForward`；加批待拆 |
+| 加签 | 加批（生新节点） | 现 `SignForward`；加批待拆；办理细表 [OA/专题-改签.md](./OA/专题-改签.md) |
 | 转办 | 委派 | `Transfer`＝交人不再回；`Delegate`＝代办完**自动回转**原人；配置型「委托代批」见 [解说-OA委托动词.md](../helps/解说-OA委托动词.md) · [OA/专题-委托代办.md](./OA/专题-委托代办.md) |
 | 承办 | 通过 / 越过会签 | 仅或签认领；见存疑文档；Leave=`Race` |
 | 抄送 | 算人 / 待办 | Host `Copyto`；禁止塞进 Resolve Type |

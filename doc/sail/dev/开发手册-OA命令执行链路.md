@@ -301,7 +301,7 @@ Transition 族 `CloseAction`（`Fill(End)`）。
 
 ### 5.11 SignForwardProcess（加签）
 
-Transition 族 `SignForwardAction`。
+Transition 族 `SignForwardAction`。产品细表：[OA/专题-改签.md](../OA/专题-改签.md)。
 
 | 步骤 | 类·方法 |
 |------|---------|
@@ -329,7 +329,7 @@ Transition 族 `SignForwardAction`。
 
 ### 5.12b RemoveAssigneeProcess（减签，不推进）
 
-Assignee 族 `RemoveAssigneeAction`（A4；**Host 办理条已接线**：码表 + Handler + RemovableAssignees）。
+Assignee 族 `RemoveAssigneeAction`（A4；**Host 办理条已接线**：码表 + Handler + RemovableAssignees）。产品细表：[OA/专题-改签.md](../OA/专题-改签.md)。
 
 | 步骤 | 类·方法 |
 |------|---------|
