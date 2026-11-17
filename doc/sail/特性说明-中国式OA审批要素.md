@@ -31,7 +31,7 @@
 | 驳回 / 拒绝 | `Reject` | `RejectProcess` | **极简**：办理人不选目标/不选人；设计期 `RejectMode`=Terminate\|Previous（默认）\|Starter\|Specified；人取历史办结人。**≠** 作废（`Discard`）；**≠** 退回两维；ApprovalOrSplit 拒绝边仍是网关分流 |
 | 退回 / 回退 / 打回 | `SendBack` | `SendBackProcess` | 运行时可选目标（Prev/Starter/History）× 再发送（`sendBackTarget` × `resubmitMode`）；流程多继续可再提交 |
 | 加签 | `SignForward` | `SignForwardProcess` | 在会签/加签语义下增加审批人（与 AntFlow「加批生新节点」需区分，见 §4）；细表见 [OA/专题-改签.md](./OA/专题-改签.md) |
-| 沟通 | `Consult` | `ConsultProcess` | 建参与者待办（`AssigneeRole=1`）；锁定发起人审批至全员阅办或收回；阅办=`Acknowledge`，收回=`RecallConsult` |
+| 沟通 | `Consult` | `ConsultProcess` | 建参与者待办（`AssigneeRole=1`）；锁定发起人审批至全员阅办或收回；阅办=`Acknowledge`，收回=`RecallConsult`；细表见 [OA/专题-沟通.md](./OA/专题-沟通.md) |
 | 阅办 | `Acknowledge` | `AcknowledgeProcess` | 参与者关闭自己的沟通待办（无审批推进权） |
 | 收回沟通 | `RecallConsult` | `RecallConsultProcess` | 发起人取消未反馈的参与者待办并解锁 |
 | 抄送 | `Copyto` | `WfCopyto/Create` + `FireCopytoLifecycle` | 知会他人，**不产生**推进权待办；**专用** `ICopytoNotifier` / `OnCopytoCreated`（≠ 待办 TaskNotifier） |

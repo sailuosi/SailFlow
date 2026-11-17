@@ -17,7 +17,7 @@
 | [专题-流转分支条件.md](./专题-流转分支条件.md) | 连线条件 · 网关 · 条件袋 · UseNextStepRoute 三件套 |
 | [专题-超前选人.md](./专题-超前选人.md) | 发起预选后续办理人 · Preselect 表 · ≠ FutureAssignee 动词 |
 | [专题-业务状态回写.md](./专题-业务状态回写.md) | FormBiz 生命周期 · Sync 终态 Status · ≠ 待办推送 |
-| [专题-业务状态回写.md](./专题-业务状态回写.md) | FormBiz 生命周期 · Sync 终态 Status · ≠ 待办推送 |
+| [专题-沟通.md](./专题-沟通.md) | Consult/阅办/收回 · 参与者硬锁 · ≠ 加签/抄送 |
 
 关联：
 

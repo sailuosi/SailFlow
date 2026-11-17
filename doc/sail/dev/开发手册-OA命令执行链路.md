@@ -380,7 +380,7 @@ Assignee 族 `DelegateAction`。**拍板：** 受托人办结必须回转原人�
 
 ### 5.12f Consult / Acknowledge / RecallConsult（沟通等待协议）
 
-Assignee 族三动词。字段：`tk_assignee_role`（0/null 常规，1 参与者）、`tk_consult_src_task_id`。
+Assignee 族三动词。字段：`tk_assignee_role`（0/null 常规，1 参与者）、`tk_consult_src_task_id`。产品细表：[OA/专题-沟通.md](../OA/专题-沟通.md)。
 
 | 步骤 | 类·方法 |
 |------|---------|
