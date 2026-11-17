@@ -3,7 +3,7 @@
 > 状态：对照 **Phase 1–3b 已落地代码**（`sailflow.engine.Hooks` + `sailflow.msg`）整理的使用教程，非设计草案。  
 > 设计全文：[特性设计-回调与事件.md](../sail/特性设计-回调与事件.md) · 能力基线：[特性说明-引擎能力基线.md](../sail/特性说明-引擎能力基线.md)  
 > 产品专题（待办推送）：[OA/专题-待办推送.md](../sail/OA/专题-待办推送.md)  
-> 源码主目录：`src/core/pure/engine/src/Hooks/` · Outbox 表实体：`HookOutboxEntity`（`sf_hook_outbox`）
+> 源码主目录：`src/core/pure/engine/src/Plugin/Hooks/` · Outbox 表实体：`HookOutboxEntity`（`sf_hook_outbox`）
 
 ---
 
@@ -647,4 +647,4 @@ o.Mode = HookMode.Sync;                  // 仅 Hook 有意义
 
 ---
 
-*文档与源码不一致时以 `src/core/pure/engine/src/Hooks` 与 `WorkflowService.ProcessExecution` 为准。*
+*文档与源码不一致时以 `src/core/pure/engine/src/Plugin/Hooks` 与 `WorkflowService.ProcessExecution` 为准。*
