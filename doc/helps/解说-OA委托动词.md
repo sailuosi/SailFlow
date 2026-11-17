@@ -1,10 +1,10 @@
-# OA 委托动词解说（Sailflow）
+﻿# OA 委托动词解说（Sailflow）
 
 > 状态：**产品语义解说**（2026-11-16）  
 > 用途：把「委托」一族（转办 / 委派 / 委托代批）说清楚——场景、原人去留、办完是否推进、与引擎/Host 落点。  
 > 总表：[解说-办理动词.md](./解说-办理动词.md) · 要素对照：[特性说明-中国式OA审批要素.md](../sail/特性说明-中国式OA审批要素.md)  
 > 引擎链路：[开发手册-OA命令执行链路.md](../sail/dev/开发手册-OA命令执行链路.md) §5.12 / §5.12e · A4：[progress/2026-11-15-动作骨架-A4-RemoveAssignee.md](../sail/progress/2026-11-15-动作骨架-A4-RemoveAssignee.md)  
-> 计权与代批落地草案：[专题-办理人权重与委托体系.md](../sail/dev/专题-办理人权重与委托体系.md)
+> 计权与代批落地草案：[专题-办理人权重与委托体系.md](../sail/theme/专题-办理人权重与委托体系.md)
 
 **读法约定**
 
@@ -170,7 +170,7 @@
 | 层 | 建议 |
 |----|------|
 | 引擎 / 管道 | Host 注册 `IAssigneeResolveFilter`（如 `SurrogateAssigneeFilter`），挂在 Resolve 之后、建议再经 `DedupUsersFilter` |
-| 计权 | `Weight` + `ProxySignId` + EffectiveWeight（同根去重）；详见 [专题-办理人权重与委托体系.md](../sail/dev/专题-办理人权重与委托体系.md) |
+| 计权 | `Weight` + `ProxySignId` + EffectiveWeight（同根去重）；详见 [专题-办理人权重与委托体系.md](../sail/theme/专题-办理人权重与委托体系.md) |
 | Host 表 | 授权人 / 被委托人 / 流程作用域可空 / 时间窗 / `Enabled`；列表强制 `Grantor = 当前用户` |
 | 前端 | 「我的委托」页（对齐抄送箱 / 我的待办骨架）；**不**进办理条冒充 `Delegate` |
 | 禁止 | 新 Resolve Type；把代批语义塞进 `Transfer`/`DelegateProcess` |
@@ -220,4 +220,4 @@
 | 日期 | 说明 |
 |------|------|
 | 2026-11-16 | 初版：转办 / 委派（现行）/ 委托代批（候选）三分；遗留 Entrust；易混与选型速查 |
-| 2026-11-16 | 链向计权草案 [专题-办理人权重与委托体系.md](../sail/dev/专题-办理人权重与委托体系.md) |
+| 2026-11-16 | 链向计权草案 [专题-办理人权重与委托体系.md](../sail/theme/专题-办理人权重与委托体系.md) |

@@ -3,7 +3,7 @@
 > 状态：**现行对照说明**（2026-11-01）  
 > 用途：用「场景 → Sail 编码 → 执行含义」固化中国式办公审批里常见办理动词；指导按钮码表、引擎命令与产品文案，避免和 AntFlow/芋道名词一一硬套。  
 > 权威码表（已入办理条）：宿主 `SailButtonsCatalog` / `buttonsCatalog.ts` · [宿主 sailflow-buttons-capability.md](../../../sleveen-admin/doc/sailflow-buttons-capability.md)  
-> 关联：[特性说明-引擎能力基线.md](./特性说明-引擎能力基线.md) · [特性说明-待办人管道.md](./特性说明-待办人管道.md) · [存疑参考功能点.md](./talk/存疑参考功能点.md) · [todo-产品缺口.md](./todo-产品缺口.md) · [专题-流转动作骨架.md](./专题-流转动作骨架.md)（动词扩展配方，已落地）
+> 关联：[特性说明-引擎能力基线.md](./特性说明-引擎能力基线.md) · [特性说明-待办人管道.md](./特性说明-待办人管道.md) · [存疑参考功能点.md](./talk/存疑参考功能点.md) · [todo-产品缺口.md](./dev/todo-产品缺口.md) · [专题-流转动作骨架.md](./theme/专题-流转动作骨架.md)（动词扩展配方，已落地）
 
 **编码约定**
 
@@ -68,7 +68,7 @@
 
 | 场景 / 常用名 | 建议 Sail 编码 | 建议引擎落点 | 执行含义 | 现状 |
 |---------------|----------------|--------------|----------|------|
-| 转办 | `Transfer` | `TransferProcess` | **个人办结 + 本节点交人，不发生节点流转**（原人待办 Closed，新人同 Activity 待办；刷新 SignIds/Names；≠ 委派回转） | **已接线**（码表 + Host `ButtonsOperation`）；见 [todo-产品缺口.md](./todo-产品缺口.md) **§F** |
+| 转办 | `Transfer` | `TransferProcess` | **个人办结 + 本节点交人，不发生节点流转**（原人待办 Closed，新人同 Activity 待办；刷新 SignIds/Names；≠ 委派回转） | **已接线**（码表 + Host `ButtonsOperation`）；见 [todo-产品缺口.md](./dev/todo-产品缺口.md) **§F** |
 | 委派 / 委托 | `Delegate` | `DelegateProcess` | 请他人代办；**受托人办结后自动回转**原责任人待办（不推进）。若办完不回转 → 用 `Transfer`。审计走审批轨迹，不默认单独流水表 | **已接线**（码表默认关 + Handler + 办理条；≠ Surrogate 出差代批） |
 | 变更处理人 | `ChangeAssignee` | `ChangeAssigneeProcess` | 管理员/有权人改当前节点办理人集合（差量） | **已接线**（码表默认关 + Handler + Workbench `CurrentAssignees` + 办理条） |
 | 承办 / 认领 | `Claim`（勿用 Undertake 当万能名） | 待定认领命令；**仅** `Leave=Race` | 或签多人时先独占待办，**不推进**；再 `Approve`/`Reject` | 存疑，默认不跟 AntFlow 按钮 |
@@ -105,7 +105,7 @@ Prev | Starter | History  ×  ForwardNormal | ReturnToSender
 | `ForwardNormal` | 按图/下一跳继续，不强制回打回人 | 有 `RunProcess`；办理台有 BackSrc 时文案「正常发送」；策略落盘见 todo §J |
 | `ReturnToSender` | 回**退回节点** + 尽量**原退回人** | 有 `ResendProcess`；Workbench 下发 `HasBackSrc` 时露出「返送退回人」；策略互斥见 §J |
 
-AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`BackPrevThenNext` 等），见 [todo-产品缺口.md](./todo-产品缺口.md) **§J**。对外落盘用两维字段。
+AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`BackPrevThenNext` 等），见 [todo-产品缺口.md](./dev/todo-产品缺口.md) **§J**。对外落盘用两维字段。
 
 落地：并入 `sf:NodePolicy.json`（`sendBackTarget` + `resubmitMode`，默认 Starter + ReturnToSender）+ `SendBack` / `Resend` / `Run`；办理台见 todo **§G/§J**。
 
