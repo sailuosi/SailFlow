@@ -8,10 +8,10 @@ using mooSQL.data;
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// 流程文件/模型投影实体（映射同表 <c>wf_process</c>）。
+    /// 流程文件/模型投影实体（映射同表 <c>sf_process</c>）。
     /// 用于读写模型文件相关字段的精简视图，不含 Package/参与者等协作字段。
     /// </summary>
-    [SooTable(Name = "wf_process", Caption = "流程定义", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_process", Caption = "流程定义", Type = DBTableType.Table)]
     public class ProcessFileEntity
     {
         /// <summary>

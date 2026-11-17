@@ -6,7 +6,7 @@ using sailflow.engine.Manager;
 
 namespace sailflow.assignee.Store;
 
-/// <summary>将自动审批锚点写入 <c>wf_hook_outbox</c>（Kind=<see cref="HookOutboxKinds.AssigneeAutoApprove"/>）。</summary>
+/// <summary>将自动审批锚点写入 <c>sf_hook_outbox</c>（Kind=<see cref="HookOutboxKinds.AssigneeAutoApprove"/>）。</summary>
 public sealed class HookOutboxAutoApproveAnchorStore : IAutoApproveAnchorStore
 {
     static readonly JsonSerializerOptions JsonOptions = new()

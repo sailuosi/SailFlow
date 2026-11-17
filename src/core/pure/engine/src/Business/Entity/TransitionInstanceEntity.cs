@@ -7,10 +7,10 @@ using mooSQL.data;
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// 转移轨迹实体（表 <c>wf_track</c>）。
+    /// 转移轨迹实体（表 <c>sf_track</c>）。
     /// 记录一次从源活动实例到目标活动实例的流转轨迹（含前进、退回、跳转等）。
     /// </summary>
-    [SooTable(Name = "wf_track", Caption = "转移轨迹", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_track", Caption = "转移轨迹", Type = DBTableType.Table)]
     public class TrackEntity
     {
         /// <summary>

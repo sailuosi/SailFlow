@@ -235,7 +235,7 @@ public partial class SailClient
     public CancellationTokenSource AssigneeAutoApproveDrainCts { get; set; }
 
     /// <summary>
-    /// 规则引擎注册表（按 <c>wf_rule_set.mode</c> 调度）。实现由业务侧 <see cref="addRuleEngine"/> 挂载。
+    /// 规则引擎注册表（按 <c>sf_rule_set.mode</c> 调度）。实现由业务侧 <see cref="addRuleEngine"/> 挂载。
     /// </summary>
     public RuleEngineRegistry RuleEngines => _ruleEngines ??= new RuleEngineRegistry();
 

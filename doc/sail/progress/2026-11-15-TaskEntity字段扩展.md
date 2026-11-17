@@ -6,8 +6,8 @@
 
 | 层 | 字段 |
 |----|------|
-| 任务 `wf_task` | `SignId`/`SignName`/`SignKind`；时钟 `SendAt`/`GotAt`/`ActiveAt`/`DueAt`/`CompletedAt`；`Idx`/`IsRead`/`ReadAt`/`Msg`/`RowPara` |
-| 活动 `wf_act_instance` | 汇总 `SignIds`/`SignNames`（列 `ai_sign_ids`/`ai_sign_names`） |
+| 任务 `sf_task` | `SignId`/`SignName`/`SignKind`；时钟 `SendAt`/`GotAt`/`ActiveAt`/`DueAt`/`CompletedAt`；`Idx`/`IsRead`/`ReadAt`/`Msg`/`RowPara` |
+| 活动 `sf_act_instance` | 汇总 `SignIds`/`SignNames`（列 `ai_sign_ids`/`ai_sign_names`） |
 | Hook/Notify 上下文 | `SignId`/`SignName` |
 | 方法 | `GenerateActivitySignInfo`、`GenerateActivitySignIds`/`Names`、`RefreshActivitySignFromOpenTasks` |
 

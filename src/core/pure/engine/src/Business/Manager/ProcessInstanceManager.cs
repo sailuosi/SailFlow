@@ -17,7 +17,7 @@ using sailflow.WebUtility;
 namespace sailflow.engine.Manager
 {
     /// <summary>
-    /// 流程实例（wf_proc_instance）。
+    /// 流程实例（sf_proc_instance）。
     /// 终态：无事务从 Client 取 kit；有事务只用传入的同一个 kit。
     /// </summary>
     internal class ProcessInstanceManager

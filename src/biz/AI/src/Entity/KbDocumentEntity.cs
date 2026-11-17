@@ -4,9 +4,9 @@ using Newtonsoft.Json;
 namespace sailflow.AI.Entity
 {
     /// <summary>
-    /// 知识库文档（Supabase / mooSQL）。表 <c>kb_document</c>，字段前缀 <c>kd_</c>。
+    /// 知识库文档（Supabase / mooSQL）。表 <c>sf_document</c>，字段前缀 <c>kd_</c>。
     /// </summary>
-    [SooTable(Name = "kb_document", Caption = "知识库文档", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_document", Caption = "知识库文档", Type = DBTableType.Table)]
     public class KbDocumentEntity
     {
         [JsonProperty("kd_id")]

@@ -4,7 +4,7 @@ using sailflow.engine.Common;
 namespace sailflow.engine.Xpdl
 {
     /// <summary>
-    /// Rule task config: <see cref="RuleSetCode"/> from BPMN; rule body and mode from <see cref="MergeFrom"/> / <c>wf_rule_set</c>.
+    /// Rule task config: <see cref="RuleSetCode"/> from BPMN; rule body and mode from <see cref="MergeFrom"/> / <c>sf_rule_set</c>.
     /// Variable inputs for execution come from process/activity scope at runtime, not from BPMN.
     /// </summary>
     public class RuleConfigDetail
@@ -12,25 +12,25 @@ namespace sailflow.engine.Xpdl
         /// <summary>Bound rule set code from BPMN <c>sf:ruleConfig/@ruleSetCode</c>.</summary>
         public string RuleSetCode { get; set; }
 
-        /// <summary><c>wf_rule_set.id</c> when resolved.</summary>
+        /// <summary><c>sf_rule_set.id</c> when resolved.</summary>
         public string RuleSetId { get; set; }
 
-        /// <summary><c>wf_rule_set.rule_set_name</c></summary>
+        /// <summary><c>sf_rule_set.rule_set_name</c></summary>
         public string RuleSetName { get; set; }
 
-        /// <summary><c>wf_rule_set.description</c></summary>
+        /// <summary><c>sf_rule_set.description</c></summary>
         public string Description { get; set; }
 
-        /// <summary><c>wf_rule_set.rule_content</c></summary>
+        /// <summary><c>sf_rule_set.rule_content</c></summary>
         public string RuleContent { get; set; }
 
-        /// <summary><c>wf_rule_set.mode</c> (see <see cref="RuleSetModeEnum"/>).</summary>
+        /// <summary><c>sf_rule_set.mode</c> (see <see cref="RuleSetModeEnum"/>).</summary>
         public string Mode { get; set; }
 
-        /// <summary><c>wf_rule_set.is_enabled</c></summary>
+        /// <summary><c>sf_rule_set.is_enabled</c></summary>
         public short? IsEnabled { get; set; }
 
-        /// <summary>True when <see cref="RuleSetCode"/> matched a row in <c>wf_rule_set</c>.</summary>
+        /// <summary>True when <see cref="RuleSetCode"/> matched a row in <c>sf_rule_set</c>.</summary>
         public bool RuleSetResolved { get; set; }
 
         /// <summary>

@@ -24,9 +24,9 @@ public sealed class SailDataLifecycleOptions
 
     /// <summary>
     /// 冷表名模式：{0}=逻辑基名（如 process_instance / task），{1}=办结年 yyyy。
-    /// 例：wf_task_hist_2026。
+    /// 例：sf_task_hist_2026。
     /// </summary>
-    public string HistTableNameFormat { get; set; } = "wf_{0}_hist_{1}";
+    public string HistTableNameFormat { get; set; } = "sf_{0}_hist_{1}";
 
     /// <summary>冷存储是否使用与热库同一连接（默认 true）。</summary>
     public bool ColdStoreUsePrimaryDatabase { get; set; } = true;
@@ -51,11 +51,11 @@ public sealed class SailDataLifecycleOptions
     /// <summary>日志库连接名（当 <see cref="LogUsePrimaryDatabase"/> 为 false）。</summary>
     public string LogConnectionName { get; set; }
 
-    /// <summary>日志表基名（分表时加后缀，如 wf_log_202611）。</summary>
-    public string LogTableBaseName { get; set; } = "wf_log";
+    /// <summary>日志表基名（分表时加后缀，如 sf_log_202611）。</summary>
+    public string LogTableBaseName { get; set; } = "sf_log";
 
     /// <summary>作业日志表基名。</summary>
-    public string JobLogTableBaseName { get; set; } = "wf_job_log";
+    public string JobLogTableBaseName { get; set; } = "sf_job_log";
 
     /// <summary>日志保留天数（Table Sink TTL）；默认 90。</summary>
     public int LogRetentionDays { get; set; } = DefaultLogRetentionDays;
@@ -75,9 +75,9 @@ public sealed class SailDataLifecycleOptions
 
     /// <summary>
     /// 热分表名：{0}=逻辑基名（tran_instance / proc_variable），{1}=清洗后的 process_id 后缀。
-    /// 例：wf_track__abc123。
+    /// 例：sf_track__abc123。
     /// </summary>
-    public string HotShardTableNameFormat { get; set; } = "wf_{0}__{1}";
+    public string HotShardTableNameFormat { get; set; } = "sf_{0}__{1}";
 
     /// <summary>分表后缀最大长度（清洗后截断）。</summary>
     public int HotShardSuffixMaxLength { get; set; } = DefaultHotShardSuffixMaxLength;
@@ -144,12 +144,12 @@ public enum EngineLogSinkKind
 /// <summary>默认 Table Sink 的分表粒度。</summary>
 public enum EngineLogShardGranularity
 {
-    /// <summary>单表 wf_log（无后缀）。</summary>
+    /// <summary>单表 sf_log（无后缀）。</summary>
     None = 0,
 
-    /// <summary>按月：wf_log_yyyyMM。</summary>
+    /// <summary>按月：sf_log_yyyyMM。</summary>
     Month = 1,
 
-    /// <summary>按年：wf_log_yyyy。</summary>
+    /// <summary>按年：sf_log_yyyy。</summary>
     Year = 2
 }

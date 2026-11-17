@@ -5,7 +5,7 @@ namespace sailflow.hub.External
 {
     /// <summary>
     /// Entity for Supabase table biz_exception_log. Records exceptions when saving customer or conversation.
-    /// Structure aligned with wf_log for consistency.
+    /// Structure aligned with sf_log for consistency.
     /// </summary>
     public class BizExceptionLogEntity
     {

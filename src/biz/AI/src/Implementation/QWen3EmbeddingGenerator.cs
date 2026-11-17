@@ -17,7 +17,7 @@ namespace sailflow.AI.Implementation
         private readonly int? _dimensions;
 
         /// <param name="apiKey">API Key</param>
-        /// <param name="apiUrl">完整 embedding API 地址（ai_model_provider.BaseUrl），不做二次 Endpoint 拼接</param>
+        /// <param name="apiUrl">完整 embedding API 地址（sf_model_provider.BaseUrl），不做二次 Endpoint 拼接</param>
         /// <param name="model">模型名称</param>
         /// <param name="dimensions">RAG 向量查询输出维度，可选</param>
         public QWen3EmbeddingGenerator(string apiKey, string apiUrl, string model, int? dimensions = null)

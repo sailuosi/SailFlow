@@ -16,11 +16,11 @@ using Newtonsoft.Json.Linq;
 namespace sailflow.AI.Manager
 {
     /// <summary>
-    /// 知识库文档管理（Supabase REST，表 <c>kb_document</c> / 列 <c>kd_*</c>）。
+    /// 知识库文档管理（Supabase REST，表 <c>sf_document</c> / 列 <c>kd_*</c>）。
     /// </summary>
     public class KbDocumentManager
     {
-        private const string TablePath = "/rest/v1/kb_document";
+        private const string TablePath = "/rest/v1/sf_document";
 
         private readonly AiAppConfigProviderOptions _configOptions;
 
@@ -57,7 +57,7 @@ namespace sailflow.AI.Manager
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = response.Content.ReadAsStringAsync().Result;
-                throw new InvalidOperationException($"Failed to read kb_document table: HTTP {response.StatusCode} - {errorContent}");
+                throw new InvalidOperationException($"Failed to read sf_document table: HTTP {response.StatusCode} - {errorContent}");
             }
 
             var content = response.Content.ReadAsStringAsync().Result;
@@ -102,7 +102,7 @@ namespace sailflow.AI.Manager
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = response.Content.ReadAsStringAsync().Result;
-                throw new InvalidOperationException($"Failed to read kb_document table: HTTP {response.StatusCode} - {errorContent}");
+                throw new InvalidOperationException($"Failed to read sf_document table: HTTP {response.StatusCode} - {errorContent}");
             }
 
             var content = response.Content.ReadAsStringAsync().Result;

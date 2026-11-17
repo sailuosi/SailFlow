@@ -2,7 +2,7 @@
 
 > 状态：对照 **Phase 1–3b 已落地代码**（`sailflow.engine.Hooks` + `sailflow.msg`）整理的使用教程，非设计草案。  
 > 设计全文：[特性设计-回调与事件.md](../sail/特性设计-回调与事件.md) · 能力基线：[特性说明-引擎能力基线.md](../sail/特性说明-引擎能力基线.md)  
-> 源码主目录：`src/core/pure/engine/src/Hooks/` · Outbox 表实体：`HookOutboxEntity`（`wf_hook_outbox`）
+> 源码主目录：`src/core/pure/engine/src/Hooks/` · Outbox 表实体：`HookOutboxEntity`（`sf_hook_outbox`）
 
 ---
 
@@ -16,7 +16,7 @@
 Gate（推进落库前，可 Reject）
   → 内核流转写库
   → Sync Hook（同事务；异常 FailFast 回滚）
-  → Async Hook / Notifier 写入 wf_hook_outbox（同事务）
+  → Async Hook / Notifier 写入 sf_hook_outbox（同事务）
   → 返回 WfExecutedResult
 后台 Drain
   → 认领 Pending → 调 Handler → Succeeded / 重试 / Dead
@@ -36,7 +36,7 @@ Gate（推进落库前，可 Reject）
 | **Gate**（`IFlowGate`） | 落库推进前 | ✅ `HookResult.Reject` | 金额/权限/单据状态/合规卡控 | 映射到 `WfExecutedResult`，不当事故异常；无推进副作用 |
 | **Hook**（`IFlowHook`） | 成功后 | ❌（Async）/ ⚠️ Sync 可回滚 | 回写业务表、汇总、结束出单 | **Sync**：异常或超时 → FailFast 回滚主事务；**AsyncOutbox**：失败进 Outbox 重试，不拖垮已提交流程 |
 | **Notifier**（`ITaskNotifier`） | 待办生命周期旁路 | ❌ | 邮件 / IM / HTTP 推送 | 默认走 Outbox；通道失败可隔离（见 `TaskNotifyChannelBase`） |
-| **Outbox**（`wf_hook_outbox`） | Async Hook / Notifier 入队 | ❌ | 可靠补调、重试、死信复活 | 写入与流转同库事务；消费由 Drain 独立执行 |
+| **Outbox**（`sf_hook_outbox`） | Async Hook / Notifier 入队 | ❌ | 可靠补调、重试、死信复活 | 写入与流转同库事务；消费由 Drain 独立执行 |
 
 **重要区分**
 
@@ -314,7 +314,7 @@ public interface IFlowHook
 | Mode | 主路径行为 | 失败 |
 |------|------------|------|
 | `HookMode.Sync` | 当场 `Handle`；受 `SyncHookTimeoutMs` 约束 | 异常 / 超时 → **回滚**流程事务（FailFast） |
-| `HookMode.AsyncOutbox`（默认） | 只插入 `wf_hook_outbox` | Worker 重试；超 `MaxAttempts` → `Dead`；**不**回滚已提交流转 |
+| `HookMode.AsyncOutbox`（默认） | 只插入 `sf_hook_outbox` | Worker 重试；超 `MaxAttempts` → `Dead`；**不**回滚已提交流转 |
 
 用户若需要「流程已成功、业务副作用失败可补调」，必须用 **AsyncOutbox**，不要默认当成「Hook 永远不影响流程」。
 
@@ -438,13 +438,13 @@ builder.AddNotifier(new DingTalkTaskNotifier(), o =>
 
 ### 原理
 
-1. Async Hook / Notifier 命中后，向 `wf_hook_outbox` 插入 `Pending`（与流转 **同一 SQLBuilder 事务**）。  
+1. Async Hook / Notifier 命中后，向 `sf_hook_outbox` 插入 `Pending`（与流转 **同一 SQLBuilder 事务**）。  
 2. `UseHookOutboxDrain(..., autoStart: true)` 或手动 `HookOutboxWorker` / `HookOutboxDrainLoop` 轮询。  
 3. CAS 认领 → `Processing`（带 `leased_until`）→ 调 Handler。  
 4. 成功 → `Succeeded`；失败 → `Attempt++`，指数退避 `NextRetryAt`，再回 `Pending`；`Attempt >= MaxAttempts` → `Dead`。  
 5. 语义：**至少一次**投递（at-least-once），消费端必须幂等。
 
-### 表：`wf_hook_outbox`（`HookOutboxEntity`）
+### 表：`sf_hook_outbox`（`HookOutboxEntity`）
 
 | 列 / 属性 | 含义 |
 |-----------|------|
@@ -584,7 +584,7 @@ o.Mode = HookMode.Sync;                  // 仅 Hook 有意义
 | 手段 | 说明 |
 |------|------|
 | `WfExecutedResult.IsValidationReject()` | Gate 业务拒绝 |
-| `wf_hook_outbox` | Async 队列、重试、死信 |
+| `sf_hook_outbox` | Async 队列、重试、死信 |
 | `HookOutboxManager` | 查询 Dead、批量复活、按状态计数、TTL 清理 |
 | `IFlowCapabilityMetrics` | GateReject / SyncHook / OutboxEnqueue / Succeeded / Failed / Dead / NotifierDispatch 等 |
 | `FlowSyncHookTimeoutException` | Sync Hook 超时 |
@@ -615,7 +615,7 @@ o.Mode = HookMode.Sync;                  // 仅 Hook 有意义
 | 生命周期 | 单次 `FlowCommandContext` | `SailClient` 级，启动注册 |
 | 发送前拒绝 | 弱（易与异常混淆） | Gate + `HookResult` → 结构化 `WfExecutedResult` |
 | 过滤 | 无 | Process / Activity / Events / TaskKinds |
-| 可靠补调 | 无 | `wf_hook_outbox` + Drain + 死信复活 |
+| 可靠补调 | 无 | `sf_hook_outbox` + Drain + 死信复活 |
 | 去留 | **保留兼容** | 新业务优先本体系 |
 
 相对「单一批回调、前后混用、无内置重试」的旧式模型：SailFlow 将拦截、业务、通知、可靠投递拆开，并落库补调，更适合高并发 OA。
@@ -641,7 +641,7 @@ o.Mode = HookMode.Sync;                  // 仅 Hook 有意义
 若需要可再补文档或示例工程：
 
 - **A.** 最小可运行控制台：DI 注册 → Start/Run → Gate Reject → Sync Hook 回写 → 邮件/HTTP Notifier + Drain  
-- **B.** `wf_hook_outbox` 建表 / 索引 SQL（亦可由 Schema 初始化创建）  
+- **B.** `sf_hook_outbox` 建表 / 索引 SQL（亦可由 Schema 初始化创建）  
 - **C.** 多租户或按业务线拆分多个 Notifier 的宿主拼装样例  
 
 ---

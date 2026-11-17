@@ -35,16 +35,16 @@ namespace sailflow.AI.Implementation
             if (serviceType == AiServiceTypeEnum.RAG)
             {
                 if (string.IsNullOrWhiteSpace(axConfig?.RagEmbeddingModelId))
-                    throw new InvalidOperationException("RAG 节点必须在 ai_act_config 中设置 RagEmbeddingModelId，指向 ai_model_provider 中的向量模型 (model_type=vector_model)。");
+                    throw new InvalidOperationException("RAG 节点必须在 sf_act_config 中设置 RagEmbeddingModelId，指向 sf_model_provider 中的向量模型 (model_type=vector_model)。");
                 if (sail == null)
                     throw new ArgumentNullException(nameof(sail), "SailClient is required for RAG embedding provider lookup.");
 
                 var modelManager = new AiModelProviderManager(sail);
                 var embeddingProvider = modelManager.GetById(axConfig.RagEmbeddingModelId);
                 if (embeddingProvider == null)
-                    throw new InvalidOperationException($"ai_model_provider 中未找到 Id={axConfig.RagEmbeddingModelId} 的向量模型配置。");
+                    throw new InvalidOperationException($"sf_model_provider 中未找到 Id={axConfig.RagEmbeddingModelId} 的向量模型配置。");
                 if (!embeddingProvider.IsActive)
-                    throw new InvalidOperationException($"ai_model_provider Id={embeddingProvider.Id} 已被禁用，请在节点配置中启用。");
+                    throw new InvalidOperationException($"sf_model_provider Id={embeddingProvider.Id} 已被禁用，请在节点配置中启用。");
 
                 var embeddingGenerator = CreateEmbeddingGeneratorFromProvider(embeddingProvider, axConfig);
                 var turns = memoryTurns ?? axConfig?.MemoryTurns ?? 10;
@@ -57,16 +57,16 @@ namespace sailflow.AI.Implementation
         }
 
         /// <summary>
-        /// 从 ai_model_provider 创建 embedding 生成器，仅使用节点配置，不读取 AiAppConfiguration
+        /// 从 sf_model_provider 创建 embedding 生成器，仅使用节点配置，不读取 AiAppConfiguration
         /// </summary>
         private static IEmbeddingGenerator CreateEmbeddingGeneratorFromProvider(AiModelProviderEntity provider, AiActivityConfigEntity axConfig)
         {
             if (string.IsNullOrWhiteSpace(provider.BaseUrl))
-                throw new InvalidOperationException($"ai_model_provider Id={provider.Id} 的 BaseUrl 不能为空。");
+                throw new InvalidOperationException($"sf_model_provider Id={provider.Id} 的 BaseUrl 不能为空。");
             if (string.IsNullOrWhiteSpace(provider.ApiKey))
-                throw new InvalidOperationException($"ai_model_provider Id={provider.Id} 的 ApiKey 不能为空。");
+                throw new InvalidOperationException($"sf_model_provider Id={provider.Id} 的 ApiKey 不能为空。");
             if (string.IsNullOrWhiteSpace(provider.ModelName))
-                throw new InvalidOperationException($"ai_model_provider Id={provider.Id} 的 ModelName 不能为空。");
+                throw new InvalidOperationException($"sf_model_provider Id={provider.Id} 的 ModelName 不能为空。");
 
             var decryptedKey = ApiKeyCryptoHelper.Decrypt(provider.ApiKey, provider.ApiUUID);
             var apiUrl = provider.BaseUrl.TrimEnd('/');

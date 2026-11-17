@@ -247,7 +247,7 @@ public sealed class FinancePreSendGate : IFlowGate
     }
 }
 
-// IFlowHook — 推进后副作用；Sync=同事务 FailFast；AsyncOutbox=入 wf_hook_outbox
+// IFlowHook — 推进后副作用；Sync=同事务 FailFast；AsyncOutbox=入 sf_hook_outbox
 public sealed class FinanceAggregateHook : IFlowHook
 {
     public string Name => "finance.aggregate";
@@ -648,7 +648,7 @@ public sealed class SailFormBizLifecycleHook : IFlowHook
 ```csharp
 builder.UseNodePolicyTimeoutStamp();
 // PostBuild → addHook(SailNodePolicyTimeoutStampHook)
-// 写 wf_task.ActiveAt / DueAt
+// 写 sf_task.ActiveAt / DueAt
 ```
 
 ---

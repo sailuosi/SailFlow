@@ -104,7 +104,7 @@
 | 写库 · 发起 | `TaskManager.Delegate` |
 | 写库 · 办结回转 | `TaskManager.TryCompleteAsDelegationReturn`（Mediator 办结路径挂接） |
 | 成功 Hook | 发起时 `OnProcessDelegated` |
-| 字段 | `wf_task.tk_entr_task_id` → 实体 `EntrustedTaskId` |
+| 字段 | `sf_task.tk_entr_task_id` → 实体 `EntrustedTaskId` |
 | 现状 | **现行引擎**；Host 码表 / Handler **暂缓** |
 | 详链 | [解说-办理动词 §8](./解说-办理动词.md#8-委派请他代办办完还得还给我) · OA 手册 §5.12e |
 

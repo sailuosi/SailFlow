@@ -8,10 +8,10 @@ using mooSQL.data;
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// 任务/待办实体（表 <c>wf_task</c>）。
+    /// 任务/待办实体（表 <c>sf_task</c>）。
     /// 活动实例下按办理对象拆分的工作项；含委托、沟通参与者、发送/下达/激活与个人超期。
     /// </summary>
-    [SooTable(Name = "wf_task", Caption = "任务", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_task", Caption = "任务", Type = DBTableType.Table)]
     public class TaskEntity
     {
         /// <summary>

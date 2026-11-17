@@ -6,10 +6,10 @@ using mooSQL.data;
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// 流程定义实体（表 <c>wf_process</c>）。
+    /// 流程定义实体（表 <c>sf_process</c>）。
     /// 一行对应「某一逻辑流程 × 某一版本」的定义快照；BPMN/XML 与启动结束策略均落于此。
     /// </summary>
-    [SooTable(Name = "wf_process", Caption = "流程定义", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_process", Caption = "流程定义", Type = DBTableType.Table)]
     public class ProcessEntity
     {
         /// <summary>

@@ -7,10 +7,10 @@ using mooSQL.data;
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// 流程实例实体（表 <c>wf_proc_instance</c>）。
+    /// 流程实例实体（表 <c>sf_proc_instance</c>）。
     /// 一次启动对应一行；承载业务袋 biz*、运行态、子流程唤起关系与发起单位。
     /// </summary>
-    [SooTable(Name = "wf_proc_instance", Caption = "流程实例", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_proc_instance", Caption = "流程实例", Type = DBTableType.Table)]
     public class ProcessInstanceEntity
     {
         /// <summary>

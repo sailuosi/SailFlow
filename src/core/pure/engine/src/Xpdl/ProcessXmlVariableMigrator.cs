@@ -10,7 +10,7 @@ using sailflow.engine.Client;
 namespace sailflow.engine.Xpdl
 {
     /// <summary>
-    /// 将历史流程 XML（wf_process.xml_content）中节点上的 <c>sf:variables/sf:variable</c> 迁移到 <c>wf_variable</c> 表。
+    /// 将历史流程 XML（sf_process.xml_content）中节点上的 <c>sf:variables/sf:variable</c> 迁移到 <c>sf_variable</c> 表。
     /// </summary>
     public static class ProcessXmlVariableMigrator
     {
@@ -33,9 +33,9 @@ namespace sailflow.engine.Xpdl
         }
 
         /// <summary>
-        /// 遍历 <c>wf_process</c> 全表，把 XML 中的变量定义写入 <c>wf_variable</c>。
+        /// 遍历 <c>sf_process</c> 全表，把 XML 中的变量定义写入 <c>sf_variable</c>。
         /// </summary>
-        /// <param name="skipActivityIfWfVariableExists">为 true 时，若该流程版本下某活动已有 wf_variable 记录则跳过（避免覆盖手工数据）。为 false 时按 XML 覆盖该活动变量。</param>
+        /// <param name="skipActivityIfWfVariableExists">为 true 时，若该流程版本下某活动已有 sf_variable 记录则跳过（避免覆盖手工数据）。为 false 时按 XML 覆盖该活动变量。</param>
         public static MigrationResult MigrateFromDatabase(SailClient client, bool skipActivityIfWfVariableExists = true)
         {
             var result = new MigrationResult();

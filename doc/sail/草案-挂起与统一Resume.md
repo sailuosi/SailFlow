@@ -22,7 +22,7 @@ Sail 已有多种「等」：
 
 | 场景 | 现行落点（摘要） |
 |------|------------------|
-| 用户办理 | `wf_task` + `Run/Reject/SendBack/…` |
+| 用户办理 | `sf_task` + `Run/Reject/SendBack/…` |
 | Timer | 活动实例 `OverdueDateTime` / `JobTimer*` + 作业扫表 |
 | Message / Signal | 各 `NodeMediator*Msg*|Signal*` + MQ 委托 |
 | 会签未齐 | 节点内 `WaitingForCompletedMore` |
@@ -113,7 +113,7 @@ Elsa 用 Bookmark（停在哪）+ Stimulus Hash（凭什么醒）统一了长跑
 可选路径（立项时二选一或渐进）：
 
 1. **零新表**：先用活动实例现有字段 + 约定 Key 编码（适合 D2 试点）。  
-2. **薄表** `wf_wait_token`（或等价）：Kind/Key/Hash/实例定位/状态/载荷——便于探针与过期清理。
+2. **薄表** `sf_wait_token`（或等价）：Kind/Key/Hash/实例定位/状态/载荷——便于探针与过期清理。
 
 禁止为 Wait 再建一套「并行任务办理表」去冒充待办。
 

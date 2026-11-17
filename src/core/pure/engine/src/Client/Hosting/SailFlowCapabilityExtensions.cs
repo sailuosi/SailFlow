@@ -29,7 +29,7 @@ namespace sailflow.engine.Hosting;
 /// <item>
 /// <description>
 /// <see cref="IFlowHook"/> — 校验通过并推进后的业务扩展（回写、汇总、结束出单等）；
-/// 可选 Sync（同事务 FailFast）或 AsyncOutbox（入 <c>wf_hook_outbox</c> 由 Drain 消费）。
+/// 可选 Sync（同事务 FailFast）或 AsyncOutbox（入 <c>sf_hook_outbox</c> 由 Drain 消费）。
 /// </description>
 /// </item>
 /// <item>

@@ -4,11 +4,11 @@ using mooSQL.data;
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// 流程变量定义实体（表 <c>wf_variable</c>）。
+    /// 流程变量定义实体（表 <c>sf_variable</c>）。
     /// 对应 BPMN <c>sf:variables</c> 中 Variable 属性；仅存名称、类型、方向等定义，
-    /// 运行时值在 <see cref="ProcessVariableEntity"/>（<c>wf_proc_variable</c>）。
+    /// 运行时值在 <see cref="ProcessVariableEntity"/>（<c>sf_proc_variable</c>）。
     /// </summary>
-    [SooTable(Name = "wf_variable", Caption = "流程变量定义", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_variable", Caption = "流程变量定义", Type = DBTableType.Table)]
     public class VariableEntity
     {
         /// <summary>

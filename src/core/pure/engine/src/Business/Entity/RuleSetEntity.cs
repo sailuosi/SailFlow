@@ -5,10 +5,10 @@ using mooSQL.data;
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// 规则集定义实体（表 <c>wf_rule_set</c>）。
+    /// 规则集定义实体（表 <c>sf_rule_set</c>）。
     /// Rule 节点经 RuleEngine 插槽执行；Mode 决定解析引擎（NRules Fluent / JSON DSL 等）。
     /// </summary>
-    [SooTable(Name = "wf_rule_set", Caption = "规则集", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_rule_set", Caption = "规则集", Type = DBTableType.Table)]
     public class RuleSetEntity
     {
         /// <summary>

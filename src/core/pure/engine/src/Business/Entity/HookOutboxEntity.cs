@@ -4,10 +4,10 @@ using mooSQL.data;
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// Hook / Notifier 异步 Outbox（表 <c>wf_hook_outbox</c>；Phase 1 同库落表）。
+    /// Hook / Notifier 异步 Outbox（表 <c>sf_hook_outbox</c>；Phase 1 同库落表）。
     /// 流转成功后与主事务同库写入 Pending；后台 Drain 认领 → 调 Handler → Succeeded / 重试 / Dead。
     /// </summary>
-    [SooTable(Name = "wf_hook_outbox", Caption = "钩子Outbox", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_hook_outbox", Caption = "钩子Outbox", Type = DBTableType.Table)]
     public class HookOutboxEntity
     {
         /// <summary>

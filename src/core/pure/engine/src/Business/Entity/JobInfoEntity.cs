@@ -4,10 +4,10 @@ using mooSQL.data;
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// 作业/定时任务定义信息（表 <c>wf_job_detail</c>，人工定名）。
+    /// 作业/定时任务定义信息（表 <c>sf_job_detail</c>，人工定名）。
     /// 描述与流程活动绑定的 Job 主题、触发类型与运行状态（定时启动、消息捕获等）。
     /// </summary>
-    [SooTable(Name = "wf_job_detail", Caption = "作业信息", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_job_detail", Caption = "作业信息", Type = DBTableType.Table)]
     public class JobInfoEntity
     {
         /// <summary>

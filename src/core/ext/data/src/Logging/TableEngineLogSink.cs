@@ -49,7 +49,7 @@ namespace sailflow.data.Logging
             DateTime utc)
         {
             if (string.IsNullOrWhiteSpace(baseName))
-                baseName = "wf_log";
+                baseName = "sf_log";
 
             switch (granularity)
             {

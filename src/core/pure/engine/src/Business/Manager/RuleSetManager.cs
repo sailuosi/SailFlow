@@ -9,7 +9,7 @@ using sailflow.engine.Client;
 namespace sailflow.engine.Manager
 {
     /// <summary>
-    /// Rule set manager (wf_rule_set)。终态：Client / kit，无 Session、conn、trans。
+    /// Rule set manager (sf_rule_set)。终态：Client / kit，无 Session、conn、trans。
     /// </summary>
     public class RuleSetManager
     {

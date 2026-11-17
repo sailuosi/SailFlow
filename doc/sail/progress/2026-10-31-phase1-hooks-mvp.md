@@ -12,7 +12,7 @@
 - **Hosting:** `SailFlowCapabilityExtensions` — `AddGate` / `AddHook` / `AddNotifier` (class + delegate) on `ISailCollection` and `SailClientBuilder`; `SailBuilderKeys.FlowCapabilities`; Build applies pending registrations.
 - **Run path:** `WorkflowService.ProcessExecution.Run` — Gate after `CreateRuntimeInstanceAppRunning`, before `Execute`; Reject → `ApplyGateReject` (no `runprocess.error` wrap). On `OnProcessContinued` success: Sync hooks + Async Outbox enqueue.
 - **Task path:** `TaskManager` — removed `SendTaskEMails` / `SendEmailFlag`; `FireTaskLifecycle` on create/complete (Sync hooks, Notifier Outbox, `Subscribe` via `EventExecutor`).
-- **Outbox:** `HookOutboxEntity` (`wf_hook_outbox`), `HookOutboxManager`, schema in `SailSchemaInitializer.EnsureCoreTables`.
+- **Outbox:** `HookOutboxEntity` (`sf_hook_outbox`), `HookOutboxManager`, schema in `SailSchemaInitializer.EnsureCoreTables`.
 - **Result:** `WfExecutedResult.ValidationCode`, `ValidationDetails`, `ApplyGateReject`.
 - **Events:** `EventFireTypeEnum.OnValidating = 50`, `OnTaskCreated = 60` (typo removed); `EventExecutor` expanded for Process *ing/*ed and task events (documented in source).
 

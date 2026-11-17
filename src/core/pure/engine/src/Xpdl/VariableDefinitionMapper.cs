@@ -6,7 +6,7 @@ using sailflow.WebUtility;
 namespace sailflow.engine.Xpdl
 {
     /// <summary>
-    /// Maps <see cref="VariableEntity"/> (wf_variable) to runtime <see cref="VariableDetail"/>.
+    /// Maps <see cref="VariableEntity"/> (sf_variable) to runtime <see cref="VariableDetail"/>.
     /// </summary>
     internal static class VariableDefinitionMapper
     {

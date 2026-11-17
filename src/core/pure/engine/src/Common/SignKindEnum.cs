@@ -1,7 +1,7 @@
 namespace sailflow.engine.Common
 {
     /// <summary>
-    /// 办理对象类型（<c>wf_task.tk_sign_kind</c>）。
+    /// 办理对象类型（<c>sf_task.tk_sign_kind</c>）。
     /// null/0 = 人（现行默认）；其余对齐 ddflow AssigneeKind。
     /// </summary>
     public enum SignKindEnum : int

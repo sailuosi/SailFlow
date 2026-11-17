@@ -69,9 +69,9 @@ namespace sailflow.engine.Pattern
         }
 
         /// <summary>
-        /// Rule inputs: process-scoped vars; then <c>wf_variable</c> for this activity (Input rows —
-        /// referenced inputs load from prior node <c>wf_proc_variable</c> via source_ref / source_variable_name);
-        /// if no <c>wf_variable</c> rows, merge all activity-scoped rows for this instance (legacy).
+        /// Rule inputs: process-scoped vars; then <c>sf_variable</c> for this activity (Input rows —
+        /// referenced inputs load from prior node <c>sf_proc_variable</c> via source_ref / source_variable_name);
+        /// if no <c>sf_variable</c> rows, merge all activity-scoped rows for this instance (legacy).
         /// Auto-run uses <see cref="AutoRunEventServiceAdapter.VariablesSnapshot"/>.
         /// </summary>
         private static IDictionary<string, object> BuildRuleInputs(SailClient client, IEventService eventService, ActivityInstanceEntity activityInstance, Activity currentActivity)

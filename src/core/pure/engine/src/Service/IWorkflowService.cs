@@ -309,14 +309,14 @@ namespace sailflow.engine.Service
         Boolean ValidateProcessVariable(string processInstanceId, string expression);
         void DeleteProcessVariable(string processId, string variableId);
         
-        //流程变量定义接口（wf_variable）
+        //流程变量定义接口（sf_variable）
         IList<VariableEntity> GetVariableDefinitionList(string processId, string version, string activityId);
         VariableEntity GetVariableDefinition(string id);
         string SaveVariableDefinition(VariableEntity entity);
         void DeleteVariableDefinition(string id);
         void SaveVariableDefinitionList(string processId, string version, string activityId, IList<VariableEntity> list);
 
-        //规则集接口（wf_rule_set）
+        //规则集接口（sf_rule_set）
         IList<RuleSetEntity> GetRuleSetList();
         RuleSetEntity GetRuleSet(string ruleSetCode);
         string SaveRuleSet(RuleSetEntity entity);

@@ -7,7 +7,7 @@ using sailflow.engine.Xpdl;
 namespace sailflow.engine.Xpdl
 {
     /// <summary>
-    /// Injects activity variable definitions from <c>wf_variable</c> after BPMN XML is parsed.
+    /// Injects activity variable definitions from <c>sf_variable</c> after BPMN XML is parsed.
     /// Node variable metadata is no longer read from <c>sf:variables</c> in XML.
     /// </summary>
     public static class ProcessVariableDefinitionMerger

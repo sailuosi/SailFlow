@@ -8,7 +8,7 @@ using sailflow.engine.Rules;
 namespace sailflow.engine.Manager
 {
     /// <summary>
-    /// 按 <c>wf_rule_set.mode</c> 分派到已注册的 <see cref="IRuleEngine"/>（实现由业务侧挂载）。
+    /// 按 <c>sf_rule_set.mode</c> 分派到已注册的 <see cref="IRuleEngine"/>（实现由业务侧挂载）。
     /// </summary>
     public class RuleSetExecutionManager
     {

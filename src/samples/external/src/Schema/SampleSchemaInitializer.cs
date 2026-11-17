@@ -108,24 +108,24 @@ public static class SampleSchemaInitializer
     {
         ArgumentNullException.ThrowIfNull(kit);
 
-        TryCreateIndex(kit, "IX_wf_task_pi", "wf_task", "tk_proc_instance_id");
-        TryCreateIndex(kit, "IX_wf_task_sign_state", "wf_task",
+        TryCreateIndex(kit, "IX_sf_task_pi", "sf_task", "tk_proc_instance_id");
+        TryCreateIndex(kit, "IX_sf_task_sign_state", "sf_task",
             "tk_sign_id", "tk_task_state", "tk_proc_instance_id");
-        TryCreateIndex(kit, "IX_wf_task_state_created", "wf_task",
+        TryCreateIndex(kit, "IX_sf_task_state_created", "sf_task",
             "tk_task_state", "tk_crt_time");
-        TryCreateIndex(kit, "IX_wf_task_state_due", "wf_task",
+        TryCreateIndex(kit, "IX_sf_task_state_due", "sf_task",
             "tk_task_state", "tk_due_at");
-        TryCreateIndex(kit, "IX_wf_ai_pi_state", "wf_act_instance",
+        TryCreateIndex(kit, "IX_sf_ai_pi_state", "sf_act_instance",
             "ai_proc_instance_id", "ai_activity_state");
-        TryCreateIndex(kit, "IX_wf_pi_state_created", "wf_proc_instance",
+        TryCreateIndex(kit, "IX_sf_pi_state_created", "sf_proc_instance",
             "pi_process_state", "pi_crt_time");
-        TryCreateIndex(kit, "IX_wf_pi_creator_state", "wf_proc_instance",
+        TryCreateIndex(kit, "IX_sf_pi_creator_state", "sf_proc_instance",
             "pi_crt_user_id", "pi_process_state", "pi_crt_time");
-        TryCreateIndex(kit, "IX_wf_pv_pi_name", "wf_proc_variable",
+        TryCreateIndex(kit, "IX_sf_pv_pi_name", "sf_proc_variable",
             "pv_proc_instance_id", "pv_name");
-        TryCreateIndex(kit, "IX_wf_ti_pi", "wf_track",
+        TryCreateIndex(kit, "IX_sf_ti_pi", "sf_track",
             "ti_proc_instance_id");
-        TryCreateIndex(kit, "IX_wf_hook_outbox_status", "wf_hook_outbox",
+        TryCreateIndex(kit, "IX_sf_hook_outbox_status", "sf_hook_outbox",
             "ho_status", "ho_nxt_retry_at");
     }
 
@@ -163,7 +163,7 @@ public static class SampleSchemaInitializer
     {
         ArgumentNullException.ThrowIfNull(kit);
 
-        const string viewName = "vw_wf_task_detail";
+        const string viewName = "vw_sf_task_detail";
         var ddl = kit.useDDL();
         try
         {

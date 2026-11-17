@@ -7,10 +7,10 @@ using mooSQL.data;
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// 活动实例实体（表 <c>wf_act_instance</c>）。
+    /// 活动实例实体（表 <c>sf_act_instance</c>）。
     /// 流程运行中每个节点（含会签子实例、网关）激活一次对应一行；会签主/子、退回源/原点靠多外键角色区分。
     /// </summary>
-    [SooTable(Name = "wf_act_instance", Caption = "活动实例", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_act_instance", Caption = "活动实例", Type = DBTableType.Table)]
     public class ActivityInstanceEntity
     {
         /// <summary>

@@ -147,7 +147,7 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 转办 | 委派 | `Transfer`＝交人不再回；`Delegate`＝代办完**自动回转**原人；配置型「委托代批」见 [解说-OA委托动词.md](../helps/解说-OA委托动词.md) |
 | 承办 | 通过 / 越过会签 | 仅或签认领；见存疑文档；Leave=`Race` |
 | 抄送 | 算人 / 待办 | Host `Copyto`；禁止塞进 Resolve Type |
-| 沟通 | 抄送 / 前加签 | `Consult` 建参与者 `wf_task` 并锁审批；抄送不锁、不加签无审批权 |
+| 沟通 | 抄送 / 前加签 | `Consult` 建参与者 `sf_task` 并锁审批；抄送不锁、不加签无审批权 |
 | 关闭 | 终止 / 作废 | `Close` vs 候选 `Terminate`/`Discard` |
 
 ---

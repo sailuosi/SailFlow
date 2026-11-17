@@ -3,7 +3,7 @@ using mooSQL.data;
 
 namespace sailflow.AI.Entity
 {
-    [SooTable(Name = "ai_model_provider", Caption = "AI 模型提供方", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_model_provider", Caption = "AI 模型提供方", Type = DBTableType.Table)]
     public class AiModelProviderEntity
     {
         [SooColumn(Name = "mp_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]

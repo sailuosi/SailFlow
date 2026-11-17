@@ -4,13 +4,13 @@ using sailflow.engine.Entity;
 namespace sailflow.engine.Rules
 {
     /// <summary>
-    /// 规则引擎契约：按 <see cref="Mode"/>（对应 <c>wf_rule_set.mode</c>）执行与校验。
+    /// 规则引擎契约：按 <see cref="Mode"/>（对应 <c>sf_rule_set.mode</c>）执行与校验。
     /// 具体实现由业务侧注册（内置 NRules / bindingsJson，可继续扩展）。
     /// </summary>
     public interface IRuleEngine
     {
         /// <summary>
-        /// 模式键，与持久化 <c>wf_rule_set.mode</c> 一致（如 <c>ruleTypes</c>、<c>bindingsJson</c>）。
+        /// 模式键，与持久化 <c>sf_rule_set.mode</c> 一致（如 <c>ruleTypes</c>、<c>bindingsJson</c>）。
         /// </summary>
         string Mode { get; }
 

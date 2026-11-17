@@ -3,7 +3,7 @@ using sailflow.AI.Utility;
 namespace sailflow.AI.Implementation
 {
     /// <summary>
-    /// OpenAI 兼容 embedding 向量生成器，支持从 ai_model_provider 读取 BaseUrl、ModelName
+    /// OpenAI 兼容 embedding 向量生成器，支持从 sf_model_provider 读取 BaseUrl、ModelName
     /// </summary>
     public class OpenAiEmbeddingGenerator : sailflow.AI.Service.IEmbeddingGenerator
     {

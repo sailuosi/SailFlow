@@ -2,13 +2,13 @@ using mooSQL.data;
 
 namespace sailflow.hub.Form
 {
-    [SooTable(Name = "fm_form_act_edit", Caption = "表单字段节点编辑", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_form_act_edit", Caption = "表单字段节点编辑", Type = DBTableType.Table)]
     public class FieldActivityEditEntity
     {
         [SooColumn(Name = "fa_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string FieldActivityEditId { get; set; }
 
-        /// <summary>流程定义主键（wf_process.p_id）。</summary>
+        /// <summary>流程定义主键（sf_process.p_id）。</summary>
         [SooColumn(Name = "fa_process_id", Length = 64, Tag = "sail.id", IsFK = true)]
         public string ProcessDefId { get; set; }
 

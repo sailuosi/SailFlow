@@ -8,10 +8,10 @@ using mooSQL.data;
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// 流程变量运行时实体（表 <c>wf_proc_variable</c>）。
+    /// 流程变量运行时实体（表 <c>sf_proc_variable</c>）。
     /// 存实例/活动作用域下的变量当前值；定义元数据在 <see cref="VariableEntity"/>。
     /// </summary>
-    [SooTable(Name = "wf_proc_variable", Caption = "流程变量运行时", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_proc_variable", Caption = "流程变量运行时", Type = DBTableType.Table)]
     public class ProcessVariableEntity
     {
         /// <summary>

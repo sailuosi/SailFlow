@@ -7,10 +7,10 @@ using mooSQL.data;
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// 引擎运行日志实体（表 <c>wf_log</c>）。
+    /// 引擎运行日志实体（表 <c>sf_log</c>）。
     /// 记录告警/异常/错误事件，含堆栈与请求数据，供排查。
     /// </summary>
-    [SooTable(Name = "wf_log", Caption = "日志", Type = DBTableType.Table)]
+    [SooTable(Name = "sf_log", Caption = "日志", Type = DBTableType.Table)]
     public class LogEntity
     {
         /// <summary>

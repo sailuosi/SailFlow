@@ -9,10 +9,10 @@ using mooSQL.data;
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// 任务明细视图（视图 <c>vw_wf_task_detail</c>）。
+    /// 任务明细视图（视图 <c>vw_sf_task_detail</c>）。
     /// 投影任务 + 活动实例 + 流程实例关键列，供待办列表/Workbench 一次读取；列名前缀随源表。
     /// </summary>
-    [SooTable(Name = "vw_wf_task_detail", Caption = "任务明细视图", Type = DBTableType.View)]
+    [SooTable(Name = "vw_sf_task_detail", Caption = "任务明细视图", Type = DBTableType.View)]
     public class TaskViewEntity
     {
         /// <summary>

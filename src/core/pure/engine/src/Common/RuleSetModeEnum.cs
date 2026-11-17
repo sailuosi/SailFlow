@@ -15,7 +15,7 @@ namespace sailflow.engine.Common
         BindingsJson = 1
     }
 
-    /// <summary>内置 mode 与 <c>wf_rule_set.mode</c> 字符串约定。</summary>
+    /// <summary>内置 mode 与 <c>sf_rule_set.mode</c> 字符串约定。</summary>
     public static class RuleSetModeHelper
     {
         public const string PersistedRuleTypes = "ruleTypes";

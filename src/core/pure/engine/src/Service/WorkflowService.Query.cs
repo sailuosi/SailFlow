@@ -715,7 +715,7 @@ namespace sailflow.engine.Service
         }
 
         /// <summary>
-        /// 获取流程变量定义列表（wf_variable）
+        /// 获取流程变量定义列表（sf_variable）
         /// </summary>
         public IList<VariableEntity> GetVariableDefinitionList(string processId, string version, string activityId)
         {
@@ -765,7 +765,7 @@ namespace sailflow.engine.Service
         }
 
         /// <summary>
-        /// 获取规则集列表（wf_rule_set）
+        /// 获取规则集列表（sf_rule_set）
         /// </summary>
         public IList<RuleSetEntity> GetRuleSetList()
         {

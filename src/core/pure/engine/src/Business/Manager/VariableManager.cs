@@ -9,7 +9,7 @@ using sailflow.engine.Client;
 namespace sailflow.engine.Manager
 {
     /// <summary>
-    /// 流程变量定义管理类（wf_variable）。
+    /// 流程变量定义管理类（sf_variable）。
     /// 终态：无事务从 Client 取 kit；有事务只用传入的同一个 kit。
     /// </summary>
     public class VariableManager

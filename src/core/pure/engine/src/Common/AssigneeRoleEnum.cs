@@ -1,7 +1,7 @@
 namespace sailflow.engine.Common
 {
     /// <summary>
-    /// 办理人角色（<c>wf_task.tk_assignee_role</c>）。
+    /// 办理人角色（<c>sf_task.tk_assignee_role</c>）。
     /// null/0 = 常规审批办理人；1 = 沟通参与者（仅阅办）。
     /// </summary>
     public enum AssigneeRoleEnum : int
