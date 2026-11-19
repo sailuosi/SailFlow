@@ -97,7 +97,6 @@ public static class SampleSchemaInitializer
             .createTable<SailProcessCopytoEntity>();
 
         EnsureHotPathIndexes(kit);
-        EnsureTaskDetailsView(kit);
         return wk.WorkingProgress?.ToString() ?? string.Empty;
     }
 
@@ -157,101 +156,6 @@ public static class SampleSchemaInitializer
             .createTable<AiModelProviderEntity>()
             .createTable<AiActivityConfigEntity>();
         return wk.WorkingProgress?.ToString() ?? string.Empty;
-    }
-
-    public static void EnsureTaskDetailsView(SQLBuilder kit)
-    {
-        ArgumentNullException.ThrowIfNull(kit);
-
-        const string viewName = "vw_sf_task_detail";
-        var ddl = kit.useDDL();
-        try
-        {
-            if (ddl.hasView(viewName))
-                ddl.doDropView(viewName);
-        }
-        catch
-        {
-            // ignore
-        }
-
-        ddl.clear()
-            .createViewFromClip(BuildTaskDetailsViewSelect, viewName)
-            .doCreateView();
-    }
-
-    static void BuildTaskDetailsViewSelect(SQLClip clip)
-    {
-        clip.from<TaskEntity>(out var t)
-            .InnerJoin<ActivityInstanceEntity>(out var ai)
-            .on(() => t.ActivityInstanceId == ai.ActivityInstanceId)
-            .InnerJoin<ProcessInstanceEntity>(out var pi)
-            .on(() => t.ProcessInstanceId == pi.ProcessInstanceId)
-            .LeftJoin<ActivityInstanceEntity>(out var mai)
-            .on(() => ai.MainActInstanceId == mai.ActivityInstanceId);
-
-        // 投影列名须与 TaskViewEntity SooColumn 一致（带表前缀后不可再混用 t./ai./pi. 同名列）。
-        clip.select(() => new
-        {
-            t.TaskId,
-            t.BizChannel,
-            t.BizPK,
-            pi.BizCode,
-            pi.Title,
-            pi.ProcessName,
-            t.ProcessInstanceId,
-            pi.ProcessId,
-            pi.Version,
-            t.ActivityId,
-            t.ActivityInstanceId,
-            ai.ActivityName,
-            ai.ActivityCode,
-            ai.ActivityType,
-            ai.WorkItemType,
-            t.TaskType,
-            pi.SubProcessType,
-            pi.SubProcessDefId,
-            pi.SubProcessId,
-            t.EntrustedTaskId,
-            t.Weight,
-            t.ProxySignId,
-            t.EndType,
-            t.EndText,
-            t.AssigneeRole,
-            t.ConsultSrcTaskId,
-            ai.MainActInstanceId,
-            ai.CompleteOrder,
-            t.SignKind,
-            t.SignId,
-            t.SignName,
-            t.Idx,
-            t.GroupId,
-            t.GroupName,
-            t.GroupRole,
-            t.UnitId,
-            t.UnitCode,
-            t.UnitName,
-            t.IsEMailSent,
-            t.IsRead,
-            t.ReadAt,
-            t.Msg,
-            t.RowPara,
-            ai.ApprovalStatus,
-            t.CreatedDateTime,
-            t.SendAt,
-            t.GotAt,
-            t.ActiveAt,
-            t.DueAt,
-            t.UpdatedDateTime,
-            t.CompletedAt,
-            t.EndedUserId,
-            t.EndedUserName,
-            t.TaskState,
-            ai.ActivityState,
-            t.RecordStatusInvalid,
-            pi.ProcessState
-        });
-        clip.select("mai.ai_activity_state AS ai_mn_activity_state");
     }
 
     public static int EnsureMinimalSeed(SQLBuilder kit)

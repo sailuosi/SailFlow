@@ -1,359 +1,216 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using sailflow.engine.Common;
-using sailflow.engine.Utility;
 using mooSQL.data;
+using mooSQL.data.model;
+using sailflow.engine.Common;
 
 namespace sailflow.engine.Entity
 {
     /// <summary>
-    /// 任务明细视图（视图 <c>vw_sf_task_detail</c>）。
-    /// 投影任务 + 活动实例 + 流程实例关键列，供待办列表/Workbench 一次读取；列名前缀随源表。
+    /// 任务明细读模型（Select + SooJoin，用法同普通实体）。
+    /// 主表 <c>sf_task</c> ⋈ <c>sf_act_instance</c> ⋈ <c>sf_proc_instance</c>，
+    /// 并 left join 主活动实例以投影 <see cref="MainActivityState"/>。
+    /// 不依赖物理视图；写路径仍用 <see cref="TaskEntity"/> 等表实体。
     /// </summary>
-    [SooTable(Name = "vw_sf_task_detail", Caption = "任务明细视图", Type = DBTableType.View)]
+    [SooTable(Name = "sf_task", Alias = "t", Caption = "任务明细读模型", Type = DBTableType.Select)]
+    [SooJoin(Type = JoinKind.Inner, To = "sf_act_instance", As = "ai",
+        OnA = "t.tk_act_instance_id", OnB = "ai.ai_id")]
+    [SooJoin(Type = JoinKind.Inner, To = "sf_proc_instance", As = "pi",
+        OnA = "t.tk_proc_instance_id", OnB = "pi.pi_id")]
+    [SooJoin(Type = JoinKind.Left, To = "sf_act_instance", As = "mai",
+        OnA = "ai.ai_m_act_instance_id", OnB = "mai.ai_id")]
     public class TaskViewEntity
     {
-        /// <summary>
-        /// 任务主键（列 <c>tk_id</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_id", IsPrimaryKey = true, AutoKey = "SailId", Length = 64)]
+        [SooColumn(Name = "tk_id", Kind = FieldKind.Base, IsPrimaryKey = true, AutoKey = "SailId", Length = 64)]
         public string TaskId { get; set; }
 
-        /// <summary>
-        /// 业务通道（列 <c>tk_biz_channel</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_biz_channel")]
+        [SooColumn(Name = "tk_biz_channel", Kind = FieldKind.Base)]
         public string BizChannel { get; set; }
 
-        /// <summary>
-        /// 业务主键（列 <c>tk_biz_pk</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_biz_pk")]
+        [SooColumn(Name = "tk_biz_pk", Kind = FieldKind.Base)]
         public string BizPK { get; set; }
 
-        /// <summary>
-        /// 业务单据编码（列 <c>pi_biz_code</c>，来自流程实例）。
-        /// </summary>
-        [SooColumn(Name = "pi_biz_code")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "pi", SrcField = "pi_biz_code",
+            Name = "pi_biz_code", Alias = "pi_biz_code")]
         public string BizCode { get; set; }
 
-        /// <summary>
-        /// 流程实例标题（列 <c>pi_title</c>）；空时展示可回落 ProcessName。
-        /// </summary>
-        [SooColumn(Name = "pi_title")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "pi", SrcField = "pi_title",
+            Name = "pi_title", Alias = "pi_title")]
         public string Title { get; set; }
 
-        /// <summary>
-        /// 流程名称快照（列 <c>pi_name</c>），定义名副本，非标题。
-        /// </summary>
-        [SooColumn(Name = "pi_name")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "pi", SrcField = "pi_name",
+            Name = "pi_name", Alias = "pi_name")]
         public string ProcessName { get; set; }
 
-        /// <summary>
-        /// 流程实例 Id（列 <c>tk_proc_instance_id</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_proc_instance_id", Length = 64)]
+        [SooColumn(Name = "tk_proc_instance_id", Kind = FieldKind.Base, Length = 64)]
         public string ProcessInstanceId { get; set; }
 
-        /// <summary>
-        /// 逻辑流程 Id（列 <c>pi_process_id</c>）。
-        /// </summary>
-        [SooColumn(Name = "pi_process_id")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "pi", SrcField = "pi_process_id",
+            Name = "pi_process_id", Alias = "pi_process_id")]
         public string ProcessId { get; set; }
 
-        /// <summary>
-        /// 流程版本（列 <c>pi_version</c>）。
-        /// </summary>
-        [SooColumn(Name = "pi_version")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "pi", SrcField = "pi_version",
+            Name = "pi_version", Alias = "pi_version")]
         public string Version { get; set; }
 
-        /// <summary>
-        /// 活动定义 Id（列 <c>tk_activity_id</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_activity_id")]
+        [SooColumn(Name = "tk_activity_id", Kind = FieldKind.Base)]
         public string ActivityId { get; set; }
 
-        /// <summary>
-        /// 活动实例 Id（列 <c>tk_act_instance_id</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_act_instance_id", Length = 64)]
+        [SooColumn(Name = "tk_act_instance_id", Kind = FieldKind.Base, Length = 64)]
         public string ActivityInstanceId { get; set; }
 
-        /// <summary>
-        /// 活动名称（列 <c>ai_activity_name</c>）。
-        /// </summary>
-        [SooColumn(Name = "ai_activity_name")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "ai", SrcField = "ai_activity_name",
+            Name = "ai_activity_name", Alias = "ai_activity_name")]
         public string ActivityName { get; set; }
 
-        /// <summary>
-        /// 活动编码（列 <c>ai_activity_code</c>）。
-        /// </summary>
-        [SooColumn(Name = "ai_activity_code")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "ai", SrcField = "ai_activity_code",
+            Name = "ai_activity_code", Alias = "ai_activity_code")]
         public string ActivityCode { get; set; }
 
-        /// <summary>
-        /// 活动类型（列 <c>ai_activity_type</c>），见 <see cref="ActivityTypeEnum"/>。
-        /// </summary>
-        [SooColumn(Name = "ai_activity_type")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "ai", SrcField = "ai_activity_type",
+            Name = "ai_activity_type", Alias = "ai_activity_type")]
         public short? ActivityType { get; set; }
 
-        /// <summary>
-        /// 是否工作项（列 <c>ai_work_item_type</c>），见 <see cref="WorkItemTypeEnum"/>。
-        /// </summary>
-        [SooColumn(Name = "ai_work_item_type")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "ai", SrcField = "ai_work_item_type",
+            Name = "ai_work_item_type", Alias = "ai_work_item_type")]
         public short? WorkItemType { get; set; }
 
-        /// <summary>
-        /// 任务类型（列 <c>tk_task_type</c>）：1 人工 / 2 自动化。
-        /// </summary>
-        [SooColumn(Name = "tk_task_type")]
+        [SooColumn(Name = "tk_task_type", Kind = FieldKind.Base)]
         public short? TaskType { get; set; }
 
-        /// <summary>
-        /// 子流程类型（列 <c>pi_sub_proc_type</c>），见 <see cref="SubProcessTypeEnum"/>。
-        /// </summary>
-        [SooColumn(Name = "pi_sub_proc_type")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "pi", SrcField = "pi_sub_proc_type",
+            Name = "pi_sub_proc_type", Alias = "pi_sub_proc_type")]
         public short? SubProcessType { get; set; }
 
-        /// <summary>
-        /// 外部引用子流程定义 Id（列 <c>pi_sub_process_id</c>）。
-        /// </summary>
-        [SooColumn(Name = "pi_sub_process_id", Length = 64)]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "pi", SrcField = "pi_sub_process_id",
+            Name = "pi_sub_process_id", Alias = "pi_sub_process_id", Length = 64)]
         public string SubProcessDefId { get; set; }
 
-        /// <summary>
-        /// 子流程逻辑 Id（列 <c>pi_sub_proc_id</c>）。
-        /// </summary>
-        [SooColumn(Name = "pi_sub_proc_id")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "pi", SrcField = "pi_sub_proc_id",
+            Name = "pi_sub_proc_id", Alias = "pi_sub_proc_id")]
         public string SubProcessId { get; set; }
 
-        /// <summary>
-        /// 被委托原任务 Id（列 <c>tk_entr_task_id</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_entr_task_id", Length = 64)]
+        [SooColumn(Name = "tk_entr_task_id", Kind = FieldKind.Base, Length = 64)]
         public string EntrustedTaskId { get; set; }
 
-        /// <summary>票权（列 <c>tk_weight</c>）。</summary>
-        [SooColumn(Name = "tk_weight")]
+        [SooColumn(Name = "tk_weight", Kind = FieldKind.Base)]
         public decimal? Weight { get; set; }
 
-        /// <summary>委托代批根 SignId（列 <c>tk_proxy_sign_id</c>）。</summary>
-        [SooColumn(Name = "tk_proxy_sign_id", Length = 64)]
+        [SooColumn(Name = "tk_proxy_sign_id", Kind = FieldKind.Base, Length = 64)]
         public string ProxySignId { get; set; }
 
-        /// <summary>结束类型码（列 <c>tk_end_type</c>）。</summary>
-        [SooColumn(Name = "tk_end_type", Length = 64)]
+        [SooColumn(Name = "tk_end_type", Kind = FieldKind.Base, Length = 64)]
         public string EndType { get; set; }
 
-        /// <summary>办结简约描述（列 <c>tk_end_text</c>）。</summary>
-        [SooColumn(Name = "tk_end_text", Length = 255)]
+        [SooColumn(Name = "tk_end_text", Kind = FieldKind.Base, Length = 255)]
         public string EndText { get; set; }
 
-        /// <summary>
-        /// 办理人角色（列 <c>tk_assignee_role</c>）：null/0=常规；1=沟通参与者。见 <see cref="AssigneeRoleEnum"/>。
-        /// </summary>
-        [SooColumn(Name = "tk_assignee_role")]
+        [SooColumn(Name = "tk_assignee_role", Kind = FieldKind.Base)]
         public int? AssigneeRole { get; set; }
 
-        /// <summary>
-        /// 沟通源审批 TaskId（列 <c>tk_consult_src_task_id</c>）；参与者待办填写。
-        /// </summary>
-        [SooColumn(Name = "tk_consult_src_task_id", Length = 64)]
+        [SooColumn(Name = "tk_consult_src_task_id", Kind = FieldKind.Base, Length = 64)]
         public string ConsultSrcTaskId { get; set; }
 
-        /// <summary>
-        /// 会签主活动实例 Id（列 <c>ai_m_act_instance_id</c>）。
-        /// </summary>
-        [SooColumn(Name = "ai_m_act_instance_id", Length = 64)]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "ai", SrcField = "ai_m_act_instance_id",
+            Name = "ai_m_act_instance_id", Alias = "ai_m_act_instance_id", Length = 64)]
         public string MainActInstanceId { get; set; }
 
-        /// <summary>
-        /// 会签序/通过阈值（列 <c>ai_cmp_order</c>）；串行 1,2,3…，并行子实例常 -1。
-        /// </summary>
-        [SooColumn(Name = "ai_cmp_order")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "ai", SrcField = "ai_cmp_order",
+            Name = "ai_cmp_order", Alias = "ai_cmp_order")]
         public float? CompleteOrder { get; set; }
 
-        /// <summary>
-        /// 办理对象类型（列 <c>tk_sign_kind</c>），见 <see cref="SignKindEnum"/>。
-        /// </summary>
-        [SooColumn(Name = "tk_sign_kind")]
+        [SooColumn(Name = "tk_sign_kind", Kind = FieldKind.Base)]
         public int? SignKind { get; set; }
 
-        /// <summary>
-        /// 办理对象引用 Id（列 <c>tk_sign_id</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_sign_id")]
+        [SooColumn(Name = "tk_sign_id", Kind = FieldKind.Base)]
         public string SignId { get; set; }
 
-        /// <summary>
-        /// 办理对象显示名（列 <c>tk_sign_name</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_sign_name")]
+        [SooColumn(Name = "tk_sign_name", Kind = FieldKind.Base)]
         public string SignName { get; set; }
 
-        /// <summary>
-        /// 优先级（列 <c>tk_idx</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_idx")]
+        [SooColumn(Name = "tk_idx", Kind = FieldKind.Base)]
         public int? Idx { get; set; }
 
-        /// <summary>
-        /// 组别 Id（列 <c>tk_group_id</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_group_id")]
+        [SooColumn(Name = "tk_group_id", Kind = FieldKind.Base)]
         public string GroupId { get; set; }
 
-        /// <summary>
-        /// 组别名称（列 <c>tk_group_name</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_group_name")]
+        [SooColumn(Name = "tk_group_name", Kind = FieldKind.Base)]
         public string GroupName { get; set; }
 
-        /// <summary>
-        /// 组内身份（列 <c>tk_group_role</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_group_role")]
+        [SooColumn(Name = "tk_group_role", Kind = FieldKind.Base)]
         public string GroupRole { get; set; }
 
-        /// <summary>
-        /// 办理单位 Id（列 <c>tk_unit_id</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_unit_id")]
+        [SooColumn(Name = "tk_unit_id", Kind = FieldKind.Base)]
         public string UnitId { get; set; }
 
-        /// <summary>
-        /// 办理单位编码（列 <c>tk_unit_code</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_unit_code")]
+        [SooColumn(Name = "tk_unit_code", Kind = FieldKind.Base)]
         public string UnitCode { get; set; }
 
-        /// <summary>
-        /// 办理单位名称（列 <c>tk_unit_name</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_unit_name")]
+        [SooColumn(Name = "tk_unit_name", Kind = FieldKind.Base)]
         public string UnitName { get; set; }
 
-        /// <summary>
-        /// 业务侧待办邮件发送标记（列 <c>tk_is_email_sent</c>；见 <see cref="TaskEntity.IsEMailSent"/>）。
-        /// </summary>
-        [SooColumn(Name = "tk_is_email_sent")]
+        [SooColumn(Name = "tk_is_email_sent", Kind = FieldKind.Base)]
         public byte? IsEMailSent { get; set; }
 
-        /// <summary>
-        /// 是否已阅（列 <c>tk_is_read</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_is_read")]
+        [SooColumn(Name = "tk_is_read", Kind = FieldKind.Base)]
         public byte? IsRead { get; set; }
 
-        /// <summary>
-        /// 首次已阅时刻（列 <c>tk_read_at</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_read_at")]
+        [SooColumn(Name = "tk_read_at", Kind = FieldKind.Base)]
         public DateTime? ReadAt { get; set; }
 
-        /// <summary>
-        /// 审批/办理意见（列 <c>tk_msg</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_msg")]
+        [SooColumn(Name = "tk_msg", Kind = FieldKind.Base)]
         public string Msg { get; set; }
 
-        /// <summary>
-        /// 行级扩展参数（列 <c>tk_row_para</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_row_para")]
+        [SooColumn(Name = "tk_row_para", Kind = FieldKind.Base)]
         public string RowPara { get; set; }
 
-        /// <summary>
-        /// 活动审批意见态（列 <c>ai_aprv_state</c>），见 <see cref="ApprovalStatusEnum"/>。
-        /// </summary>
-        [SooColumn(Name = "ai_aprv_state")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "ai", SrcField = "ai_aprv_state",
+            Name = "ai_aprv_state", Alias = "ai_aprv_state")]
         public short? ApprovalStatus { get; set; }
 
-        /// <summary>
-        /// 任务创建时间（列 <c>tk_crt_time</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_crt_time")]
+        [SooColumn(Name = "tk_crt_time", Kind = FieldKind.Base)]
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary>
-        /// 发送时间（列 <c>tk_send_at</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_send_at")]
+        [SooColumn(Name = "tk_send_at", Kind = FieldKind.Base)]
         public DateTime? SendAt { get; set; }
 
-        /// <summary>
-        /// 首次下达时间（列 <c>tk_got_at</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_got_at")]
+        [SooColumn(Name = "tk_got_at", Kind = FieldKind.Base)]
         public DateTime? GotAt { get; set; }
 
-        /// <summary>
-        /// 激活可办时间（列 <c>tk_active_at</c>）；串行未轮到为 null。
-        /// </summary>
-        [SooColumn(Name = "tk_active_at")]
+        [SooColumn(Name = "tk_active_at", Kind = FieldKind.Base)]
         public DateTime? ActiveAt { get; set; }
 
-        /// <summary>
-        /// 个人应完成时间（列 <c>tk_due_at</c>）；未激活为 null。
-        /// </summary>
-        [SooColumn(Name = "tk_due_at")]
+        [SooColumn(Name = "tk_due_at", Kind = FieldKind.Base)]
         public DateTime? DueAt { get; set; }
 
-        /// <summary>
-        /// 任务更新时间（列 <c>tk_upd_time</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_upd_time")]
+        [SooColumn(Name = "tk_upd_time", Kind = FieldKind.Base)]
         public DateTime? UpdatedDateTime { get; set; }
 
-        /// <summary>
-        /// 任务办结时间（列 <c>tk_completed_at</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_completed_at")]
+        [SooColumn(Name = "tk_completed_at", Kind = FieldKind.Base)]
         public DateTime? CompletedAt { get; set; }
 
-        /// <summary>
-        /// 办结人 Id（列 <c>tk_end_user_id</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_end_user_id")]
+        [SooColumn(Name = "tk_end_user_id", Kind = FieldKind.Base)]
         public string EndedUserId { get; set; }
 
-        /// <summary>
-        /// 办结人姓名（列 <c>tk_end_user_name</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_end_user_name")]
+        [SooColumn(Name = "tk_end_user_name", Kind = FieldKind.Base)]
         public string EndedUserName { get; set; }
 
-        /// <summary>
-        /// 任务状态（列 <c>tk_task_state</c>），见 <see cref="TaskStateEnum"/>。
-        /// </summary>
-        [SooColumn(Name = "tk_task_state")]
+        [SooColumn(Name = "tk_task_state", Kind = FieldKind.Base)]
         public short? TaskState { get; set; }
 
-        /// <summary>
-        /// 当前活动实例状态（列 <c>ai_activity_state</c>），见 <see cref="ActivityStateEnum"/>。
-        /// </summary>
-        [SooColumn(Name = "ai_activity_state")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "ai", SrcField = "ai_activity_state",
+            Name = "ai_activity_state", Alias = "ai_activity_state")]
         public short? ActivityState { get; set; }
 
-        /// <summary>
-        /// 会签主活动实例状态（列 <c>ai_mn_activity_state</c>）。
-        /// 子实例行上投影主活动状态，便于列表判断节点整体进度。
-        /// </summary>
-        [SooColumn(Name = "ai_mn_activity_state")]
+        /// <summary>会签主活动实例状态（mai.ai_activity_state）。</summary>
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "mai", SrcField = "ai_activity_state",
+            Name = "ai_mn_activity_state", Alias = "ai_mn_activity_state")]
         public short? MainActivityState { get; set; }
 
-        /// <summary>
-        /// 任务作废标记（列 <c>tk_rec_invalid</c>）。
-        /// </summary>
-        [SooColumn(Name = "tk_rec_invalid")]
+        [SooColumn(Name = "tk_rec_invalid", Kind = FieldKind.Base)]
         public byte? RecordStatusInvalid { get; set; }
 
-        /// <summary>
-        /// 流程实例状态（列 <c>pi_process_state</c>），见 <see cref="ProcessStateEnum"/>。
-        /// </summary>
-        [SooColumn(Name = "pi_process_state")]
+        [SooColumn(Kind = FieldKind.Join, SrcTable = "pi", SrcField = "pi_process_state",
+            Name = "pi_process_state", Alias = "pi_process_state")]
         public short? ProcessState { get; set; }
     }
 }
