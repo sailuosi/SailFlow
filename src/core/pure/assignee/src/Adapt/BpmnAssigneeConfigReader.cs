@@ -17,6 +17,7 @@ public static class BpmnAssigneeConfigReader
     {
         var activity = TryLoadActivity(
             sail,
+            request?.Kit,
             request?.ProcessId ?? request?.Runner?.ProcessId,
             request?.Version ?? request?.Runner?.Version,
             request?.ActivityId,
@@ -45,6 +46,7 @@ public static class BpmnAssigneeConfigReader
 
         var activity = TryLoadActivity(
             sail,
+            request.Kit,
             request.ProcessId ?? main.ProcessId,
             request.Version ?? request.Runner?.Version,
             main.ActivityId,
@@ -67,6 +69,7 @@ public static class BpmnAssigneeConfigReader
 
     private static Activity? TryLoadActivity(
         SailClient? sail,
+        SQLBuilder? kit,
         string? processId,
         string? version,
         string? activityId,
@@ -77,9 +80,12 @@ public static class BpmnAssigneeConfigReader
 
         try
         {
+            // 同事务优先复用 kit，禁止另开连接读未提交的流程实例
+            var db = kit?.useSQL() ?? sail.UseRunSQL();
+
             if (string.IsNullOrEmpty(version) && !string.IsNullOrWhiteSpace(processInstanceId))
             {
-                var pi = sail.UseRunSQL().findRowById<ProcessInstanceEntity>(processInstanceId);
+                var pi = db.findRowById<ProcessInstanceEntity>(processInstanceId);
                 version = pi?.Version;
                 processId ??= pi?.ProcessId;
             }
@@ -87,7 +93,7 @@ public static class BpmnAssigneeConfigReader
             if (string.IsNullOrEmpty(processId) || string.IsNullOrEmpty(version))
                 return null;
 
-            var model = sail.ProcessModelFactory.CreateByProcess(processId, version);
+            var model = sail.ProcessModelFactory.CreateByProcess(db, processId, version);
             return model?.GetActivity(activityId);
         }
         catch

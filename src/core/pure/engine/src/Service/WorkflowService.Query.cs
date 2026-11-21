@@ -516,6 +516,13 @@ namespace sailflow.engine.Service
             return initiator;
         }
 
+        /// <summary>同事务读取发起人；发起/办理中勿用无 kit 重载。</summary>
+        public User GetProcessInitiator(SQLBuilder kit, string processInstanceId)
+        {
+            var pim = Managers.ProcessInstances;
+            return pim.GetProcessInitiator(kit, processInstanceId);
+        }
+
         /// <summary>
         /// Get activity instance
         /// 获取活动实例数据
@@ -661,6 +668,13 @@ namespace sailflow.engine.Service
             return entity;
         }
 
+        /// <summary>同事务读取流程变量。</summary>
+        public ProcessVariableEntity GetProcessVariable(SQLBuilder kit, ProcessVariableQuery query)
+        {
+            var pvm = Managers.ProcessVariables;
+            return pvm.GetVariableEntity(kit, query);
+        }
+
         /// <summary>
         /// Get process variable list
         /// 获取变量列表
@@ -670,6 +684,13 @@ namespace sailflow.engine.Service
             var pvm = Managers.ProcessVariables;
             var list = pvm.GetVariableList(query.ProcessInstanceId);
             return list;
+        }
+
+        /// <summary>同事务读取流程变量列表。</summary>
+        public IList<ProcessVariableEntity> GetProcessVariableList(SQLBuilder kit, ProcessVariableQuery query)
+        {
+            var pvm = Managers.ProcessVariables;
+            return pvm.GetVariableList(kit, query.ProcessInstanceId);
         }
 
         /// <summary>
@@ -711,6 +732,13 @@ namespace sailflow.engine.Service
             var pvm = Managers.ProcessVariables;
             var entityId = pvm.SaveVariable(entity);
             return entityId;
+        }
+
+        /// <summary>同事务保存流程变量；Sync 钩子须用此重载。</summary>
+        public string SaveProcessVariable(SQLBuilder kit, ProcessVariableEntity entity)
+        {
+            var pvm = Managers.ProcessVariables;
+            return pvm.SaveVariable(kit, entity);
         }
 
         /// <summary>

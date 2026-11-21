@@ -242,8 +242,10 @@ namespace sailflow.engine.Service
         void SetActivityJobTimerCompleted(string activityInstanceId);
         void SetProcessJobTimerCompleted(string processInstanceId);
         string SaveProcessVariable(ProcessVariableEntity entity);
+        string SaveProcessVariable(mooSQL.data.SQLBuilder kit, ProcessVariableEntity entity);
 
         User GetProcessInitiator(string processInstanceId);
+        User GetProcessInitiator(mooSQL.data.SQLBuilder kit, string processInstanceId);
 
         TaskViewEntity GetTaskView(string taskId);
         TaskViewEntity GetTaskView(string processInstanceId, string activityInstanceId);
@@ -268,6 +270,7 @@ namespace sailflow.engine.Service
         IList<ProcessEntity> GetProcessList();
 
         ProcessFileEntity GetProcessFile(string processId, string version);
+        ProcessFileEntity GetProcessFile(mooSQL.data.SQLBuilder kit, string processId, string version);
         ProcessFileEntity GetProcessFileById(string id);
         void SaveProcessFile(ProcessFileEntity entity);
 
@@ -304,7 +307,9 @@ namespace sailflow.engine.Service
         //流程变量接口
         //Process Variables Interfaces
         IList<ProcessVariableEntity> GetProcessVariableList(ProcessVariableQuery query);
+        IList<ProcessVariableEntity> GetProcessVariableList(mooSQL.data.SQLBuilder kit, ProcessVariableQuery query);
         ProcessVariableEntity GetProcessVariable(ProcessVariableQuery query);
+        ProcessVariableEntity GetProcessVariable(mooSQL.data.SQLBuilder kit, ProcessVariableQuery query);
         ProcessVariableEntity GetProcessVariable(string processId, string variableId);
         Boolean ValidateProcessVariable(string processInstanceId, string expression);
         void DeleteProcessVariable(string processId, string variableId);

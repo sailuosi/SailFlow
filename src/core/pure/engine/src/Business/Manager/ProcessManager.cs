@@ -1088,6 +1088,16 @@ namespace sailflow.engine.Manager
         }
 
         /// <summary>
+        /// 同事务读取流程 XML；流转钩子须用此重载，禁止另开连接。
+        /// </summary>
+        internal ProcessFileEntity GetProcessFile(SQLBuilder kit, string processId, string version, IXPDLStorage extStorage = null)
+        {
+            var processEntity = GetByVersion(kit, processId, version);
+            var processFileEntity = FillProcessFileEntity(processEntity, extStorage);
+            return processFileEntity;
+        }
+
+        /// <summary>
         /// Obtain process file entity based on Id
         /// 根据ID获取流程文件实体
         /// </summary>

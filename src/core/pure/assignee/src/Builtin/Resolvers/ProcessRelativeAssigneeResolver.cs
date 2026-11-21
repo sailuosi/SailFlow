@@ -68,6 +68,8 @@ public class ProcessRelativeAssigneeResolver : IAssigneeResolver, IAssigneeResol
         var piId = ctx.Request.ProcessInstanceId;
         if (sail == null || string.IsNullOrWhiteSpace(piId))
             return null;
-        return sail.UseRunSQL().findRowById<ProcessInstanceEntity>(piId);
+        // 同事务优先复用 Request.Kit，避免读未提交流程实例时自锁等待
+        var kit = ctx.Request?.Kit;
+        return (kit?.useSQL() ?? sail.UseRunSQL()).findRowById<ProcessInstanceEntity>(piId);
     }
 }

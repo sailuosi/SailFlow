@@ -129,8 +129,11 @@ namespace sailflow.engine.Manager
         internal ProcessVariableEntity GetVariableEntity(ProcessVariableQuery query)
         {
             var kit = Sail.UseRunSQL();
-            return Query(kit, query);
+            return GetVariableEntity(kit, query);
         }
+
+        internal ProcessVariableEntity GetVariableEntity(SQLBuilder kit, ProcessVariableQuery query)
+            => Query(kit, query);
 
 
         private ProcessVariableEntity Query(SQLBuilder kit, ProcessVariableQuery query)

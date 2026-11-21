@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using sailflow.engine.Entity;
 using sailflow.engine.Common;
+using mooSQL.data;
 
 namespace sailflow.engine.Assignee
 {
@@ -20,5 +21,7 @@ namespace sailflow.engine.Assignee
         /// <summary>计权主输入：席位窄投影（Task / 子 AI）；LeaveJudge 只读。</summary>
         public IList<LeaveSeatSnapshot> Seats { get; set; }
         public FlowCommandContext Runner { get; set; }
+        /// <summary>流转事务 kit；读 BPMN / 未提交实例时须复用，禁止另开连接。</summary>
+        public SQLBuilder Kit { get; set; }
     }
 }

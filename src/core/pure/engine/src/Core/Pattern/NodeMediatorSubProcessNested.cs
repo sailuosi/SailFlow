@@ -390,8 +390,8 @@ namespace sailflow.engine.Pattern
 
                 base.TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
 
-                //启动子流程
-                var subKit = Sail.UseRunSQL();
+                //启动子流程：必须复用父事务 kit，禁止另开连接
+                var subKit = kit.useSQL();
                 var subProcessNode = (SubProcessNode)toActivity.Node;
                 subProcessNode.ActivityInstance = entity;   
                 FlowCommandContext subRunner = CreateSubProcessRunner(activityResource.AppRunner, 

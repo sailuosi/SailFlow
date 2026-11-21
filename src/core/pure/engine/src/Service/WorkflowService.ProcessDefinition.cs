@@ -3,6 +3,7 @@ using sailflow.engine.Entity;
 using sailflow.engine.Manager;
 using sailflow.engine.Storage;
 using sailflow.engine.Xpdl;
+using mooSQL.data;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -103,6 +104,15 @@ namespace sailflow.engine.Service
             var pm = Sail.ManagerFactory.Processes;
             var entity = pm.GetProcessFile(processId, version, Sail.ProcessModelFactory.CreateXpdlStorage());
             return entity;
+        }
+
+        /// <summary>
+        /// 同事务读取流程定义 XML；Sync 钩子须复用流转 kit。
+        /// </summary>
+        public ProcessFileEntity GetProcessFile(SQLBuilder kit, string processId, string version)
+        {
+            var pm = Sail.ManagerFactory.Processes;
+            return pm.GetProcessFile(kit, processId, version, Sail.ProcessModelFactory.CreateXpdlStorage());
         }
 
         /// <summary>

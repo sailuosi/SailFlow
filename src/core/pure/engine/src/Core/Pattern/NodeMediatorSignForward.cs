@@ -149,6 +149,7 @@ namespace sailflow.engine.Pattern
             SignForwardTypeEnum signForwardType,
             ControlParameterSheet controlParamSheet)
         {
+            _ = controlParamSheet; // 并加签不再读宿主 Compare/Order；前/后席位数由压栈后回写
             container.LeaveJudgeType = StackLeaveCollaborate;
             container.LeaveJudgeParams = null;
 
@@ -161,23 +162,10 @@ namespace sailflow.engine.Pattern
             }
             else
             {
+                // 并加签：强制 Parallel + Percentage 全员（忽略宿主 COUNT/1，防一人即出）
                 container.MergeType = (short)MergeTypeEnum.Parallel;
-                if (controlParamSheet != null
-                    && !string.IsNullOrEmpty(controlParamSheet.SignForwardCompareType)
-                    && controlParamSheet.SignForwardCompareType.ToUpper() == "COUNT")
-                {
-                    container.CompareType = (short)CompareTypeEnum.Count;
-                    container.CompleteOrder = controlParamSheet.SignForwardCompleteOrder > 0
-                        ? controlParamSheet.SignForwardCompleteOrder
-                        : null;
-                }
-                else
-                {
-                    container.CompareType = (short)CompareTypeEnum.Percentage;
-                    container.CompleteOrder = controlParamSheet != null && controlParamSheet.SignForwardCompleteOrder != 0
-                        ? controlParamSheet.SignForwardCompleteOrder
-                        : 1f;
-                }
+                container.CompareType = (short)CompareTypeEnum.Percentage;
+                container.CompleteOrder = 1f;
             }
         }
 

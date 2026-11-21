@@ -284,6 +284,10 @@ namespace sailflow.biz.query
             var onContainer = string.Equals(
                 current.ActivityInstanceId, container.ActivityInstanceId, StringComparison.OrdinalIgnoreCase);
 
+            var mergeType = container.MergeType != null
+                ? EnumHelper.ParseEnum<MergeTypeEnum>(container.MergeType.Value.ToString())
+                : MergeTypeEnum.Parallel;
+
             // 容器直属 Task：仍有未完成加签子 → 非末
             if (onContainer)
             {
@@ -297,9 +301,6 @@ namespace sailflow.biz.query
                     !string.Equals(c.ActivityInstanceId, current.ActivityInstanceId, StringComparison.OrdinalIgnoreCase)))
                     return false;
 
-                var mergeType = container.MergeType != null
-                    ? EnumHelper.ParseEnum<MergeTypeEnum>(container.MergeType.Value.ToString())
-                    : MergeTypeEnum.Parallel;
                 if (mergeType == MergeTypeEnum.Sequence)
                 {
                     var ordered = children.Where(x => x.CompleteOrder != null && x.CompleteOrder > 0).ToList();
@@ -310,6 +311,12 @@ namespace sailflow.biz.query
                         && container.ActivityState != (short)ActivityStateEnum.Completed)
                         return false;
                     if (current.CompleteOrder == null || current.CompleteOrder < maxOrder)
+                        return false;
+                }
+                else
+                {
+                    // 并行：容器上发起人直属打开待办仍在 → 非末（同级席未齐）
+                    if (HasOpenInitiatorTaskOnContainer(container))
                         return false;
                 }
             }
@@ -334,6 +341,28 @@ namespace sailflow.biz.query
                 .ToList();
             // 保守：外层非 Race 且存在其他活动席/兄弟 → 非 Last（扁平旁人打开待办由工作台另判）
             return siblingChildren.Count == 0;
+        }
+
+        /// <summary>并加签同级：容器上发起人（SignIds）仍有 Waiting/Reading 审批待办。</summary>
+        private bool HasOpenInitiatorTaskOnContainer(ActivityInstanceEntity container)
+        {
+            if (container == null
+                || string.IsNullOrEmpty(container.SignIds)
+                || string.IsNullOrEmpty(container.ActivityInstanceId)
+                || string.IsNullOrEmpty(container.ProcessInstanceId))
+                return false;
+
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<TaskEntity>(out var t)
+                .where(() => t.ProcessInstanceId, container.ProcessInstanceId)
+                .where(() => t.ActivityInstanceId, container.ActivityInstanceId)
+                .where(() => t.SignId, container.SignIds)
+                .whereIn(() => t.TaskState, new short?[]
+                {
+                    (short)TaskStateEnum.Waiting,
+                    (short)TaskStateEnum.Reading
+                });
+            return clip.select(t).queryList().Any();
         }
 
         /// <summary>

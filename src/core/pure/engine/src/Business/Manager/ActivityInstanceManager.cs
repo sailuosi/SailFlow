@@ -1529,7 +1529,8 @@ namespace sailflow.engine.Manager
                             CurrentActivityInstance = currentActivityInstance ?? subjectActivityInstance,
                             MainActivityInstance = subjectActivityInstance,
                             ChildActivityInstances = childActivityInstanceList,
-                            Seats = seats
+                            Seats = seats,
+                            Kit = kit
                         },
                         out var leave)
                     && leave != null)
