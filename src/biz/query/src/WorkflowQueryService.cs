@@ -35,7 +35,11 @@ namespace sailflow.biz.query
                 .where(() => t.ProcessState, (short)2)
                 .where(() => t.ActivityType == 4 || t.WorkItemType == 1)
                 .where(() => t.ActivityState, (short)1)
-                .where(() => t.TaskState, (short)32, "<>")
+                .whereIn(() => t.TaskState, new short?[]
+                {
+                    (short)TaskStateEnum.Waiting,
+                    (short)TaskStateEnum.Reading
+                })
                 .orderByDesc(() => t.ActiveAt)
                 .top(10);
             return clip.select(t).queryList().ToList();
@@ -212,10 +216,10 @@ namespace sailflow.biz.query
                             mainActivityInstance.ProcessInstanceId,
                             null).ToList();
                         var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed).ToList().Count();
-                        var completedCount = sqList
-                            .Where(w => w.ActivityState == (short)ActivityStateEnum.Completed || w.SignIds == task.SignId)
-                            .ToList()
-                            .Count();
+                        // 与 Mediator 一致：只认 Completed；当前子 AI 计入「若我现在通过是否达阈」
+                        var completedCount = sqList.Count(w =>
+                            w.ActivityState == (short)ActivityStateEnum.Completed
+                            || w.ActivityInstanceId == activityInstance.ActivityInstanceId);
                         if (mainActivityInstance.CompareType == null
                             || EnumHelper.ParseEnum<CompareTypeEnum>(mainActivityInstance.CompareType.Value.ToString()) == CompareTypeEnum.Percentage)
                         {
@@ -231,10 +235,7 @@ namespace sailflow.biz.query
                         {
                             if (mainActivityInstance.CompleteOrder == null || mainActivityInstance.CompleteOrder > allCount)
                                 mainActivityInstance.CompleteOrder = allCount;
-                            if (mainActivityInstance.CompleteOrder > completedCount)
-                                isLast = false;
-                            else if (mainActivityInstance.CompleteOrder == completedCount)
-                                isLast = true;
+                            isLast = completedCount >= mainActivityInstance.CompleteOrder;
                         }
                     }
                 }
@@ -287,10 +288,10 @@ namespace sailflow.biz.query
                             null).ToList();
 
                         var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed).ToList().Count();
-                        var completedCount = sqList
-                            .Where(w => w.ActivityState == (short)ActivityStateEnum.Completed || w.SignIds == task.SignId)
-                            .ToList()
-                            .Count();
+                        // 与 NodeMediatorMultiSignForward 一致：只认 Completed；当前子 AI 计入达阈预判
+                        var completedCount = sqList.Count(w =>
+                            w.ActivityState == (short)ActivityStateEnum.Completed
+                            || w.ActivityInstanceId == activityInstance.ActivityInstanceId);
                         if (mainActivityInstance.CompareType == null
                             || EnumHelper.ParseEnum<CompareTypeEnum>(mainActivityInstance.CompareType.Value.ToString()) == CompareTypeEnum.Percentage)
                         {
@@ -306,10 +307,7 @@ namespace sailflow.biz.query
                         {
                             if (mainActivityInstance.CompleteOrder == null || mainActivityInstance.CompleteOrder > allCount)
                                 mainActivityInstance.CompleteOrder = allCount;
-                            if (mainActivityInstance.CompleteOrder > completedCount)
-                                isLast = false;
-                            else if (mainActivityInstance.CompleteOrder == completedCount)
-                                isLast = true;
+                            isLast = completedCount >= mainActivityInstance.CompleteOrder;
                         }
                     }
                 }
@@ -338,8 +336,13 @@ namespace sailflow.biz.query
             if (activityState == (short)ActivityStateEnum.Ready
                 || activityState == (short)ActivityStateEnum.Running)
             {
+                // 个人待办开闭看 TaskState：只认 Waiting/Reading，勿仅靠 AI Ready（多人未结时他人已办仍会进列表）
                 clip.where(() => t.ActivityState, (short)activityState)
-                    .where(() => t.TaskState, (short)32, "<>");
+                    .whereIn(() => t.TaskState, new short?[]
+                    {
+                        (short)TaskStateEnum.Waiting,
+                        (short)TaskStateEnum.Reading
+                    });
             }
             else if (activityState == (short)ActivityStateEnum.Completed)
             {
