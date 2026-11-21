@@ -33,7 +33,8 @@ namespace sailflow.engine.Actions.Transition
             var result = WfExecutedResult.Default();
             try
             {
-                if (!TryLoadContext(out var ctx, result))
+                // Factory 内常 result = new WfExecutedResult()，必须 ref 才能带回 Exception/Message
+                if (!TryLoadContext(out var ctx, ref result))
                     return result;
 
                 return RunGateCoreHook(ctx, result);
@@ -118,7 +119,7 @@ namespace sailflow.engine.Actions.Transition
             return result;
         }
 
-        protected abstract bool TryLoadContext(out TransitionActionContext ctx, WfExecutedResult result);
+        protected abstract bool TryLoadContext(out TransitionActionContext ctx, ref WfExecutedResult result);
 
         protected abstract void ExecuteCore(TransitionActionContext ctx, WfExecutedResult result);
 

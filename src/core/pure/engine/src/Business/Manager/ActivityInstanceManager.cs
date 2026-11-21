@@ -232,13 +232,16 @@ namespace sailflow.engine.Manager
 
         /// <summary>
         /// Determine whether it is a processing task for a certain user
-        /// 判断是否是某个用户的办理任务
+        /// 判断是否是某个用户的办理任务（以打开中的 Task.SignId 为准，不用活动 SignIds 汇总）
         /// </summary>
         internal bool IsMineTask(ActivityInstanceEntity entity,
             string userId)
         {
-            bool isMine = entity.SignIds.Contains(userId.ToString());
-            return isMine;
+            if (entity == null || string.IsNullOrWhiteSpace(userId))
+                return false;
+            var mine = Sail.ManagerFactory.Tasks.GetTaskOfMineByActivityInstance(
+                entity.ActivityInstanceId, userId);
+            return mine != null;
         }
 
         /// <summary>

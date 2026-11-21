@@ -21,7 +21,7 @@ namespace sailflow.engine.Actions.Transition
         protected override EventFireTypeEnum SuccessEvent => EventFireTypeEnum.OnProcessContinued;
         protected override string ErrorLogName => WfDefine.WF_PROCESS_RUN_ERROR;
 
-        protected override bool TryLoadContext(out TransitionActionContext ctx, WfExecutedResult result)
+        protected override bool TryLoadContext(out TransitionActionContext ctx, ref WfExecutedResult result)
         {
             ctx = null!;
             var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceAppRunning(Runner, Kit, ref result);

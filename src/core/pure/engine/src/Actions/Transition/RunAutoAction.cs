@@ -25,7 +25,7 @@ namespace sailflow.engine.Actions.Transition
         protected override string ErrorLogName => WfDefine.WF_PROCESS_RUN_ERROR;
         protected override bool SkipGate => true;
 
-        protected override bool TryLoadContext(out TransitionActionContext ctx, WfExecutedResult result)
+        protected override bool TryLoadContext(out TransitionActionContext ctx, ref WfExecutedResult result)
         {
             ctx = null!;
             var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceRunAuto(Runner, Kit, ref result);

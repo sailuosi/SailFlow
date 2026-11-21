@@ -630,13 +630,12 @@ namespace sailflow.engine.Service
 
         /// <summary>
         /// Determine if it is my task
-        /// 判断是否是我的任务
+        /// 判断是否是我的任务（以打开中的 Task.SignId 为准；活动 SignIds 仅汇总展示）
         /// </summary>
         public bool IsMineTask(ActivityInstanceEntity entity, string userId)
         {
             var aim = Sail.ManagerFactory.Activities;
-            bool isMine = aim.IsMineTask(entity, userId);
-            return isMine;
+            return aim.IsMineTask(entity, userId);
         }
 
         /// <summary>

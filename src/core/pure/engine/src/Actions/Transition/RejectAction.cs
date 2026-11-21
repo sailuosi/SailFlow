@@ -68,7 +68,7 @@ namespace sailflow.engine.Actions.Transition
             return result;
         }
 
-        protected override bool TryLoadContext(out TransitionActionContext ctx, WfExecutedResult result)
+        protected override bool TryLoadContext(out TransitionActionContext ctx, ref WfExecutedResult result)
         {
             ctx = null!;
             EnsureControlSheet();

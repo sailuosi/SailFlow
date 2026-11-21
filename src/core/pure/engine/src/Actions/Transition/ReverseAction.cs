@@ -20,7 +20,7 @@ namespace sailflow.engine.Actions.Transition
         protected override EventFireTypeEnum SuccessEvent => EventFireTypeEnum.OnProcessReversed;
         protected override string ErrorLogName => WfDefine.WF_PROCESS_REVERSE_ERROR;
 
-        protected override bool TryLoadContext(out TransitionActionContext ctx, WfExecutedResult result)
+        protected override bool TryLoadContext(out TransitionActionContext ctx, ref WfExecutedResult result)
         {
             ctx = null!;
             var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceReverse(Runner, ref result);

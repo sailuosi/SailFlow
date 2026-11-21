@@ -23,7 +23,7 @@ namespace sailflow.engine.Actions.Transition
 
         protected override string ErrorLogName => WfDefine.WF_PROCESS_CLOSE_ERROR;
 
-        protected override bool TryLoadContext(out TransitionActionContext ctx, WfExecutedResult result)
+        protected override bool TryLoadContext(out TransitionActionContext ctx, ref WfExecutedResult result)
         {
             ctx = null!;
             Runner.NextActivityPerformers = TransitionNextPerformers.Fill(Sail, Runner, JumpOptionEnum.End);

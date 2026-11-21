@@ -184,10 +184,10 @@ namespace sailflow.engine.Runtime
             TaskViewEntity taskView = null;
             var runningNode = aim.GetRunningNode(kit.useSQL(), runner, out taskView);
 
-            //判断是否是当前登录用户的任务 
-            //Determine whether it is the task of the currently logged in user
-            if (!string.IsNullOrEmpty(runningNode.SignIds)
-                && runningNode.SignIds.Contains(runner.UserId.ToString()) == false)
+            // 以当前待办 Task.SignId 为准（活动 SignIds 仅汇总展示）
+            // Ownership by TaskView.SignId; activity SignIds is display-only aggregate.
+            var tmRun = _sail.ManagerFactory.Tasks;
+            if (taskView == null || tmRun.IsMine(taskView, runner.UserId) == false)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_HasNoTask;
@@ -195,7 +195,7 @@ namespace sailflow.engine.Runtime
                 return rmins;
             }
 
-            var isRunning = _sail.ManagerFactory.Tasks.CheckTaskStateInRunningState(taskView);
+            var isRunning = tmRun.CheckTaskStateInRunningState(taskView);
             if (isRunning == false)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -268,8 +268,9 @@ namespace sailflow.engine.Runtime
             var (runningNode, taskView) = await aim.GetRunningNodeAsync(kit, runner, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(runningNode.SignIds)
-                && runningNode.SignIds.Contains(runner.UserId.ToString()) == false)
+            // 以当前待办 Task.SignId 为准（活动 SignIds 仅汇总展示）
+            var tmRunAsync = _sail.ManagerFactory.Tasks;
+            if (taskView == null || tmRunAsync.IsMine(taskView, runner.UserId) == false)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_HasNoTask;
@@ -709,7 +710,8 @@ namespace sailflow.engine.Runtime
                 return rmins;
             }
 
-            if (aim.IsMineTask(runningNode, runner.UserId) == false)
+            // 以当前待办 Task.SignId 为准（活动 SignIds 仅汇总展示）
+            if (taskView == null || _sail.ManagerFactory.Tasks.IsMine(taskView, runner.UserId) == false)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_NotMineTask;
@@ -1264,9 +1266,9 @@ namespace sailflow.engine.Runtime
             TaskViewEntity taskView = null;
             var runningNode = aim.GetRunningNode(runner, out taskView);
 
-            //判断是否是当前登录用户的任务
-            //Determine whether it is the task of the currently logged in user
-            if (runningNode.SignIds.Contains(runner.UserId.ToString()) == false)
+            // 以当前待办 Task.SignId 为准（活动 SignIds 仅汇总展示）
+            var tm = _sail.ManagerFactory.Tasks;
+            if (taskView == null || tm.IsMine(taskView, runner.UserId) == false)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_HasNoTask;
@@ -1282,8 +1284,6 @@ namespace sailflow.engine.Runtime
             var activityResource = _sail.RuntimeFactory.CreateActivityResource(runner, 
                 runner.NextActivityPerformers, 
                 runner.Conditions);
-
-            var tm = _sail.ManagerFactory.Tasks;
             rmins.TaskView = taskView;
             rmins.RunningActivityInstance = runningNode;
             rmins.ProcessModel = processModel;
