@@ -10,6 +10,7 @@ using sailflow.engine.Manager;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.engine.Event;
+using sailflow.engine.Logging;
 
 namespace sailflow.engine.Hooks
 {
@@ -54,24 +55,48 @@ namespace sailflow.engine.Hooks
                 return HookResult.Ok();
 
             EnsureProcessCode(kit, ctx);
+            var log = Sail.Log;
 
             foreach (var gate in Registry.Gates)
             {
                 if (!MatchesGate(gate, ctx))
                     continue;
 
-                var result = gate.Handler.Validate(ctx);
-                if (result != null && !result.IsOk)
+                try
                 {
-                    Sail.CapabilityMetrics?.IncrementGateReject();
-                    return result;
+                    var result = gate.Handler.Validate(ctx);
+                    if (result != null && !result.IsOk)
+                    {
+                        Sail.CapabilityMetrics?.IncrementGateReject();
+                        log?.Warning(
+                            SailLogCategories.Gate,
+                            "REJECT name={0} code={1} msg={2} pi={3}",
+                            gate.Name,
+                            result.Code ?? "-",
+                            result.Message ?? "-",
+                            ctx.ProcessInstanceId ?? "-");
+                        return result;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log?.Error(
+                        SailLogCategories.Gate,
+                        ex,
+                        "FAIL name={0} pi={1}",
+                        gate.Name,
+                        ctx.ProcessInstanceId ?? "-");
+                    throw;
                 }
             }
 
             return HookResult.Ok();
         }
 
-        /// <summary>Sync Hook，FailFast（异常向上抛）。</summary>
+        /// <summary>
+        /// Sync Hook，FailFast。始终同线程执行（有 kit 时连接不可跨线程）。
+        /// 软超时在 <c>Handle</c> 返回后判定；进度日志 BEGIN/END 经 <see cref="SailClient.Log"/>。
+        /// </summary>
         public void RunSyncHooks(SQLBuilder kit, FlowHookContext ctx, EventFireTypeEnum eventType)
         {
             if (ctx == null || Registry.Hooks.Count == 0)
@@ -80,53 +105,100 @@ namespace sailflow.engine.Hooks
             ctx.EventType = eventType;
             EnsureProcessCode(kit, ctx);
 
-            var timeoutMs = Sail.CapabilityOptions?.SyncHookTimeoutMs ?? 0;
-
             // 同事务 kit 挂到上下文，供 Sync Hook 读写未提交实体
             ctx.Kit = kit;
+
+            var log = Sail.Log;
+            var warnMs = Sail.CapabilityOptions?.SyncHookWarnMs ?? 0;
+            var kitPresent = kit != null;
 
             foreach (var hook in Registry.Hooks.Where(h => h.Mode == HookMode.Sync))
             {
                 if (!MatchesHook(hook, ctx, eventType))
                     continue;
 
-                // 有 kit 时必须在当前线程执行：连接/事务不可跨线程，且另开线程+新连接会与主事务锁死。
-                if (timeoutMs <= 0 || kit != null)
+                var timeoutMs = ResolveSyncHookTimeoutMs(hook);
+                log?.Debug(
+                    SailLogCategories.SyncHook,
+                    "BEGIN name={0} event={1} kit={2} timeoutMs={3} pi={4} task={5}",
+                    hook.Name,
+                    eventType,
+                    kitPresent,
+                    timeoutMs,
+                    ctx.ProcessInstanceId ?? "-",
+                    ctx.TaskId ?? "-");
+
+                var sw = Stopwatch.StartNew();
+                try
                 {
                     hook.Handler.Handle(ctx);
-                }
-                else
-                {
-                    // Dedicated thread + Join: avoids sync-over-async deadlocks on ASP.NET sync contexts.
-                    Exception handlerError = null;
-                    var worker = new Thread(() =>
-                    {
-                        try
-                        {
-                            hook.Handler.Handle(ctx);
-                        }
-                        catch (Exception ex)
-                        {
-                            handlerError = ex;
-                        }
-                    })
-                    {
-                        IsBackground = true,
-                        Name = "sailflow-sync-hook:" + hook.Name,
-                    };
-                    worker.Start();
-                    if (!worker.Join(timeoutMs))
+                    sw.Stop();
+                    var elapsed = sw.ElapsedMilliseconds;
+
+                    if (timeoutMs > 0 && elapsed > timeoutMs)
                     {
                         Sail.CapabilityMetrics?.IncrementSyncHookTimeout();
-                        throw new FlowSyncHookTimeoutException(hook.Name, timeoutMs);
+                        log?.Error(
+                            SailLogCategories.SyncHook,
+                            string.Format(
+                                "FAIL name={0} event={1} elapsedMs={2} reason=timeout timeoutMs={3}",
+                                hook.Name,
+                                eventType,
+                                elapsed,
+                                timeoutMs));
+                        throw new FlowSyncHookTimeoutException(
+                            hook.Name, eventType, timeoutMs, elapsed, kitPresent);
                     }
 
-                    if (handlerError != null)
-                        throw handlerError;
+                    if (warnMs > 0 && elapsed > warnMs)
+                    {
+                        log?.Warning(
+                            SailLogCategories.SyncHook,
+                            "SLOW name={0} event={1} elapsedMs={2} warnMs={3}",
+                            hook.Name,
+                            eventType,
+                            elapsed,
+                            warnMs);
+                    }
+
+                    log?.Debug(
+                        SailLogCategories.SyncHook,
+                        "END name={0} event={1} elapsedMs={2}",
+                        hook.Name,
+                        eventType,
+                        elapsed);
+                }
+                catch (FlowSyncHookTimeoutException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    sw.Stop();
+                    log?.Error(
+                        SailLogCategories.SyncHook,
+                        ex,
+                        "FAIL name={0} event={1} elapsedMs={2}",
+                        hook.Name,
+                        eventType,
+                        sw.ElapsedMilliseconds);
+                    throw new FlowSyncHookException(hook.Name, eventType, ex);
                 }
 
                 Sail.CapabilityMetrics?.IncrementSyncHook();
             }
+        }
+
+        /// <summary>
+        /// 解析 Sync 钩子超时：注册覆盖 → <see cref="FlowHookBase.TimeoutMs"/> → 全局回退。
+        /// </summary>
+        internal int ResolveSyncHookTimeoutMs(HookRegistration hook)
+        {
+            if (hook?.TimeoutMs is int regMs)
+                return regMs;
+            if (hook?.Handler is FlowHookBase bas)
+                return bas.TimeoutMs;
+            return Sail.CapabilityOptions?.SyncHookTimeoutMs ?? 0;
         }
 
         /// <summary>Async Hook 写入 Outbox（kit 非空时同事务）。</summary>
@@ -139,6 +211,7 @@ namespace sailflow.engine.Hooks
             EnsureProcessCode(kit, ctx);
 
             var om = Sail.ManagerFactory.HookOutbox;
+            var log = Sail.Log;
             foreach (var hook in Registry.Hooks.Where(h => h.Mode == HookMode.AsyncOutbox))
             {
                 if (!MatchesHook(hook, ctx, eventType))
@@ -151,6 +224,17 @@ namespace sailflow.engine.Hooks
                 try
                 {
                     payload = Sail.JsonSerializer.Serialize(ctx);
+                }
+                catch (Exception ex)
+                {
+                    log?.Error(
+                        SailLogCategories.AsyncHook,
+                        ex,
+                        "ENQUEUE_FAIL name={0} event={1} pi={2}",
+                        hook.Name,
+                        eventType,
+                        ctx.ProcessInstanceId ?? "-");
+                    throw;
                 }
                 finally
                 {
@@ -176,6 +260,12 @@ namespace sailflow.engine.Hooks
                     om.InsertPending(Sail.UseRunSQL(), row);
 
                 Sail.CapabilityMetrics?.IncrementOutboxEnqueue();
+                log?.Message(
+                    SailLogCategories.AsyncHook,
+                    "ENQUEUE name={0} event={1} pi={2}",
+                    hook.Name,
+                    eventType,
+                    ctx.ProcessInstanceId ?? "-");
             }
         }
 

@@ -27,6 +27,9 @@ namespace sailflow.engine.Hooks
         public EventFireTypeEnum[] Events { get; init; }
         public HookMode Mode { get; init; }
         public IFlowHook Handler { get; init; }
+
+        /// <summary>注册级超时覆盖；null 则走 Handler/<see cref="FlowCapabilityOptions"/>。</summary>
+        public int? TimeoutMs { get; init; }
     }
 
     public sealed class NotifierRegistration
@@ -83,18 +86,20 @@ namespace sailflow.engine.Hooks
         public HookResult Validate(FlowHookContext ctx) => _validate(ctx);
     }
 
-    internal sealed class DelegateFlowHook : IFlowHook
+    internal sealed class DelegateFlowHook : FlowHookBase
     {
         private readonly Action<FlowHookContext> _handle;
 
-        public DelegateFlowHook(string name, Action<FlowHookContext> handle)
+        public DelegateFlowHook(string name, Action<FlowHookContext> handle, int? timeoutMs = null)
         {
             Name = name;
             _handle = handle ?? throw new ArgumentNullException(nameof(handle));
+            if (timeoutMs.HasValue)
+                TimeoutMs = timeoutMs.Value;
         }
 
-        public string Name { get; }
-        public void Handle(FlowHookContext ctx) => _handle(ctx);
+        public override string Name { get; }
+        public override void Handle(FlowHookContext ctx) => _handle(ctx);
     }
 
     internal sealed class DelegateTaskNotifier : ITaskNotifier

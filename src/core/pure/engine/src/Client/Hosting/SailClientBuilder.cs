@@ -9,6 +9,7 @@ using sailflow.engine.Rules;
 using sailflow.hub.Essential;
 using sailflow.hub.Localize;
 using sailflow.engine.Client;
+using sailflow.engine.Logging;
 
 namespace sailflow.engine.Hosting;
 
@@ -145,6 +146,21 @@ public sealed class SailClientBuilder
         return this;
     }
 
+    /// <summary>设置运行时日志最低级别（写入 <see cref="SailClient.LogOptions"/>）。</summary>
+    public SailClientBuilder useLogLevel(SailLogLevel level)
+    {
+        Services.Properties[SailBuilderKeys.LogLevel] = level;
+        return this;
+    }
+
+    /// <summary>注册运行时日志实现（替换默认 <see cref="ConsoleSailLogger"/>）。</summary>
+    public SailClientBuilder useLogger(ISailLogger logger)
+    {
+        ArgumentNullException.ThrowIfNull(logger);
+        Services.Properties[SailBuilderKeys.Logger] = logger;
+        return this;
+    }
+
     /// <summary>积极构建：得到 <see cref="SailClient"/>，由宿主自行持有并注入工作类。</summary>
     public SailClient Build()
     {
@@ -258,6 +274,18 @@ public sealed class SailClientBuilder
         SailFlowCapabilityExtensions.ApplyPendingRegistrations(client, Services);
         SailEngineFactoryExtensions.ApplyPendingFactories(client, Services);
         SailIdExtensions.ApplyPending(client, Services);
+
+        if (Services.Properties.TryGetValue(SailBuilderKeys.LogLevel, out var logLevelBox)
+            && logLevelBox is SailLogLevel logLevel)
+        {
+            client.useLogLevel(logLevel);
+        }
+
+        if (Services.Properties.TryGetValue(SailBuilderKeys.Logger, out var loggerBox)
+            && loggerBox is ISailLogger logger)
+        {
+            client.useLogger(logger);
+        }
 
         foreach (var d in Services.OrderBy(x => x.Order)
                      .Where(x => x.Phase == SailFeaturePhase.ConfigureClient))

@@ -31,5 +31,11 @@ namespace sailflow.engine.Hooks
         /// Gate / Hook 忽略此字段。
         /// </summary>
         public NotifyThrottleOptions InProcessThrottle { get; set; }
+
+        /// <summary>
+        /// Sync Hook 软超时（毫秒）。null=走钩子实例或全局回退；
+        /// 有值时优先于 <see cref="FlowHookBase.TimeoutMs"/> / <see cref="FlowCapabilityOptions.SyncHookTimeoutMs"/>。
+        /// </summary>
+        public int? TimeoutMs { get; set; }
     }
 }

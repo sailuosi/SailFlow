@@ -122,7 +122,9 @@ var client = SailClient.CreateBuilder(configuration)
     }, autoStart: true)
     .Build();
 
-client.CapabilityOptions.SyncHookTimeoutMs = 2000;
+// Sync 软超时优先 FlowHookBase.TimeoutMs（默认 30s）；下列为未继承基类时的全局回退
+// client.CapabilityOptions.SyncHookTimeoutMs = 30_000;
+client.useLogLevel(SailLogLevel.Debug); // 开发看 sync-hook BEGIN/END
 client.CapabilityMetrics = new InMemoryFlowCapabilityMetrics();
 // client.HookOutboxDrainCts?.Cancel();
 ```
@@ -314,7 +316,7 @@ public interface IFlowHook
 
 | Mode | 主路径行为 | 失败 |
 |------|------------|------|
-| `HookMode.Sync` | 当场 `Handle`；受 `SyncHookTimeoutMs` 约束 | 异常 / 超时 → **回滚**流程事务（FailFast） |
+| `HookMode.Sync` | 当场 `Handle`（有 kit 也同线程）；软超时取自 `FlowHookBase.TimeoutMs`（默认 30s）或注册/全局回退；进度日志走 `Sail.Log`（BEGIN/END=Debug） | 异常 → `FlowSyncHookException`；超时 → `FlowSyncHookTimeoutException` → **回滚**（FailFast）。永久阻塞靠 BEGIN 无 END 归因 |
 | `HookMode.AsyncOutbox`（默认） | 只插入 `sf_hook_outbox` | Worker 重试；超 `MaxAttempts` → `Dead`；**不**回滚已提交流转 |
 
 用户若需要「流程已成功、业务副作用失败可补调」，必须用 **AsyncOutbox**，不要默认当成「Hook 永远不影响流程」。

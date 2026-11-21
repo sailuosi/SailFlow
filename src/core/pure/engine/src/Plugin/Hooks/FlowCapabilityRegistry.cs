@@ -151,6 +151,7 @@ namespace sailflow.engine.Hooks
                 Events = o.Events,
                 Mode = o.Mode,
                 Handler = hook,
+                TimeoutMs = o.TimeoutMs,
             };
 
         internal static NotifierRegistration BuildNotifierRegistration(ITaskNotifier notifier, HookRegistrationOptions o) =>

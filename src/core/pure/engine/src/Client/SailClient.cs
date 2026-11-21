@@ -8,6 +8,7 @@ using sailflow.engine.Assignee;
 using sailflow.engine.Hosting;
 using sailflow.engine.Hooks;
 using sailflow.engine.Ids;
+using sailflow.engine.Logging;
 using sailflow.engine.NextStep;
 using sailflow.engine.Rules;
 using sailflow.hub.Essential;
@@ -159,8 +160,38 @@ public partial class SailClient
     /// <summary>Gate / Hook / Outbox 轻量指标（默认 no-op）。</summary>
     public IFlowCapabilityMetrics CapabilityMetrics { get; set; } = NullFlowCapabilityMetrics.Instance;
 
-    /// <summary>Gate / Hook 行为（Sync 硬超时等）。</summary>
+    /// <summary>Gate / Hook 行为（Sync 软超时回退、WarnMs 等）。</summary>
     public FlowCapabilityOptions CapabilityOptions { get; set; } = new();
+
+    /// <summary>运行时诊断日志最低级别等（与 <see cref="Log"/> 配套）。</summary>
+    public SailLogOptions LogOptions { get; set; } = new();
+
+    private ISailLogger _log;
+
+    /// <summary>
+    /// 运行时诊断日志（Gate/Hook/Notifier 进度）。默认 <see cref="ConsoleSailLogger"/>；
+    /// 与 <see cref="LogSink"/>（落库）分工。Builder：<c>useLogLevel</c> / <c>useLogger</c>。
+    /// </summary>
+    public ISailLogger Log
+    {
+        get => _log ??= new ConsoleSailLogger(() => LogOptions ?? new SailLogOptions());
+        set => _log = value ?? NullSailLogger.Instance;
+    }
+
+    /// <summary>设置运行时日志最低级别。</summary>
+    public SailClient useLogLevel(SailLogLevel level)
+    {
+        LogOptions ??= new SailLogOptions();
+        LogOptions.MinimumLevel = level;
+        return this;
+    }
+
+    /// <summary>替换运行时日志实现。</summary>
+    public SailClient useLogger(ISailLogger logger)
+    {
+        _log = logger ?? throw new ArgumentNullException(nameof(logger));
+        return this;
+    }
 
     /// <summary>Outbox Worker / drain 运行参数（<see cref="Hosting.SailHookOutboxDrainExtensions.UseHookOutboxDrain"/> 可覆盖）。</summary>
     public HookOutboxOptions HookOutboxOptions { get; set; } = new();

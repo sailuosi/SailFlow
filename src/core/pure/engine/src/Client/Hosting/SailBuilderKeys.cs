@@ -36,4 +36,10 @@ public static class SailBuilderKeys
 
     /// <summary>发号 <see cref="SailIdBuilder"/>（UseSailIds）。</summary>
     public static readonly object SailIds = new();
+
+    /// <summary>运行时日志最低级别 <see cref="sailflow.engine.Logging.SailLogLevel"/>。</summary>
+    public static readonly object LogLevel = new();
+
+    /// <summary>运行时日志实现 <see cref="sailflow.engine.Logging.ISailLogger"/>。</summary>
+    public static readonly object Logger = new();
 }
