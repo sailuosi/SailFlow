@@ -260,6 +260,19 @@ namespace sailflow.engine.Entity
         public short? SignForwardType { get; set; }
 
         /// <summary>
+        /// 生效 Leave 判定 Type 快照（列 <c>ai_leave_type</c>），对齐设计侧 <c>sf:leaveJudge@type</c>。
+        /// 非空时优先于 BPMN 设计；加签主容器可改写为子堆栈规则（如 Collaborate）。
+        /// </summary>
+        [SooColumn(Name = "ai_leave_type", Length = 64)]
+        public string LeaveJudgeType { get; set; }
+
+        /// <summary>
+        /// 生效 Leave 判定 Params JSON 快照（列 <c>ai_leave_params</c>），对齐 <c>sf:leaveJudge@params</c>。
+        /// </summary>
+        [SooColumn(Name = "ai_leave_params", DataType = DataFam.Json, Tag = "sail.xml")]
+        public string LeaveJudgeParams { get; set; }
+
+        /// <summary>
         /// 退回/撤销类后退类型（列 <c>ai_bwd_type</c>），见 <see cref="sailflow.engine.Common.BackwardTypeEnum"/>。
         /// 1=Withdrawed 撤销；2=Sendback 退回；3=Reversed 返签。
         /// </summary>

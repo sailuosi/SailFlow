@@ -36,6 +36,13 @@ public static class BpmnAssigneeConfigReader
         if (main == null)
             return null;
 
+        // 1) AI 快照优先（加签子堆栈改写后自然生效）
+        var fromAi = ConfigPairJson.FromTypeAndParamsJson(
+            main.LeaveJudgeType,
+            main.LeaveJudgeParams);
+        if (fromAi != null)
+            return fromAi;
+
         var activity = TryLoadActivity(
             sail,
             request.ProcessId ?? main.ProcessId,
@@ -47,13 +54,14 @@ public static class BpmnAssigneeConfigReader
         if (activity == null)
             return null;
 
+        // 2) BPMN 设计侧
         var pair = ConfigPairJson.FromTypeAndParamsJson(
             activity.LeaveJudgeType,
             activity.LeaveJudgeParams);
         if (pair != null)
             return pair;
 
-        // 无显式 LeaveJudge：旧 MultiSignDetail → Collaborate 等
+        // 3) 无显式 LeaveJudge：旧 MultiSignDetail → Collaborate 等
         return LegacyMultiSignAdapter.InferLeaveFromActivity(activity);
     }
 

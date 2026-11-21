@@ -245,73 +245,51 @@ namespace sailflow.biz.query
                 }
                 else if (complexType == ComplexTypeEnum.SignForward)
                 {
-                    var signforwardType = EnumHelper.ParseEnum<SignForwardTypeEnum>(activityInstance.SignForwardType.Value.ToString());
+                    // 与 MultiSignForward 一致：串行看末席 CompleteOrder；并行按主阈预判（勿用主 CompleteOrder 封顶 maxOrder）
+                    var mergeType = mainActivityInstance.MergeType != null
+                        ? EnumHelper.ParseEnum<MergeTypeEnum>(mainActivityInstance.MergeType.Value.ToString())
+                        : MergeTypeEnum.Parallel;
+                    var allChildren = aim.GetActivityMulitipleInstanceWithState(
+                        mainActivityInstance.ActivityInstanceId,
+                        mainActivityInstance.ProcessInstanceId,
+                        null).ToList();
 
-                    if (signforwardType == SignForwardTypeEnum.SignForwardBehind
-                        || signforwardType == SignForwardTypeEnum.SignForwardBefore)
+                    if (mergeType == MergeTypeEnum.Sequence
+                        || (activityInstance.SignForwardType != null
+                            && (activityInstance.SignForwardType == (short)SignForwardTypeEnum.SignForwardBefore
+                                || activityInstance.SignForwardType == (short)SignForwardTypeEnum.SignForwardBehind)))
                     {
-                        var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.ActivityInstanceId,
-                            mainActivityInstance.ProcessInstanceId,
-                            (short)ActivityStateEnum.Suspended).ToList();
-
-                        short maxOrder = 0;
-                        if (sqList != null && sqList.Count > 0)
-                            maxOrder = (short)sqList.Max(t => t.CompleteOrder.Value);
-                        else
-                            maxOrder = (short)activityInstance.CompleteOrder;
-
-                        if (mainActivityInstance.CompareType == null
-                            || EnumHelper.ParseEnum<CompareTypeEnum>(mainActivityInstance.CompareType.Value.ToString()) == CompareTypeEnum.Count)
-                        {
-                            if (mainActivityInstance.CompleteOrder != null && mainActivityInstance.CompleteOrder <= maxOrder)
-                                maxOrder = (short)mainActivityInstance.CompleteOrder;
-
-                            if (activityInstance.CompleteOrder == sqList.Count)
-                                isLast = true;
-                            else if (activityInstance.CompleteOrder < maxOrder)
-                                isLast = false;
-                            else if (activityInstance.CompleteOrder == maxOrder)
-                                isLast = true;
-                        }
-                        else
-                        {
-                            if (mainActivityInstance.CompleteOrder == null || mainActivityInstance.CompleteOrder > 1)
-                                mainActivityInstance.CompleteOrder = 1;
-                            if ((activityInstance.CompleteOrder * 0.01) / (maxOrder * 0.01) >= mainActivityInstance.CompleteOrder)
-                                isLast = true;
-                            else
-                                isLast = false;
-                        }
+                        var ordered = allChildren
+                            .Where(x => x.CompleteOrder != null && x.CompleteOrder > 0)
+                            .ToList();
+                        float maxOrder = ordered.Count > 0
+                            ? ordered.Max(t => t.CompleteOrder.Value)
+                            : (activityInstance.CompleteOrder ?? 0);
+                        isLast = activityInstance.CompleteOrder != null
+                            && activityInstance.CompleteOrder >= maxOrder;
                     }
-                    else if (signforwardType == SignForwardTypeEnum.SignForwardParallel)
+                    else
                     {
-                        var sqList = aim.GetActivityMulitipleInstanceWithState(
-                            mainActivityInstance.ActivityInstanceId,
-                            mainActivityInstance.ProcessInstanceId,
-                            null).ToList();
-
-                        var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed).ToList().Count();
-                        // 与 NodeMediatorMultiSignForward 一致：只认 Completed；当前子 AI 计入达阈预判
-                        var completedCount = sqList.Count(w =>
+                        var allCount = allChildren
+                            .Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed)
+                            .Count();
+                        var completedCount = allChildren.Count(w =>
                             w.ActivityState == (short)ActivityStateEnum.Completed
                             || w.ActivityInstanceId == activityInstance.ActivityInstanceId);
                         if (mainActivityInstance.CompareType == null
                             || EnumHelper.ParseEnum<CompareTypeEnum>(mainActivityInstance.CompareType.Value.ToString()) == CompareTypeEnum.Percentage)
                         {
-                            if (mainActivityInstance.CompleteOrder > 1)
-                                mainActivityInstance.CompleteOrder = 1;
-
-                            if ((completedCount * 0.01) / (allCount * 0.01) >= mainActivityInstance.CompleteOrder)
-                                isLast = true;
-                            else
-                                isLast = false;
+                            var rate = mainActivityInstance.CompleteOrder == null || mainActivityInstance.CompleteOrder > 1
+                                ? 1f
+                                : mainActivityInstance.CompleteOrder.Value;
+                            isLast = allCount > 0 && (completedCount * 1.0 / allCount) >= rate;
                         }
                         else
                         {
-                            if (mainActivityInstance.CompleteOrder == null || mainActivityInstance.CompleteOrder > allCount)
-                                mainActivityInstance.CompleteOrder = allCount;
-                            isLast = completedCount >= mainActivityInstance.CompleteOrder;
+                            var need = mainActivityInstance.CompleteOrder == null || mainActivityInstance.CompleteOrder > allCount
+                                ? allCount
+                                : (int)mainActivityInstance.CompleteOrder.Value;
+                            isLast = completedCount >= need;
                         }
                     }
                 }

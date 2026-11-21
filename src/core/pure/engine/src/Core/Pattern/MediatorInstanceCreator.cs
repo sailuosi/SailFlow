@@ -204,30 +204,21 @@ namespace sailflow.engine.Pattern
             }
             else if (forwardContext.CurrentActivity.ActivityType == ActivityTypeEnum.TaskNode)        
             {
-                //普通任务节点，运行时临时加签变为多实例节点
-                //普通任务节点
-                var controlParamSheet = forwardContext.ActivityResource.AppRunner.ControlParameterSheet;
-                if (controlParamSheet != null)
+                // 加签子实例优先（避免空 ControlParameterSheet 误走普通 Task 出节点）
+                if (forwardContext.FromActivityInstance?.MainActInstanceId != null)
                 {
-                    if (!string.IsNullOrEmpty(controlParamSheet.SignForwardType)
-                        && controlParamSheet.SignForwardType.ToUpper() != "NONE")
-                    {
-                        return new NodeMediatorSignForward(forwardContext, kit, _sail);
-                    }
-                    else
-                    {
-                        return new NodeMediatorTask(forwardContext, kit, _sail);
-                    }
-                }
-                else if(forwardContext.FromActivityInstance.MainActInstanceId != null)
-                {
-                    //加签子实例
                     return new NodeMediatorMultiSignForward(forwardContext, kit, _sail);
                 }
-                else
+
+                var controlParamSheet = forwardContext.ActivityResource.AppRunner.ControlParameterSheet;
+                if (controlParamSheet != null
+                    && !string.IsNullOrEmpty(controlParamSheet.SignForwardType)
+                    && controlParamSheet.SignForwardType.ToUpper() != "NONE")
                 {
-                    return new NodeMediatorTask(forwardContext, kit, _sail);
-                } 
+                    return new NodeMediatorSignForward(forwardContext, kit, _sail);
+                }
+
+                return new NodeMediatorTask(forwardContext, kit, _sail);
             }
             else if (forwardContext.CurrentActivity.ActivityType == ActivityTypeEnum.ServiceNode)      
             {

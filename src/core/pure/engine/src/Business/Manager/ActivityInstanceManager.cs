@@ -851,6 +851,7 @@ namespace sailflow.engine.Manager
             instance.DueAt = CalculateActivityOverdueDateTime(activity.BoundaryList, instance.CreatedDateTime.Value);
             instance.ActivityState = (short)ActivityStateEnum.Ready;
             instance.CanNotRenewInstance = 0;
+            ApplyLeaveSnapshotFromActivity(instance, activity);
 
             return instance;
         }
@@ -945,8 +946,20 @@ namespace sailflow.engine.Manager
             instance.CreatedDateTime = System.DateTime.UtcNow;
             instance.ActivityState = (short)ActivityStateEnum.Ready;
             instance.CanNotRenewInstance = 0;
+            ApplyLeaveSnapshotFromActivity(instance, activity);
 
             return instance;
+        }
+
+        /// <summary>
+        /// 从设计 Activity 拷贝 Leave 快照到 AI（子堆栈主容器可随后改写）。
+        /// </summary>
+        internal static void ApplyLeaveSnapshotFromActivity(ActivityInstanceEntity instance, Activity activity)
+        {
+            if (instance == null || activity == null)
+                return;
+            instance.LeaveJudgeType = activity.LeaveJudgeType;
+            instance.LeaveJudgeParams = activity.LeaveJudgeParams;
         }
 
         /// <summary>
