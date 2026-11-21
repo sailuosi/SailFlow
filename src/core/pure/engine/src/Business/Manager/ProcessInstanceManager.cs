@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +9,9 @@ using sailflow.data;
 using sailflow.engine.Entity;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
+using sailflow.engine.Event;
 using sailflow.engine.Hooks;
+using sailflow.engine.Logging;
 using sailflow.engine.Xpdl;
 using sailflow.hub.Localize;
 using sailflow.hub.Resource;
@@ -289,12 +292,83 @@ namespace sailflow.engine.Manager
                 Kit = kit
             };
 
+            var log = Sail.Log;
+            var warnMs = Sail.CapabilityOptions?.SyncHookWarnMs ?? 0;
+            var kitPresent = kit != null;
+
             foreach (var reg in regs)
             {
                 if (reg?.Handler == null) continue;
                 if (!MatchesCreateHook(reg, processEntity, entity)) continue;
-                reg.Handler.OnCreating(ctx);
+
+                var timeoutMs = ResolveCreateHookTimeoutMs(reg);
+                log?.Debug(
+                    SailLogCategories.CreateHook,
+                    "BEGIN name={0} kit={1} timeoutMs={2} process={3}",
+                    reg.Name,
+                    kitPresent,
+                    timeoutMs,
+                    processEntity?.ProcessCode ?? processEntity?.ProcessId ?? "-");
+
+                var sw = Stopwatch.StartNew();
+                try
+                {
+                    reg.Handler.OnCreating(ctx);
+                    sw.Stop();
+                    var elapsed = sw.ElapsedMilliseconds;
+
+                    if (timeoutMs > 0 && elapsed > timeoutMs)
+                    {
+                        log?.Error(
+                            SailLogCategories.CreateHook,
+                            string.Format(
+                                "FAIL name={0} elapsedMs={1} reason=timeout timeoutMs={2}",
+                                reg.Name, elapsed, timeoutMs));
+                        throw new FlowSyncHookTimeoutException(
+                            reg.Name,
+                            EventFireTypeEnum.OnProcessStarting,
+                            timeoutMs,
+                            elapsed,
+                            kitPresent);
+                    }
+
+                    if (warnMs > 0 && elapsed > warnMs)
+                    {
+                        log?.Warning(
+                            SailLogCategories.CreateHook,
+                            "SLOW name={0} elapsedMs={1} warnMs={2}",
+                            reg.Name, elapsed, warnMs);
+                    }
+
+                    log?.Debug(
+                        SailLogCategories.CreateHook,
+                        "END name={0} elapsedMs={1}",
+                        reg.Name, elapsed);
+                }
+                catch (FlowSyncHookTimeoutException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    sw.Stop();
+                    log?.Error(
+                        SailLogCategories.CreateHook,
+                        ex,
+                        "FAIL name={0} elapsedMs={1}",
+                        reg.Name, sw.ElapsedMilliseconds);
+                    throw;
+                }
             }
+        }
+
+        private int ResolveCreateHookTimeoutMs(ProcessInstanceCreateHookRegistration reg)
+        {
+            if (reg?.TimeoutMs is int regMs)
+                return regMs;
+            if (reg?.Handler is ProcessInstanceCreateHookBase bas)
+                return bas.TimeoutMs;
+            return Sail.CapabilityOptions?.SyncHookTimeoutMs ?? 0;
         }
 
         private static bool MatchesCreateHook(

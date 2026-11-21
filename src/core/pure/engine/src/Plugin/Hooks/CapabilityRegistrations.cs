@@ -70,6 +70,9 @@ namespace sailflow.engine.Hooks
         public string[] BizChannels { get; init; }
         public string[] BizTypes { get; init; }
         public IProcessInstanceCreateHook Handler { get; init; }
+
+        /// <summary>注册级超时覆盖；null 则走 Handler/<see cref="FlowCapabilityOptions"/>。</summary>
+        public int? TimeoutMs { get; init; }
     }
 
     internal sealed class DelegateFlowGate : IFlowGate
@@ -130,17 +133,19 @@ namespace sailflow.engine.Hooks
         public Task NotifyAsync(CopytoNotifyContext ctx, CancellationToken ct) => _notify(ctx, ct);
     }
 
-    internal sealed class DelegateProcessInstanceCreateHook : IProcessInstanceCreateHook
+    internal sealed class DelegateProcessInstanceCreateHook : ProcessInstanceCreateHookBase
     {
         private readonly Action<ProcessInstanceCreateContext> _handle;
 
-        public DelegateProcessInstanceCreateHook(string name, Action<ProcessInstanceCreateContext> handle)
+        public DelegateProcessInstanceCreateHook(string name, Action<ProcessInstanceCreateContext> handle, int? timeoutMs = null)
         {
             Name = name;
             _handle = handle ?? throw new ArgumentNullException(nameof(handle));
+            if (timeoutMs.HasValue)
+                TimeoutMs = timeoutMs.Value;
         }
 
-        public string Name { get; }
-        public void OnCreating(ProcessInstanceCreateContext ctx) => _handle(ctx);
+        public override string Name { get; }
+        public override void OnCreating(ProcessInstanceCreateContext ctx) => _handle(ctx);
     }
 }

@@ -7,7 +7,7 @@
     <PackageId>sailflow.msg</PackageId>
     <RootNamespace>sailflow.msg</RootNamespace>
     <AssemblyName>sailflow.msg</AssemblyName>
-    <Description>RabbitMQ message queue implementation for sailflow Message/Signal (IMessageQueueService).</Description>
+    <Description>RabbitMQ / TaskMail / ConsoleSailLog for sailflow (IMessageQueueService, ISailLogger).</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -278,31 +278,52 @@ namespace sailflow.engine.Hooks
             EnsureProcessCode(kit, ctx);
 
             var om = Sail.ManagerFactory.HookOutbox;
+            var log = Sail.Log;
             foreach (var notifier in Registry.Notifiers)
             {
                 if (!MatchesNotifier(notifier, ctx))
                     continue;
 
-                var payload = Sail.JsonSerializer.Serialize(ctx);
-                var row = new HookOutboxEntity
+                try
                 {
-                    Kind = HookOutboxKinds.Notify,
-                    HandlerName = notifier.Name,
-                    EventType = ctx.Kind.ToString(),
-                    ProcessId = ctx.ProcessId,
-                    ProcessCode = ctx.ProcessCode,
-                    ProcessInstanceId = ctx.ProcessInstanceId,
-                    ActivityInstanceId = ctx.ActivityInstanceId,
-                    TaskId = ctx.TaskId,
-                    PayloadJson = payload,
-                };
+                    var payload = Sail.JsonSerializer.Serialize(ctx);
+                    var row = new HookOutboxEntity
+                    {
+                        Kind = HookOutboxKinds.Notify,
+                        HandlerName = notifier.Name,
+                        EventType = ctx.Kind.ToString(),
+                        ProcessId = ctx.ProcessId,
+                        ProcessCode = ctx.ProcessCode,
+                        ProcessInstanceId = ctx.ProcessInstanceId,
+                        ActivityInstanceId = ctx.ActivityInstanceId,
+                        TaskId = ctx.TaskId,
+                        PayloadJson = payload,
+                    };
 
-                if (kit != null)
-                    om.InsertPending(kit, row);
-                else
-                    om.InsertPending(Sail.UseRunSQL(), row);
+                    if (kit != null)
+                        om.InsertPending(kit, row);
+                    else
+                        om.InsertPending(Sail.UseRunSQL(), row);
 
-                Sail.CapabilityMetrics?.IncrementOutboxEnqueue();
+                    Sail.CapabilityMetrics?.IncrementOutboxEnqueue();
+                    log?.Message(
+                        SailLogCategories.Notifier,
+                        "ENQUEUE name={0} kind={1} task={2}",
+                        notifier.Name,
+                        ctx.Kind,
+                        ctx.TaskId ?? "-");
+                }
+                catch (Exception ex)
+                {
+                    log?.Error(
+                        SailLogCategories.Notifier,
+                        ex,
+                        "ENQUEUE_FAIL name={0} kind={1} task={2}",
+                        notifier.Name,
+                        ctx.Kind,
+                        ctx.TaskId ?? "-");
+                    throw;
+                }
             }
         }
 
@@ -378,6 +399,7 @@ namespace sailflow.engine.Hooks
             EnsureProcessCode(kit, ctx);
 
             var om = Sail.ManagerFactory.HookOutbox;
+            var log = Sail.Log;
             foreach (var notifier in Registry.CopytoNotifiers)
             {
                 if (!MatchesCopytoNotifier(notifier, ctx))
@@ -402,6 +424,12 @@ namespace sailflow.engine.Hooks
                     om.InsertPending(Sail.UseRunSQL(), row);
 
                 Sail.CapabilityMetrics?.IncrementOutboxEnqueue();
+                log?.Message(
+                    SailLogCategories.Notifier,
+                    "ENQUEUE name={0} kind=copyto/{1} pi={2}",
+                    notifier.Name,
+                    ctx.Kind,
+                    ctx.ProcessInstanceId ?? "-");
             }
         }
 
@@ -499,8 +527,24 @@ namespace sailflow.engine.Hooks
                 if (row.Status == HookOutboxStatus.Dead)
                 {
                     Sail.CapabilityMetrics?.IncrementOutboxDead();
-                    Trace.TraceWarning(
-                        $"[sailflow] Hook outbox dead-letter id={row.TaskId} kind={row.Kind} handler={row.HandlerName}: {ex.Message}");
+                    Sail.Log?.Error(
+                        SailLogCategories.Outbox,
+                        ex,
+                        "DEAD id={0} kind={1} handler={2}",
+                        row.HookOutboxId ?? "-",
+                        row.Kind,
+                        row.HandlerName ?? "-");
+                }
+                else
+                {
+                    Sail.Log?.Warning(
+                        SailLogCategories.Outbox,
+                        "FAIL id={0} kind={1} handler={2} attempt={3}: {4}",
+                        row.HookOutboxId ?? "-",
+                        row.Kind,
+                        row.HandlerName ?? "-",
+                        row.Attempt,
+                        ex.Message);
                 }
 
                 return false;
@@ -546,9 +590,15 @@ namespace sailflow.engine.Hooks
                 {
                     await notifier.Handler.NotifyAsync(ctx, cancellationToken).ConfigureAwait(false);
                 }
-                catch
+                catch (Exception ex)
                 {
                     // Notifier 失败隔离：不阻断其它通道
+                    Sail.Log?.Warning(
+                        SailLogCategories.Notifier,
+                        "ISOLATED_FAIL name={0} kind={1}: {2}",
+                        notifier.Name,
+                        ctx.Kind,
+                        ex.Message);
                 }
             }
         }
@@ -590,6 +640,11 @@ namespace sailflow.engine.Hooks
             if (ctx == null)
                 throw new InvalidOperationException("Hook outbox payload is empty.");
 
+            Sail.Log?.Debug(
+                SailLogCategories.Outbox,
+                "DISPATCH kind=hook name={0} pi={1}",
+                hook.Name,
+                ctx.ProcessInstanceId ?? "-");
             hook.Handler.Handle(ctx);
         }
 
@@ -604,6 +659,11 @@ namespace sailflow.engine.Hooks
             if (ctx == null)
                 throw new InvalidOperationException("CopytoNotify outbox payload is empty.");
 
+            Sail.Log?.Debug(
+                SailLogCategories.Notifier,
+                "DISPATCH name={0} kind=copyto/{1}",
+                notifier.Name,
+                ctx.Kind);
             await notifier.Handler.NotifyAsync(ctx, cancellationToken).ConfigureAwait(false);
             Sail.CapabilityMetrics?.IncrementNotifierDispatch();
         }
@@ -618,6 +678,13 @@ namespace sailflow.engine.Hooks
             var ctx = Sail.JsonSerializer.Deserialize<TaskNotifyContext>(row.PayloadJson);
             if (ctx == null)
                 throw new InvalidOperationException("Notify outbox payload is empty.");
+
+            Sail.Log?.Debug(
+                SailLogCategories.Notifier,
+                "DISPATCH name={0} kind={1} task={2}",
+                notifier.Name,
+                ctx.Kind,
+                ctx.TaskId ?? "-");
 
             // InProcessThrottle：认领后入有界 Channel，等真实 NotifyAsync 完成再返回 → 外层才 MarkSucceeded
             if (notifier.InProcessThrottle != null)

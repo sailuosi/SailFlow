@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using sailflow.engine.Client;
 
@@ -197,9 +196,10 @@ namespace sailflow.engine.Hooks
                 BizChannels = o.BizChannels,
                 BizTypes = o.BizTypes,
                 Handler = hook,
+                TimeoutMs = o.TimeoutMs,
             };
 
-        private static void TraceWarning(string message) =>
-            Trace.TraceWarning("[sailflow.engine.Hooks] " + message);
+        private void TraceWarning(string message) =>
+            Client.Log?.Warning("capability-registry", message);
     }
 }

@@ -29,5 +29,7 @@ public static class SailFeatureNames
     public const string ImmediateArchive = "sail.lifecycle.archive.immediate";
     public const string RabbitMq = "sailflow.msg.RabbitMq";
     public const string DefaultTaskMail = "sailflow.msg.DefaultMail";
+    /// <summary>ext/msg 控制台运行时日志（ISailLogger）。</summary>
+    public const string ConsoleSailLog = "sailflow.msg.ConsoleSailLog";
     public const string BizAssigneeSamples = "biz-assignee-samples";
 }
