@@ -28,7 +28,18 @@ namespace sailflow.engine.Hooks
     /// <summary>钩子执行模式（Gate 恒 Sync，忽略本枚举）。</summary>
     public enum HookMode
     {
+        /// <summary>
+        /// 与流转同线程、同事务当场执行；异常 FailFast 回滚。
+        /// </summary>
+        /// <remarks>
+        /// <para><b>【严重 · 同事务自锁】</b>调度会设置 <see cref="FlowHookContext.Kit"/>。
+        /// 实现中若再开引擎库连接读写未提交数据，将与主事务互相等待导致闷锅。
+        /// 必须用 <c>ctx.Kit</c>；可延后副作用请改用 <see cref="AsyncOutbox"/>。
+        /// 详见《专题-Bug治理-Sync钩子同事务自锁》。</para>
+        /// </remarks>
         Sync,
+
+        /// <summary>写入 Outbox，由 Worker 异步调用；不阻塞、不回滚已提交流转。</summary>
         AsyncOutbox,
     }
 

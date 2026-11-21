@@ -27,11 +27,17 @@ namespace sailflow.engine.Hooks
         public EventFireTypeEnum EventType { get; set; }
 
         /// <summary>
-        /// 当前流转事务上的 <see cref="SQLBuilder"/>（Sync Hook 同事务读写未提交行时必须用此 kit，
-        /// 勿再 <c>Sail.UseRunSQL()</c> 开新连接，否则会与主事务锁死）。
-        /// AsyncOutbox 回放时为空；禁止序列化进 Outbox（SQLBuilder 自引用环）。
-        /// Enqueue 前会临时摘掉；STJ 亦忽略本属性。
+        /// 当前流转事务上的 <see cref="SQLBuilder"/>。
         /// </summary>
+        /// <remarks>
+        /// <para><b>【严重 · 同事务自锁】</b>Sync Hook 与主路径共用此连接/事务。
+        /// 读写未提交的流程实例、变量、活动、待办时<strong>必须</strong>用本属性（或 <c>Kit.useSQL()</c>），
+        /// <strong>禁止</strong>再 <c>Sail.UseRunSQL()</c> 或无 kit 的 <c>WorkflowService</c>/<c>*Manager</c> 访问同一引擎库，
+        /// 否则第二连接等待提交、主事务等待钩子 → 自锁闷锅（SQLite Error 5/6、命令超时；调试强制停止后查询全挂）。
+        /// 案例与检查单见 theme《专题-Bug治理-Sync钩子同事务自锁》；可观测见《专题-钩子治理与同事务可观测》。</para>
+        /// <para>AsyncOutbox 回放时为空；禁止序列化进 Outbox（SQLBuilder 自引用环）。
+        /// Enqueue 前会临时摘掉；STJ 亦忽略本属性。</para>
+        /// </remarks>
         [JsonIgnore]
         public SQLBuilder Kit { get; set; }
     }

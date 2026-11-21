@@ -17,8 +17,14 @@ namespace sailflow.engine.Assignee
         public IDictionary<string, PerformerList> NextActivityPerformers { get; set; }
 
         /// <summary>
-        /// 可选：当前发送主路径事务 kit。锚点入 Outbox 时与发送同事务（R10）。
+        /// 当前发送/发起主路径事务 kit（有则与流转同事务）。
         /// </summary>
+        /// <remarks>
+        /// <para><b>【严重 · 同事务自锁】</b>解析办理人、读流程实例/定义、写锚点 Outbox 时优先用本 Kit
+        ///（或 <c>Kit.useSQL()</c>）。若忽略本属性而 <c>Sail.UseRunSQL()</c> 读刚插入的流程实例，
+        /// 会与主事务自锁（发起超时 / SQLite locked）。见《专题-Bug治理-Sync钩子同事务自锁》。</para>
+        /// <para>锚点入 Outbox 时与发送同事务（R10）。</para>
+        /// </remarks>
         public SQLBuilder Kit { get; set; }
 
         /// <summary>

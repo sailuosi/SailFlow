@@ -13,6 +13,10 @@ namespace sailflow.engine.Hooks
         public TaskNotifyKind[] TaskKinds { get; set; }
         /// <summary>抄送 Notifier 专用；未配则不推送。</summary>
         public CopytoNotifyKind[] CopytoKinds { get; set; }
+        /// <summary>
+        /// 执行模式；默认 <see cref="HookMode.AsyncOutbox"/>。
+        /// 设为 <see cref="HookMode.Sync"/> 前必读该枚举上的同事务自锁警示：须用 <c>ctx.Kit</c>，禁止另开引擎连接。
+        /// </summary>
         public HookMode Mode { get; set; } = HookMode.AsyncOutbox;
         public int Order { get; set; }
 
