@@ -312,9 +312,9 @@ namespace sailflow.engine.Manager
                 var label = CapabilityPluginNames.Display(reg.Name, reg.Title);
                 log?.Debug(
                     SailLogCategories.CreateHook,
-                    "BEGIN name={0} kit={1} timeoutMs={2} process={3}",
+                    "开始 名称={0} 同事务Kit={1} 超时={2}毫秒 流程={3}",
                     label,
-                    kitPresent,
+                    kitPresent ? "是" : "否",
                     timeoutMs,
                     processEntity?.ProcessCode ?? processEntity?.ProcessId ?? "-");
 
@@ -330,7 +330,7 @@ namespace sailflow.engine.Manager
                         log?.Error(
                             SailLogCategories.CreateHook,
                             string.Format(
-                                "FAIL name={0} elapsedMs={1} reason=timeout timeoutMs={2}",
+                                "失败 名称={0} 耗时={1}毫秒 原因=超时 超时={2}毫秒",
                                 label, elapsed, timeoutMs));
                         throw new FlowSyncHookTimeoutException(
                             reg.Name,
@@ -344,13 +344,13 @@ namespace sailflow.engine.Manager
                     {
                         log?.Warning(
                             SailLogCategories.CreateHook,
-                            "SLOW name={0} elapsedMs={1} warnMs={2}",
+                            "偏慢 名称={0} 耗时={1}毫秒 告警={2}毫秒",
                             label, elapsed, warnMs);
                     }
 
                     log?.Debug(
                         SailLogCategories.CreateHook,
-                        "END name={0} elapsedMs={1}",
+                        "结束 名称={0} 耗时={1}毫秒",
                         label, elapsed);
                 }
                 catch (FlowSyncHookTimeoutException)
@@ -363,7 +363,7 @@ namespace sailflow.engine.Manager
                     log?.Error(
                         SailLogCategories.CreateHook,
                         ex,
-                        "FAIL name={0} elapsedMs={1}",
+                        "失败 名称={0} 耗时={1}毫秒",
                         label, sw.ElapsedMilliseconds);
                     throw;
                 }

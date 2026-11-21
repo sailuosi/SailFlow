@@ -70,7 +70,7 @@ namespace sailflow.engine.Hooks
                         Sail.CapabilityMetrics?.IncrementGateReject();
                         log?.Warning(
                             SailLogCategories.Gate,
-                            "REJECT name={0} code={1} msg={2} pi={3}",
+                            "拒绝 名称={0} 码={1} 说明={2} 流程实例={3}",
                             CapabilityPluginNames.Display(gate.Name, gate.Title),
                             result.Code ?? "-",
                             result.Message ?? "-",
@@ -83,7 +83,7 @@ namespace sailflow.engine.Hooks
                     log?.Error(
                         SailLogCategories.Gate,
                         ex,
-                        "FAIL name={0} pi={1}",
+                        "失败 名称={0} 流程实例={1}",
                         CapabilityPluginNames.Display(gate.Name, gate.Title),
                         ctx.ProcessInstanceId ?? "-");
                     throw;
@@ -121,10 +121,10 @@ namespace sailflow.engine.Hooks
                 var hookLabel = CapabilityPluginNames.Display(hook.Name, hook.Title);
                 log?.Debug(
                     SailLogCategories.SyncHook,
-                    "BEGIN name={0} event={1} kit={2} timeoutMs={3} pi={4} task={5}",
+                    "开始 名称={0} 事件={1} 同事务Kit={2} 超时={3}毫秒 流程实例={4} 待办={5}",
                     hookLabel,
                     eventType,
-                    kitPresent,
+                    kitPresent ? "是" : "否",
                     timeoutMs,
                     ctx.ProcessInstanceId ?? "-",
                     ctx.TaskId ?? "-");
@@ -142,7 +142,7 @@ namespace sailflow.engine.Hooks
                         log?.Error(
                             SailLogCategories.SyncHook,
                             string.Format(
-                                "FAIL name={0} event={1} elapsedMs={2} reason=timeout timeoutMs={3}",
+                                "失败 名称={0} 事件={1} 耗时={2}毫秒 原因=超时 超时={3}毫秒",
                                 hookLabel,
                                 eventType,
                                 elapsed,
@@ -155,7 +155,7 @@ namespace sailflow.engine.Hooks
                     {
                         log?.Warning(
                             SailLogCategories.SyncHook,
-                            "SLOW name={0} event={1} elapsedMs={2} warnMs={3}",
+                            "偏慢 名称={0} 事件={1} 耗时={2}毫秒 告警={3}毫秒",
                             hookLabel,
                             eventType,
                             elapsed,
@@ -164,7 +164,7 @@ namespace sailflow.engine.Hooks
 
                     log?.Debug(
                         SailLogCategories.SyncHook,
-                        "END name={0} event={1} elapsedMs={2}",
+                        "结束 名称={0} 事件={1} 耗时={2}毫秒",
                         hookLabel,
                         eventType,
                         elapsed);
@@ -179,7 +179,7 @@ namespace sailflow.engine.Hooks
                     log?.Error(
                         SailLogCategories.SyncHook,
                         ex,
-                        "FAIL name={0} event={1} elapsedMs={2}",
+                        "失败 名称={0} 事件={1} 耗时={2}毫秒",
                         hookLabel,
                         eventType,
                         sw.ElapsedMilliseconds);
@@ -231,7 +231,7 @@ namespace sailflow.engine.Hooks
                     log?.Error(
                         SailLogCategories.AsyncHook,
                         ex,
-                        "ENQUEUE_FAIL name={0} event={1} pi={2}",
+                        "入队失败 名称={0} 事件={1} 流程实例={2}",
                         CapabilityPluginNames.Display(hook.Name, hook.Title),
                         eventType,
                         ctx.ProcessInstanceId ?? "-");
@@ -263,7 +263,7 @@ namespace sailflow.engine.Hooks
                 Sail.CapabilityMetrics?.IncrementOutboxEnqueue();
                 log?.Message(
                     SailLogCategories.AsyncHook,
-                    "ENQUEUE name={0} event={1} pi={2}",
+                    "入队 名称={0} 事件={1} 流程实例={2}",
                     CapabilityPluginNames.Display(hook.Name, hook.Title),
                     eventType,
                     ctx.ProcessInstanceId ?? "-");
@@ -309,7 +309,7 @@ namespace sailflow.engine.Hooks
                     Sail.CapabilityMetrics?.IncrementOutboxEnqueue();
                     log?.Message(
                         SailLogCategories.Notifier,
-                        "ENQUEUE name={0} kind={1} task={2}",
+                        "入队 名称={0} 种类={1} 待办={2}",
                         CapabilityPluginNames.Display(notifier.Name, notifier.Title),
                         ctx.Kind,
                         ctx.TaskId ?? "-");
@@ -319,7 +319,7 @@ namespace sailflow.engine.Hooks
                     log?.Error(
                         SailLogCategories.Notifier,
                         ex,
-                        "ENQUEUE_FAIL name={0} kind={1} task={2}",
+                        "入队失败 名称={0} 种类={1} 待办={2}",
                         CapabilityPluginNames.Display(notifier.Name, notifier.Title),
                         ctx.Kind,
                         ctx.TaskId ?? "-");
@@ -427,7 +427,7 @@ namespace sailflow.engine.Hooks
                 Sail.CapabilityMetrics?.IncrementOutboxEnqueue();
                 log?.Message(
                     SailLogCategories.Notifier,
-                    "ENQUEUE name={0} kind=copyto/{1} pi={2}",
+                    "入队 名称={0} 种类=抄送/{1} 流程实例={2}",
                     CapabilityPluginNames.Display(notifier.Name, notifier.Title),
                     ctx.Kind,
                     ctx.ProcessInstanceId ?? "-");
@@ -531,7 +531,7 @@ namespace sailflow.engine.Hooks
                     Sail.Log?.Error(
                         SailLogCategories.Outbox,
                         ex,
-                        "DEAD id={0} kind={1} handler={2}",
+                        "死信 编号={0} 种类={1} 处理器={2}",
                         row.HookOutboxId ?? "-",
                         row.Kind,
                         row.HandlerName ?? "-");
@@ -540,7 +540,7 @@ namespace sailflow.engine.Hooks
                 {
                     Sail.Log?.Warning(
                         SailLogCategories.Outbox,
-                        "FAIL id={0} kind={1} handler={2} attempt={3}: {4}",
+                        "失败 编号={0} 种类={1} 处理器={2} 次数={3}: {4}",
                         row.HookOutboxId ?? "-",
                         row.Kind,
                         row.HandlerName ?? "-",
@@ -602,7 +602,7 @@ namespace sailflow.engine.Hooks
                     // Notifier 失败隔离：不阻断其它通道
                     Sail.Log?.Warning(
                         SailLogCategories.Notifier,
-                        "ISOLATED_FAIL name={0} kind={1}: {2}",
+                        "隔离失败 名称={0} 种类={1}: {2}",
                         CapabilityPluginNames.Display(notifier.Name, notifier.Title),
                         ctx.Kind,
                         ex.Message);
@@ -661,7 +661,7 @@ namespace sailflow.engine.Hooks
 
             Sail.Log?.Debug(
                 SailLogCategories.Outbox,
-                "DISPATCH kind=hook name={0} pi={1}",
+                "分发 种类=钩子 名称={0} 流程实例={1}",
                 CapabilityPluginNames.Display(hook.Name, hook.Title),
                 ctx.ProcessInstanceId ?? "-");
             hook.Handler.Handle(ctx);
@@ -692,7 +692,7 @@ namespace sailflow.engine.Hooks
 
             Sail.Log?.Debug(
                 SailLogCategories.Notifier,
-                "DISPATCH name={0} kind=copyto/{1}",
+                "分发 名称={0} 种类=抄送/{1}",
                 CapabilityPluginNames.Display(notifier.Name, notifier.Title),
                 ctx.Kind);
             await notifier.Handler.NotifyAsync(ctx, cancellationToken).ConfigureAwait(false);
@@ -724,7 +724,7 @@ namespace sailflow.engine.Hooks
 
             Sail.Log?.Debug(
                 SailLogCategories.Notifier,
-                "DISPATCH name={0} kind={1} task={2}",
+                "分发 名称={0} 种类={1} 待办={2}",
                 CapabilityPluginNames.Display(notifier.Name, notifier.Title),
                 ctx.Kind,
                 ctx.TaskId ?? "-");
