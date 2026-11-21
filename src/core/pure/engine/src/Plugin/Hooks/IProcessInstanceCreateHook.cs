@@ -21,6 +21,9 @@ namespace sailflow.engine.Hooks
     {
         string Name { get; }
 
+        /// <summary>中文显示名（日志用）；默认可空。</summary>
+        string Title => null;
+
         /// <summary>
         /// 实例落库前回调。必须使用 <see cref="ProcessInstanceCreateContext.Kit"/>，禁止另开引擎连接。
         /// </summary>

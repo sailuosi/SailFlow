@@ -7,6 +7,9 @@ namespace sailflow.engine.Hooks
     {
         public abstract string Name { get; }
 
+        /// <summary>中文显示名（日志用）；子类宜覆盖。</summary>
+        public virtual string Title => null;
+
         /// <summary>
         /// 软超时（毫秒）。默认 30000；≤0 表示不限制（仍输出 BEGIN/END）。
         /// </summary>

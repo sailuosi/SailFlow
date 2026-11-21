@@ -37,5 +37,10 @@ namespace sailflow.engine.Hooks
         /// 有值时优先于 <see cref="FlowHookBase.TimeoutMs"/> / <see cref="FlowCapabilityOptions.SyncHookTimeoutMs"/>。
         /// </summary>
         public int? TimeoutMs { get; set; }
+
+        /// <summary>
+        /// 中文显示名覆盖；null 则取 Handler.<c>Title</c>。
+        /// </summary>
+        public string Title { get; set; }
     }
 }

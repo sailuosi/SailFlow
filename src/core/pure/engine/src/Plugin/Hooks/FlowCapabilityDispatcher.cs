@@ -71,7 +71,7 @@ namespace sailflow.engine.Hooks
                         log?.Warning(
                             SailLogCategories.Gate,
                             "REJECT name={0} code={1} msg={2} pi={3}",
-                            gate.Name,
+                            CapabilityPluginNames.Display(gate.Name, gate.Title),
                             result.Code ?? "-",
                             result.Message ?? "-",
                             ctx.ProcessInstanceId ?? "-");
@@ -84,7 +84,7 @@ namespace sailflow.engine.Hooks
                         SailLogCategories.Gate,
                         ex,
                         "FAIL name={0} pi={1}",
-                        gate.Name,
+                        CapabilityPluginNames.Display(gate.Name, gate.Title),
                         ctx.ProcessInstanceId ?? "-");
                     throw;
                 }
@@ -118,10 +118,11 @@ namespace sailflow.engine.Hooks
                     continue;
 
                 var timeoutMs = ResolveSyncHookTimeoutMs(hook);
+                var hookLabel = CapabilityPluginNames.Display(hook.Name, hook.Title);
                 log?.Debug(
                     SailLogCategories.SyncHook,
                     "BEGIN name={0} event={1} kit={2} timeoutMs={3} pi={4} task={5}",
-                    hook.Name,
+                    hookLabel,
                     eventType,
                     kitPresent,
                     timeoutMs,
@@ -142,7 +143,7 @@ namespace sailflow.engine.Hooks
                             SailLogCategories.SyncHook,
                             string.Format(
                                 "FAIL name={0} event={1} elapsedMs={2} reason=timeout timeoutMs={3}",
-                                hook.Name,
+                                hookLabel,
                                 eventType,
                                 elapsed,
                                 timeoutMs));
@@ -155,7 +156,7 @@ namespace sailflow.engine.Hooks
                         log?.Warning(
                             SailLogCategories.SyncHook,
                             "SLOW name={0} event={1} elapsedMs={2} warnMs={3}",
-                            hook.Name,
+                            hookLabel,
                             eventType,
                             elapsed,
                             warnMs);
@@ -164,7 +165,7 @@ namespace sailflow.engine.Hooks
                     log?.Debug(
                         SailLogCategories.SyncHook,
                         "END name={0} event={1} elapsedMs={2}",
-                        hook.Name,
+                        hookLabel,
                         eventType,
                         elapsed);
                 }
@@ -179,7 +180,7 @@ namespace sailflow.engine.Hooks
                         SailLogCategories.SyncHook,
                         ex,
                         "FAIL name={0} event={1} elapsedMs={2}",
-                        hook.Name,
+                        hookLabel,
                         eventType,
                         sw.ElapsedMilliseconds);
                     throw new FlowSyncHookException(hook.Name, eventType, ex);
@@ -231,7 +232,7 @@ namespace sailflow.engine.Hooks
                         SailLogCategories.AsyncHook,
                         ex,
                         "ENQUEUE_FAIL name={0} event={1} pi={2}",
-                        hook.Name,
+                        CapabilityPluginNames.Display(hook.Name, hook.Title),
                         eventType,
                         ctx.ProcessInstanceId ?? "-");
                     throw;
@@ -263,7 +264,7 @@ namespace sailflow.engine.Hooks
                 log?.Message(
                     SailLogCategories.AsyncHook,
                     "ENQUEUE name={0} event={1} pi={2}",
-                    hook.Name,
+                    CapabilityPluginNames.Display(hook.Name, hook.Title),
                     eventType,
                     ctx.ProcessInstanceId ?? "-");
             }
@@ -309,7 +310,7 @@ namespace sailflow.engine.Hooks
                     log?.Message(
                         SailLogCategories.Notifier,
                         "ENQUEUE name={0} kind={1} task={2}",
-                        notifier.Name,
+                        CapabilityPluginNames.Display(notifier.Name, notifier.Title),
                         ctx.Kind,
                         ctx.TaskId ?? "-");
                 }
@@ -319,7 +320,7 @@ namespace sailflow.engine.Hooks
                         SailLogCategories.Notifier,
                         ex,
                         "ENQUEUE_FAIL name={0} kind={1} task={2}",
-                        notifier.Name,
+                        CapabilityPluginNames.Display(notifier.Name, notifier.Title),
                         ctx.Kind,
                         ctx.TaskId ?? "-");
                     throw;
@@ -427,7 +428,7 @@ namespace sailflow.engine.Hooks
                 log?.Message(
                     SailLogCategories.Notifier,
                     "ENQUEUE name={0} kind=copyto/{1} pi={2}",
-                    notifier.Name,
+                    CapabilityPluginNames.Display(notifier.Name, notifier.Title),
                     ctx.Kind,
                     ctx.ProcessInstanceId ?? "-");
             }
@@ -596,7 +597,7 @@ namespace sailflow.engine.Hooks
                     Sail.Log?.Warning(
                         SailLogCategories.Notifier,
                         "ISOLATED_FAIL name={0} kind={1}: {2}",
-                        notifier.Name,
+                        CapabilityPluginNames.Display(notifier.Name, notifier.Title),
                         ctx.Kind,
                         ex.Message);
                 }
@@ -643,7 +644,7 @@ namespace sailflow.engine.Hooks
             Sail.Log?.Debug(
                 SailLogCategories.Outbox,
                 "DISPATCH kind=hook name={0} pi={1}",
-                hook.Name,
+                CapabilityPluginNames.Display(hook.Name, hook.Title),
                 ctx.ProcessInstanceId ?? "-");
             hook.Handler.Handle(ctx);
         }
@@ -662,7 +663,7 @@ namespace sailflow.engine.Hooks
             Sail.Log?.Debug(
                 SailLogCategories.Notifier,
                 "DISPATCH name={0} kind=copyto/{1}",
-                notifier.Name,
+                CapabilityPluginNames.Display(notifier.Name, notifier.Title),
                 ctx.Kind);
             await notifier.Handler.NotifyAsync(ctx, cancellationToken).ConfigureAwait(false);
             Sail.CapabilityMetrics?.IncrementNotifierDispatch();
@@ -682,7 +683,7 @@ namespace sailflow.engine.Hooks
             Sail.Log?.Debug(
                 SailLogCategories.Notifier,
                 "DISPATCH name={0} kind={1} task={2}",
-                notifier.Name,
+                CapabilityPluginNames.Display(notifier.Name, notifier.Title),
                 ctx.Kind,
                 ctx.TaskId ?? "-");
 

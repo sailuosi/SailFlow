@@ -130,6 +130,7 @@ namespace sailflow.engine.Hooks
             new()
             {
                 Name = gate.Name,
+                Title = CapabilityPluginNames.ResolveTitle(o.Title, gate.Title),
                 Order = o.Order,
                 Match = o.Match,
                 ProcessCodes = o.ProcessCodes,
@@ -142,6 +143,7 @@ namespace sailflow.engine.Hooks
             new()
             {
                 Name = hook.Name,
+                Title = CapabilityPluginNames.ResolveTitle(o.Title, hook.Title),
                 Order = o.Order,
                 Match = o.Match,
                 ProcessCodes = o.ProcessCodes,
@@ -157,6 +159,7 @@ namespace sailflow.engine.Hooks
             new()
             {
                 Name = notifier.Name,
+                Title = CapabilityPluginNames.ResolveTitle(o.Title, notifier.Title),
                 Order = o.Order,
                 Match = o.Match,
                 ProcessCodes = o.ProcessCodes,
@@ -174,6 +177,7 @@ namespace sailflow.engine.Hooks
             new()
             {
                 Name = notifier.Name,
+                Title = CapabilityPluginNames.ResolveTitle(o.Title, notifier.Title),
                 Order = o.Order,
                 Match = o.Match,
                 ProcessCodes = o.ProcessCodes,
@@ -189,6 +193,7 @@ namespace sailflow.engine.Hooks
             new()
             {
                 Name = hook.Name,
+                Title = CapabilityPluginNames.ResolveTitle(o.Title, hook.Title),
                 Order = o.Order,
                 Match = o.Match,
                 ProcessCodes = o.ProcessCodes,

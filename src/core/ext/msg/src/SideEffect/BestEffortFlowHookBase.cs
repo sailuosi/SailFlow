@@ -25,6 +25,9 @@ namespace sailflow.msg.SideEffect
 
         public abstract string Name { get; }
 
+        /// <summary>中文显示名（日志用）。</summary>
+        public virtual string Title => null;
+
         /// <summary>主路径：映射 payload 后非阻塞入队；失败/满队静默丢弃。</summary>
         public void Handle(FlowHookContext ctx)
         {

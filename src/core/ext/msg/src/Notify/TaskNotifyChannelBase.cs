@@ -17,6 +17,9 @@ namespace sailflow.msg.Notify
 
         public abstract string Name { get; }
 
+        /// <summary>中文显示名（日志用）。</summary>
+        public virtual string Title => null;
+
         /// <summary>为 true 时失败会重新抛出，供 Outbox 等路径走 MarkFailed；默认 false（邮件等通道吞异常）。</summary>
         protected virtual bool RethrowFailures => false;
 

@@ -20,6 +20,7 @@ namespace sailflow.msg.Notify
         }
 
         public override string Name => "default.mail";
+        public override string Title => "默认待办邮件";
 
         protected override async Task SendCoreAsync(TaskNotifyContext ctx, CancellationToken ct)
         {

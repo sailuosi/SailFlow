@@ -8,6 +8,10 @@ namespace sailflow.engine.Hooks
     public interface IFlowGate
     {
         string Name { get; }
+
+        /// <summary>中文显示名（日志用）；默认可空。</summary>
+        string Title => null;
+
         HookResult Validate(FlowHookContext ctx);
     }
 
@@ -29,6 +33,9 @@ namespace sailflow.engine.Hooks
     {
         string Name { get; }
 
+        /// <summary>中文显示名（日志用）；默认可空。</summary>
+        string Title => null;
+
         /// <summary>
         /// 执行钩子逻辑。Sync 模式下勿在实现中另开引擎库连接（见接口 remarks）。
         /// </summary>
@@ -39,6 +46,10 @@ namespace sailflow.engine.Hooks
     public interface ITaskNotifier
     {
         string Name { get; }
+
+        /// <summary>中文显示名（日志用）；默认可空。</summary>
+        string Title => null;
+
         Task NotifyAsync(TaskNotifyContext ctx, CancellationToken ct);
     }
 
@@ -46,6 +57,10 @@ namespace sailflow.engine.Hooks
     public interface ICopytoNotifier
     {
         string Name { get; }
+
+        /// <summary>中文显示名（日志用）；默认可空。</summary>
+        string Title => null;
+
         Task NotifyAsync(CopytoNotifyContext ctx, CancellationToken ct);
     }
 }

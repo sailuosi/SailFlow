@@ -8,6 +8,8 @@ namespace sailflow.engine.Hooks
     public sealed class GateRegistration
     {
         public string Name { get; init; }
+        /// <summary>中文显示名（日志）。</summary>
+        public string Title { get; init; }
         public int Order { get; init; }
         public HookMatch Match { get; init; }
         public string[] ProcessCodes { get; init; }
@@ -19,6 +21,8 @@ namespace sailflow.engine.Hooks
     public sealed class HookRegistration
     {
         public string Name { get; init; }
+        /// <summary>中文显示名（日志）。</summary>
+        public string Title { get; init; }
         public int Order { get; init; }
         public HookMatch Match { get; init; }
         public string[] ProcessCodes { get; init; }
@@ -35,6 +39,8 @@ namespace sailflow.engine.Hooks
     public sealed class NotifierRegistration
     {
         public string Name { get; init; }
+        /// <summary>中文显示名（日志）。</summary>
+        public string Title { get; init; }
         public int Order { get; init; }
         public HookMatch Match { get; init; }
         public string[] ProcessCodes { get; init; }
@@ -51,6 +57,8 @@ namespace sailflow.engine.Hooks
     public sealed class CopytoNotifierRegistration
     {
         public string Name { get; init; }
+        /// <summary>中文显示名（日志）。</summary>
+        public string Title { get; init; }
         public int Order { get; init; }
         public HookMatch Match { get; init; }
         public string[] ProcessCodes { get; init; }
@@ -63,6 +71,8 @@ namespace sailflow.engine.Hooks
     public sealed class ProcessInstanceCreateHookRegistration
     {
         public string Name { get; init; }
+        /// <summary>中文显示名（日志）。</summary>
+        public string Title { get; init; }
         public int Order { get; init; }
         public HookMatch Match { get; init; }
         public string[] ProcessCodes { get; init; }
@@ -79,13 +89,15 @@ namespace sailflow.engine.Hooks
     {
         private readonly Func<FlowHookContext, HookResult> _validate;
 
-        public DelegateFlowGate(string name, Func<FlowHookContext, HookResult> validate)
+        public DelegateFlowGate(string name, Func<FlowHookContext, HookResult> validate, string title = null)
         {
             Name = name;
+            Title = title;
             _validate = validate ?? throw new ArgumentNullException(nameof(validate));
         }
 
         public string Name { get; }
+        public string Title { get; }
         public HookResult Validate(FlowHookContext ctx) => _validate(ctx);
     }
 
@@ -93,15 +105,17 @@ namespace sailflow.engine.Hooks
     {
         private readonly Action<FlowHookContext> _handle;
 
-        public DelegateFlowHook(string name, Action<FlowHookContext> handle, int? timeoutMs = null)
+        public DelegateFlowHook(string name, Action<FlowHookContext> handle, int? timeoutMs = null, string title = null)
         {
             Name = name;
+            Title = title;
             _handle = handle ?? throw new ArgumentNullException(nameof(handle));
             if (timeoutMs.HasValue)
                 TimeoutMs = timeoutMs.Value;
         }
 
         public override string Name { get; }
+        public override string Title { get; }
         public override void Handle(FlowHookContext ctx) => _handle(ctx);
     }
 
@@ -109,13 +123,18 @@ namespace sailflow.engine.Hooks
     {
         private readonly Func<TaskNotifyContext, CancellationToken, Task> _notify;
 
-        public DelegateTaskNotifier(string name, Func<TaskNotifyContext, CancellationToken, Task> notify)
+        public DelegateTaskNotifier(
+            string name,
+            Func<TaskNotifyContext, CancellationToken, Task> notify,
+            string title = null)
         {
             Name = name;
+            Title = title;
             _notify = notify ?? throw new ArgumentNullException(nameof(notify));
         }
 
         public string Name { get; }
+        public string Title { get; }
         public Task NotifyAsync(TaskNotifyContext ctx, CancellationToken ct) => _notify(ctx, ct);
     }
 
@@ -123,13 +142,18 @@ namespace sailflow.engine.Hooks
     {
         private readonly Func<CopytoNotifyContext, CancellationToken, Task> _notify;
 
-        public DelegateCopytoNotifier(string name, Func<CopytoNotifyContext, CancellationToken, Task> notify)
+        public DelegateCopytoNotifier(
+            string name,
+            Func<CopytoNotifyContext, CancellationToken, Task> notify,
+            string title = null)
         {
             Name = name;
+            Title = title;
             _notify = notify ?? throw new ArgumentNullException(nameof(notify));
         }
 
         public string Name { get; }
+        public string Title { get; }
         public Task NotifyAsync(CopytoNotifyContext ctx, CancellationToken ct) => _notify(ctx, ct);
     }
 
@@ -137,15 +161,21 @@ namespace sailflow.engine.Hooks
     {
         private readonly Action<ProcessInstanceCreateContext> _handle;
 
-        public DelegateProcessInstanceCreateHook(string name, Action<ProcessInstanceCreateContext> handle, int? timeoutMs = null)
+        public DelegateProcessInstanceCreateHook(
+            string name,
+            Action<ProcessInstanceCreateContext> handle,
+            int? timeoutMs = null,
+            string title = null)
         {
             Name = name;
+            Title = title;
             _handle = handle ?? throw new ArgumentNullException(nameof(handle));
             if (timeoutMs.HasValue)
                 TimeoutMs = timeoutMs.Value;
         }
 
         public override string Name { get; }
+        public override string Title { get; }
         public override void OnCreating(ProcessInstanceCreateContext ctx) => _handle(ctx);
     }
 }

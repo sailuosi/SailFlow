@@ -302,10 +302,11 @@ namespace sailflow.engine.Manager
                 if (!MatchesCreateHook(reg, processEntity, entity)) continue;
 
                 var timeoutMs = ResolveCreateHookTimeoutMs(reg);
+                var label = CapabilityPluginNames.Display(reg.Name, reg.Title);
                 log?.Debug(
                     SailLogCategories.CreateHook,
                     "BEGIN name={0} kit={1} timeoutMs={2} process={3}",
-                    reg.Name,
+                    label,
                     kitPresent,
                     timeoutMs,
                     processEntity?.ProcessCode ?? processEntity?.ProcessId ?? "-");
@@ -323,7 +324,7 @@ namespace sailflow.engine.Manager
                             SailLogCategories.CreateHook,
                             string.Format(
                                 "FAIL name={0} elapsedMs={1} reason=timeout timeoutMs={2}",
-                                reg.Name, elapsed, timeoutMs));
+                                label, elapsed, timeoutMs));
                         throw new FlowSyncHookTimeoutException(
                             reg.Name,
                             EventFireTypeEnum.OnProcessStarting,
@@ -337,13 +338,13 @@ namespace sailflow.engine.Manager
                         log?.Warning(
                             SailLogCategories.CreateHook,
                             "SLOW name={0} elapsedMs={1} warnMs={2}",
-                            reg.Name, elapsed, warnMs);
+                            label, elapsed, warnMs);
                     }
 
                     log?.Debug(
                         SailLogCategories.CreateHook,
                         "END name={0} elapsedMs={1}",
-                        reg.Name, elapsed);
+                        label, elapsed);
                 }
                 catch (FlowSyncHookTimeoutException)
                 {
@@ -356,7 +357,7 @@ namespace sailflow.engine.Manager
                         SailLogCategories.CreateHook,
                         ex,
                         "FAIL name={0} elapsedMs={1}",
-                        reg.Name, sw.ElapsedMilliseconds);
+                        label, sw.ElapsedMilliseconds);
                     throw;
                 }
             }
