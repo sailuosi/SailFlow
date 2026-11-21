@@ -178,7 +178,11 @@ namespace sailflow.biz.query
                             mainActivityInstance.ActivityInstanceId,
                             mainActivityInstance.ProcessInstanceId,
                             (short)ActivityStateEnum.Suspended).ToList();
-                        short allNum = (short)mainActivityInstance.SignIds.Split(',').Length;
+                        // 总人数按主 AI 下子实例数（勿依赖可能滞后的 SignIds 汇总）
+                        short allNum = (short)aim.GetActivityMulitipleInstanceWithState(
+                            mainActivityInstance.ActivityInstanceId,
+                            mainActivityInstance.ProcessInstanceId,
+                            null).Count;
                         short maxOrder = 0;
 
                         if (sqList != null && sqList.Count > 0)

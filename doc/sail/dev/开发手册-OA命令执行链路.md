@@ -307,7 +307,7 @@ Transition 族 `SignForwardAction`。产品细表：[OA/专题-改签.md](../OA/
 |------|---------|
 | API | `SignForwardProcess` → `RunAction` → `SignForwardAction.Execute` |
 | Factory | `CreateRuntimeInstanceSignForward` |
-| Factory 读库 | `GetRunningNode`（校验 SignIds）· `client.ProcessModelFactory.CreateByTask` |
+| Factory 读库 | `GetRunningNode` + `TaskManager.IsMine(taskView)`（办理权以 Task 为准）· `client.ProcessModelFactory.CreateByTask` |
 | Gate | `FlowOperation.SignForward` |
 | Runtime | `WfRuntimeManagerSignForward.ExecuteInstanceImp` |
 | Mediator | `CreateRunningContextByTask` → `MediatorInstanceCreator`（加签类型节点 Mediator）→ `ExecuteWorkItem`（生成前/后/并加签 AI+Task） |
@@ -526,7 +526,7 @@ WfExecutedResult FinishRunCore(SQLBuilder kit, FlowCommandContext runner,
 // RuntimeInstanceCreator.CreateRuntimeInstanceAppRunning（经 ManagerFactory / ProcessInstances）
 var aim = _sail.ManagerFactory.Activities;
 var runningNode = aim.GetRunningNode(SailSqlAccess.Sibling(kit), runner, out taskView);
-// 校验 SignIds 含当前用户、Task 处于 Running
+// 办理权：TaskManager.IsMine(taskView, runner.UserId)；再 CheckTaskStateInRunningState
 var processInstance = _sail.ProcessInstances.GetById(kitForPi, runningNode.ProcessInstanceId.Value);
 var processModel = _sail.ProcessModelFactory.CreateByTask(SailSqlAccess.Sibling(kit), taskView);
 // ProcessVariableResolver.CheckVariableRequired …
@@ -534,17 +534,19 @@ rmins.TaskView = taskView;
 rmins.RunningActivityInstance = runningNode;
 ```
 
-`GetRunningNode` 优先用 `runner.TaskId`，否则按 Running AI 列表反查本人待办：
+`GetRunningNode` 优先用 `runner.TaskId`；否则按 Running AI 列表用 **本人打开待办** 选型（勿用活动 `SignIds`）：
 
 ```csharp
 // ActivityInstanceManager.GetRunningNode
-if (taskId != null && taskId.Value > 0)
+if (!string.IsNullOrWhiteSpace(taskId))
 {
-    taskView = tm.GetTaskView(kit, taskId.Value);          // useRepo / Clip 读任务
-    runningNode = GetById(kit, taskView.ActivityInstanceId.Value);
+    taskView = tm.GetTaskView(kit, taskId);
+    runningNode = GetById(kit, taskView.ActivityInstanceId);
     return runningNode;
 }
-// else: GetRunningActivityInstanceList → GetTaskOfMineByActivityInstance
+// else: GetRunningActivityInstanceList
+//   单 AI → GetTaskOfMineByActivityInstance
+//   多 AI → 逐个 GetTaskOfMineByActivityInstance，命中则选用该 AI（禁止 SignIds == userId）
 ```
 
 ### 6.5 Runtime → Mediator：办结当前项

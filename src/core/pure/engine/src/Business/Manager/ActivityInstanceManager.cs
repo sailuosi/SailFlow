@@ -122,20 +122,18 @@ namespace sailflow.engine.Manager
             }
             else if (activityInstanceList.Count > 1)
             {
+                // 以本人打开待办挂靠的 AI 为准（勿用 SignIds 汇总选型）
                 foreach (var ai in activityInstanceList)
                 {
-                    if (ai.SignIds == runner.UserId)
-                    {
-                        runningNode = ai;
-                        break;
-                    }
+                    var mine = tm.GetTaskOfMineByActivityInstance(kit, ai.ActivityInstanceId, runner.UserId);
+                    if (mine == null)
+                        continue;
+                    runningNode = ai;
+                    taskView = mine;
+                    break;
                 }
 
-                if (runningNode != null)
-                {
-                    taskView = tm.GetTaskOfMineByActivityInstance(kit, runningNode.ActivityInstanceId, runner.UserId);
-                }
-                else
+                if (runningNode == null)
                 {
                     var msgException = Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.unique.error");
                     var e = new WorkflowException(msgException);
@@ -190,22 +188,20 @@ namespace sailflow.engine.Manager
             }
             else
             {
+                // 以本人打开待办挂靠的 AI 为准（勿用 SignIds 汇总选型）
                 foreach (var ai in activityInstanceList)
                 {
-                    if (ai.SignIds == runner.UserId)
-                    {
-                        runningNode = ai;
-                        break;
-                    }
+                    var mine = await tm.GetTaskOfMineByActivityInstanceAsync(
+                            kit, ai.ActivityInstanceId, runner.UserId, cancellationToken)
+                        .ConfigureAwait(false);
+                    if (mine == null)
+                        continue;
+                    runningNode = ai;
+                    taskView = mine;
+                    break;
                 }
 
-                if (runningNode != null)
-                {
-                    taskView = await tm.GetTaskOfMineByActivityInstanceAsync(
-                            kit, runningNode.ActivityInstanceId, runner.UserId, cancellationToken)
-                        .ConfigureAwait(false);
-                }
-                else
+                if (runningNode == null)
                 {
                     var msgException = Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.unique.error");
                     var e = new WorkflowException(msgException);
@@ -642,19 +638,6 @@ namespace sailflow.engine.Manager
             var firstMIChild = withoutBackSrcInfoList.First(a => a.EndedUserId == originalRunningNode.CreatedUserId);
 
             return GetMultipleInstanceListCompleted(kit, firstMIChild.MainActInstanceId);
-        }
-
-        /// <summary>
-        /// 判断用户是否在活动 <see cref="ActivityInstanceEntity.SignIds"/> 汇总中。
-        /// </summary>
-        private bool IsSignInActivityInstance(ActivityInstanceEntity entity, int userId)
-        {
-            var signIds = entity.SignIds;
-            if (string.IsNullOrWhiteSpace(signIds))
-                return false;
-            var userList = signIds.Split(',');
-            var single = userList.FirstOrDefault(a => a == userId.ToString());
-            return !string.IsNullOrEmpty(single);
         }
 
         /// <summary>

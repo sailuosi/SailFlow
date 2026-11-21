@@ -61,6 +61,10 @@ namespace sailflow.engine.Assignee
             return list;
         }
 
+        /// <summary>
+        /// 无打开待办时的席位投影回落：用子 AI 上的 SignIds/Names 快照。
+        /// 仅 Leave 计数/投影，非办理权判定（办理权见 Task.SignId）。
+        /// </summary>
         public static List<LeaveSeatSnapshot> FromChildActivities(
             IEnumerable<ActivityInstanceEntity> children)
         {
@@ -78,6 +82,7 @@ namespace sailflow.engine.Assignee
 
                 list.Add(new LeaveSeatSnapshot
                 {
+                    // 回落路径：子 AI 单人席 SignIds 即席位人；有 Task 时 BuildSeats 不会走到这里
                     SignId = a.SignIds,
                     SignName = a.SignNames,
                     Weight = a.Weight.HasValue && a.Weight.Value > 0 ? a.Weight.Value : 1m,
@@ -94,7 +99,7 @@ namespace sailflow.engine.Assignee
         }
 
         /// <summary>
-        /// 优先 Task 投影（含同 AI 代批多 Task）；无 Task 时回落子 AI。
+        /// 优先 Task 投影（含同 AI 代批多 Task）；无 Task 时回落 <see cref="FromChildActivities"/>（非办理权）。
         /// </summary>
         public static List<LeaveSeatSnapshot> BuildSeats(
             IList<ActivityInstanceEntity> children,

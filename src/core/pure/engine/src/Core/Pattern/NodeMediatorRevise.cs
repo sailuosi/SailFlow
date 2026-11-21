@@ -204,13 +204,11 @@ namespace sailflow.engine.Pattern
         private Boolean IsTaskExisted(List<ActivityInstanceEntity> childNodeOfMI, 
             string userId)
         {
-            var isExisted = false;
-            var child = childNodeOfMI.Find(a => a.SignIds.Contains(userId));
-
-            if (child != null)
-                isExisted = true;
-           
-            return isExisted;
+            // 会签子 AI 单人席：精确匹配 SignIds（禁止 Contains 子串误命中）
+            if (string.IsNullOrWhiteSpace(userId) || childNodeOfMI == null)
+                return false;
+            return childNodeOfMI.Exists(a =>
+                a != null && string.Equals(a.SignIds, userId, StringComparison.Ordinal));
         }
 
         /// <summary>
