@@ -44,7 +44,7 @@
 | [专题-主键与设计键发号契约.md](./theme/专题-主键与设计键发号契约.md) | **P0+P1 已落地**：`ISailIdSource` / `SailId` AutoKey + BPMN codec |
 | [专题-办理人权重与委托体系.md](./theme/专题-办理人权重与委托体系.md) | Weight / EffectiveWeight / 委托代批；与转办·委派划界 |
 | [专题-节点实例与任务.md](./theme/专题-节点实例与任务.md) | ActInstance ↔ Task 职责、基数、主/子与 OA 原语落库 |
-| [专题-节点实例临时子规则.md](./theme/专题-节点实例临时子规则.md) | 加签临时子堆栈：子规则塌缩 ≠ 出节点；与外层 Leave 叠用 |
+| [专题-节点实例临时子规则.md](./theme/专题-节点实例临时子规则.md) | **已落地**：AI Leave 快照；加签改写子 Leave；TryCanLeave 统一判定 |
 | [专题-流程实例标题与业务字段.md](./theme/专题-流程实例标题与业务字段.md) | 流程实例标题与业务字段契约 |
 
 ## 目录

@@ -301,7 +301,8 @@ Transition 族 `CloseAction`（`Fill(End)`）。
 
 ### 5.11 SignForwardProcess（加签）
 
-Transition 族 `SignForwardAction`。产品细表：[OA/专题-改签.md](../OA/专题-改签.md)。
+Transition 族 `SignForwardAction`。产品细表：[OA/专题-改签.md](../OA/专题-改签.md)。  
+子堆栈 Leave（**已落地**）：[theme/专题-节点实例临时子规则.md](../theme/专题-节点实例临时子规则.md)。
 
 | 步骤 | 类·方法 |
 |------|---------|
@@ -310,7 +311,8 @@ Transition 族 `SignForwardAction`。产品细表：[OA/专题-改签.md](../OA/
 | Factory 读库 | `GetRunningNode` + `TaskManager.IsMine(taskView)`（办理权以 Task 为准）· `client.ProcessModelFactory.CreateByTask` |
 | Gate | `FlowOperation.SignForward` |
 | Runtime | `WfRuntimeManagerSignForward.ExecuteInstanceImp` |
-| Mediator | `CreateRunningContextByTask` → `MediatorInstanceCreator`（加签类型节点 Mediator）→ `ExecuteWorkItem`（生成前/后/并加签 AI+Task） |
+| Mediator（压栈） | `NodeMediatorSignForward`：升级主 AI + **改写 `ai_leave_type=Collaborate` + Merge** + 建子 AI/Task |
+| Mediator（办结） | `NodeMediatorMultiSignForward`：`CheckMIPassRateInfo` / `TryCanLeave`（**AI Leave 优先**）；Waiting+Sequence 唤醒下一席；Passed 塌缩并 ContinueForward |
 | Hook | `OnProcessSignForwarded` |
 
 ### 5.12 TransferProcess（转办，不推进）
