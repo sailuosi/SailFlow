@@ -571,7 +571,13 @@ namespace sailflow.engine.Hooks
             else if (row.Kind == HookOutboxKinds.CopytoNotify)
                 await DispatchCopytoNotifyOutboxRow(row, cancellationToken).ConfigureAwait(false);
             else
-                throw new InvalidOperationException($"Unknown outbox kind '{row.Kind}'.");
+                throw SailFailLog.Throw(
+                    Sail,
+                    SailLogCategories.Outbox,
+                    new InvalidOperationException($"Unknown outbox kind '{row.Kind}'."),
+                    "Unknown outbox kind={0} id={1}",
+                    row.Kind,
+                    row.HookOutboxId);
         }
 
         /// <summary>已注册 Notifier 同步调用（失败隔离）。</summary>
@@ -635,11 +641,23 @@ namespace sailflow.engine.Hooks
             var hook = Registry.Hooks.FirstOrDefault(h =>
                 string.Equals(h.Name, row.HandlerName, StringComparison.OrdinalIgnoreCase));
             if (hook?.Handler == null)
-                throw new InvalidOperationException($"Hook handler '{row.HandlerName}' not registered.");
+                throw SailFailLog.Throw(
+                    Sail,
+                    SailLogCategories.Outbox,
+                    new InvalidOperationException($"Hook handler '{row.HandlerName}' not registered."),
+                    "Hook handler not registered name={0} outboxId={1}",
+                    row.HandlerName,
+                    row.HookOutboxId);
 
             var ctx = Sail.JsonSerializer.Deserialize<FlowHookContext>(row.PayloadJson);
             if (ctx == null)
-                throw new InvalidOperationException("Hook outbox payload is empty.");
+                throw SailFailLog.Throw(
+                    Sail,
+                    SailLogCategories.Outbox,
+                    new InvalidOperationException("Hook outbox payload is empty."),
+                    "Hook outbox payload empty name={0} outboxId={1}",
+                    row.HandlerName,
+                    row.HookOutboxId);
 
             Sail.Log?.Debug(
                 SailLogCategories.Outbox,
@@ -654,11 +672,23 @@ namespace sailflow.engine.Hooks
             var notifier = Registry.CopytoNotifiers.FirstOrDefault(n =>
                 string.Equals(n.Name, row.HandlerName, StringComparison.OrdinalIgnoreCase));
             if (notifier?.Handler == null)
-                throw new InvalidOperationException($"CopytoNotifier '{row.HandlerName}' not registered.");
+                throw SailFailLog.Throw(
+                    Sail,
+                    SailLogCategories.Outbox,
+                    new InvalidOperationException($"CopytoNotifier '{row.HandlerName}' not registered."),
+                    "CopytoNotifier not registered name={0} outboxId={1}",
+                    row.HandlerName,
+                    row.HookOutboxId);
 
             var ctx = Sail.JsonSerializer.Deserialize<CopytoNotifyContext>(row.PayloadJson);
             if (ctx == null)
-                throw new InvalidOperationException("CopytoNotify outbox payload is empty.");
+                throw SailFailLog.Throw(
+                    Sail,
+                    SailLogCategories.Outbox,
+                    new InvalidOperationException("CopytoNotify outbox payload is empty."),
+                    "CopytoNotify payload empty name={0} outboxId={1}",
+                    row.HandlerName,
+                    row.HookOutboxId);
 
             Sail.Log?.Debug(
                 SailLogCategories.Notifier,
@@ -674,11 +704,23 @@ namespace sailflow.engine.Hooks
             var notifier = Registry.Notifiers.FirstOrDefault(n =>
                 string.Equals(n.Name, row.HandlerName, StringComparison.OrdinalIgnoreCase));
             if (notifier?.Handler == null)
-                throw new InvalidOperationException($"Notifier '{row.HandlerName}' not registered.");
+                throw SailFailLog.Throw(
+                    Sail,
+                    SailLogCategories.Outbox,
+                    new InvalidOperationException($"Notifier '{row.HandlerName}' not registered."),
+                    "Notifier not registered name={0} outboxId={1}",
+                    row.HandlerName,
+                    row.HookOutboxId);
 
             var ctx = Sail.JsonSerializer.Deserialize<TaskNotifyContext>(row.PayloadJson);
             if (ctx == null)
-                throw new InvalidOperationException("Notify outbox payload is empty.");
+                throw SailFailLog.Throw(
+                    Sail,
+                    SailLogCategories.Outbox,
+                    new InvalidOperationException("Notify outbox payload is empty."),
+                    "Notify payload empty name={0} outboxId={1}",
+                    row.HandlerName,
+                    row.HookOutboxId);
 
             Sail.Log?.Debug(
                 SailLogCategories.Notifier,

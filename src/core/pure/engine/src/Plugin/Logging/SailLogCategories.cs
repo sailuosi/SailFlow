@@ -10,5 +10,20 @@ namespace sailflow.engine.Logging
         public const string CreateHook = "create-hook";
         public const string Assignee = "assignee";
         public const string Outbox = "outbox";
+
+        /// <summary>流转族动作（Start/Run/Reject…）。</summary>
+        public const string Transition = "transition";
+
+        /// <summary>办理人变化族（Transfer/Delegate…）。</summary>
+        public const string AssigneeAction = "assignee-action";
+
+        /// <summary>实例生命周期族（Cancel/Suspend…）。</summary>
+        public const string Lifecycle = "lifecycle";
+
+        /// <summary>沟通等待等硬锁。</summary>
+        public const string Guard = "guard";
+
+        /// <summary>Manager / Runtime 等通用引擎失败。</summary>
+        public const string Engine = "engine";
     }
 }

@@ -3,6 +3,7 @@ using mooSQL.data;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.engine.Event;
+using sailflow.engine.Logging;
 using sailflow.engine.Manager;
 using sailflow.engine.Result;
 
@@ -34,21 +35,34 @@ namespace sailflow.engine.Actions.Assignee
         public WfExecutedResult Execute()
         {
             var result = WfExecutedResult.Default();
+            var action = GetType().Name;
             try
             {
                 if (!TryLoadContext(out var ctx, result))
+                {
+                    SailFailLog.ResultNotSuccess(Sail, SailLogCategories.AssigneeAction, action, result);
                     return result;
+                }
 
                 if (!ConsultPendingGuard.TryAllow(Sail, Kit, ctx.TaskId, Operation, result))
+                {
+                    SailFailLog.ResultNotSuccess(Sail, SailLogCategories.AssigneeAction, action, result);
                     return result;
+                }
 
                 var gateCtx = BuildGateContext(ctx.ProcessInstanceId, ctx.ActivityInstance, ctx.TaskId);
                 if (!TryGate(gateCtx, result))
+                {
+                    SailFailLog.ResultNotSuccess(Sail, SailLogCategories.AssigneeAction, action, result);
                     return result;
+                }
 
                 ExecuteCore(ctx, result);
                 if (result.Status != WfExecutedStatus.Success)
+                {
+                    SailFailLog.ResultNotSuccess(Sail, SailLogCategories.AssigneeAction, action, result);
                     return result;
+                }
 
                 var hookCtx = BuildHookContext(
                     ctx.ProcessInstanceId,
@@ -65,6 +79,7 @@ namespace sailflow.engine.Actions.Assignee
                 result.Status = WfExecutedStatus.Failed;
                 result.Message = FormatFailedMessage(e);
                 ApplyFailedExceptionType(result, e);
+                SailFailLog.Exception(Sail, SailLogCategories.AssigneeAction, action, e, result.Message);
                 LogManager.RecordLog(Sail, ErrorLogName, LogEventType.Error, LogPriority.High, Runner, e);
             }
 

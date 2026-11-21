@@ -14,6 +14,7 @@ using sailflow.engine.Entity;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Result;
 using sailflow.engine.Client;
+using sailflow.engine.Logging;
 using sailflow.WebUtility;
 
 
@@ -31,6 +32,12 @@ namespace sailflow.engine.Manager
         }
 
         protected SailClient Sail { get; }
+
+        Exception FailThrow(Exception ex, string op, string detail = null)
+        {
+            SailFailLog.Exception(Sail, SailLogCategories.Engine, "Task." + op, ex, detail);
+            return ex;
+        }
         
         #region TaskView 任务视图
         /// <summary>
@@ -224,13 +231,14 @@ namespace sailflow.engine.Manager
             if (list.Count == 0)
             {
                 var message = Sail.Messages.GetEngineMessage("taskmanager.gettaskofmine.error");
-                throw new WorkflowException(
+                throw FailThrow(new WorkflowException(
                     string.Format("{0}，ActivityInstanceId: {1}", message, activityInstanceId.ToString())
-                );
+                ), "GetTaskOfMine");
             }
             if (list.Count > 1)
             {
-                throw new WorkflowException(Sail.Messages.GetEngineMessage("taskmanager.gettaskofmine.toomoretasks.error"));
+                throw FailThrow(new WorkflowException(
+                    Sail.Messages.GetEngineMessage("taskmanager.gettaskofmine.toomoretasks.error")), "GetTaskOfMine");
             }
             return list[0];
         }
@@ -268,13 +276,14 @@ namespace sailflow.engine.Manager
             if (list.Count == 0)
             {
                 var message = Sail.Messages.GetEngineMessage("taskmanager.gettaskofmine.error");
-                throw new WorkflowException(
+                throw FailThrow(new WorkflowException(
                     string.Format("{0}，BizPK: {1}", message, bizPK.ToString())
-                );
+                ), "GetTaskOfMine");
             }
             if (list.Count > 1)
             {
-                throw new WorkflowException(Sail.Messages.GetEngineMessage("taskmanager.gettaskofmine.toomoretasks.error"));
+                throw FailThrow(new WorkflowException(
+                    Sail.Messages.GetEngineMessage("taskmanager.gettaskofmine.toomoretasks.error")), "GetTaskOfMine");
             }
             return list[0];
         }
@@ -530,7 +539,8 @@ namespace sailflow.engine.Manager
                 }
                 catch (System.Exception e)
                 {
-                    throw new WorkflowException(Sail.Messages.GetEngineMessage("taskmanager.settaskread.error", e.Message), e);
+                    throw FailThrow(new WorkflowException(
+                        Sail.Messages.GetEngineMessage("taskmanager.settaskread.error", e.Message), e), "SetTaskRead");
                 }
             }
         }
@@ -739,8 +749,7 @@ namespace sailflow.engine.Manager
         {
             var originalTask = GetTask(kit, originalTaskId);
             if (originalTask == null)
-                throw new WorkflowException("Delegate return: original task not found.");
-
+                throw FailThrow(new WorkflowException("Delegate return: original task not found."), "DelegateReturn");
             var newTask = new TaskEntity
             {
                 BizPK = originalTask.BizPK,
@@ -810,7 +819,8 @@ namespace sailflow.engine.Manager
                 }
                 catch (System.Exception e)
                 {
-                    throw new WorkflowException(Sail.Messages.GetEngineMessage("taskmanager.entrust.error"), e);
+                    throw FailThrow(new WorkflowException(
+                        Sail.Messages.GetEngineMessage("taskmanager.entrust.error"), e), "Entrust");
                 }
             }
         }
@@ -1429,7 +1439,8 @@ namespace sailflow.engine.Manager
                 }
                 catch (System.Exception e)
                 {
-                    throw new WorkflowException(Sail.Messages.GetEngineMessage("taskmanager.entrust.error"), e);
+                    throw FailThrow(new WorkflowException(
+                        Sail.Messages.GetEngineMessage("taskmanager.entrust.error"), e), "Entrust");
                 }
             }
         }
@@ -1490,7 +1501,8 @@ namespace sailflow.engine.Manager
                 }
                 catch (System.Exception e)
                 {
-                    throw new WorkflowException(Sail.Messages.GetEngineMessage("taskmanager.replace.error"), e);
+                    throw FailThrow(new WorkflowException(
+                        Sail.Messages.GetEngineMessage("taskmanager.replace.error"), e), "Replace");
                 }
             }
         }

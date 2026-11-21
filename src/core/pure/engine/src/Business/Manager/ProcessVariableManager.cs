@@ -11,6 +11,7 @@ using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.engine.Event;
 using sailflow.engine.HotShard;
+using sailflow.engine.Logging;
 using sailflow.engine.Xpdl;
 using sailflow.hub.Localize;
 
@@ -28,6 +29,12 @@ namespace sailflow.engine.Manager
         }
 
         protected SailClient Sail { get; }
+
+        Exception FailThrow(Exception ex, string op, string detail = null)
+        {
+            SailFailLog.Exception(Sail, SailLogCategories.Engine, "ProcessVariable." + op, ex, detail);
+            return ex;
+        }
 
         ISailHotShardRouter Router => Sail.HotShard;
 
@@ -215,7 +222,8 @@ namespace sailflow.engine.Manager
         internal string SaveVariable(SQLBuilder kit, ProcessVariableEntity entity)
         {
             if (string.IsNullOrEmpty(entity.Name) || string.IsNullOrEmpty(entity.Value))
-                throw new WorkflowException(Sail.Messages.GetEngineMessage("processvariablemanager.savevariable.error"));
+                throw FailThrow(new WorkflowException(
+                    Sail.Messages.GetEngineMessage("processvariablemanager.savevariable.error")), "SaveVariable");
 
             if (string.IsNullOrWhiteSpace(entity.ProcessId) && !string.IsNullOrWhiteSpace(entity.ProcessInstanceId))
                 entity.ProcessId = ResolveProcessId(kit, entity.ProcessInstanceId);

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using mooSQL.data;
 using sailflow.engine.Client;
 using sailflow.engine.Hooks;
+using sailflow.engine.Logging;
 using sailflow.engine.Result;
 
 namespace sailflow.engine.Common
@@ -48,6 +49,14 @@ namespace sailflow.engine.Common
             result.Status = WfExecutedStatus.Failed;
             result.ReasonCode = WfExceptionType.ConsultPending;
             result.Message = "Consult pending: wait for participants to acknowledge or recall consult.";
+            SailFailLog.Interrupt(
+                sail,
+                SailLogCategories.Guard,
+                "ConsultPending",
+                "op={0} task={1} msg={2}",
+                operation,
+                taskId,
+                result.Message);
             return false;
         }
     }

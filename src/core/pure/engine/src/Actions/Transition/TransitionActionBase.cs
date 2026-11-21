@@ -4,6 +4,7 @@ using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.engine.Event;
 using sailflow.engine.Hooks;
+using sailflow.engine.Logging;
 using sailflow.engine.Manager;
 using sailflow.engine.Result;
 using sailflow.engine.Runtime;
@@ -35,7 +36,10 @@ namespace sailflow.engine.Actions.Transition
             {
                 // Factory 内常 result = new WfExecutedResult()，必须 ref 才能带回 Exception/Message
                 if (!TryLoadContext(out var ctx, ref result))
+                {
+                    SailFailLog.ResultNotSuccess(Sail, SailLogCategories.Transition, GetType().Name, result);
                     return result;
+                }
 
                 return RunGateCoreHook(ctx, result);
             }
@@ -54,7 +58,10 @@ namespace sailflow.engine.Actions.Transition
             try
             {
                 if (result.Status == WfExecutedStatus.Exception || runtime == null)
+                {
+                    SailFailLog.ResultNotSuccess(Sail, SailLogCategories.Transition, GetType().Name, result);
                     return result;
+                }
 
                 var ctx = ToContext(runtime);
                 return RunGateCoreHook(ctx, result);
@@ -77,20 +84,30 @@ namespace sailflow.engine.Actions.Transition
 
         WfExecutedResult RunGateCoreHook(TransitionActionContext ctx, WfExecutedResult result)
         {
+            var action = GetType().Name;
             if (!SkipGate)
             {
                 if (!ConsultPendingGuard.TryAllow(Sail, Kit, ctx.TaskId, Operation, result))
+                {
+                    SailFailLog.ResultNotSuccess(Sail, SailLogCategories.Transition, action, result);
                     return result;
+                }
 
                 var gateCtx = BuildGateContext(ctx.ProcessInstanceId, ctx.RunningActivityInstance, ctx.TaskId);
                 EnrichGateContext(gateCtx, ctx);
                 if (!TryGate(gateCtx, result))
+                {
+                    SailFailLog.ResultNotSuccess(Sail, SailLogCategories.Transition, action, result);
                     return result;
+                }
             }
 
             ExecuteCore(ctx, result);
             if (result.Status != WfExecutedStatus.Success)
+            {
+                SailFailLog.ResultNotSuccess(Sail, SailLogCategories.Transition, action, result);
                 return result;
+            }
 
             var hookCtx = BuildHookContext(
                 ResolveHookProcessInstanceId(ctx, result),
@@ -115,6 +132,7 @@ namespace sailflow.engine.Actions.Transition
             result.Status = WfExecutedStatus.Failed;
             result.Message = FormatFailedMessage(e);
             ApplyFailedExceptionType(result, e);
+            SailFailLog.Exception(Sail, SailLogCategories.Transition, GetType().Name, e, result.Message);
             LogManager.RecordLog(Sail, ErrorLogName, LogEventType.Error, LogPriority.High, Runner, e);
             return result;
         }

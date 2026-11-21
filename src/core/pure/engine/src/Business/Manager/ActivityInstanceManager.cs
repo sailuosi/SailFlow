@@ -10,6 +10,7 @@ using sailflow.engine.Assignee;
 using sailflow.engine.Entity;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
+using sailflow.engine.Logging;
 using sailflow.engine.Runtime;
 using sailflow.engine.Xpdl;
 using sailflow.hub.Localize;
@@ -28,6 +29,13 @@ namespace sailflow.engine.Manager
         }
 
         protected SailClient Sail { get; }
+
+        Exception FailThrow(Exception ex, string op, string detail = null)
+        {
+            SailFailLog.Exception(Sail, SailLogCategories.Engine, "ActivityInstance." + op, ex, detail);
+            return ex;
+        }
+
         #region Activity instance data acquisition 活动实例数据获取
         /// <summary>
         /// Retrieve activity instances based on Id
@@ -41,8 +49,8 @@ namespace sailflow.engine.Manager
             }
             catch (System.Exception e)
             {
-                throw new ApplicationException(Sail.Messages.GetEngineMessage("activityinstancemanager.getbyid.error", e.Message),
-                    e);
+                throw FailThrow(new ApplicationException(
+                    Sail.Messages.GetEngineMessage("activityinstancemanager.getbyid.error", e.Message), e), "GetById");
             }
         }
 
@@ -993,8 +1001,8 @@ namespace sailflow.engine.Manager
                     return;
             }
 
-            throw new WorkflowException(
-                "IncreaseTokensHad CAS failed after retries. ActivityInstanceId=" + activityInstanceId);
+            throw FailThrow(new WorkflowException(
+                "IncreaseTokensHad CAS failed after retries. ActivityInstanceId=" + activityInstanceId), "IncreaseTokensHad");
         }
         #endregion
 
@@ -1544,12 +1552,12 @@ namespace sailflow.engine.Manager
                     return NodePassedTypeEnum.Default;
                 }
 
-                throw new WfAssigneeException(
+                throw FailThrow(new WfAssigneeException(
                     AssigneeReasonCodes.LeaveConfigMissing,
                     "LeaveJudge missing for activity '"
                     + (subjectActivityInstance.ActivityId ?? subjectActivityInstance.ActivityInstanceId?.ToString())
                     + "'. Configure LeaveJudge in designer (R6). ReasonCode="
-                    + AssigneeReasonCodes.LeaveConfigMissing);
+                    + AssigneeReasonCodes.LeaveConfigMissing), "LeaveJudge");
             }
 
             _ = Sail.GetAssigneePipelineRequired();

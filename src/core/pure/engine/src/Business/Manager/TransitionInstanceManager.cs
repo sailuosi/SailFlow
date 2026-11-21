@@ -8,6 +8,7 @@ using sailflow.engine.Common;
 using sailflow.engine.Entity;
 using sailflow.engine.Client;
 using sailflow.engine.HotShard;
+using sailflow.engine.Logging;
 
 namespace sailflow.engine.Manager
 {
@@ -23,6 +24,12 @@ namespace sailflow.engine.Manager
         }
 
         protected SailClient Sail { get; }
+
+        Exception FailThrow(Exception ex, string op, string detail = null)
+        {
+            SailFailLog.Exception(Sail, SailLogCategories.Engine, "Transition." + op, ex, detail);
+            return ex;
+        }
 
         ISailHotShardRouter Router => Sail.HotShard;
 
@@ -82,7 +89,8 @@ namespace sailflow.engine.Manager
         {
             var nodeList = GetTransitonInstance(bizPK, processId, ActivityTypeEnum.EndNode).ToList();
             if (nodeList == null || nodeList.Count == 0)
-                throw new WorkflowException(Sail.Messages.GetEngineMessage("transitioninstancemanager.entrust.error"));
+                throw FailThrow(new WorkflowException(
+                    Sail.Messages.GetEngineMessage("transitioninstancemanager.entrust.error")), "GetEndTransition");
             return nodeList[0];
         }
 
@@ -90,7 +98,8 @@ namespace sailflow.engine.Manager
         {
             var nodeList = GetWorkItemTransitonInstance(bizPK, processId).ToList();
             if (nodeList.Count == 0)
-                throw new WorkflowException(Sail.Messages.GetEngineMessage("transitioninstancemanager.getlasttasktransition.error"));
+                throw FailThrow(new WorkflowException(
+                    Sail.Messages.GetEngineMessage("transitioninstancemanager.getlasttasktransition.error")), "GetLastTaskTransition");
             return nodeList[0];
         }
 

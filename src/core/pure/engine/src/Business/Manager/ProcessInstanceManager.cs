@@ -31,6 +31,13 @@ namespace sailflow.engine.Manager
         }
 
         protected SailClient Sail { get; }
+
+        /// <summary>业务硬失败：写 <see cref="SailFailLog"/> 后原样抛出。</summary>
+        Exception FailThrow(Exception ex, string op, string detail = null)
+        {
+            SailFailLog.Exception(Sail, SailLogCategories.Engine, "ProcessInstance." + op, ex, detail);
+            return ex;
+        }
         #region Query
         internal ProcessInstanceEntity GetProcessInstanceLatest(string bizPK, string processId, string version)
         {
@@ -160,7 +167,7 @@ namespace sailflow.engine.Manager
                 return list[0];
             if (list.Count == 0)
                 return null;
-            throw new WorkflowException(Sail.Messages.GetEngineMessage("processinstancemanager.GetSubProcessInstance.error"));
+            throw FailThrow(new WorkflowException(Sail.Messages.GetEngineMessage("processinstancemanager.GetSubProcessInstance.error")), "GetSubProcessInstance");
         }
 
         internal ProcessInstanceEntity GetRunningProcessInstance(string bizPK, string processId)
@@ -427,7 +434,7 @@ namespace sailflow.engine.Manager
             }
             else
             {
-                throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.complete.error"));
+                throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.complete.error")), "Complete");
             }
             return processInstance;
         }
@@ -452,7 +459,7 @@ namespace sailflow.engine.Manager
             }
             else
             {
-                throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.suspend.error"));
+                throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.suspend.error")), "Suspend");
             }
         }
 
@@ -476,7 +483,7 @@ namespace sailflow.engine.Manager
             }
             else
             {
-                throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.resume.error"));
+                throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.resume.error")), "Resume");
             }
         }
 
@@ -501,7 +508,7 @@ namespace sailflow.engine.Manager
             }
             else
             {
-                throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.recallsubprocess.error"));
+                throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.recallsubprocess.error")), "RecallSubProcess");
             }
         }
 
@@ -519,7 +526,7 @@ namespace sailflow.engine.Manager
             }
             else
             {
-                throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.reverse.error"));
+                throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.reverse.error")), "Reverse");
             }
         }
 
@@ -547,7 +554,7 @@ namespace sailflow.engine.Manager
             {
                 var entity = GetProcessInstanceLatest(kit, runner.BizPK, runner.ProcessId, runner.Version);
                 if (entity == null || entity.ProcessState != (short)ProcessStateEnum.Running)
-                    throw new WorkflowException(Sail.Messages.GetEngineMessage("processinstancemanager.cancel.error"));
+                    throw FailThrow(new WorkflowException(Sail.Messages.GetEngineMessage("processinstancemanager.cancel.error")), "Cancel");
 
                 entity.ProcessState = (short)ProcessStateEnum.Canceled;
                 entity.RecordStatusInvalid = 1;
@@ -559,7 +566,7 @@ namespace sailflow.engine.Manager
             }
             catch (System.Exception e)
             {
-                throw new WorkflowException(Sail.Messages.GetEngineMessage("processinstancemanager.cancel.error", e.Message));
+                throw FailThrow(new WorkflowException(Sail.Messages.GetEngineMessage("processinstancemanager.cancel.error", e.Message)), "Cancel");
             }
         }
 
@@ -576,7 +583,7 @@ namespace sailflow.engine.Manager
                 }
                 catch (System.Exception e)
                 {
-                    throw new WorkflowException(Sail.Messages.GetEngineMessage("processinstancemanager.discard.error", e.Message));
+                    throw FailThrow(new WorkflowException(Sail.Messages.GetEngineMessage("processinstancemanager.discard.error", e.Message)), "Discard");
                 }
             }
         }
@@ -614,7 +621,7 @@ namespace sailflow.engine.Manager
                 }
                 catch (System.Exception ex)
                 {
-                    throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error", ex.Message));
+                    throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error", ex.Message)), "Terminate");
                 }
             }
         }
@@ -625,7 +632,7 @@ namespace sailflow.engine.Manager
         internal bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, FlowCommandContext runner)
         {
             if (entity == null)
-                throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error"));
+                throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error")), "Terminate");
 
             var userId = runner?.UserId;
             var userName = runner?.UserName;
@@ -696,7 +703,7 @@ namespace sailflow.engine.Manager
 
                 return true;
             }
-            throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error"));
+            throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error")), "Terminate");
         }
 
         internal bool SetOverdue(string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
@@ -719,7 +726,7 @@ namespace sailflow.engine.Manager
                 Update(kit, entity);
                 return true;
             }
-            throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.setoverdue.error"));
+            throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.setoverdue.error")), "SetOverdue");
         }
 
         internal bool Delete(string processInstanceId, bool isForced = false)
@@ -766,7 +773,7 @@ namespace sailflow.engine.Manager
                 kit.useRepo<ProcessInstanceEntity, string>().DeleteById(processInstanceId);
                 return true;
             }
-            throw new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.delete.error"));
+            throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.delete.error")), "Delete");
         }
 
         static void DeleteTransitionsByProcessInstance(SQLBuilder kit, string physicalTable, string processInstanceId)
