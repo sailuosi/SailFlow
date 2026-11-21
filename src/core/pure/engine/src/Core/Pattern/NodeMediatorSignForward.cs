@@ -73,6 +73,8 @@ namespace sailflow.engine.Pattern
             {
                 ApplyStackLeaveOnContainer(current, signForwardType, controlParamSheet);
                 base.ActivityInstanceManager.Update(Kit.useSQL(), current);
+                // 前加签再加人：发起人待办仍后置
+                CloseInitiatorOpenTasksIfBefore(current, signForwardType, runner);
                 return current;
             }
 
@@ -92,6 +94,7 @@ namespace sailflow.engine.Pattern
                     current.ActivityState = (short)ActivityStateEnum.Ready;
                 base.ActivityInstanceManager.Update(Kit.useSQL(), current);
                 EnsureInitiatorDirectTask(current, resource, signForwardType, runner);
+                CloseInitiatorOpenTasksIfBefore(current, signForwardType, runner);
                 return current;
             }
 
@@ -111,7 +114,34 @@ namespace sailflow.engine.Pattern
 
             RelocateInitiatorTaskToContainer(node, container, runner);
             EnsureInitiatorDirectTask(container, resource, signForwardType, runner);
+            // 前加签：迁过来的待办须关闭，等 Sequence 唤醒再建（EnsureDeferredInitiatorTask）
+            CloseInitiatorOpenTasksIfBefore(container, signForwardType, runner);
             return container;
+        }
+
+        /// <summary>
+        /// 前加签期间发起人不应有打开待办；Closed + SignedForwardOut，唤醒时再建。
+        /// </summary>
+        private void CloseInitiatorOpenTasksIfBefore(
+            ActivityInstanceEntity container,
+            SignForwardTypeEnum signForwardType,
+            FlowCommandContext runner)
+        {
+            if (signForwardType != SignForwardTypeEnum.SignForwardBefore)
+                return;
+
+            var open = base.TaskManager.GetTaskListByActivity(
+                    Kit.useSQL(), container.ProcessInstanceId, container.ActivityInstanceId)
+                .Where(t => string.Equals(t.SignId, runner.UserId, StringComparison.OrdinalIgnoreCase)
+                    && (t.TaskState == (short)TaskStateEnum.Waiting
+                        || t.TaskState == (short)TaskStateEnum.Reading))
+                .ToList();
+
+            foreach (var t in open)
+            {
+                TaskManager.ApplyTaskEnd(t, TaskStateEnum.Closed, runner, TaskEndTypes.SignedForwardOut);
+                base.TaskManager.Update(Kit.useSQL(), t);
+            }
         }
 
         private static void ApplyStackLeaveOnContainer(

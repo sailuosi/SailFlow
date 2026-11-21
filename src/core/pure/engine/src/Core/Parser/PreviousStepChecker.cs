@@ -226,27 +226,22 @@ namespace sailflow.engine.Runtime
             var isOfMultipleInstanceNode = false;
 
             IList<Activity> activityList = new List<Activity>();
+            // 加签容器：CompleteOrder 是 Leave 阈，不是 MI 子序——勿走 CompleteOrder-1
+            var isSignForwardContainer = Manager.ActivityInstanceManager.IsSignForwardContainer(runningNode);
+
             //判断当前节点是否是多实例节点
             //Determine whether the current node is a multi instance node
-            if (runningNode.MainActInstanceId != null)
+            if (runningNode.MainActInstanceId != null && !isSignForwardContainer)
             {
                 if (runningNode.CompleteOrder > 1)
                 {
                     //多实例串行节点的中间节点，其上一步就是completeorder-1的节点
-                    //The intermediate node of a multi instance serial node, whose previous step is the node of compleorder-1
                     isOfMultipleInstanceNode = true;
                 }
                 else if (runningNode.CompleteOrder == 1
                     || runningNode.CompleteOrder == -1)
                 {
-                    //第一种条件：只有串行模式下有CompleteOrder的值为 1
-                    //串行模式多实例的第一个执行节点，此时可退回的节点是主节点的上一步
-                    //第一种条件：只有并行模式下有CompleteOrder的值为 -1
-                    //并行节点，此时可退回的节点是主节点的上一步
-                    //The first condition: Only in serial mode, there is a value of 1 for CompleteOrder
-                    //The first executing node of multiple instances in serial mode, and the node that can be returned at this time is the previous step of the master node
-                    //The first condition: Only in parallel mode, there is a value of -1 for CompleteOrder
-                    //Parallel nodes, the node that can be returned at this time is the previous step of the master node
+                    // 串行首子 / 并行子：前置走主节点上的流程前置
                     ;
                 }
                 else
@@ -261,13 +256,20 @@ namespace sailflow.engine.Runtime
             if (isOfMultipleInstanceNode == true)
             {
                 //已经是中间节点，只能退回到上一步多实例子节点
-                //It is already an intermediate node and can only be reverted back to the previous step of the multi instance node
                 var entity = GetPreviousOfMultipleInstanceNode(runningNode.MainActInstanceId,
                     runningNode.ActivityInstanceId,
                     runningNode.CompleteOrder.Value);
-                var activity = processModel.GetActivity(entity.ActivityId);
-
-                activityList.Add(activity);
+                if (entity != null && !string.IsNullOrEmpty(entity.ActivityId))
+                {
+                    var activity = processModel.GetActivity(entity.ActivityId);
+                    if (activity != null)
+                        activityList.Add(activity);
+                }
+                else
+                {
+                    // 脏数据 / 查无：回落普通前置，避免 NRE
+                    activityList = processModel.GetPreviousActivityList(runningNode.ActivityId, out hasGatewayPassed);
+                }
             }
             else
             {
