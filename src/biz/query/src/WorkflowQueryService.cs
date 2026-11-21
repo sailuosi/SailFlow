@@ -155,6 +155,7 @@ namespace sailflow.biz.query
 
         /// <summary>
         /// 判断当前任务是否是最后一个任务（会签/加签/单节点）。
+        /// 加签：容器末席且外层仍 Waiting → false；仅外层亦将 Passed 时 true。
         /// </summary>
         public bool IsLastTask(string taskId)
         {
@@ -164,9 +165,20 @@ namespace sailflow.biz.query
             var aim = new ActivityInstanceManager(Sail);
             var activityInstance = aim.GetById(task.ActivityInstanceId ?? throw new InvalidOperationException("Task ActivityInstanceId is required."));
 
+            // 发起人直属 Task 挂在加签容器上
+            if (ActivityInstanceManager.IsSignForwardContainer(activityInstance))
+                return IsLastTaskSignForwardSeat(aim, activityInstance, activityInstance);
+
             if (aim.IsMultipleInstanceChildren(activityInstance) == true)
             {
                 var mainActivityInstance = aim.GetById(activityInstance.MainActInstanceId);
+                if (mainActivityInstance?.ComplexType == null)
+                    return false;
+
+                // 叶子挂在加签容器下
+                if (ActivityInstanceManager.IsSignForwardContainer(mainActivityInstance))
+                    return IsLastTaskSignForwardSeat(aim, activityInstance, mainActivityInstance);
+
                 var complexType = EnumHelper.ParseEnum<ComplexTypeEnum>(mainActivityInstance.ComplexType.Value.ToString());
 
                 if (complexType == ComplexTypeEnum.SignTogether)
@@ -243,62 +255,85 @@ namespace sailflow.biz.query
                         }
                     }
                 }
-                else if (complexType == ComplexTypeEnum.SignForward)
-                {
-                    // 与 MultiSignForward 一致：串行看末席 CompleteOrder；并行按主阈预判（勿用主 CompleteOrder 封顶 maxOrder）
-                    var mergeType = mainActivityInstance.MergeType != null
-                        ? EnumHelper.ParseEnum<MergeTypeEnum>(mainActivityInstance.MergeType.Value.ToString())
-                        : MergeTypeEnum.Parallel;
-                    var allChildren = aim.GetActivityMulitipleInstanceWithState(
-                        mainActivityInstance.ActivityInstanceId,
-                        mainActivityInstance.ProcessInstanceId,
-                        null).ToList();
-
-                    if (mergeType == MergeTypeEnum.Sequence
-                        || (activityInstance.SignForwardType != null
-                            && (activityInstance.SignForwardType == (short)SignForwardTypeEnum.SignForwardBefore
-                                || activityInstance.SignForwardType == (short)SignForwardTypeEnum.SignForwardBehind)))
-                    {
-                        var ordered = allChildren
-                            .Where(x => x.CompleteOrder != null && x.CompleteOrder > 0)
-                            .ToList();
-                        float maxOrder = ordered.Count > 0
-                            ? ordered.Max(t => t.CompleteOrder.Value)
-                            : (activityInstance.CompleteOrder ?? 0);
-                        isLast = activityInstance.CompleteOrder != null
-                            && activityInstance.CompleteOrder >= maxOrder;
-                    }
-                    else
-                    {
-                        var allCount = allChildren
-                            .Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed)
-                            .Count();
-                        var completedCount = allChildren.Count(w =>
-                            w.ActivityState == (short)ActivityStateEnum.Completed
-                            || w.ActivityInstanceId == activityInstance.ActivityInstanceId);
-                        if (mainActivityInstance.CompareType == null
-                            || EnumHelper.ParseEnum<CompareTypeEnum>(mainActivityInstance.CompareType.Value.ToString()) == CompareTypeEnum.Percentage)
-                        {
-                            var rate = mainActivityInstance.CompleteOrder == null || mainActivityInstance.CompleteOrder > 1
-                                ? 1f
-                                : mainActivityInstance.CompleteOrder.Value;
-                            isLast = allCount > 0 && (completedCount * 1.0 / allCount) >= rate;
-                        }
-                        else
-                        {
-                            var need = mainActivityInstance.CompleteOrder == null || mainActivityInstance.CompleteOrder > allCount
-                                ? allCount
-                                : (int)mainActivityInstance.CompleteOrder.Value;
-                            isLast = completedCount >= need;
-                        }
-                    }
-                }
             }
             else
             {
                 isLast = true;
             }
             return isLast;
+        }
+
+        /// <summary>
+        /// 加签席：先看容器内是否末席；末席再看外层是否仍 Waiting（外层 Waiting → 非 Last）。
+        /// </summary>
+        private bool IsLastTaskSignForwardSeat(
+            ActivityInstanceManager aim,
+            ActivityInstanceEntity current,
+            ActivityInstanceEntity container)
+        {
+            var children = aim.GetActivityMulitipleInstanceWithState(
+                container.ActivityInstanceId,
+                container.ProcessInstanceId,
+                null).ToList();
+
+            var unfinishedChildren = children.Where(c =>
+                c.ActivityState == (short)ActivityStateEnum.Ready
+                || c.ActivityState == (short)ActivityStateEnum.Running
+                || c.ActivityState == (short)ActivityStateEnum.Suspended).ToList();
+
+            var onContainer = string.Equals(
+                current.ActivityInstanceId, container.ActivityInstanceId, StringComparison.OrdinalIgnoreCase);
+
+            // 容器直属 Task：仍有未完成加签子 → 非末
+            if (onContainer)
+            {
+                if (unfinishedChildren.Count > 0)
+                    return false;
+            }
+            else
+            {
+                // 叶子：仍有其他未完成子 → 非末
+                if (unfinishedChildren.Any(c =>
+                    !string.Equals(c.ActivityInstanceId, current.ActivityInstanceId, StringComparison.OrdinalIgnoreCase)))
+                    return false;
+
+                var mergeType = container.MergeType != null
+                    ? EnumHelper.ParseEnum<MergeTypeEnum>(container.MergeType.Value.ToString())
+                    : MergeTypeEnum.Parallel;
+                if (mergeType == MergeTypeEnum.Sequence)
+                {
+                    var ordered = children.Where(x => x.CompleteOrder != null && x.CompleteOrder > 0).ToList();
+                    float maxOrder = ordered.Count > 0 ? ordered.Max(t => t.CompleteOrder.Value) : 0;
+                    // 前加签：末序后还要发起人直属 Task（容器未 Completed）
+                    if (container.SignForwardType == (short)SignForwardTypeEnum.SignForwardBefore
+                        && (current.CompleteOrder == null || current.CompleteOrder >= maxOrder)
+                        && container.ActivityState != (short)ActivityStateEnum.Completed)
+                        return false;
+                    if (current.CompleteOrder == null || current.CompleteOrder < maxOrder)
+                        return false;
+                }
+            }
+
+            // 容器将达阈 → 外层 Race 可 Last；否则有未完成兄弟席则非 Last
+            if (string.IsNullOrEmpty(container.MainActInstanceId))
+                return true;
+
+            var parent = aim.GetById(container.MainActInstanceId);
+            if (parent == null)
+                return true;
+
+            if (string.Equals(parent.LeaveJudgeType, "Race", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            var siblingChildren = aim.GetActivityMulitipleInstanceWithState(
+                parent.ActivityInstanceId, parent.ProcessInstanceId, null)
+                .Where(c => c.ActivityState == (short)ActivityStateEnum.Ready
+                    || c.ActivityState == (short)ActivityStateEnum.Running
+                    || c.ActivityState == (short)ActivityStateEnum.Suspended)
+                .Where(c => !string.Equals(c.ActivityInstanceId, container.ActivityInstanceId, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            // 保守：外层非 Race 且存在其他活动席/兄弟 → 非 Last（扁平旁人打开待办由工作台另判）
+            return siblingChildren.Count == 0;
         }
 
         /// <summary>

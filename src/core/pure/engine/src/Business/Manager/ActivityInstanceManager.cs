@@ -952,7 +952,7 @@ namespace sailflow.engine.Manager
         }
 
         /// <summary>
-        /// 从设计 Activity 拷贝 Leave 快照到 AI（子堆栈主容器可随后改写）。
+        /// 从设计 Activity 拷贝 Leave 快照到 AI（加签只改发起人容器 Leave，不改节点快照）。
         /// </summary>
         internal static void ApplyLeaveSnapshotFromActivity(ActivityInstanceEntity instance, Activity activity)
         {
@@ -1198,15 +1198,71 @@ namespace sailflow.engine.Manager
         }
 
         /// <summary>
-        /// Update the status of unfinished nodes in the countersignature node
-        /// 更新会签节点中未办理完成的节点状态
+        /// 取消主下未完成子 AI，并<strong>递归</strong>取消其后代（加签嵌套子树）。
         /// </summary>
         internal void CancelUnCompletedMultipleInstance(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner)
         {
+            CancelUnCompletedMultipleInstanceRecursive(kit, mainActivityInstanceId, runner, depth: 0);
+        }
+
+        /// <summary>
+        /// 淹没节点下全部未完成 SignForward 容器及其子树（Race 旁关时调用）。
+        /// </summary>
+        internal void CancelSignForwardSubtreeUnder(SQLBuilder kit, string rootActivityInstanceId, FlowCommandContext runner)
+        {
+            if (string.IsNullOrWhiteSpace(rootActivityInstanceId))
+                return;
+            var root = GetById(kit, rootActivityInstanceId);
+            if (root == null || string.IsNullOrWhiteSpace(root.ProcessInstanceId))
+                return;
+
+            var direct = GetActivityMulitipleInstanceWithState(
+                    kit, rootActivityInstanceId, root.ProcessInstanceId, null)
+                .Where(c => c != null
+                    && (c.ActivityState == (short)ActivityStateEnum.Ready
+                        || c.ActivityState == (short)ActivityStateEnum.Running
+                        || c.ActivityState == (short)ActivityStateEnum.Suspended))
+                .ToList();
+
+            foreach (var child in direct)
+            {
+                var isSfContainer = child.ComplexType == (short)ComplexTypeEnum.SignForward
+                    && !string.IsNullOrEmpty(child.LeaveJudgeType);
+                if (isSfContainer || child.ComplexType == (short)ComplexTypeEnum.SignForward)
+                {
+                    CancelUnCompletedMultipleInstanceRecursive(kit, child.ActivityInstanceId, runner, 0);
+                    if (child.ActivityState == (short)ActivityStateEnum.Ready
+                        || child.ActivityState == (short)ActivityStateEnum.Running
+                        || child.ActivityState == (short)ActivityStateEnum.Suspended)
+                    {
+                        child.ActivityState = (short)ActivityStateEnum.Cancelled;
+                        child.UpdatedUserId = runner?.UserId;
+                        child.UpdatedUserName = runner?.UserName;
+                        child.UpdatedDateTime = System.DateTime.UtcNow;
+                        Update(kit, child);
+                        Sail.ManagerFactory.Tasks.CloseOpenApproverTasksOnActivityIds(
+                            kit,
+                            root.ProcessInstanceId,
+                            new[] { child.ActivityInstanceId },
+                            runner,
+                            TaskEndTypes.RaceTaken);
+                    }
+                }
+            }
+        }
+
+        private void CancelUnCompletedMultipleInstanceRecursive(
+            SQLBuilder kit,
+            string mainActivityInstanceId,
+            FlowCommandContext runner,
+            int depth)
+        {
+            if (string.IsNullOrWhiteSpace(mainActivityInstanceId) || depth > 32)
+                return;
+
             var main = GetById(kit, mainActivityInstanceId);
             var processInstanceId = main?.ProcessInstanceId;
 
-            // 先收集将被取消的子 AI，便于同步关闭其上打开待办（RaceTaken）
             var openChildren = string.IsNullOrWhiteSpace(processInstanceId)
                 ? new List<ActivityInstanceEntity>()
                 : GetActivityMulitipleInstanceWithStateBatch(
@@ -1219,6 +1275,9 @@ namespace sailflow.engine.Manager
                             || c.ActivityState == (short)ActivityStateEnum.Running
                             || c.ActivityState == (short)ActivityStateEnum.Suspended))
                     .ToList();
+
+            foreach (var child in openChildren)
+                CancelUnCompletedMultipleInstanceRecursive(kit, child.ActivityInstanceId, runner, depth + 1);
 
             var clip = kit.useClip();
             clip.setTable<ActivityInstanceEntity>(out var ai)
@@ -1397,22 +1456,38 @@ namespace sailflow.engine.Manager
         internal NodePassedTypeEnum CheckMIPassRateInfo(SQLBuilder kit, ActivityInstanceEntity currentActivityInstance,
             ActivityInstanceEntity mainActivityInstance)
         {
-            var childActivityInstanceList = GetValidActivityInstanceListOfMI(kit, mainActivityInstance.ActivityInstanceId, mainActivityInstance.ProcessInstanceId);
+            return EvaluateLeaveOnActivity(kit, currentActivityInstance, mainActivityInstance);
+        }
 
-            // R2：已挂管道时只走 LeaveJudge（含 Legacy 会签→Collaborate 推断）；禁止回落旧通过率旁路
+        /// <summary>
+        /// 对主体 AI 做 Leave：seats = 直属 Task ∪ 直属子 AI 折合（同级）。
+        /// </summary>
+        internal NodePassedTypeEnum EvaluateLeaveOnActivity(
+            SQLBuilder kit,
+            ActivityInstanceEntity currentActivityInstance,
+            ActivityInstanceEntity subjectActivityInstance)
+        {
+            if (subjectActivityInstance == null)
+                return NodePassedTypeEnum.Default;
+
+            var childActivityInstanceList = GetValidActivityInstanceListOfMI(
+                kit,
+                subjectActivityInstance.ActivityInstanceId,
+                subjectActivityInstance.ProcessInstanceId);
+
             var pipeline = Sail.AssigneePipeline;
-            string leaveProcessId = mainActivityInstance.ProcessId;
+            string leaveProcessId = subjectActivityInstance.ProcessId;
             string leaveVersion = null;
             try
             {
                 var pi = Sail.ProcessInstances.GetById(
-                    kit, mainActivityInstance.ProcessInstanceId);
+                    kit, subjectActivityInstance.ProcessInstanceId);
                 leaveProcessId = pi?.ProcessId ?? leaveProcessId;
                 leaveVersion = pi?.Version;
             }
             catch
             {
-                /* 读版本失败时仍尝试 Leave；Pipeline 可再自查 */
+                /* 读版本失败时仍尝试 Leave */
             }
 
             if (pipeline != null)
@@ -1421,26 +1496,38 @@ namespace sailflow.engine.Manager
                     .Select(c => c?.ActivityInstanceId)
                     .Where(id => !string.IsNullOrWhiteSpace(id))
                     .ToList() ?? new List<string>();
-                // 当前子也可能在列表外时仍纳入
                 if (!string.IsNullOrWhiteSpace(currentActivityInstance?.ActivityInstanceId)
-                    && !childIds.Contains(currentActivityInstance.ActivityInstanceId))
+                    && !childIds.Contains(currentActivityInstance.ActivityInstanceId)
+                    && !string.Equals(
+                        currentActivityInstance.ActivityInstanceId,
+                        subjectActivityInstance.ActivityInstanceId,
+                        StringComparison.OrdinalIgnoreCase))
                     childIds.Add(currentActivityInstance.ActivityInstanceId);
 
-                var tasks = Sail.ManagerFactory.Tasks.GetTaskListByActivityIds(
+                var directTasks = Sail.ManagerFactory.Tasks.GetTaskListByActivity(
                     kit,
-                    mainActivityInstance.ProcessInstanceId,
+                    subjectActivityInstance.ProcessInstanceId,
+                    subjectActivityInstance.ActivityInstanceId);
+                var childTasks = Sail.ManagerFactory.Tasks.GetTaskListByActivityIds(
+                    kit,
+                    subjectActivityInstance.ProcessInstanceId,
                     childIds);
-                var seats = LeaveSeatProjector.BuildSeats(childActivityInstanceList, tasks);
+                var seats = LeaveSeatProjector.BuildSeatsForActivity(
+                    subjectActivityInstance,
+                    directTasks,
+                    childActivityInstanceList,
+                    childTasks);
 
                 if (pipeline.TryCanLeave(
                         new LeaveInvokeRequest
                         {
-                            ProcessInstanceId = mainActivityInstance.ProcessInstanceId,
-                            ActivityInstanceId = currentActivityInstance.ActivityInstanceId,
+                            ProcessInstanceId = subjectActivityInstance.ProcessInstanceId,
+                            ActivityInstanceId = currentActivityInstance?.ActivityInstanceId
+                                ?? subjectActivityInstance.ActivityInstanceId,
                             ProcessId = leaveProcessId,
                             Version = leaveVersion,
-                            CurrentActivityInstance = currentActivityInstance,
-                            MainActivityInstance = mainActivityInstance,
+                            CurrentActivityInstance = currentActivityInstance ?? subjectActivityInstance,
+                            MainActivityInstance = subjectActivityInstance,
                             ChildActivityInstances = childActivityInstanceList,
                             Seats = seats
                         },
@@ -1458,17 +1545,21 @@ namespace sailflow.engine.Manager
 
                 throw new WfAssigneeException(
                     AssigneeReasonCodes.LeaveConfigMissing,
-                    "LeaveJudge missing for multi-instance activity '"
-                    + (mainActivityInstance.ActivityId ?? mainActivityInstance.ActivityInstanceId?.ToString())
+                    "LeaveJudge missing for activity '"
+                    + (subjectActivityInstance.ActivityId ?? subjectActivityInstance.ActivityInstanceId?.ToString())
                     + "'. Configure LeaveJudge in designer (R6). ReasonCode="
                     + AssigneeReasonCodes.LeaveConfigMissing);
             }
 
-            // R2：未挂管道不再回落旧 MI 通过率旁路（与 Resolve 对齐）
             _ = Sail.GetAssigneePipelineRequired();
-            // GetAssigneePipelineRequired 在未挂管道时抛 InvalidOperationException；不可达
             return NodePassedTypeEnum.Default;
         }
+
+        /// <summary>是否为加签席位容器（发起人 AI，承载子规则 Leave）。</summary>
+        public static bool IsSignForwardContainer(ActivityInstanceEntity ai)
+            => ai != null
+               && ai.ComplexType == (short)ComplexTypeEnum.SignForward
+               && !string.IsNullOrEmpty(ai.LeaveJudgeType);
 
         /// <summary>
         /// Obtain the approval rate type of the countersignature node

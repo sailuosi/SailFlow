@@ -1100,6 +1100,8 @@ namespace sailflow.engine.Pattern
                     preferredEndType: TaskEndTypes.RaceTaken,
                     completedSignId: runner?.UserId);
                 TaskManager.CancelOpenParticipantsOnActivity(sql, ai, runner);
+                // 淹没未完成加签子树（席位级 SignForward 容器及后代）
+                ActivityInstanceManager.CancelSignForwardSubtreeUnder(sql, ai.ActivityInstanceId, runner);
             }
             ActivityInstanceManager.Complete(sql, ActivityInstanceId, runner);
         }

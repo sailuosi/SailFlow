@@ -12,6 +12,8 @@ namespace sailflow.engine.Common
         public const string DelegatedOut = "DelegatedOut";
         public const string TransferredOut = "TransferredOut";
         public const string Removed = "Removed";
+        /// <summary>扁平抬席：原节点直属待办迁到发起人容器 AI。</summary>
+        public const string SignedForwardOut = "SignedForwardOut";
         public const string ConsultRecalled = "ConsultRecalled";
         public const string ActivityCancelled = "ActivityCancelled";
         public const string Withdrawn = "Withdrawn";

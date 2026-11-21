@@ -9,11 +9,12 @@ using sailflow.engine.Entity;
 using sailflow.engine.Result;
 using sailflow.engine.Client;
 using sailflow.engine.Core;
+using sailflow.engine.Manager;
 
 namespace sailflow.engine.Pattern
 {
     /// <summary>
-    /// 加签子节点执行：办结后以主 AI Leave（TryCanLeave）判定；Waiting+Sequence 唤醒下一席；Passed 塌缩主容器。
+    /// 加签办结：容器内 TryCanLeave；Waiting 唤醒下一子；Passed 塌缩并折合一票上浮，仅节点 Passed 才 ContinueForward。
     /// </summary>
     internal class NodeMediatorMultiSignForward : NodeMediator
     {
@@ -49,8 +50,6 @@ namespace sailflow.engine.Pattern
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            bool canContinueForwardCurrentNode = true;
-
             FlowCommandContext runner = new FlowCommandContext
             {
                 UserId = activityResource.AppRunner.UserId,
@@ -66,46 +65,157 @@ namespace sailflow.engine.Pattern
                 base.TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
             }
 
-            base.ActivityInstanceManager.Complete(kit.useSQL(),
-                base.LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
-            base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-
             if (base.ActivityForwardContext.IsNotParsedByTransition == true)
                 return true;
 
-            var fromChild = base.LinkContext.FromActivityInstance;
-            if (fromChild.MainActInstanceId == null
-                || fromChild.SignForwardType == null
-                || fromChild.SignForwardType == (short)SignForwardTypeEnum.None)
-                return canContinueForwardCurrentNode;
+            var from = base.LinkContext.FromActivityInstance;
+            if (from == null)
+                return false;
 
-            var mainActivityInstance = base.ActivityInstanceManager.GetById(fromChild.MainActInstanceId);
-            if (mainActivityInstance == null)
-                return canContinueForwardCurrentNode;
+            // 容器直属 Task：不 Complete 容器 AI
+            if (Manager.ActivityInstanceManager.IsSignForwardContainer(from))
+            {
+                return EvaluateContainerAndBubble(kit, from, from, activityResource, runner);
+            }
 
-            // 统一走 Leave（AI LeaveJudgeType 优先）
-            var passedType = base.ActivityInstanceManager.CheckMIPassRateInfo(
-                kit.useSQL(), fromChild, mainActivityInstance);
+            // 叶子子 AI：完结叶子，再问父容器
+            base.ActivityInstanceManager.Complete(kit.useSQL(), from.ActivityInstanceId, activityResource.AppRunner);
+            from.ActivityState = (short)ActivityStateEnum.Completed;
+            base.ActivityInstanceManager.SetApprovalStatus(kit.useSQL(), from.ActivityInstanceId);
+
+            if (string.IsNullOrEmpty(from.MainActInstanceId))
+                return true;
+
+            var container = base.ActivityInstanceManager.GetById(from.MainActInstanceId);
+            if (container == null)
+                return true;
+
+            if (!Manager.ActivityInstanceManager.IsSignForwardContainer(container))
+            {
+                // 父是 SignTogether 主等：沿用会签阈
+                var passedType = base.ActivityInstanceManager.CheckMIPassRateInfo(kit.useSQL(), from, container);
+                if (passedType == NodePassedTypeEnum.Passed || passedType == NodePassedTypeEnum.NotPassed)
+                {
+                    container.ActivityState = (short)ActivityStateEnum.Completed;
+                    base.ActivityInstanceManager.Update(kit.useSQL(), container);
+                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(
+                        kit.useSQL(), container.ActivityInstanceId, runner);
+                    return true;
+                }
+                HandleSequenceWaiting(kit, container, from, activityResource, runner);
+                return false;
+            }
+
+            return EvaluateContainerAndBubble(kit, from, container, activityResource, runner);
+        }
+
+        /// <summary>容器 Leave → Waiting 唤醒 / Passed 塌缩上浮。</summary>
+        private bool EvaluateContainerAndBubble(
+            SQLBuilder kit,
+            ActivityInstanceEntity current,
+            ActivityInstanceEntity container,
+            ActivityResource activityResource,
+            FlowCommandContext runner)
+        {
+            var passedType = base.ActivityInstanceManager.EvaluateLeaveOnActivity(
+                kit.useSQL(), current, container);
 
             if (passedType == NodePassedTypeEnum.Passed
                 || passedType == NodePassedTypeEnum.NotPassed)
             {
-                mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-                base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
-                base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(
-                    kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
-                canContinueForwardCurrentNode = true;
-                return canContinueForwardCurrentNode;
+                return CollapseSignForwardAndBubbleLeave(
+                    kit, container, activityResource, runner,
+                    passedType == NodePassedTypeEnum.Passed);
             }
 
-            // Waiting：串行唤醒下一挂起子；并行继续等
-            var mergeType = mainActivityInstance.MergeType ?? (short)MergeTypeEnum.Parallel;
+            HandleSequenceWaiting(kit, container, current, activityResource, runner);
+            return false;
+        }
+
+        /// <summary>
+        /// 塌缩容器并折合一票上浮；返回是否应 ContinueForward（仅节点 Leave Passed）。
+        /// </summary>
+        internal bool CollapseSignForwardAndBubbleLeave(
+            SQLBuilder kit,
+            ActivityInstanceEntity container,
+            ActivityResource activityResource,
+            FlowCommandContext runner,
+            bool agreed)
+        {
+            container.ApprovalStatus = agreed
+                ? (short)ApprovalStatusEnum.Agreed
+                : (short)ApprovalStatusEnum.Refused;
+            container.ActivityState = (short)ActivityStateEnum.Completed;
+            base.ActivityInstanceManager.Update(kit.useSQL(), container);
+            base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(
+                kit.useSQL(), container.ActivityInstanceId, runner);
+
+            // 无父：异常形态，视为可出
+            if (string.IsNullOrEmpty(container.MainActInstanceId))
+                return true;
+
+            var parent = base.ActivityInstanceManager.GetById(container.MainActInstanceId);
+            if (parent == null)
+                return true;
+
+            // 父仍是加签容器 → 递归
+            if (Manager.ActivityInstanceManager.IsSignForwardContainer(parent))
+            {
+                var parentPass = base.ActivityInstanceManager.EvaluateLeaveOnActivity(
+                    kit.useSQL(), container, parent);
+                if (parentPass == NodePassedTypeEnum.Passed
+                    || parentPass == NodePassedTypeEnum.NotPassed)
+                {
+                    return CollapseSignForwardAndBubbleLeave(
+                        kit, parent, activityResource, runner,
+                        parentPass == NodePassedTypeEnum.Passed);
+                }
+                HandleSequenceWaiting(kit, parent, container, activityResource, runner);
+                return false;
+            }
+
+            // 父为节点（或 SignTogether 主）：问外层 Leave
+            var nodePass = base.ActivityInstanceManager.EvaluateLeaveOnActivity(
+                kit.useSQL(), container, parent);
+
+            if (nodePass == NodePassedTypeEnum.Passed
+                || nodePass == NodePassedTypeEnum.NotPassed)
+            {
+                // SignTogether 主：完结主并取消未完成子
+                if (parent.ComplexType == (short)ComplexTypeEnum.SignTogether)
+                {
+                    parent.ActivityState = (short)ActivityStateEnum.Completed;
+                    base.ActivityInstanceManager.Update(kit.useSQL(), parent);
+                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(
+                        kit.useSQL(), parent.ActivityInstanceId, runner);
+                    return true;
+                }
+
+                // 节点：旁关 + 淹没加签子树
+                CompleteActivityInstance(parent.ActivityInstanceId, runner, kit);
+                base.LinkContext.FromActivityInstance = parent;
+                base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
+                return true;
+            }
+
+            base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.WaitingForCompletedMore;
+            return false;
+        }
+
+        private void HandleSequenceWaiting(
+            SQLBuilder kit,
+            ActivityInstanceEntity container,
+            ActivityInstanceEntity fromChild,
+            ActivityResource activityResource,
+            FlowCommandContext runner)
+        {
+            var mergeType = container.MergeType ?? (short)MergeTypeEnum.Parallel;
             if (mergeType == (short)MergeTypeEnum.Sequence)
             {
                 var suspended = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithState(
                         kit.useSQL(),
-                        mainActivityInstance.ActivityInstanceId,
-                        fromChild.ProcessInstanceId,
+                        container.ActivityInstanceId,
+                        container.ProcessInstanceId,
                         (short)ActivityStateEnum.Suspended)
                     .OrderBy(a => a.CompleteOrder ?? 0)
                     .ToList();
@@ -117,28 +227,56 @@ namespace sailflow.engine.Pattern
                     base.ActivityInstanceManager.Update(kit.useSQL(), next);
                     base.FireActivityReady(kit, next, runner);
 
-                    mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
-                        base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
+                    container.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
+                        activityResource.AppRunner.NextActivityPerformers,
                         Sail.JsonSerializer);
-                    base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
+                    base.ActivityInstanceManager.Update(kit.useSQL(), container);
                     base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.ForwardToNextSequenceTask;
                 }
                 else
                 {
+                    // 前加签：子席已尽，补建发起人直属 Task
+                    EnsureDeferredInitiatorTask(kit, container, activityResource, runner);
                     base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.WaitingForCompletedMore;
                 }
             }
             else
             {
-                mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
-                    base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
+                container.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
+                    activityResource.AppRunner.NextActivityPerformers,
                     Sail.JsonSerializer);
-                base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
+                base.ActivityInstanceManager.Update(kit.useSQL(), container);
                 base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.WaitingForCompletedMore;
             }
+        }
 
-            canContinueForwardCurrentNode = false;
-            return canContinueForwardCurrentNode;
+        private void EnsureDeferredInitiatorTask(
+            SQLBuilder kit,
+            ActivityInstanceEntity container,
+            ActivityResource activityResource,
+            FlowCommandContext runner)
+        {
+            if (!Manager.ActivityInstanceManager.IsSignForwardContainer(container))
+                return;
+            if (container.SignForwardType != (short)SignForwardTypeEnum.SignForwardBefore)
+                return;
+
+            var signId = container.SignIds;
+            if (string.IsNullOrEmpty(signId))
+                return;
+
+            var existing = base.TaskManager.GetTaskListByActivity(
+                    kit.useSQL(), container.ProcessInstanceId, container.ActivityInstanceId)
+                .Any(t => string.Equals(t.SignId, signId, StringComparison.OrdinalIgnoreCase)
+                    && (t.TaskState == (short)TaskStateEnum.Waiting
+                        || t.TaskState == (short)TaskStateEnum.Reading
+                        || t.TaskState == (short)TaskStateEnum.Completed));
+            if (existing)
+                return;
+
+            var performer = new Performer(signId, container.SignNames);
+            base.TaskManager.Insert(kit.useSQL(), container, performer, activityResource.AppRunner);
+            base.FireActivityReady(kit, container, runner);
         }
     }
 }

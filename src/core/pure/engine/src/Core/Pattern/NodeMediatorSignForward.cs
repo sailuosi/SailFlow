@@ -6,18 +6,18 @@ using sailflow.data;
 using mooSQL.data;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Entity;
-using sailflow.WebUtility;
 using sailflow.engine.Client;
 using sailflow.engine.Core;
+using sailflow.engine.Manager;
+using sailflow.WebUtility;
 
 namespace sailflow.engine.Pattern
 {
     /// <summary>
-    /// 加签主节点执行器：升级当前 AI 为临时子堆栈容器，并写入子堆栈 Leave（Collaborate + Merge）。
+    /// 加签压栈：发起人 AI 即容器（直属 Task + 加签人子 AI 同级）；不改写父/节点 Leave。
     /// </summary>
     internal class NodeMediatorSignForward : NodeMediator
     {
-        /// <summary>与 <c>LeaveJudgeTypeCodes.Collaborate</c> 对齐（engine 不引用 assignee 程序集）。</summary>
         internal const string StackLeaveCollaborate = "Collaborate";
 
         internal NodeMediatorSignForward(ActivityForwardContext forwardContext, SQLBuilder kit, SailClient client)
@@ -25,9 +25,6 @@ namespace sailflow.engine.Pattern
         {
         }
 
-        /// <summary>
-        /// 执行工作项
-        /// </summary>
         public override void ExecuteWorkItem(ActivityInstanceEntity activityInstance)
         {
             try
@@ -35,14 +32,26 @@ namespace sailflow.engine.Pattern
                 var controlParamSheet = base.ActivityForwardContext.ActivityResource.AppRunner.ControlParameterSheet
                     ?? throw new InvalidOperationException("SignForward requires ControlParameterSheet.");
                 var signForwardType = EnumHelper.ParseEnum<SignForwardTypeEnum>(controlParamSheet.SignForwardType);
+                var resource = ActivityForwardContext.ActivityResource;
+                var runner = resource.AppRunner;
+                var current = base.ActivityForwardContext.FromActivityInstance
+                    ?? throw new InvalidOperationException("SignForward requires FromActivityInstance.");
 
-                ApplyStackLeaveOnMain(
-                    base.ActivityForwardContext.FromActivityInstance,
-                    signForwardType,
-                    controlParamSheet);
+                var container = ResolveOrCreateContainer(current, signForwardType, controlParamSheet, resource, runner);
+                CreateSigneeChildren(container, resource, signForwardType);
 
-                UpgradeToMainSignForwardNode(base.ActivityForwardContext.FromActivityInstance, signForwardType);
-                CreateSignForwardTasks(ActivityForwardContext.ActivityResource, signForwardType);
+                if (signForwardType == SignForwardTypeEnum.SignForwardBefore
+                    || signForwardType == SignForwardTypeEnum.SignForwardBehind)
+                {
+                    var children = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithState(
+                        Kit.useSQL(),
+                        container.ActivityInstanceId,
+                        container.ProcessInstanceId,
+                        null);
+                    // 席位数 = 直属发起人 Task(1) + 加签子 AI
+                    container.CompleteOrder = children.Count + 1;
+                    base.ActivityInstanceManager.Update(Kit.useSQL(), container);
+                }
             }
             catch (System.Exception)
             {
@@ -51,148 +60,195 @@ namespace sailflow.engine.Pattern
         }
 
         /// <summary>
-        /// 子堆栈 Leave：前/后 = Collaborate + Sequence + Count 全员；并 = Collaborate + Parallel + Percentage 全员。
-        /// 串行禁止把宿主 count/1 写到主 AI。
+        /// 扁平：在节点下新建发起人容器并迁 Task；已有席位 AI：升级为本容器；已是容器：只补 Leave/人。
         /// </summary>
-        private static void ApplyStackLeaveOnMain(
-            ActivityInstanceEntity main,
+        private ActivityInstanceEntity ResolveOrCreateContainer(
+            ActivityInstanceEntity current,
+            SignForwardTypeEnum signForwardType,
+            ControlParameterSheet controlParamSheet,
+            ActivityResource resource,
+            FlowCommandContext runner)
+        {
+            if (sailflow.engine.Manager.ActivityInstanceManager.IsSignForwardContainer(current))
+            {
+                ApplyStackLeaveOnContainer(current, signForwardType, controlParamSheet);
+                base.ActivityInstanceManager.Update(Kit.useSQL(), current);
+                return current;
+            }
+
+            // 席位 AI（挂在父下）：升级为容器，保留直属 Task
+            if (!string.IsNullOrEmpty(current.MainActInstanceId))
+            {
+                ApplyStackLeaveOnContainer(current, signForwardType, controlParamSheet);
+                current.ComplexType = (short)ComplexTypeEnum.SignForward;
+                current.SignForwardType = (short)signForwardType;
+                if (string.IsNullOrEmpty(current.SignIds))
+                {
+                    current.SignIds = runner.UserId;
+                    current.SignNames = runner.UserName;
+                }
+                // 容器保持可办（发起人直属 Task）；勿 Suspended
+                if (current.ActivityState == (short)ActivityStateEnum.Suspended)
+                    current.ActivityState = (short)ActivityStateEnum.Ready;
+                base.ActivityInstanceManager.Update(Kit.useSQL(), current);
+                EnsureInitiatorDirectTask(current, resource, signForwardType, runner);
+                return current;
+            }
+
+            // 扁平节点：抬席——新建容器挂到节点下，迁发起人 Task；节点 Leave 不动
+            var node = current;
+            var container = base.ActivityInstanceManager.CreateActivityInstanceObject(node);
+            container.MainActInstanceId = node.ActivityInstanceId;
+            container.SignIds = runner.UserId;
+            container.SignNames = runner.UserName;
+            container.ComplexType = (short)ComplexTypeEnum.SignForward;
+            container.SignForwardType = (short)signForwardType;
+            container.LeaveJudgeType = null;
+            container.LeaveJudgeParams = null;
+            ApplyStackLeaveOnContainer(container, signForwardType, controlParamSheet);
+            container.ActivityState = (short)ActivityStateEnum.Ready;
+            base.ActivityInstanceManager.Insert(Kit.useSQL(), container);
+
+            RelocateInitiatorTaskToContainer(node, container, runner);
+            EnsureInitiatorDirectTask(container, resource, signForwardType, runner);
+            return container;
+        }
+
+        private static void ApplyStackLeaveOnContainer(
+            ActivityInstanceEntity container,
             SignForwardTypeEnum signForwardType,
             ControlParameterSheet controlParamSheet)
         {
-            main.LeaveJudgeType = StackLeaveCollaborate;
-            main.LeaveJudgeParams = null;
+            container.LeaveJudgeType = StackLeaveCollaborate;
+            container.LeaveJudgeParams = null;
 
             if (signForwardType == SignForwardTypeEnum.SignForwardBefore
                 || signForwardType == SignForwardTypeEnum.SignForwardBehind)
             {
-                main.MergeType = (short)MergeTypeEnum.Sequence;
-                main.CompareType = (short)CompareTypeEnum.Count;
-                // CompleteOrder 在建完子席后写为席位数（见 CreateSignForwardTasks）
-                main.CompleteOrder = null;
+                container.MergeType = (short)MergeTypeEnum.Sequence;
+                container.CompareType = (short)CompareTypeEnum.Count;
+                container.CompleteOrder = null;
             }
             else
             {
-                main.MergeType = (short)MergeTypeEnum.Parallel;
-                // 并加签默认全员：Percentage + 1；宿主可传 count 则按人数阈
+                container.MergeType = (short)MergeTypeEnum.Parallel;
                 if (controlParamSheet != null
                     && !string.IsNullOrEmpty(controlParamSheet.SignForwardCompareType)
                     && controlParamSheet.SignForwardCompareType.ToUpper() == "COUNT")
                 {
-                    main.CompareType = (short)CompareTypeEnum.Count;
-                    main.CompleteOrder = controlParamSheet.SignForwardCompleteOrder > 0
+                    container.CompareType = (short)CompareTypeEnum.Count;
+                    container.CompleteOrder = controlParamSheet.SignForwardCompleteOrder > 0
                         ? controlParamSheet.SignForwardCompleteOrder
                         : null;
                 }
                 else
                 {
-                    main.CompareType = (short)CompareTypeEnum.Percentage;
-                    main.CompleteOrder = controlParamSheet != null && controlParamSheet.SignForwardCompleteOrder != 0
+                    container.CompareType = (short)CompareTypeEnum.Percentage;
+                    container.CompleteOrder = controlParamSheet != null && controlParamSheet.SignForwardCompleteOrder != 0
                         ? controlParamSheet.SignForwardCompleteOrder
                         : 1f;
                 }
             }
         }
 
-        /// <summary>
-        /// 升级当前节点为加签主节点
-        /// </summary>
-        private void UpgradeToMainSignForwardNode(ActivityInstanceEntity currentActivityInstance,
-            SignForwardTypeEnum signForwardType)
+        private void RelocateInitiatorTaskToContainer(
+            ActivityInstanceEntity node,
+            ActivityInstanceEntity container,
+            FlowCommandContext runner)
         {
-            currentActivityInstance.ComplexType = (short)ComplexTypeEnum.SignForward;
-            if (signForwardType == SignForwardTypeEnum.SignForwardBefore
-                || signForwardType == SignForwardTypeEnum.SignForwardBehind)
-            {
-                currentActivityInstance.MergeType = (short)MergeTypeEnum.Sequence;
-            }
-            else
-            {
-                currentActivityInstance.MergeType = (short)MergeTypeEnum.Parallel;
-            }
-            currentActivityInstance.ActivityState = (short)ActivityStateEnum.Suspended;
+            var taskId = ActivityForwardContext.TaskId;
+            TaskEntity task = null;
+            if (!string.IsNullOrEmpty(taskId))
+                task = base.TaskManager.GetTask(Kit.useSQL(), taskId);
 
-            base.ActivityInstanceManager.Update(Kit.useSQL(), currentActivityInstance);
+            if (task == null)
+            {
+                var list = base.TaskManager.GetTaskListByActivity(
+                    Kit.useSQL(), node.ProcessInstanceId, node.ActivityInstanceId);
+                task = list.FirstOrDefault(t =>
+                    string.Equals(t.SignId, runner.UserId, StringComparison.OrdinalIgnoreCase)
+                    && (t.TaskState == (short)TaskStateEnum.Waiting
+                        || t.TaskState == (short)TaskStateEnum.Reading));
+            }
+
+            if (task == null)
+                return;
+
+            task.ActivityInstanceId = container.ActivityInstanceId;
+            task.ActivityId = container.ActivityId;
+            task.ActivityName = container.ActivityName;
+            base.TaskManager.Update(Kit.useSQL(), task);
         }
 
-        /// <summary>
-        /// 创建加签节点记录；串行时回写主 AI CompleteOrder = 子席总数。
-        /// </summary>
-        private void CreateSignForwardTasks(ActivityResource activityResource, SignForwardTypeEnum signForwardType)
+        private void EnsureInitiatorDirectTask(
+            ActivityInstanceEntity container,
+            ActivityResource resource,
+            SignForwardTypeEnum signForwardType,
+            FlowCommandContext runner)
         {
-            var main = base.ActivityForwardContext.FromActivityInstance;
-            var plist = activityResource.NextActivityPerformers[base.ActivityForwardContext.CurrentActivity.ActivityId];
+            var existing = base.TaskManager.GetTaskListByActivity(
+                    Kit.useSQL(), container.ProcessInstanceId, container.ActivityInstanceId)
+                .Where(t => string.Equals(t.SignId, runner.UserId, StringComparison.OrdinalIgnoreCase)
+                    && (t.TaskState == (short)TaskStateEnum.Waiting
+                        || t.TaskState == (short)TaskStateEnum.Reading
+                        || t.TaskState == (short)TaskStateEnum.Completed))
+                .ToList();
 
-            var newActivityInstance = base.ActivityInstanceManager.CreateActivityInstanceObject(main);
-            // 子 AI 不承载 Leave（判定只读主容器）
-            newActivityInstance.LeaveJudgeType = null;
-            newActivityInstance.LeaveJudgeParams = null;
-            newActivityInstance.SignIds = activityResource.AppRunner.UserId;
-            newActivityInstance.SignNames = activityResource.AppRunner.UserName;
-            newActivityInstance.MainActInstanceId = main.ActivityInstanceId;
-            newActivityInstance.SignForwardType = (short)signForwardType;
-            newActivityInstance.ComplexType = (short)ComplexTypeEnum.SignForward;
+            if (existing.Count > 0)
+                return;
 
+            // 前加签：发起人直属 Task 后置创建（等 Sequence 唤醒）
             if (signForwardType == SignForwardTypeEnum.SignForwardBefore)
-            {
-                newActivityInstance.CompleteOrder = plist.Count + 1;
-                newActivityInstance.ActivityState = (short)ActivityStateEnum.Suspended;
-            }
-            else if (signForwardType == SignForwardTypeEnum.SignForwardBehind)
-            {
-                newActivityInstance.CompleteOrder = 1;
-            }
-            else if (signForwardType == SignForwardTypeEnum.SignForwardParallel)
-            {
-                newActivityInstance.CompleteOrder = -1;
-            }
+                return;
 
-            base.ActivityInstanceManager.Insert(Kit.useSQL(), newActivityInstance);
-            var signer = new Performer(activityResource.AppRunner.UserId, activityResource.AppRunner.UserName);
-            base.TaskManager.Insert(Kit.useSQL(), newActivityInstance, signer, activityResource.AppRunner);
+            var signer = new Performer(runner.UserId, runner.UserName);
+            base.TaskManager.Insert(Kit.useSQL(), container, signer, runner);
+        }
+
+        private void CreateSigneeChildren(
+            ActivityInstanceEntity container,
+            ActivityResource resource,
+            SignForwardTypeEnum signForwardType)
+        {
+            var activityId = base.ActivityForwardContext.CurrentActivity.ActivityId;
+            if (!resource.NextActivityPerformers.TryGetValue(activityId, out var plist) || plist == null)
+                plist = new PerformerList();
 
             for (var i = 0; i < plist.Count; i++)
             {
-                var signforwardActivityInstance = base.ActivityInstanceManager.CreateActivityInstanceObject(main);
-                signforwardActivityInstance.LeaveJudgeType = null;
-                signforwardActivityInstance.LeaveJudgeParams = null;
-                signforwardActivityInstance.ComplexType = (short)ComplexTypeEnum.SignForward;
-                signforwardActivityInstance.SignIds = plist[i].UserId;
-                signforwardActivityInstance.SignNames = plist[i].UserName;
-                signforwardActivityInstance.GroupId = plist[i].GroupId;
-                signforwardActivityInstance.GroupName = plist[i].GroupName;
-                signforwardActivityInstance.GroupRole = plist[i].GroupRole;
-                signforwardActivityInstance.UnitId = plist[i].UnitId;
-                signforwardActivityInstance.UnitCode = plist[i].UnitCode;
-                signforwardActivityInstance.UnitName = plist[i].UnitName;
-                signforwardActivityInstance.MainActInstanceId = main.ActivityInstanceId;
-                signforwardActivityInstance.SignForwardType = (short)signForwardType;
+                var child = base.ActivityInstanceManager.CreateActivityInstanceObject(container);
+                child.LeaveJudgeType = null;
+                child.LeaveJudgeParams = null;
+                child.ComplexType = null;
+                child.SignIds = plist[i].UserId;
+                child.SignNames = plist[i].UserName;
+                child.GroupId = plist[i].GroupId;
+                child.GroupName = plist[i].GroupName;
+                child.GroupRole = plist[i].GroupRole;
+                child.UnitId = plist[i].UnitId;
+                child.UnitCode = plist[i].UnitCode;
+                child.UnitName = plist[i].UnitName;
+                child.MainActInstanceId = container.ActivityInstanceId;
+                child.SignForwardType = (short)signForwardType;
 
                 if (signForwardType == SignForwardTypeEnum.SignForwardBefore)
                 {
-                    signforwardActivityInstance.CompleteOrder = (short)(i + 1);
+                    child.CompleteOrder = (short)(i + 1);
                     if (i > 0)
-                        signforwardActivityInstance.ActivityState = (short)ActivityStateEnum.Suspended;
+                        child.ActivityState = (short)ActivityStateEnum.Suspended;
                 }
                 else if (signForwardType == SignForwardTypeEnum.SignForwardBehind)
                 {
-                    signforwardActivityInstance.CompleteOrder = (short)(i + 2);
-                    signforwardActivityInstance.ActivityState = (short)ActivityStateEnum.Suspended;
+                    child.CompleteOrder = (short)(i + 2);
+                    child.ActivityState = (short)ActivityStateEnum.Suspended;
                 }
-                else if (signForwardType == SignForwardTypeEnum.SignForwardParallel)
+                else
                 {
-                    signforwardActivityInstance.CompleteOrder = -1;
+                    child.CompleteOrder = -1;
                 }
 
-                base.ActivityInstanceManager.Insert(Kit.useSQL(), signforwardActivityInstance);
-                base.TaskManager.Insert(Kit.useSQL(), signforwardActivityInstance, plist[i], activityResource.AppRunner);
-            }
-
-            // 串行：主 CompleteOrder = 子席总数（本人 + 加签人），供 Collaborate Count 全员阈
-            if (signForwardType == SignForwardTypeEnum.SignForwardBefore
-                || signForwardType == SignForwardTypeEnum.SignForwardBehind)
-            {
-                main.CompleteOrder = plist.Count + 1;
-                base.ActivityInstanceManager.Update(Kit.useSQL(), main);
+                base.ActivityInstanceManager.Insert(Kit.useSQL(), child);
+                base.TaskManager.Insert(Kit.useSQL(), child, plist[i], resource.AppRunner);
             }
         }
     }

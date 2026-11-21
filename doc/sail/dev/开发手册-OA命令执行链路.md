@@ -302,7 +302,7 @@ Transition 族 `CloseAction`（`Fill(End)`）。
 ### 5.11 SignForwardProcess（加签）
 
 Transition 族 `SignForwardAction`。产品细表：[OA/专题-改签.md](../OA/专题-改签.md)。  
-子堆栈 Leave（**已落地**）：[theme/专题-节点实例临时子规则.md](../theme/专题-节点实例临时子规则.md)。
+席位级子堆栈（**引擎已改**）：[theme/专题-节点实例临时子规则.md](../theme/专题-节点实例临时子规则.md)。
 
 | 步骤 | 类·方法 |
 |------|---------|
@@ -311,8 +311,8 @@ Transition 族 `SignForwardAction`。产品细表：[OA/专题-改签.md](../OA/
 | Factory 读库 | `GetRunningNode` + `TaskManager.IsMine(taskView)`（办理权以 Task 为准）· `client.ProcessModelFactory.CreateByTask` |
 | Gate | `FlowOperation.SignForward` |
 | Runtime | `WfRuntimeManagerSignForward.ExecuteInstanceImp` |
-| Mediator（压栈） | `NodeMediatorSignForward`：升级主 AI + **改写 `ai_leave_type=Collaborate` + Merge** + 建子 AI/Task |
-| Mediator（办结） | `NodeMediatorMultiSignForward`：`CheckMIPassRateInfo` / `TryCanLeave`（**AI Leave 优先**）；Waiting+Sequence 唤醒下一席；Passed 塌缩并 ContinueForward |
+| Mediator（压栈） | `NodeMediatorSignForward`：发起人 AI 抬席/升级为容器（直属 Task + 加签人子 AI）；**不改**节点 Leave；子规则写容器 |
+| Mediator（办结） | `NodeMediatorMultiSignForward`：同级 seats `TryCanLeave`；Passed 折合一票上浮；仅节点 Passed 才 ContinueForward；Race 可淹没子树 |
 | Hook | `OnProcessSignForwarded` |
 
 ### 5.12 TransferProcess（转办，不推进）

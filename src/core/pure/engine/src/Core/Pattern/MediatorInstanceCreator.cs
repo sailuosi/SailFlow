@@ -204,18 +204,22 @@ namespace sailflow.engine.Pattern
             }
             else if (forwardContext.CurrentActivity.ActivityType == ActivityTypeEnum.TaskNode)        
             {
-                // 加签子实例优先（避免空 ControlParameterSheet 误走普通 Task 出节点）
-                if (forwardContext.FromActivityInstance?.MainActInstanceId != null)
-                {
-                    return new NodeMediatorMultiSignForward(forwardContext, kit, _sail);
-                }
-
-                var controlParamSheet = forwardContext.ActivityResource.AppRunner.ControlParameterSheet;
+                // SignForward 命令优先（含子 AI 上递归加签，勿被 MainActInstanceId→MultiSignForward 抢先）
+                var controlParamSheet = forwardContext.ActivityResource?.AppRunner?.ControlParameterSheet;
                 if (controlParamSheet != null
                     && !string.IsNullOrEmpty(controlParamSheet.SignForwardType)
                     && controlParamSheet.SignForwardType.ToUpper() != "NONE")
                 {
                     return new NodeMediatorSignForward(forwardContext, kit, _sail);
+                }
+
+                // 加签容器直属 Task / 加签叶子办结
+                var fromAi = forwardContext.FromActivityInstance;
+                if (fromAi != null
+                    && (Manager.ActivityInstanceManager.IsSignForwardContainer(fromAi)
+                        || fromAi.MainActInstanceId != null))
+                {
+                    return new NodeMediatorMultiSignForward(forwardContext, kit, _sail);
                 }
 
                 return new NodeMediatorTask(forwardContext, kit, _sail);

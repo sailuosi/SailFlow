@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using sailflow.engine.Common;
 using sailflow.engine.Entity;
+using sailflow.engine.Xpdl;
 
 namespace sailflow.engine.Assignee
 {
@@ -82,7 +83,6 @@ namespace sailflow.engine.Assignee
 
                 list.Add(new LeaveSeatSnapshot
                 {
-                    // 回落路径：子 AI 单人席 SignIds 即席位人；有 Task 时 BuildSeats 不会走到这里
                     SignId = a.SignIds,
                     SignName = a.SignNames,
                     Weight = a.Weight.HasValue && a.Weight.Value > 0 ? a.Weight.Value : 1m,
@@ -115,6 +115,102 @@ namespace sailflow.engine.Assignee
             if (fromTasks.Count > 0)
                 return fromTasks;
             return FromChildActivities(childList);
+        }
+
+        /// <summary>
+        /// 同级席位：主体 AI 的<strong>直属 Task</strong> ∪ <strong>直属子 AI（各折合一席）</strong>。
+        /// 孙代不摊进本层；SignForward 容器未 Completed 则该席未同意。
+        /// </summary>
+        public static List<LeaveSeatSnapshot> BuildSeatsForActivity(
+            ActivityInstanceEntity subject,
+            IList<TaskEntity> directTasks,
+            IList<ActivityInstanceEntity> directChildren,
+            IList<TaskEntity> tasksOnDirectChildren = null)
+        {
+            var seats = new List<LeaveSeatSnapshot>();
+            var subjectMap = new Dictionary<string, ActivityInstanceEntity>();
+            if (subject != null && !string.IsNullOrEmpty(subject.ActivityInstanceId))
+                subjectMap[subject.ActivityInstanceId] = subject;
+
+            seats.AddRange(FromTasks(directTasks, subjectMap));
+
+            var childList = directChildren ?? new List<ActivityInstanceEntity>();
+            var tasksByChild = (tasksOnDirectChildren ?? new List<TaskEntity>())
+                .Where(t => t != null && !string.IsNullOrEmpty(t.ActivityInstanceId))
+                .GroupBy(t => t.ActivityInstanceId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            foreach (var child in childList)
+            {
+                if (child == null)
+                    continue;
+
+                var cancelled = child.ActivityState == (short)ActivityStateEnum.Cancelled
+                                || child.ActivityState == (short)ActivityStateEnum.Withdrawed;
+
+                var agreed = false;
+                var refused = false;
+                var closed = cancelled;
+
+                if (!cancelled
+                    && tasksByChild.TryGetValue(child.ActivityInstanceId, out var cts)
+                    && cts != null
+                    && cts.Count > 0)
+                {
+                    var fromChildTasks = FromTasks(cts, new Dictionary<string, ActivityInstanceEntity>
+                    {
+                        [child.ActivityInstanceId] = child
+                    });
+                    // 折合一席：任一同根同意即同意；全拒且无打开则拒
+                    if (fromChildTasks.Any(s => s.Agreed))
+                        agreed = true;
+                    else if (fromChildTasks.All(s => s.Refused || s.ClosedOrCancelled)
+                             && fromChildTasks.Any(s => s.Refused))
+                        refused = true;
+                    else if (fromChildTasks.All(s => s.ClosedOrCancelled))
+                        closed = true;
+                }
+                else if (!cancelled)
+                {
+                    agreed = child.ActivityState == (short)ActivityStateEnum.Completed
+                             && child.ApprovalStatus == (short)ApprovalStatusEnum.Agreed;
+                    refused = child.ActivityState == (short)ActivityStateEnum.Completed
+                              && child.ApprovalStatus == (short)ApprovalStatusEnum.Refused;
+                }
+
+                // SignForward 容器：未完结前对外只占未同意一席（内部进度不外泄）
+                var isSignForwardContainer = child.ComplexType == (short)ComplexTypeEnum.SignForward
+                    && !string.IsNullOrEmpty(child.LeaveJudgeType);
+                if (isSignForwardContainer
+                    && child.ActivityState != (short)ActivityStateEnum.Completed)
+                {
+                    agreed = false;
+                    refused = false;
+                    closed = cancelled;
+                }
+                else if (isSignForwardContainer
+                         && child.ActivityState == (short)ActivityStateEnum.Completed)
+                {
+                    agreed = child.ApprovalStatus == (short)ApprovalStatusEnum.Agreed
+                             || child.ApprovalStatus == (short)ApprovalStatusEnum.Null;
+                    refused = child.ApprovalStatus == (short)ApprovalStatusEnum.Refused;
+                }
+
+                seats.Add(new LeaveSeatSnapshot
+                {
+                    SignId = child.SignIds,
+                    SignName = child.SignNames,
+                    Weight = child.Weight.HasValue && child.Weight.Value > 0 ? child.Weight.Value : 1m,
+                    ProxySignId = child.ProxySignId,
+                    Agreed = agreed,
+                    Refused = refused,
+                    ClosedOrCancelled = closed,
+                    ActivityInstanceId = child.ActivityInstanceId,
+                    GroupId = child.GroupId
+                });
+            }
+
+            return seats;
         }
     }
 }
