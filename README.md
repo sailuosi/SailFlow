@@ -18,10 +18,11 @@
 | 3 | **数据库适配** | 依赖 **mooSQL**，轻松适配各类数据库 |
 | 4 | **多框架兼容** | 目标框架 `net6.0;net8.0;net10.0` 同仓多靶 |
 | 5 | **能力全面插件化** | 表单、文档、配置、规则、语言包、消息与事件均可按需挂载 |
-| 6 | **待办人插槽** | 内置多种策略 + 业务策略管道，奇葩算人场景也能接 |
-| 7 | **事件与回调** | Gate / Hook / Notifier，同步 / 异步 / Outbox 多场景插槽 |
-| 8 | **强化分表策略** | 冷热归档、按年冷表、热侧白名单分表，运维不再困难 |
-| 9 | **示例与 Demo** | 多种插件样例，`UseXxx` 增强即用 |
+| 6 | **中国式 OA 动词** | 通过 / 驳回 / 退回 / 加签三型 / 转办 / 沟通 / 抄送…引擎齐，办理条可对号 |
+| 7 | **待办人插槽** | 内置多种策略 + 业务策略管道，奇葩算人场景也能接 |
+| 8 | **事件与回调** | Gate / Hook / Notifier，同步 / 异步 / Outbox 多场景插槽 |
+| 9 | **强化分表策略** | 冷热归档、按年冷表、热侧白名单分表，运维不再困难 |
+| 10 | **示例与 Demo** | 多种插件样例，`UseXxx` 增强即用 |
 
 ---
 
@@ -80,7 +81,59 @@ Host  →  biz（组合根 / UseBiz*）
 | 数据生命周期 | `UseSailData` / `UseBizData` | `sailflow.data` |
 | AI 节点 | `UseBizAI` | `sailflow.biz.AI` |
 
-### 6. 强大的待办人插槽
+### 6. 中国式 OA 办理动词
+
+把办理台上常见按钮收成引擎可复用命令；码表 Id 与 `*Process` 一一对应。图例：**默认开** = 办理条默认露出；**默认关** = 引擎齐，节点 / 宿主显式打开；**引擎齐** = 有命令，产品按钮暂缓。
+
+#### 日常办理（默认开）
+
+| 动词 | 码表 Id | 引擎命令 | 一句话 |
+|------|---------|----------|--------|
+| 通过 / 同意 | `Approve` | `RunProcess` | 办结本票，按图推进（出不出节点看 Leave） |
+| 驳回 | `Reject` | `RejectProcess` | 不同意；落点由设计期 `RejectMode` 决定 |
+| 退回 | `SendBack` | `SendBackProcess` | 打回修改；目标 × 再发送两维正交 |
+| 加签（前 / 后 / 并） | `SignForward` | `SignForwardProcess` | 办理中临时插人，不改流程图 |
+| 减签 | `RemoveAssignee` | `RemoveAssigneeProcess` | 多人节点拿掉未办完的人 |
+| 转办 | `Transfer` | `TransferProcess` | 本节点交人，**不还回** |
+| 沟通 | `Consult` | `ConsultProcess` | 征询参与者；源待办硬锁至阅办/收回 |
+| 阅办 | `Acknowledge` | `AcknowledgeProcess` | 被沟通人关闭自己的沟通待办 |
+| 收回沟通 | `RecallConsult` | `RecallConsultProcess` | 发起人取消未反馈的沟通 |
+| 抄送 | `Copyto` | Host `WfCopyto` | 知会，不进审批票数 |
+| 撤回 | `Withdraw` | `WithdrawProcess` | 已办侧收回上一步 |
+| 重发 / 返送 | `Resend` | `ResendProcess` | 退回后按规则再送（常「返送退回人」） |
+| 跳转 | `Jump` | `JumpProcess` | 管理态跳到指定活动 |
+| 关闭 | `Close` | `CloseProcess` | 管理向正常结束实例 |
+
+#### 改签 / 管理向（默认关，可开）
+
+| 动词 | 码表 Id | 引擎命令 | 一句话 |
+|------|---------|----------|--------|
+| 普通加人 | `AddAssignee` | `AddAssigneeProcess` | 扁节点追加办理人；≠ 并加签 |
+| 委派 | `Delegate` | `DelegateProcess` | 代办完**自动回转**原人；≠ 转办 |
+| 改派 | `ChangeAssignee` | `ChangeAssigneeProcess` | 管理态差量换当前节点名单 |
+| 催办 | `Urge` | `UrgeProcess` | 提醒，不改待办状态 |
+| 终止 | `Terminate` | `TerminateProcess` | 强行结束运行实例 |
+| 作废 | `Discard` | `DiscardProcess` | 作废实例；≠ 关闭 / 终止 |
+| 修订 | `Revise` | `ReviseProcess` | 修订类路径，按场景开启 |
+| 反转 | `Reverse` | `ReverseProcess` | 回转类路径；≠ 退回 |
+
+#### 生命周期（引擎齐，码表暂缓）
+
+| 动词 | 引擎命令 | 说明 |
+|------|----------|------|
+| 挂起 / 恢复 | `SuspendProcess` / `ResumeProcess` | Lifecycle 族；产品按钮暂缓 |
+| 取消 | `CancelProcess` | Lifecycle 族；产品按钮暂缓 |
+| 发起 | `StartProcess` | 发起页能力，不是任务办理条按钮 |
+
+#### 办理模式（非按钮）
+
+会签 / 或签 / 抢办 / 顺序会签是节点 **Leave**，不是办理条键：`Race` · `Collaborate` · `GroupRace` · `GroupCollaborate` · `Captain`。
+
+**选型口诀：** 不还回 → 转办；要还回 → 委派；管理换名单 → 改派；临时插人 → 加签；知情 → 抄送；征询 → 沟通。
+
+简单流转初测（通过 / 加签三型 / 转办 / 沟通 / 驳回 / 退回 / 返送）已通；网关叠用与边界场景仍在清单上。详解：[解说-OA动词齐备与初测.md](./doc/helps/解说-OA动词齐备与初测.md) · [解说-办理动词.md](./doc/helps/解说-办理动词.md) · [特性说明-中国式OA审批要素.md](./doc/sail/特性说明-中国式OA审批要素.md)。
+
+### 7. 强大的待办人插槽
 
 独立包 `sailflow.assignee`：用户任务「谁来办 / 办完能否离开」走统一管道。
 
@@ -91,11 +144,11 @@ Host  →  biz（组合根 / UseBiz*）
 
 详见 [特性说明-待办人管道.md](./doc/sail/特性说明-待办人管道.md)。
 
-### 7. 事件特性 · 回调强化
+### 8. 事件特性 · 回调强化
 
 Gate（校验拦截）/ Hook（生命周期副作用）/ Task Notifier（待办通知）三线分离；支持同步执行、异步 Outbox Drain，以及委托与 class 并存的注册形态。宿主一项能力一个 `UseXxx`，开关与建表内聚。使用教程见 [doc/helps](./doc/helps/README.md)；设计论证见 [特性设计-回调与事件.md](./doc/sail/特性设计-回调与事件.md)。
 
-### 8. 强化的分表与归档策略
+### 9. 强化的分表与归档策略
 
 面向「十万发起 / 年」级运维场景，冷热分离与分表可配、默认可关：
 
@@ -107,7 +160,7 @@ Gate（校验拦截）/ Hook（生命周期副作用）/ Task Notifier（待办�
 
 详见 [分析-流程运转表存储与分表策略.md](./doc/sail/talk/分析-流程运转表存储与分表策略.md)。
 
-### 9. 多种示例 · 轻松 UseXxx 增强
+### 10. 多种示例 · 轻松 UseXxx 增强
 
 仓库内置 Gate / Hook / Notifier 等样例（如财务预发送 Gate、聚合 Hook、HTTP 待办通知），biz 层提供默认 `UseBiz*` 门面；宿主可复制能力包模板自建插件。用户指南见 [doc/helps](./doc/helps/README.md)；设计与进度见 [doc/sail](./doc/sail/README.md)。
 
