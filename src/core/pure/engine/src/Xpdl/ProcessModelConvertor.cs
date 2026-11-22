@@ -67,6 +67,10 @@ namespace sailflow.engine.Xpdl
         /// </summary>
         private static void ConvertXmlChildNode(XmlNode node, Process process)
         {
+            // 跳过注释 / 空白 / 文本等非元素节点，避免 ConvertHelper 报 Not supported node name:#comment
+            if (node == null || node.NodeType != XmlNodeType.Element)
+                return;
+
             if (node.Name == XPDLDefinition.BPMN_ElementName_ExtensionElements)
             {
                 var formsXmlElement = node.SelectSingleNode(XPDLDefinition.Sf_ElementName_Forms, XPDLHelper.GetSailflowXmlNamespaceManager(node.OwnerDocument));
@@ -75,6 +79,8 @@ namespace sailflow.engine.Xpdl
                     var childNodes = formsXmlElement.ChildNodes;
                     foreach (XmlNode child in childNodes)
                     {
+                        if (child.NodeType != XmlNodeType.Element)
+                            continue;
                         var form = ConvertHelper.ComnvertXmlFormNodeToFormEntity(child,
                             XPDLHelper.GetSailflowXmlNamespaceManager(node.OwnerDocument), process.ProcessId);
                         process.FormList.Add(form);
