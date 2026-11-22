@@ -11,22 +11,27 @@
 
 - **按需开启**：不调用 `AddGate` / `AddHook` / `AddNotifier`（或总包 `UseFlowAspects`）时，主路径不跑业务回调；默认邮件须显式 `UseDefaultTaskMail()`。
 - **分层**：契约与分发在 **pure 引擎**（`sailflow.engine`）；待办推送骨架与默认 SMTP 在 **ext/msg**（`sailflow.msg`）。不是「整套事件只在 ext」——扩展实现挂在引擎插槽上。
-- **执行顺序（主路径）**：
+- **执行顺序（主路径，`XxxProcess` / Service 自管事务）**：
 
 ```
 Gate（推进落库前，可 Reject）
   → 内核流转写库
   → Sync Hook（同事务；异常 FailFast 回滚）
   → Async Hook / Notifier 写入 sf_hook_outbox（同事务）
+  → Success → commit
+       → OnTransactionCommitted（信封外；Kit=null；BestEffort）
+  → 非 Success / 异常 → 不 commit
+       → OnTransactionFailed（信封外；Kit=null；BestEffort；异常再 rethrow）
   → 返回 WfExecutedResult
 后台 Drain
   → 认领 Pending → 调 Handler → Succeeded / 重试 / Dead
 ```
 
 - **核心上下文**：
-  - Gate / Hook：`FlowHookContext`
+  - Gate / Hook：`FlowHookContext`（事务生命周期另有 `FailureException` / `ExecutedStatus` / `FailureMessage`）
   - Notifier：`TaskNotifyContext`
   - 二者均无「万能 FlowEventContext」；业务金额等请自行从业务库按 `AppInstanceId` / 实例 Id 读取。
+- **事务生命周期**：仅挂在 `CommitOnSuccess`；`Xxx(SQLBuilder kit,…)` 自带事务重载不唤起。详见 [专题-事务一致性.md](../sail/theme/专题-事务一致性.md) T9。
 
 ---
 
@@ -35,7 +40,8 @@ Gate（推进落库前，可 Reject）
 | 组件 | 时机 | 能否阻断流转 | 典型用途 | 异常影响 |
 |------|------|--------------|----------|----------|
 | **Gate**（`IFlowGate`） | 落库推进前 | ✅ `HookResult.Reject` | 金额/权限/单据状态/合规卡控 | 映射到 `WfExecutedResult`，不当事故异常；无推进副作用 |
-| **Hook**（`IFlowHook`） | 成功后 | ❌（Async）/ ⚠️ Sync 可回滚 | 回写业务表、汇总、结束出单 | **Sync**：异常或超时 → FailFast 回滚主事务；**AsyncOutbox**：失败进 Outbox 重试，不拖垮已提交流程 |
+| **Hook**（`IFlowHook`） | 成功后（同事务） | ❌（Async）/ ⚠️ Sync 可回滚 | 回写业务表、汇总、结束出单 | **Sync**：异常或超时 → FailFast 回滚主事务；**AsyncOutbox**：失败进 Outbox 重试，不拖垮已提交流程 |
+| **Tx 生命周期 Hook** | commit 后 / 未提交失败 | ❌ | 观测、审计旁路、提交后通知 | **仅 Sync BestEffort**；不改 Success/原异常；`Kit=null`；禁 AsyncOutbox |
 | **Notifier**（`ITaskNotifier`） | 待办生命周期旁路 | ❌ | 邮件 / IM / HTTP 推送 | 默认走 Outbox；通道失败可隔离（见 `TaskNotifyChannelBase`） |
 | **Outbox**（`sf_hook_outbox`） | Async Hook / Notifier 入队 | ❌ | 可靠补调、重试、死信复活 | 写入与流转同库事务；消费由 Drain 独立执行 |
 
@@ -543,6 +549,28 @@ Gate 构建上下文时 `EventType = OnValidating`。
 
 在 `Handle` 内用 `ctx.EventType` / `ctx.Operation` 做分支过滤。
 
+### Hook：事务生命周期（信封外，须 Sync）
+
+| 事件 | 时机 | 说明 |
+|------|------|------|
+| `OnTransactionCommitted` | `commit` 成功之后 | BestEffort；`ctx.Kit == null`；异常不改已返回 Success |
+| `OnTransactionFailed` | 异常，或 `Status != Success`（含 Gate Reject） | BestEffort；不吞原异常、不改原结果 |
+
+```csharp
+b.AddHook(new AuditAfterCommitHook(), o =>
+{
+    o.Events = new[] { EventFireTypeEnum.OnTransactionCommitted };
+    o.Mode = HookMode.Sync; // 必须；AsyncOutbox 会被跳过并 Warning
+});
+b.AddHook(new AuditTxFailedHook(), o =>
+{
+    o.Events = new[] { EventFireTypeEnum.OnTransactionFailed };
+    o.Mode = HookMode.Sync;
+});
+```
+
+强一致业务回写仍用同事务 Sync（如 `OnProcessCompleted`），**不要**挪到 `OnTransactionCommitted`。
+
 ### Notifier：`TaskNotifyKind`
 
 `Created` · `Completed` · `Cancelled` · `Entrusted`
@@ -553,7 +581,9 @@ Gate 构建上下文时 `EventType = OnValidating`。
 
 ### `FlowHookContext`
 
-`BizChannel` · `BizPK` · `ProcessId` · `ProcessCode` · `Version` · `ProcessInstanceId` · `ActivityId` · `ActivityCode` · `ActivityInstanceId` · `TaskId` · `SignId` · `SignName` · `Operation` · `EventType`
+`BizChannel` · `BizPK` · `ProcessId` · `ProcessCode` · `Version` · `ProcessInstanceId` · `ActivityId` · `ActivityCode` · `ActivityInstanceId` · `TaskId` · `SignId` · `SignName` · `Operation` · `EventType` · `Kit`
+
+事务生命周期另有（`JsonIgnore`）：`FailureException` · `ExecutedStatus` · `FailureMessage`（Committed/Failed 时 `Kit` 恒空）。
 
 ### `TaskNotifyContext`
 

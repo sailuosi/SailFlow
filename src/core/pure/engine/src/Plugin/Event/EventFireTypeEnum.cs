@@ -151,6 +151,18 @@ namespace sailflow.engine.Event
         /// <summary>抄送创建（产品通道；与待办 Notifier 分离）。</summary>
         OnCopytoCreated = 70,
 
+        /// <summary>
+        /// Service 自管事务 <c>commit</c> 成功之后（AfterCommit）。
+        /// 仅 Sync BestEffort；<c>ctx.Kit</c> 恒空；异常不改已返回的 Success。
+        /// </summary>
+        OnTransactionCommitted = 80,
+
+        /// <summary>
+        /// Service 自管事务未提交：异常，或 <c>Status != Success</c>（含 Gate Reject）。
+        /// 仅 Sync BestEffort；不二次抛、不改原结果/异常。
+        /// </summary>
+        OnTransactionFailed = 81,
+
         OnSuccess = 100,
 
         OnError = 101,

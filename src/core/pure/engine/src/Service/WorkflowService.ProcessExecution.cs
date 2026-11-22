@@ -27,26 +27,80 @@ namespace sailflow.engine.Service
     /// </summary>
     public partial class WorkflowService : IWorkflowService
     {
-        /// <summary>无状态：开事务执行，成功才 commit。</summary>
-        private WfExecutedResult CommitOnSuccess(Func<SQLBuilder, WfExecutedResult> action)
+        /// <summary>
+        /// 无状态：开事务执行，成功才 commit。
+        /// 提交后 / 未提交失败时唤起事务生命周期钩子（BestEffort）。
+        /// </summary>
+        private WfExecutedResult CommitOnSuccess(
+            FlowCommandContext runner,
+            Func<SQLBuilder, WfExecutedResult> action)
         {
             using var kit = Sail.UseRunSQL();
             kit.beginTransaction();
-            var result = action(kit);
-            if (result.Status == WfExecutedStatus.Success)
-                kit.commit();
-            return result;
+            WfExecutedResult result = null;
+            try
+            {
+                result = action(kit);
+                if (result.Status == WfExecutedStatus.Success)
+                {
+                    kit.commit();
+                    FireTxLifecycle(runner, EventFireTypeEnum.OnTransactionCommitted, result, null);
+                }
+                else
+                {
+                    FireTxLifecycle(runner, EventFireTypeEnum.OnTransactionFailed, result, null);
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                FireTxLifecycle(runner, EventFireTypeEnum.OnTransactionFailed, result, ex);
+                throw;
+            }
         }
 
-        private async Task<WfExecutedResult> CommitOnSuccessAsync(Func<SQLBuilder, Task<WfExecutedResult>> action)
+        private async Task<WfExecutedResult> CommitOnSuccessAsync(
+            FlowCommandContext runner,
+            Func<SQLBuilder, Task<WfExecutedResult>> action)
         {
             using var kit = Sail.UseRunSQL();
             kit.beginTransaction();
-            var result = await action(kit).ConfigureAwait(false);
-            if (result.Status == WfExecutedStatus.Success)
-                kit.commit();
-            return result;
+            WfExecutedResult result = null;
+            try
+            {
+                result = await action(kit).ConfigureAwait(false);
+                if (result.Status == WfExecutedStatus.Success)
+                {
+                    kit.commit();
+                    FireTxLifecycle(runner, EventFireTypeEnum.OnTransactionCommitted, result, null);
+                }
+                else
+                {
+                    FireTxLifecycle(runner, EventFireTypeEnum.OnTransactionFailed, result, null);
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                FireTxLifecycle(runner, EventFireTypeEnum.OnTransactionFailed, result, ex);
+                throw;
+            }
         }
+
+        void FireTxLifecycle(
+            FlowCommandContext runner,
+            EventFireTypeEnum eventType,
+            WfExecutedResult result,
+            Exception failureException)
+        {
+            var dispatcher = Sail.CapabilityDispatcher;
+            if (dispatcher == null || Sail.Capabilities?.Hooks == null || Sail.Capabilities.Hooks.Count == 0)
+                return;
+
+            var ctx = dispatcher.BuildTxLifecycleContext(runner, eventType, result, failureException);
+            dispatcher.RunTxLifecycleHooks(ctx, eventType);
+        }
+
         static string ResolveInstanceLockKey(FlowCommandContext runner)
             => string.IsNullOrEmpty(runner?.BizPK) ? runner?.ProcessId : runner.BizPK;
 
@@ -60,7 +114,7 @@ namespace sailflow.engine.Service
             Func<SQLBuilder, FlowCommandContext, WfExecutedResult> core)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return await CommitOnSuccessAsync(async kit =>
+            return await CommitOnSuccessAsync(runner, async kit =>
             {
                 WfExecutedResult result;
                 using (await InstanceExecutionLock.AcquireAsync(ResolveInstanceLockKey(runner), cancellationToken)
@@ -77,7 +131,7 @@ namespace sailflow.engine.Service
         /// A1：动作骨架入口——事务 + 实例锁在 Service；Action 只吃已开 kit（无事务语义）。
         /// </summary>
         WfExecutedResult RunAction(FlowCommandContext runner, Func<SQLBuilder, FlowCommandContext, WfExecutedResult> execute) =>
-            CommitOnSuccess(kit =>
+            CommitOnSuccess(runner, kit =>
             {
                 using (InstanceExecutionLock.Acquire(ResolveInstanceLockKey(runner)))
                     return execute(kit, runner);
@@ -170,7 +224,7 @@ namespace sailflow.engine.Service
         public async Task<WfExecutedResult> RunProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return await CommitOnSuccessAsync(async kit =>
+            return await CommitOnSuccessAsync(runner, async kit =>
             {
                 using (await InstanceExecutionLock.AcquireAsync(ResolveInstanceLockKey(runner), cancellationToken)
                     .ConfigureAwait(false))
@@ -201,7 +255,7 @@ namespace sailflow.engine.Service
         public async Task<WfExecutedResult> RunProcessAutoAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return await CommitOnSuccessAsync(async kit =>
+            return await CommitOnSuccessAsync(runner, async kit =>
             {
                 using (await InstanceExecutionLock.AcquireAsync(ResolveInstanceLockKey(runner), cancellationToken)
                     .ConfigureAwait(false))

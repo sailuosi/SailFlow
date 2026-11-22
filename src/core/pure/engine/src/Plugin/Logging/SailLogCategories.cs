@@ -5,6 +5,8 @@ namespace sailflow.engine.Logging
     {
         public const string SyncHook = "sync-hook";
         public const string AsyncHook = "async-hook";
+        /// <summary>事务信封外：Committed / Failed 生命周期钩子（BestEffort）。</summary>
+        public const string TxLifecycle = "tx-lifecycle";
         public const string Gate = "gate";
         public const string Notifier = "notifier";
         public const string CreateHook = "create-hook";
@@ -57,6 +59,8 @@ namespace sailflow.engine.Logging
                 case SyncHook:
                 case AsyncHook:
                     return "流程回调";
+                case TxLifecycle:
+                    return "事务生命周期";
                 case CreateHook:
                     return "实例创建";
                 case Gate:
@@ -92,6 +96,7 @@ namespace sailflow.engine.Logging
                 case SyncHook:
                 case CreateHook:
                 case Gate:
+                case TxLifecycle:
                     return "同步";
                 case AsyncHook:
                 case Notifier:

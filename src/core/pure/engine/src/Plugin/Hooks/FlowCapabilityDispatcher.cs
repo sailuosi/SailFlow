@@ -11,6 +11,7 @@ using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.engine.Event;
 using sailflow.engine.Logging;
+using sailflow.engine.Result;
 
 namespace sailflow.engine.Hooks
 {
@@ -200,6 +201,142 @@ namespace sailflow.engine.Hooks
             if (hook?.Handler is FlowHookBase bas)
                 return bas.TimeoutMs;
             return Sail.CapabilityOptions?.SyncHookTimeoutMs ?? 0;
+        }
+
+        /// <summary>
+        /// 事务信封外生命周期钩子（<see cref="EventFireTypeEnum.OnTransactionCommitted"/> /
+        /// <see cref="EventFireTypeEnum.OnTransactionFailed"/>）。
+        /// 仅 Sync BestEffort：异常/软超时只记日志，绝不 FailFast；<c>ctx.Kit</c> 须为空。
+        /// AsyncOutbox 订阅这两事件时跳过并 Warning。
+        /// </summary>
+        public void RunTxLifecycleHooks(FlowHookContext ctx, EventFireTypeEnum eventType)
+        {
+            if (ctx == null || Registry.Hooks.Count == 0)
+                return;
+
+            if (eventType != EventFireTypeEnum.OnTransactionCommitted
+                && eventType != EventFireTypeEnum.OnTransactionFailed)
+                return;
+
+            ctx.EventType = eventType;
+            ctx.Kit = null;
+            EnsureProcessCode(null, ctx);
+
+            var log = Sail.Log;
+            var warnMs = Sail.CapabilityOptions?.SyncHookWarnMs ?? 0;
+
+            foreach (var hook in Registry.Hooks)
+            {
+                if (!MatchesHook(hook, ctx, eventType))
+                    continue;
+
+                var hookLabel = CapabilityPluginNames.Display(hook.Name, hook.Title);
+
+                if (hook.Mode == HookMode.AsyncOutbox)
+                {
+                    log?.Warning(
+                        SailLogCategories.TxLifecycle,
+                        "跳过 名称={0} 事件={1} 原因=事务生命周期不支持AsyncOutbox",
+                        hookLabel,
+                        eventType);
+                    continue;
+                }
+
+                if (hook.Mode != HookMode.Sync)
+                    continue;
+
+                var timeoutMs = ResolveSyncHookTimeoutMs(hook);
+                log?.Debug(
+                    SailLogCategories.TxLifecycle,
+                    "开始 名称={0} 事件={1} 同事务Kit=否 超时={2}毫秒 流程实例={3} 待办={4}",
+                    hookLabel,
+                    eventType,
+                    timeoutMs,
+                    ctx.ProcessInstanceId ?? "-",
+                    ctx.TaskId ?? "-");
+
+                var sw = Stopwatch.StartNew();
+                try
+                {
+                    hook.Handler.Handle(ctx);
+                    sw.Stop();
+                    var elapsed = sw.ElapsedMilliseconds;
+
+                    if (timeoutMs > 0 && elapsed > timeoutMs)
+                    {
+                        log?.Error(
+                            SailLogCategories.TxLifecycle,
+                            string.Format(
+                                "失败 名称={0} 事件={1} 耗时={2}毫秒 原因=超时 超时={3}毫秒 处理=BestEffort继续",
+                                hookLabel,
+                                eventType,
+                                elapsed,
+                                timeoutMs));
+                    }
+                    else if (warnMs > 0 && elapsed > warnMs)
+                    {
+                        log?.Warning(
+                            SailLogCategories.TxLifecycle,
+                            "偏慢 名称={0} 事件={1} 耗时={2}毫秒 告警={3}毫秒",
+                            hookLabel,
+                            eventType,
+                            elapsed,
+                            warnMs);
+                    }
+
+                    log?.Debug(
+                        SailLogCategories.TxLifecycle,
+                        "结束 名称={0} 事件={1} 耗时={2}毫秒",
+                        hookLabel,
+                        eventType,
+                        elapsed);
+                }
+                catch (Exception ex)
+                {
+                    sw.Stop();
+                    log?.Error(
+                        SailLogCategories.TxLifecycle,
+                        ex,
+                        "失败 名称={0} 事件={1} 耗时={2}毫秒 处理=BestEffort继续",
+                        hookLabel,
+                        eventType,
+                        sw.ElapsedMilliseconds);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 由命令袋构建事务生命周期上下文（Kit 恒空）。
+        /// </summary>
+        public FlowHookContext BuildTxLifecycleContext(
+            FlowCommandContext runner,
+            EventFireTypeEnum eventType,
+            WfExecutedResult result,
+            Exception failureException)
+        {
+            var processInstanceId = runner?.ProcessInstanceId;
+            if (string.IsNullOrEmpty(processInstanceId))
+                processInstanceId = result?.ProcessInstanceIdStarted;
+
+            return new FlowHookContext
+            {
+                BizChannel = runner?.BizChannel,
+                BizPK = runner?.BizPK,
+                ProcessId = runner?.ProcessId,
+                ProcessCode = runner?.ProcessCode,
+                Version = runner?.Version,
+                ProcessInstanceId = processInstanceId,
+                ActivityInstanceId = runner?.ActivityInstanceId,
+                TaskId = runner?.TaskId,
+                SignId = runner?.UserId,
+                SignName = runner?.UserName,
+                EventType = eventType,
+                Kit = null,
+                ExecutedStatus = result?.Status,
+                FailureException = failureException,
+                FailureMessage = failureException?.Message
+                    ?? (result != null && result.Status != WfExecutedStatus.Success ? result.Message : null),
+            };
         }
 
         /// <summary>Async Hook 写入 Outbox（kit 非空时同事务）。</summary>

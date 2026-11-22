@@ -36,6 +36,8 @@ namespace sailflow.engine.Hooks
         /// 实现中若再开引擎库连接读写未提交数据，将与主事务互相等待导致闷锅。
         /// 必须用 <c>ctx.Kit</c>；可延后副作用请改用 <see cref="AsyncOutbox"/>。
         /// 详见《专题-Bug治理-Sync钩子同事务自锁》。</para>
+        /// <para><b>事务生命周期</b>（<c>OnTransactionCommitted</c> / <c>OnTransactionFailed</c>）：
+        /// 必须用 Sync；此时为 BestEffort（异常只记日志），<c>ctx.Kit</c> 恒空，不得配 AsyncOutbox。</para>
         /// </remarks>
         Sync,
 

@@ -16,6 +16,7 @@ namespace sailflow.engine.Hooks
         /// <summary>
         /// 执行模式；默认 <see cref="HookMode.AsyncOutbox"/>。
         /// 设为 <see cref="HookMode.Sync"/> 前必读该枚举上的同事务自锁警示：须用 <c>ctx.Kit</c>，禁止另开引擎连接。
+        /// <c>OnTransactionCommitted</c> / <c>OnTransactionFailed</c> 必须 Sync（BestEffort）；配 AsyncOutbox 会被跳过。
         /// </summary>
         public HookMode Mode { get; set; } = HookMode.AsyncOutbox;
         public int Order { get; set; }

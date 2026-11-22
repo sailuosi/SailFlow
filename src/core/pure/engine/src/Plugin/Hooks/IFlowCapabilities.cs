@@ -28,6 +28,9 @@ namespace sailflow.engine.Hooks
     /// <para><b>正确做法</b>：读写 <c>sf_*</c> 流程表一律使用 <see cref="FlowHookContext.Kit"/>
     ///（或 <c>kit.useSQL()</c>）及带 kit 的 API；可延后的副作用改用 <see cref="HookMode.AsyncOutbox"/>。
     /// 详见 theme《专题-Bug治理-Sync钩子同事务自锁》《专题-钩子治理与同事务可观测》。</para>
+    /// <para><b>事务生命周期</b>：订阅 <c>OnTransactionCommitted</c> / <c>OnTransactionFailed</c> 时必须
+    /// <see cref="HookMode.Sync"/> BestEffort（异常不回滚、不改返回值）；<c>ctx.Kit</c> 恒空，
+    /// 读已提交数据请自开连接。仅挂在 Service 自管事务（<c>XxxProcess</c>）路径。</para>
     /// </remarks>
     public interface IFlowHook
     {
@@ -38,6 +41,7 @@ namespace sailflow.engine.Hooks
 
         /// <summary>
         /// 执行钩子逻辑。Sync 模式下勿在实现中另开引擎库连接（见接口 remarks）。
+        /// 事务生命周期事件下 Kit 为空，异常只记日志。
         /// </summary>
         void Handle(FlowHookContext ctx);
     }

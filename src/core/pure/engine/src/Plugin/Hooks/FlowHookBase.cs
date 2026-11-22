@@ -5,7 +5,8 @@ namespace sailflow.engine.Hooks
     /// </summary>
     /// <remarks>
     /// 有 <c>ctx.Kit</c> 时与主事务同连接；勿另开 <c>UseRunSQL</c> 读写引擎库。
-    /// 详见 theme《专题-钩子治理与同事务可观测》。
+    /// <c>OnTransactionCommitted</c> / <c>OnTransactionFailed</c> 时 Kit 恒空、BestEffort（超时/异常只记日志）。
+    /// 详见 theme《专题-钩子治理与同事务可观测》《专题-事务一致性》。
     /// </remarks>
     public abstract class FlowHookBase : IFlowHook
     {

@@ -1,6 +1,8 @@
+using System;
 using System.Text.Json.Serialization;
 using mooSQL.data;
 using sailflow.engine.Event;
+using sailflow.engine.Result;
 
 namespace sailflow.engine.Hooks
 {
@@ -35,11 +37,31 @@ namespace sailflow.engine.Hooks
         /// <strong>禁止</strong>再 <c>Sail.UseRunSQL()</c> 或无 kit 的 <c>WorkflowService</c>/<c>*Manager</c> 访问同一引擎库，
         /// 否则第二连接等待提交、主事务等待钩子 → 自锁闷锅（SQLite Error 5/6、命令超时；调试强制停止后查询全挂）。
         /// 案例与检查单见 theme《专题-Bug治理-Sync钩子同事务自锁》；可观测见《专题-钩子治理与同事务可观测》。</para>
-        /// <para>AsyncOutbox 回放时为空；禁止序列化进 Outbox（SQLBuilder 自引用环）。
+        /// <para>AsyncOutbox 回放、<see cref="EventFireTypeEnum.OnTransactionCommitted"/> /
+        /// <see cref="EventFireTypeEnum.OnTransactionFailed"/> 时为空；禁止序列化进 Outbox（SQLBuilder 自引用环）。
         /// Enqueue 前会临时摘掉；STJ 亦忽略本属性。</para>
         /// </remarks>
         [JsonIgnore]
         public SQLBuilder Kit { get; set; }
+
+        /// <summary>
+        /// 事务生命周期失败钩子：导致未提交的异常（有则填）。
+        /// 仅 <see cref="EventFireTypeEnum.OnTransactionFailed"/>；不进 Outbox。
+        /// </summary>
+        [JsonIgnore]
+        public Exception FailureException { get; set; }
+
+        /// <summary>
+        /// 事务生命周期：办理结果状态（Committed 为 Success；Failed 为非 Success 或异常前已有结果）。
+        /// </summary>
+        [JsonIgnore]
+        public WfExecutedStatus? ExecutedStatus { get; set; }
+
+        /// <summary>
+        /// 事务失败说明：来自 <c>result.Message</c> 或异常 Message。
+        /// </summary>
+        [JsonIgnore]
+        public string FailureMessage { get; set; }
     }
 
     /// <summary>待办 Notifier 上下文。</summary>
