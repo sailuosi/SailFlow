@@ -61,8 +61,9 @@ namespace sailflow.engine.Pattern
         private void ContinueMainProcessRunning(ProcessInstanceEntity processInstance,
             SQLBuilder kit)
         {
-            //读取流程下一步人员列表
-            var runner = FillNextActivityPerformersByRoleList(processInstance.InvokedActInstanceId,
+            var runner = SubProcessMainContinueHelper.FillNextActivityPerformers(
+                Sail,
+                processInstance.InvokedActInstanceId,
                 processInstance.InvokedActivityId,
                 kit);
 
@@ -88,49 +89,6 @@ namespace sailflow.engine.Pattern
                 FlowCapabilityPipeline.AfterSuccess(
                     Sail, kit, hookCtx, EventFireTypeEnum.OnProcessContinued);
             }
-        }
-
-        /// <summary>
-        /// 使用流程定义资源添加角色用户
-        /// </summary>
-        private FlowCommandContext FillNextActivityPerformersByRoleList(string mainActivityInstanceId,
-            string mainActivityId,
-            SQLBuilder kit)
-        {
-            var pm = Sail.ProcessInstances;
-            var mainProcessInstance = pm.GetByActivity(kit, mainActivityInstanceId);
-            var processModel = Sail.ProcessModelFactory.CreateByProcessInstance(kit, mainProcessInstance);
-            var nextSteps = processModel.GetNextActivityTreeView(mainActivityId);
-
-            //获取主流程任务
-            var task = Sail.ManagerFactory.Tasks.GetTaskByActivity(kit.useSQL(), mainProcessInstance.ProcessInstanceId, mainActivityInstanceId);
-            var runner = new FlowCommandContext
-            {
-                BizChannel = mainProcessInstance.BizChannel,
-                BizPK = mainProcessInstance.BizPK,
-                BizCode = mainProcessInstance.BizCode,
-                ProcessId = mainProcessInstance.ProcessId,
-                Version = mainProcessInstance.Version,
-                UserId = task.SignId,
-                UserName = task.SignName
-            };
-
-            foreach (var node in nextSteps)
-            {
-                Dictionary<string, PerformerList> dict = new Dictionary<string, PerformerList>();
-                var performerList = PerformerBuilder.CreatePerformerList(node.Roles);      
-                if (node.ActivityType != ActivityTypeEnum.EndNode
-                    && performerList.Count == 0)
-                {
-                    throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorend.FillNextActivityPerformersByRoleList.warn", node.ActivityName));
-                }
-                else
-                {
-                    dict.Add(node.ActivityId, performerList);
-                }
-                runner.NextActivityPerformers = dict;
-            }
-            return runner;
         }
 
         /// <summary>
