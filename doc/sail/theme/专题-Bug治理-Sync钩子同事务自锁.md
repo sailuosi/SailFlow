@@ -1,6 +1,6 @@
 # 专题 · Bug 治理：Sync 钩子同事务自锁
 
-> 状态：**案例库**（与治理决策配套；决策见 [专题-钩子治理与同事务可观测.md](./专题-钩子治理与同事务可观测.md)）  
+> 状态：**案例库**（与治理决策配套；总纲见 [专题-事务一致性.md](./专题-事务一致性.md)；决策见 [专题-钩子治理与同事务可观测.md](./专题-钩子治理与同事务可观测.md)）  
 > 用途：收录「主事务未提交 + 另开连接读写引擎库」导致的自锁 / 闷锅案例，供排障对照与代码评审检查。  
 > 触发：2026-11-21 发起流程卡死（`SailProcessExtraStartedHook`）。  
 > 接口警示：见 `IFlowHook` / `IProcessInstanceCreateHook` / `FlowHookContext.Kit` / `HookMode.Sync` XML 注释。
@@ -123,6 +123,7 @@ db.findRowById<ProcessInstanceEntity>(piId);
 
 | 类型 | 链接 |
 |------|------|
+| 同事务总纲 | [专题-事务一致性.md](./专题-事务一致性.md) |
 | 治理决策（进度日志 / 软超时） | [专题-钩子治理与同事务可观测.md](./专题-钩子治理与同事务可观测.md) |
 | 事件体系教程 | [教程-事件体系Gate-Hook-Notifier-Outbox.md](../../helps/教程-事件体系Gate-Hook-Notifier-Outbox.md) |
 | 接口警示 | `IFlowHook`、`IProcessInstanceCreateHook`、`FlowHookContext.Kit`、`HookMode.Sync`、`AssigneeInvokeRequest.Kit` |
