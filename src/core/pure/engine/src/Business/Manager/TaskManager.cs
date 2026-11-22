@@ -1044,6 +1044,112 @@ namespace sailflow.engine.Manager
         }
 
         /// <summary>
+        /// 加人：向当前扁节点（一 AI · 多 Task）追加普通办理人待办；已打开者跳过；不关任何人；不改 Leave / CompleteOrder；不推进。
+        /// v1 拒绝 SignTogether / SignForward 及挂在其下的子 AI。
+        /// </summary>
+        internal WfDataManagedResult AddAssignees(
+            SQLBuilder kit,
+            string taskId,
+            FlowCommandContext runner,
+            PerformerList addTargets)
+        {
+            if (addTargets == null || addTargets.Count == 0)
+                return WfDataManagedResult.Exception("AddAssignee requires at least one target performer.");
+
+            var task = GetTask(kit, taskId);
+            if (task == null)
+                return WfDataManagedResult.Exception("AddAssignee task not found.");
+
+            var am = Sail.ManagerFactory.Activities;
+            var activityInstance = am.GetById(kit, task.ActivityInstanceId);
+            if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
+                && activityInstance.ActivityState != (short)ActivityStateEnum.Running)
+            {
+                return WfDataManagedResult.Exception("AddAssignee activity is not ready/running.");
+            }
+
+            var flatGuard = TryEnsureFlatAssigneeNode(kit, activityInstance);
+            if (flatGuard != null)
+                return flatGuard;
+
+            var desired = new Dictionary<string, Performer>(StringComparer.OrdinalIgnoreCase);
+            foreach (var p in addTargets)
+            {
+                if (p == null || string.IsNullOrWhiteSpace(p.UserId))
+                    continue;
+                desired[p.UserId] = p;
+            }
+            if (desired.Count == 0)
+                return WfDataManagedResult.Exception("AddAssignee requires at least one target performer.");
+
+            var openIds = new HashSet<string>(
+                GetOpenApproverTasks(
+                        kit,
+                        activityInstance.ProcessInstanceId,
+                        activityInstance.ActivityInstanceId)
+                    .Select(t => t.SignId),
+                StringComparer.OrdinalIgnoreCase);
+
+            var inserted = 0;
+            foreach (var kv in desired)
+            {
+                if (openIds.Contains(kv.Key))
+                    continue;
+                Insert(kit, activityInstance, kv.Value.UserId, kv.Value.UserName,
+                    runner?.UserId, runner?.UserName, taskId, runner);
+                openIds.Add(kv.Key);
+                inserted++;
+            }
+
+            if (inserted == 0)
+                return WfDataManagedResult.Exception("AddAssignee: all targets already open assignees.");
+
+            RefreshActivitySignFromOpenTasks(kit, activityInstance);
+            return WfDataManagedResult.Success();
+        }
+
+        /// <summary>
+        /// v1 扁节点守卫：拒绝 SignTogether / SignForward 容器，以及 MainAct 指向会签/加签父的子 AI。
+        /// </summary>
+        WfDataManagedResult TryEnsureFlatAssigneeNode(SQLBuilder kit, ActivityInstanceEntity activityInstance)
+        {
+            if (activityInstance == null)
+                return WfDataManagedResult.Exception("AddAssignee flat guard: activity is null.");
+
+            if (ActivityInstanceManager.IsSignForwardContainer(activityInstance)
+                || activityInstance.ComplexType == (short)ComplexTypeEnum.SignForward)
+            {
+                return WfDataManagedResult.Exception(
+                    "AddAssignee requires flat node (not SignForward).");
+            }
+
+            if (activityInstance.ComplexType == (short)ComplexTypeEnum.SignTogether)
+            {
+                return WfDataManagedResult.Exception(
+                    "AddAssignee requires flat node (not SignTogether).");
+            }
+
+            if (!string.IsNullOrEmpty(activityInstance.MainActInstanceId)
+                && !string.Equals(
+                    activityInstance.MainActInstanceId,
+                    activityInstance.ActivityInstanceId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                var parent = Sail.ManagerFactory.Activities.GetById(kit, activityInstance.MainActInstanceId);
+                if (parent != null
+                    && (parent.ComplexType == (short)ComplexTypeEnum.SignTogether
+                        || parent.ComplexType == (short)ComplexTypeEnum.SignForward
+                        || ActivityInstanceManager.IsSignForwardContainer(parent)))
+                {
+                    return WfDataManagedResult.Exception(
+                        "AddAssignee requires flat node (child under SignTogether/SignForward).");
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// 减签：取消指定办理人在本活动上的未办待办（Closed + Cancelled 通知），并刷新 SignIds/Names。
         /// 至少保留一名打开待办；不推进下一节点。
         /// </summary>

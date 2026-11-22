@@ -174,6 +174,9 @@ public sealed class RunBuilder
     /// <summary>改派：需 TaskId + NextActivityPerformers（新办理人全集）。</summary>
     public WfExecutedResult ChangeAssignee() => Service().ChangeAssigneeProcess(Build());
 
+    /// <summary>加人：需 TaskId + NextActivityPerformers（待追加办理人，增量）。</summary>
+    public WfExecutedResult AddAssignee() => Service().AddAssigneeProcess(Build());
+
     /// <summary>催办：需 TaskId；可选 NextActivityPerformers 限定对象。</summary>
     public WfExecutedResult Urge() => Service().UrgeProcess(Build());
 

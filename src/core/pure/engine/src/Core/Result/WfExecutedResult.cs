@@ -211,6 +211,14 @@ namespace sailflow.engine.Result
         public const string ChangeAssignee_NotInRunning = "ChangeAssignee_NotInRunning";
         public const string ChangeAssignee_RuntimeError = "ChangeAssignee_RuntimeError";
 
+        // 加人（扁节点追加普通办理人）
+        public const string AddAssignee_ErrorArguments = "AddAssignee_ErrorArguments";
+        public const string AddAssignee_NoneTargets = "AddAssignee_NoneTargets";
+        public const string AddAssignee_NotInRunning = "AddAssignee_NotInRunning";
+        public const string AddAssignee_NotFlatNode = "AddAssignee_NotFlatNode";
+        public const string AddAssignee_AlreadyAssignee = "AddAssignee_AlreadyAssignee";
+        public const string AddAssignee_RuntimeError = "AddAssignee_RuntimeError";
+
         // 催办
         public const string Urge_ErrorArguments = "Urge_ErrorArguments";
         public const string Urge_NoOpenTasks = "Urge_NoOpenTasks";

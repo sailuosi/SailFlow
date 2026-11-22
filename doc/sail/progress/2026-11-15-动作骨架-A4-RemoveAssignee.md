@@ -46,8 +46,19 @@
 | 挂点 | `NodeMediatorTask` / MultiSignTogether / MultiSignForward / Revise |
 | `DelegateAction` / `DelegateProcess*` | Assignee 族 |
 
+## 续：AddAssignee（2026-11-22）
+
+| 项 | 说明 |
+|----|------|
+| `FlowOperation.AddAssignee` | + `OnAssigneeAdding` / `OnAssigneeAdded` |
+| `TaskManager.AddAssignees` | 扁节点守卫（拒 SignTogether/SignForward）；缺人 Insert+Created；已打开跳过；无人新建失败；刷新 SignIds/Names |
+| `AddAssigneeAction` / Service / RunBuilder | `TaskId` 定位；`NextActivityPerformers`=**增量**待追加人 |
+| Host | 码表默认关；`AddAssigneeOperationHandler`；REST；办理条独立按钮；加签对话框「普通加人」→ `AddAssignee`（非 `SignForwardTypeEnum`） |
+| 非目标 | SignTogether / Sequence MI 建新席；加批 `SignAddNode`；不进 Transition |
+
 ## 未做（产品面 / 候选）
 
-- Host：减签 / 改派 / 催办 / **委派**已挂（码表 + Handler + 办理条；改派/催办/委派默认关）  
+- Host：减签 / 改派 / 催办 / **委派** / **加人**已挂（码表 + Handler + 办理条；改派/催办/委派/加人默认关）  
 - Host Notifier：Debug + Portal `TaskKinds` 含 `Urged` / `Entrusted`  
-- `Copyto` 保持 Host 独立体系
+- `Copyto` 保持 Host 独立体系  
+- SignTogether / 加签容器内加人、加批生新节点

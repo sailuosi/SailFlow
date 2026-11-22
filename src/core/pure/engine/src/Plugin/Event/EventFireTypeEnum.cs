@@ -104,6 +104,10 @@ namespace sailflow.engine.Event
 
         OnAssigneeChanged = 107,
 
+        OnAssigneeAdding = 118,
+
+        OnAssigneeAdded = 119,
+
         OnProcessUrging = 108,
 
         OnProcessUrged = 109,

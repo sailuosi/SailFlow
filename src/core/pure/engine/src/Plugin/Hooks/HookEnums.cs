@@ -63,6 +63,8 @@ namespace sailflow.engine.Hooks
         RemoveAssignee,
         /// <summary>改派：用新办理人集合替换当前节点未办待办（差量关旧/建新），不推进下一节点。</summary>
         ChangeAssignee,
+        /// <summary>加人：向当前扁节点追加普通办理人待办（不改 Leave / 不压加签栈），不推进下一节点。</summary>
+        AddAssignee,
         /// <summary>催办：对当前节点未办待办发催办通知，不改状态、不推进。</summary>
         Urge,
         /// <summary>委派：请人代办；受托人办结后自动回转原责任人（≠ Transfer）。</summary>

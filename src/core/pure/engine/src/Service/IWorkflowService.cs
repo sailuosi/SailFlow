@@ -180,6 +180,13 @@ namespace sailflow.engine.Service
         Task<WfExecutedResult> ChangeAssigneeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// 加人：向当前扁节点追加普通办理人待办（增量）；不改 Leave、不压加签栈、不发生节点流转。
+        /// 定位活动靠 <c>TaskId</c>；新人取自 <c>NextActivityPerformers</c>。
+        /// </summary>
+        WfExecutedResult AddAssigneeProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> AddAssigneeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// 催办：对当前节点未办待办发催办通知（不改状态、不流转）。
         /// <c>TaskId</c> 定位活动；可选 <c>NextActivityPerformers</c> 限定对象（空=全部打开待办）。
         /// </summary>

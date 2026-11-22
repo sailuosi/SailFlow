@@ -398,6 +398,13 @@ namespace sailflow.engine.Service
         public Task<WfExecutedResult> ChangeAssigneeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunActionAsync(runner, cancellationToken, (kit, r) => new ChangeAssigneeAction(Sail, kit, r).Execute());
 
+        /// <summary>加人（Assignee 族）：扁节点追加普通办理人；不压加签栈。</summary>
+        public WfExecutedResult AddAssigneeProcess(FlowCommandContext runner)
+            => RunAction(runner, (kit, r) => new AddAssigneeAction(Sail, kit, r).Execute());
+
+        public Task<WfExecutedResult> AddAssigneeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new AddAssigneeAction(Sail, kit, r).Execute());
+
         /// <summary>A4 续：催办（Assignee 族）；仅 Notifier/Hook，不改待办状态。</summary>
         public WfExecutedResult UrgeProcess(FlowCommandContext runner)
             => RunAction(runner, (kit, r) => new UrgeAction(Sail, kit, r).Execute());

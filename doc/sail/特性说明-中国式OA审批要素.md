@@ -73,7 +73,7 @@
 | 变更处理人 | `ChangeAssignee` | `ChangeAssigneeProcess` | 管理员/有权人改当前节点办理人集合（差量） | **已接线**（码表默认关 + Handler + Workbench `CurrentAssignees` + 办理条） |
 | 承办 / 认领 | `Claim`（勿用 Undertake 当万能名） | 待定认领命令；**仅** `Leave=Race` | 或签多人时先独占待办，**不推进**；再 `Approve`/`Reject` | 存疑，默认不跟 AntFlow 按钮 |
 | 加批 | `SignAddNode`（候选） | 与 `SignForward` 拆语义后定 | **生成新审批节点/段**再审（AntFlow JP） | 现揉在加签，未拆 |
-| 当前节点加签 | `AddAssignee` | 可落 `SignForward` 子选项 | 不改图结构，仅当前节点增加办理人 | 语义待从 `SignForward` 拆清 |
+| 当前节点加人 | `AddAssignee` | `AddAssigneeProcess` | 扁节点追加普通办理人（增量）；不改 Leave、不压加签栈；加签对话框可路由 | **已接线**（码表默认关 + Handler + 办理条 / 加签「普通加人」）；见 [OA/专题-改签.md](./OA/专题-改签.md) §1b |
 | 减签 | `RemoveAssignee` | `RemoveAssigneeProcess` | 从当前多人节点移除尚未办完的办理人 | **已接线**（码表 + Host Handler + Workbench 候选人 + 办理条弹窗）；与加签/改派见 [OA/专题-改签.md](./OA/专题-改签.md) |
 | 未来节点加签 | `AddFutureAssignee` | 待定 | 改尚未到达节点的预定办理人（加人） | 无；主场景用预选表，见 [OA/专题-超前选人.md](./OA/专题-超前选人.md) |
 | 未来节点减签 | `RemoveFutureAssignee` | 待定 | 同上，减人 | 无；改/清预选表 |
