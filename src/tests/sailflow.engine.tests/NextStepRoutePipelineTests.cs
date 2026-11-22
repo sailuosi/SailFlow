@@ -1,3 +1,4 @@
+using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.engine.NextStep;
 using sailflow.engine.Xpdl;
@@ -146,12 +147,71 @@ public sealed class NextStepRoutePipelineTests
         Assert.Contains(list.Items, c => c.ReasonCode == NextStepRouteRuntime.ReasonAndSplitGuard);
     }
 
+    [Fact]
+    public void ApplyPrepare_writes_into_context_Conditions()
+    {
+        var pipeline = new NextStepRoutePipeline();
+        pipeline.AddPrepare(
+            new LiteralBagPrepare(("days", "3")),
+            new NextStepRouteOptions { Match = NextStepMatch.All });
+
+        var sail = new SailClient();
+        sail.useNextStepRoute(pipeline);
+
+        var context = new FlowCommandContext
+        {
+            Conditions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        };
+
+        var bag = NextStepRouteRuntime.ApplyPrepare(
+            sail,
+            conditions: null,
+            currentActivity: null,
+            processEntity: null,
+            NextStepRoutePhase.Preview,
+            context: context);
+
+        Assert.Same(context.Conditions, bag);
+        Assert.Equal("3", context.Conditions["days"]);
+    }
+
+    [Fact]
+    public void SetIfAbsent_skips_existing_and_empty_writes_new()
+    {
+        var prepare = new SetIfAbsentProbePrepare();
+        var bag = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["amount"] = "100"
+        };
+        var ctx = new NextStepRouteContext { Conditions = bag };
+
+        prepare.Prepare(ctx);
+
+        Assert.Equal("100", bag["amount"]);
+        Assert.Equal("low", bag["urgency"]);
+        Assert.Equal("yes", bag["forced"]);
+        Assert.False(bag.ContainsKey("emptyKey"));
+        Assert.False(bag.ContainsKey("whitespaceKey"));
+    }
+
     sealed class LiteralBagPrepare : NextStepPrepare
     {
         public LiteralBagPrepare(params (string k, string v)[] pairs)
         {
             foreach (var (k, v) in pairs)
                 IfCondition(k, v);
+        }
+    }
+
+    sealed class SetIfAbsentProbePrepare : NextStepPrepare
+    {
+        protected override void Contribute(NextStepRouteContext ctx)
+        {
+            SetIfAbsent(ctx, "amount", "999");
+            SetIfAbsent(ctx, "urgency", "low");
+            SetIfAbsent(ctx, "emptyKey", "");
+            SetIfAbsent(ctx, "whitespaceKey", null!);
+            Set(ctx, "forced", "yes");
         }
     }
 

@@ -26,7 +26,7 @@ namespace sailflow.engine.Xpdl
         ProcessEntity ProcessEntity { get; set; }
         sailflow.engine.Xpdl.Activity GetStartActivity();
         sailflow.engine.Xpdl.Activity GetFirstActivity();
-        NextActivityMatchedResult GetFirstActivityList(sailflow.engine.Xpdl.Activity startActivity, IDictionary<string, string> conditionKeyValuePair);
+        NextActivityMatchedResult GetFirstActivityList(sailflow.engine.Xpdl.Activity startActivity, IDictionary<string, string> conditionKeyValuePair, FlowCommandContext context = null);
         sailflow.engine.Xpdl.Activity GetEndActivity();
         sailflow.engine.Xpdl.Activity GetActivity(string activityId);
         IList<sailflow.engine.Xpdl.Activity> GetActivityList();
@@ -53,7 +53,8 @@ namespace sailflow.engine.Xpdl
         NextActivityListViewResult GetNextActivityListView(string currentActivityId,
             string activityInstanceId,
             IDictionary<string, string> conditions,
-            SQLBuilder kit);
+            SQLBuilder kit,
+            FlowCommandContext context = null);
         /// <summary>
         /// Get the next activity list with runtime conditions and resource-based filtering.
         /// 注意：该方法仅用于引擎内部（如回退、特殊测试场景）的“结构 + 资源表达式”过滤，

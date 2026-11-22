@@ -23,16 +23,16 @@ public static class NextStepRouteRuntime
         Activity currentActivity,
         ProcessEntity processEntity,
         NextStepRoutePhase phase,
-        FlowCommandContext runner = null,
+        FlowCommandContext context = null,
         string activityInstanceId = null)
     {
-        var bag = EnsureWritableBag(conditions);
+        var bag = ResolveWritableBag(conditions, context);
         var pipeline = sail?.NextStepRoute;
         if (pipeline == null)
             return bag;
 
         pipeline.Prepare(BuildContext(
-            sail, bag, currentActivity, processEntity, phase, runner, activityInstanceId));
+            sail, bag, currentActivity, processEntity, phase, context, activityInstanceId));
         return bag;
     }
 
@@ -47,7 +47,7 @@ public static class NextStepRouteRuntime
         ProcessEntity processEntity,
         NextStepRoutePhase phase,
         IDictionary<string, string> conditions = null,
-        FlowCommandContext runner = null,
+        FlowCommandContext context = null,
         string activityInstanceId = null)
     {
         var pipeline = sail?.NextStepRoute;
@@ -64,8 +64,8 @@ public static class NextStepRouteRuntime
             .ToList();
 
         var ctx = BuildContext(
-            sail, EnsureWritableBag(conditions), currentActivity, processEntity,
-            phase, runner, activityInstanceId);
+            sail, ResolveWritableBag(conditions, context), currentActivity, processEntity,
+            phase, context, activityInstanceId);
         pipeline.Filter(ctx, candidates);
 
         EnforceAndSplitGuard(candidates, requiredSnapshot);
@@ -95,7 +95,6 @@ public static class NextStepRouteRuntime
             v.Disabled = c.Disabled;
             v.Required = c.Required;
             v.ReasonCode = c.ReasonCode;
-            // 预览：Disabled 仍保留给前端；Required 静默删的已由 Guard 恢复
         }
     }
 
@@ -224,13 +223,13 @@ public static class NextStepRouteRuntime
         Activity currentActivity,
         ProcessEntity processEntity,
         NextStepRoutePhase phase,
-        FlowCommandContext runner,
+        FlowCommandContext context,
         string activityInstanceId)
     {
         var ctx = new NextStepRouteContext
         {
             Sail = sail,
-            Runner = runner,
+            Runner = context,
             ProcessId = processEntity?.ProcessId,
             ProcessCode = processEntity?.ProcessCode,
             Version = processEntity?.Version,
@@ -240,16 +239,55 @@ public static class NextStepRouteRuntime
             Conditions = bag,
             Phase = phase
         };
-        if (runner != null)
+        if (context != null)
         {
-            ctx.BizPK = runner.BizPK;
-            ctx.UserId = runner.UserId;
+            ctx.BizPK = context.BizPK;
+            ctx.UserId = context.UserId;
             if (string.IsNullOrEmpty(ctx.ProcessId))
-                ctx.ProcessId = runner.ProcessId;
+                ctx.ProcessId = context.ProcessId;
             if (string.IsNullOrEmpty(ctx.Version))
-                ctx.Version = runner.Version;
+                ctx.Version = context.Version;
         }
+
+        FillIdentityFromActivityInstance(sail, ctx, context, activityInstanceId);
         return ctx;
+    }
+
+    static void FillIdentityFromActivityInstance(
+        SailClient sail,
+        NextStepRouteContext routeCtx,
+        FlowCommandContext context,
+        string activityInstanceId)
+    {
+        if (!string.IsNullOrWhiteSpace(routeCtx.BizPK))
+            return;
+        if (string.IsNullOrWhiteSpace(activityInstanceId) || sail == null)
+            return;
+        try
+        {
+            var ai = sail.ManagerFactory.Activities.GetById(activityInstanceId);
+            if (ai == null)
+                return;
+            if (string.IsNullOrWhiteSpace(routeCtx.BizPK) && !string.IsNullOrWhiteSpace(ai.BizPK))
+            {
+                routeCtx.BizPK = ai.BizPK;
+                if (context != null && string.IsNullOrWhiteSpace(context.BizPK))
+                    context.BizPK = ai.BizPK;
+            }
+            if (context != null
+                && string.IsNullOrWhiteSpace(context.BizChannel)
+                && !string.IsNullOrWhiteSpace(ai.BizChannel))
+                context.BizChannel = ai.BizChannel;
+            if (string.IsNullOrWhiteSpace(routeCtx.ProcessId) && !string.IsNullOrWhiteSpace(ai.ProcessId))
+                routeCtx.ProcessId = ai.ProcessId;
+            if (string.IsNullOrWhiteSpace(routeCtx.ProcessInstanceId)
+                && !string.IsNullOrWhiteSpace(ai.ProcessInstanceId))
+                routeCtx.ProcessInstanceId = ai.ProcessInstanceId;
+        }
+        catch
+        {
+            /* 补身份失败不阻断路由 */
+        }
     }
 
     static NextStepCandidate CloneCandidate(NextStepCandidate c) => new()
@@ -260,6 +298,31 @@ public static class NextStepRouteRuntime
         Required = c.Required,
         ReasonCode = c.ReasonCode
     };
+
+    /// <summary>优先与 context.Conditions 同源；否则新建可写袋。</summary>
+    static IDictionary<string, string> ResolveWritableBag(
+        IDictionary<string, string> conditions,
+        FlowCommandContext context)
+    {
+        if (conditions == null)
+        {
+            if (context == null)
+                return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (context.Conditions == null)
+                context.Conditions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            else if (context.Conditions is not Dictionary<string, string>)
+                context.Conditions = new Dictionary<string, string>(
+                    context.Conditions, StringComparer.OrdinalIgnoreCase);
+            return context.Conditions;
+        }
+
+        var bag = EnsureWritableBag(conditions);
+        if (context != null
+            && ReferenceEquals(conditions, context.Conditions)
+            && !ReferenceEquals(bag, context.Conditions))
+            context.Conditions = bag;
+        return bag;
+    }
 
     static IDictionary<string, string> EnsureWritableBag(IDictionary<string, string> conditions)
     {

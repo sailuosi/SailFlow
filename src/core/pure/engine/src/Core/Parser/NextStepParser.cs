@@ -139,20 +139,33 @@ namespace sailflow.engine.Runtime
         /// <param name="condition"></param>
         /// <returns></returns>
         internal NextActivityListViewResult GetNextActivityRoleUserTree(IResourceService resourceService, 
-            FlowCommandContext runner,
+            FlowCommandContext context,
             IDictionary<string, string> condition)
         {
             // 发起前预览只需 ProcessId；运行中查询才需要 BizPK / TaskId
-            if (string.IsNullOrEmpty(runner.ProcessId))
+            if (string.IsNullOrEmpty(context.ProcessId))
             {
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("nextstepparser.getnextactivityroleusertree.error"));
             }
 
-            //条件参数一致
-            //Consistent condition parameters
-            if (condition == null && runner.Conditions != null)
+            //条件参数一致：与 context.Conditions 保持同一字典引用
+            //Consistent condition parameters: same dictionary reference as context.Conditions
+            if (condition == null && context.Conditions != null)
             {
-                condition = runner.Conditions;
+                condition = context.Conditions;
+            }
+            else if (condition != null && context.Conditions == null)
+            {
+                context.Conditions = condition;
+            }
+            else if (condition != null
+                     && context.Conditions != null
+                     && !ReferenceEquals(condition, context.Conditions))
+            {
+                // 调用方传了独立袋：合并进 context 袋并统一引用
+                foreach (var kv in condition)
+                    context.Conditions[kv.Key] = kv.Value;
+                condition = context.Conditions;
             }
 
             NextActivityListViewResult nextTreeResult = null;
@@ -164,20 +177,20 @@ namespace sailflow.engine.Runtime
                 var tm = Sail.ManagerFactory.Tasks;
                 ProcessInstanceEntity processInstance = null;
                 var pim = Sail.ProcessInstances;
-                if (runner.TaskId != null)
+                if (context.TaskId != null)
                 {
                     //运行中的流程
                     //Running process
-                    taskView = tm.GetTaskView(runner.TaskId);
+                    taskView = tm.GetTaskView(context.TaskId);
                     processInstance = pim.GetById(taskView.ProcessInstanceId);
                 }
-                else if (!string.IsNullOrEmpty(runner.BizPK))
+                else if (!string.IsNullOrEmpty(context.BizPK))
                 {
                     var kitForPi = kit.useSQL();
                     var processInstanceList = pim.GetProcessInstance(kitForPi,
-                        runner.BizPK,
-                        runner.ProcessId,
-                        runner.Version).ToList();
+                        context.BizPK,
+                        context.ProcessId,
+                        context.Version).ToList();
                     processInstance = EnumHelper.GetFirst<ProcessInstanceEntity>(processInstanceList);
                 }
                 // BizPK 空：发起前预览，不查实例
@@ -191,7 +204,7 @@ namespace sailflow.engine.Runtime
                     //Process instance of running status
                     if (taskView == null)
                     {
-                        taskView = tm.GetTaskOfMine(kit.useSQL(), runner);
+                        taskView = tm.GetTaskOfMine(kit.useSQL(), context);
                     }
 
                     var isRunningTask = tm.CheckTaskStateInRunningState(taskView);
@@ -204,11 +217,14 @@ namespace sailflow.engine.Runtime
                     //Read the process variable table and merge condition parameters
                     var processVariableManager = SailFactoryAccess.Managers(Sail).ProcessVariables;
                     condition = processVariableManager.GetVariableByTask(kit, taskView, condition);
+                    if (condition != null)
+                        context.Conditions = condition;
 
                     //获取下一步列表
                     //Get the next step list
                     processModel = Sail.ProcessModelFactory.CreateByTask(kit.useSQL(), taskView);
-                    nextTreeResult = processModel.GetNextActivityListView(taskView.ActivityId, taskView.ActivityInstanceId, condition, kit);
+                    nextTreeResult = processModel.GetNextActivityListView(
+                        taskView.ActivityId, taskView.ActivityInstanceId, condition, kit, context);
                     
                     foreach (var ns in nextTreeResult.StepList)
                     {
@@ -226,7 +242,7 @@ namespace sailflow.engine.Runtime
                                 : Array.Empty<string>();
                             if (roleIDs.Length > 0)
                             {
-                                ns.Users = resourceService.GetUserListByRoleReceiverType(roleIDs, runner.UserId, (int)ns.ReceiverType);     //增加转移前置过滤条件
+                                ns.Users = resourceService.GetUserListByRoleReceiverType(roleIDs, context.UserId, (int)ns.ReceiverType);     //增加转移前置过滤条件
                             }
                         }
                     }
@@ -234,7 +250,7 @@ namespace sailflow.engine.Runtime
                 else
                 {
                     // 流程准备启动：从「开始事件」取下一步（首个办理节点），勿从 GetFirstActivity 再往后跳一跳
-                    processModel = Sail.ProcessModelFactory.CreateByProcess( runner.ProcessId, runner.Version);
+                    processModel = Sail.ProcessModelFactory.CreateByProcess(context.ProcessId, context.Version);
                     var startActivity = processModel?.GetStartActivity();
                     if (startActivity == null)
                     {
@@ -245,14 +261,15 @@ namespace sailflow.engine.Runtime
                     nextTreeResult = processModel.GetNextActivityListView(startActivity.ActivityId,
                         null,
                         condition,
-                        kit);
+                        kit,
+                        context);
                     if (nextTreeResult?.StepList != null)
                     {
                         foreach (var ns in nextTreeResult.StepList)
                         {
                             var roleIDs = ns.Roles != null ? ns.Roles.Select(x => x.Id).ToArray() : Array.Empty<string>();
                             if (roleIDs.Length > 0)
-                                ns.Users = resourceService.GetUserListByRoleReceiverType(roleIDs, runner.UserId, (int)ns.ReceiverType);
+                                ns.Users = resourceService.GetUserListByRoleReceiverType(roleIDs, context.UserId, (int)ns.ReceiverType);
                         }
                     }
                 }

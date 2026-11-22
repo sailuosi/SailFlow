@@ -26,7 +26,8 @@ namespace sailflow.engine.Xpdl
             string currentActivityId,
             string activityInstanceId,
             IDictionary<string, string> conditionKeyValuePair,
-            SQLBuilder kit)
+            SQLBuilder kit,
+            FlowCommandContext context = null)
         {
             try
             {
@@ -43,6 +44,7 @@ namespace sailflow.engine.Xpdl
                     string.IsNullOrEmpty(activityInstanceId)
                         ? NextStepRoutePhase.Preview
                         : NextStepRoutePhase.Send,
+                    context: context,
                     activityInstanceId: activityInstanceId);
 
                 //创建“下一步节点”的根节点

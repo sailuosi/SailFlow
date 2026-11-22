@@ -684,7 +684,10 @@ namespace sailflow.engine.Pattern
                 var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
 
                 var processModelBPMNCore = new ProcessModelBPMNCore();
-                var aiServiceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId, currentActivityInstance.ActivityInstanceId, newConditionKeyValuePair, Kit);
+                var aiServiceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(
+                    Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId,
+                    currentActivityInstance.ActivityInstanceId, newConditionKeyValuePair, Kit,
+                    context: activityResource?.AppRunner);
 
                 if (aiServiceNextMatchedResult.MatchedType != NextActivityMatchedType.Successed
                     || aiServiceNextMatchedResult.Root == null
@@ -761,7 +764,10 @@ namespace sailflow.engine.Pattern
                 var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
 
                 var processModelBPMNCore = new ProcessModelBPMNCore();
-                var serviceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId, currentActivityInstance.ActivityInstanceId, newConditionKeyValuePair, Kit);
+                var serviceNextMatchedResult = processModelBPMNCore.GetNextActivityTreeListCore(
+                    Sail, ActivityForwardContext.ProcessModel, comp.Activity.ActivityId,
+                    currentActivityInstance.ActivityInstanceId, newConditionKeyValuePair, Kit,
+                    context: activityResource?.AppRunner);
 
                 if (serviceNextMatchedResult.MatchedType != NextActivityMatchedType.Successed
                     || serviceNextMatchedResult.Root == null

@@ -360,14 +360,16 @@ namespace sailflow.engine.Xpdl
         /// (there may be multiple nodes after the start node)
         /// 获取流程起始的活动节点列表(开始节点之后，可能有多个节点)
         /// </summary>
-        public NextActivityMatchedResult GetFirstActivityList(Activity startActivity, IDictionary<string, string> conditionKeyValuePair)
+        public NextActivityMatchedResult GetFirstActivityList(Activity startActivity, IDictionary<string, string> conditionKeyValuePair, FlowCommandContext context = null)
         {
             try
             {
                 using (var kit = Sail.UseRunSQL())
                 {
                     var processModelBPMNCore = new ProcessModelBPMNCore();
-                    return processModelBPMNCore.GetNextActivityTreeListCore(Sail, this, startActivity.ActivityId, null, conditionKeyValuePair, kit);
+                    return processModelBPMNCore.GetNextActivityTreeListCore(
+                        Sail, this, startActivity.ActivityId, null, conditionKeyValuePair, kit,
+                        context: context);
                 }
             }
             catch (System.Exception e)
@@ -526,7 +528,8 @@ namespace sailflow.engine.Xpdl
         public NextActivityListViewResult GetNextActivityListView(string currentActivityId,
             string activityInstanceId,
             IDictionary<string, string> conditions,
-            SQLBuilder kit)
+            SQLBuilder kit,
+            FlowCommandContext context = null)
         {
             var nextTreeResult = new NextActivityListViewResult();
             var treeNodeList = new List<NodeView>();
@@ -560,7 +563,9 @@ namespace sailflow.engine.Xpdl
                 //Transiton方式的流转定义
                 //Definition of Transition Mode Flow
                 var processModelBPMNCore = new ProcessModelBPMNCore();
-                var nextStepResult = processModelBPMNCore.GetNextActivityTreeListCore(Sail, this, currentActivity.ActivityId, activityInstanceId, conditions, kit);
+                var nextStepResult = processModelBPMNCore.GetNextActivityTreeListCore(
+                    Sail, this, currentActivity.ActivityId, activityInstanceId, conditions, kit,
+                    context: context);
                 nextTreeResult.Message = nextStepResult.Message;
 
                 foreach (var child in nextStepResult.Root)
@@ -590,6 +595,7 @@ namespace sailflow.engine.Xpdl
                 var filtered = NextStep.NextStepRouteRuntime.ApplyFilter(
                     Sail, nextStepResult, currentActivity, ProcessEntity,
                     NextStep.NextStepRoutePhase.Preview, conditions,
+                    context: context,
                     activityInstanceId: activityInstanceId);
                 NextStep.NextStepRouteRuntime.AnnotateNodeViews(treeNodeList, filtered);
             }
@@ -658,7 +664,8 @@ namespace sailflow.engine.Xpdl
             NextActivityMatchedResult result = processModelBPMNCore.GetNextActivityTreeListCore(Sail, this, currentActivityId,
                 activityInstanceId,
                 conditionKeyValuePair,
-                kit);
+                kit,
+                context: activityResource?.AppRunner);
 
             //下一步节点列表为空
             //The next step is to leave the node list empty
@@ -674,7 +681,7 @@ namespace sailflow.engine.Xpdl
             var filtered = NextStep.NextStepRouteRuntime.ApplyFilter(
                 Sail, result, currentActivity, ProcessEntity,
                 NextStep.NextStepRoutePhase.Send, conditionKeyValuePair,
-                activityResource?.AppRunner, activityInstanceId);
+                context: activityResource?.AppRunner, activityInstanceId);
             NextStep.NextStepRouteRuntime.PruneDisabledFromTree(result.Root, filtered);
 
             //下一步节点列表封装
