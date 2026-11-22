@@ -10,6 +10,7 @@
 | [专题-主键与设计键发号契约.md](./专题-主键与设计键发号契约.md) | `ISailIdSource` / `SailId` AutoKey + BPMN codec |
 | [专题-办理人权重与委托体系.md](./专题-办理人权重与委托体系.md) | Weight / EffectiveWeight / 委托代批 |
 | [专题-节点实例与任务.md](./专题-节点实例与任务.md) | ActInstance ↔ Task 职责、基数、主/子与 OA 原语落库 |
+| [专题-Task办理主体.md](./专题-Task办理主体.md) | Task 多维办理主体：SignKind+SignId；精确人 vs 模糊部门/角色/池 |
 | [专题-节点实例临时子规则.md](./专题-节点实例临时子规则.md) | **已落地**：AI Leave 快照；加签改写子 Leave；TryCanLeave 统一判定 |
 | [专题测试.md](./专题测试.md) | OA 办理真人点验（一文档）：通过/加签三型/转办/沟通/驳回/退回/返送已过 |
 | [专题-流程实例标题与业务字段.md](./专题-流程实例标题与业务字段.md) | 流程实例标题与业务字段契约 |
