@@ -422,6 +422,67 @@ namespace sailflow.biz.query
             return (items, page.Total);
         }
 
+        /// <summary>
+        /// 按 BizChannel + BizPK 批量查进度摘要（上限 1000）。权限过滤归宿主。
+        /// </summary>
+        public IList<BizProgressSummary> QueryProgressByBizPKs(
+            string bizChannel,
+            IReadOnlyList<string> bizPKs,
+            int maxCount = 1000)
+        {
+            if (string.IsNullOrWhiteSpace(bizChannel))
+                throw new ArgumentException("BizChannel required", nameof(bizChannel));
+            if (bizPKs == null || bizPKs.Count == 0)
+                return Array.Empty<BizProgressSummary>();
+
+            var limit = maxCount <= 0 ? 1000 : Math.Min(maxCount, 1000);
+            var keys = bizPKs
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => x.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(limit)
+                .ToArray();
+            if (keys.Length == 0)
+                return Array.Empty<BizProgressSummary>();
+
+            var channel = bizChannel.Trim();
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<ProcessInstanceEntity>(out var pi)
+                .where(() => pi.BizChannel, channel)
+                .whereIn(() => pi.BizPK, keys)
+                .orderByDesc(() => pi.CreatedDateTime);
+            var rows = clip.select(pi).queryList().ToList();
+
+            // 同一 BizPK 多实例时取最新一条
+            var map = new Dictionary<string, ProcessInstanceEntity>(StringComparer.OrdinalIgnoreCase);
+            foreach (var row in rows)
+            {
+                if (string.IsNullOrWhiteSpace(row.BizPK)) continue;
+                if (!map.ContainsKey(row.BizPK))
+                    map[row.BizPK] = row;
+            }
+
+            var list = new List<BizProgressSummary>(map.Count);
+            foreach (var kv in map)
+            {
+                var e = kv.Value;
+                list.Add(new BizProgressSummary
+                {
+                    BizChannel = e.BizChannel ?? channel,
+                    BizPK = e.BizPK,
+                    ProcessInstanceId = e.ProcessInstanceId,
+                    ProcessId = e.ProcessId,
+                    Version = e.Version,
+                    Title = e.Title,
+                    ProcessState = e.ProcessState,
+                    CreatedUserId = e.CreatedUserId,
+                    CreatedDateTime = e.CreatedDateTime,
+                    EndedDateTime = e.EndedDateTime
+                });
+            }
+            return list;
+        }
+
         /// <summary>我的/管理端流程实例分页。</summary>
         public (IList<ProcessInstanceEntity> Items, int Total) QueryProcessInstancesPaged(ProcessInstanceQuery query)
         {

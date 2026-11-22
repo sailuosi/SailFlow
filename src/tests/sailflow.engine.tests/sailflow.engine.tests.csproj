@@ -21,6 +21,7 @@
     <ProjectReference Include="..\..\core\pure\engine\sailflow.engine.csproj" />
     <ProjectReference Include="..\..\core\pure\assignee\sailflow.assignee.csproj" />
     <ProjectReference Include="..\..\core\pure\runtime\sailflow.runtime.csproj" />
+    <ProjectReference Include="..\..\biz\host\sailflow.biz.csproj" />
   </ItemGroup>
 
 </Project>
