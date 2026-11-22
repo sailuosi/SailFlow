@@ -40,7 +40,7 @@ namespace sailflow.engine.Pattern
 
             //将流程实例设为完成
             var pim = Sail.ProcessInstances;
-            var kit = Kit.useSQL();
+            var kit = this.Kit;
             var processInstance = pim.Complete(kit, ActivityForwardContext.ProcessInstance.ProcessInstanceId,
                 ActivityForwardContext.ActivityResource.AppRunner);
 
@@ -48,7 +48,7 @@ namespace sailflow.engine.Pattern
             //若当前为子流程，则完成子流程并推动主流程进入下一节点
             if (pim.IsSubProcess(processInstance) == true)
             {
-                ContinueMainProcessRunning(processInstance, Kit);
+                ContinueMainProcessRunning(processInstance, kit);
             }
 
             OnAfterExecuteWorkItem();
@@ -66,7 +66,8 @@ namespace sailflow.engine.Pattern
                 Sail,
                 processInstance.InvokedActInstanceId,
                 processInstance.InvokedActivityId,
-                kit);
+                kit,
+                processInstance.ProcessInstanceId);
 
             //开始执行下一步
             var runAppResult = WfExecutedResult.Default();

@@ -198,7 +198,7 @@ namespace sailflow.engine.Manager
                 .where(() => pi.ProcessState, (short)ProcessStateEnum.Completed)
                 .orderByDesc(() => pi.CreatedDateTime);
             var list = clip.select(pi).queryList().ToList();
-            return list.Count == 1;
+            return list.Count >= 1;
         }
         #endregion
 

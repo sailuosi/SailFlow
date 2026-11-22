@@ -45,13 +45,13 @@ namespace sailflow.engine.Pattern
             {
                 if (base.LinkContext.FromActivity.ActivityType == ActivityTypeEnum.SubProcessNode)
                 {
-                    //检查子流程是否结束
-                    //检查子流程是否已结束
-                    var pim = Sail.ProcessInstances;
-                    var kit = Kit.useSQL();
-                    bool isCompleted = pim.CheckSubProcessInstanceCompleted(kit,
-                        base.LinkContext.FromActivityInstance.ActivityInstanceId,
-                        base.LinkContext.FromActivityInstance.ActivityId);
+                    //检查子流程是否结束（同步续推优先用刚 Complete 的子 PI Id）
+                    var runner = ActivityForwardContext.ActivityResource?.AppRunner;
+                    bool isCompleted = SubProcessMainContinueHelper.IsInvokedSubProcessCompleted(
+                        Sail,
+                        this.Kit,
+                        runner,
+                        base.LinkContext.FromActivityInstance);
                     if (isCompleted == false)
                     {
                         throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorsubprocess.ExecuteWorkItem.notcompleted.warn",
