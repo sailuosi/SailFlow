@@ -4,7 +4,7 @@
 
 **中文：** sailflow 是面向 .NET 6 / 8 / 10 的插件式流程引擎：通过 `UseXxx` 挂载能力、经 **mooSQL** 适配多数据库，并按 **pure / ext / biz** 分层。
 
-> 迭代中，暂勿用于生产；可能有 break change。
+> 迭代中。**基础流转已测验通过**。
 
 ## Links / 链接
 
