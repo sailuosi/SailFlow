@@ -1,7 +1,7 @@
 ﻿# 中国式 OA 审批要素（办理动词）
 
 > 状态：**现行对照说明**（2026-11-01）  
-> 用途：用「场景 → Sail 编码 → 执行含义」固化中国式办公审批里常见办理动词；指导按钮码表、引擎命令与产品文案，避免和 AntFlow/芋道名词一一硬套。  
+> 用途：用「场景 → Sail 编码 → 执行含义」固化中国式办公审批里常见办理动词；指导按钮码表、引擎命令与产品文案，避免和 AntFlow/其它 BPM 产品名词一一硬套。  
 > 权威码表（已入办理条）：宿主 `SailButtonsCatalog` / `buttonsCatalog.ts` · [宿主 sailflow-buttons-capability.md](../../../sleveen-admin/doc/sailflow-buttons-capability.md)  
 > 关联：[特性说明-引擎能力基线.md](./特性说明-引擎能力基线.md) · [特性说明-待办人管道.md](./特性说明-待办人管道.md) · [存疑参考功能点.md](./talk/存疑参考功能点.md) · [todo-产品缺口.md](./dev/todo-产品缺口.md) · [专题-流转动作骨架.md](./theme/专题-流转动作骨架.md)（动词扩展配方，已落地）
 
