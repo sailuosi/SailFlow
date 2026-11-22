@@ -34,7 +34,7 @@ namespace sailflow.engine.Actions.Assignee
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Transfer_ErrorArguments;
-                result.Message = "Transfer requires TaskId.";
+                result.Message = Sail.Messages.GetEngineMessage("taskmanager.transfer.requiresTaskId.warn");
                 return false;
             }
 
@@ -43,7 +43,7 @@ namespace sailflow.engine.Actions.Assignee
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Transfer_NoneTargets;
-                result.Message = "Transfer requires NextActivityPerformers with at least one user.";
+                result.Message = Sail.Messages.GetEngineMessage("taskmanager.transfer.noneTargets.warn");
                 return false;
             }
 
@@ -53,7 +53,7 @@ namespace sailflow.engine.Actions.Assignee
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Transfer_ErrorArguments;
-                result.Message = "Transfer task not found.";
+                result.Message = Sail.Messages.GetEngineMessage("taskmanager.transfer.taskNotFound.warn");
                 return false;
             }
 
@@ -84,13 +84,13 @@ namespace sailflow.engine.Actions.Assignee
             }
 
             result.Status = WfExecutedStatus.Success;
-            result.Message = "Transfer succeeded.";
+            result.Message = Sail.Messages.GetEngineMessage("taskmanager.transfer.success");
         }
 
         protected override string FormatFailedMessage(Exception e)
         {
             var error = e.InnerException != null ? e.InnerException.Message : e.Message;
-            return "TransferProcess error: " + error;
+            return Sail.Messages.GetEngineMessage("workflowservice.transferprocess.error", error);
         }
 
         protected override void ApplyFailedExceptionType(WfExecutedResult result, Exception e)
@@ -119,16 +119,38 @@ namespace sailflow.engine.Actions.Assignee
         {
             if (string.IsNullOrEmpty(message))
                 return WfExceptionType.Transfer_RuntimeError;
-            if (message.Contains("self", StringComparison.OrdinalIgnoreCase)
-                || message.Contains("current user's", StringComparison.OrdinalIgnoreCase))
+
+            // 稳定键（Passthrough）/ 中英文文案；「已有待办」须先于 generic noneTargets
+            if (ContainsAny(message, "targetHasOpen", "already has an open task", "已有打开待办"))
+                return WfExceptionType.Transfer_TargetHasOpen;
+
+            if (ContainsAny(message, "toSelf", "Cannot transfer to self", "不能转办给自己",
+                    "notMine", "current user's", "只能转办当前用户"))
                 return WfExceptionType.Transfer_NotMineTask;
-            if (message.Contains("ready/running", StringComparison.OrdinalIgnoreCase)
-                || message.Contains("to-do", StringComparison.OrdinalIgnoreCase))
+
+            if (ContainsAny(message, "activityNotRunning", "notTodo", "ready/running", "to-do",
+                    "不在就绪或运行", "不在待办状态"))
                 return WfExceptionType.Transfer_NotInRunning;
-            if (message.Contains("target", StringComparison.OrdinalIgnoreCase)
-                || message.Contains("performer", StringComparison.OrdinalIgnoreCase))
+
+            if (ContainsAny(message, "taskNotFound", "task not found", "任务不存在",
+                    "requiresTaskId", "requires TaskId", "需要指定待办"))
+                return WfExceptionType.Transfer_ErrorArguments;
+
+            if (ContainsAny(message, "noneTargets", "at least one target", "至少需要一个"))
                 return WfExceptionType.Transfer_NoneTargets;
+
             return WfExceptionType.Transfer_RuntimeError;
+        }
+
+        static bool ContainsAny(string message, params string[] tokens)
+        {
+            foreach (var t in tokens)
+            {
+                if (!string.IsNullOrEmpty(t)
+                    && message.Contains(t, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
         }
     }
 }

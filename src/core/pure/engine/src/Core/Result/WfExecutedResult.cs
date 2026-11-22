@@ -196,6 +196,7 @@ namespace sailflow.engine.Result
         public const string Transfer_NoneTargets = "Transfer_NoneTargets";
         public const string Transfer_NotMineTask = "Transfer_NotMineTask";
         public const string Transfer_NotInRunning = "Transfer_NotInRunning";
+        public const string Transfer_TargetHasOpen = "Transfer_TargetHasOpen";
         public const string Transfer_RuntimeError = "Transfer_RuntimeError";
 
         // 减签

@@ -867,44 +867,45 @@ namespace sailflow.engine.Manager
             PerformerList targets)
         {
             if (targets == null || targets.Count == 0)
-                return WfDataManagedResult.Exception("Transfer requires at least one target performer.");
+                return WfDataManagedResult.Exception(
+                    Sail.Messages.GetEngineMessage("taskmanager.transfer.noneTargets.warn"));
 
             var task = GetTask(kit, taskId);
             if (task == null)
-                return WfDataManagedResult.Exception("Transfer task not found.");
+                return WfDataManagedResult.Exception(
+                    Sail.Messages.GetEngineMessage("taskmanager.transfer.taskNotFound.warn"));
 
             if (!string.Equals(task.SignId, runner.UserId, StringComparison.OrdinalIgnoreCase))
-                return WfDataManagedResult.Exception("Transfer is only allowed on the current user's task.");
+                return WfDataManagedResult.Exception(
+                    Sail.Messages.GetEngineMessage("taskmanager.transfer.notMine.warn"));
 
             if (task.TaskState != (short)TaskStateEnum.Waiting
                 && task.TaskState != (short)TaskStateEnum.Reading)
-                return WfDataManagedResult.Exception("Transfer task is not in to-do state.");
+                return WfDataManagedResult.Exception(
+                    Sail.Messages.GetEngineMessage("taskmanager.transfer.notTodo.warn"));
 
             var am = Sail.ManagerFactory.Activities;
             var activityInstance = am.GetById(kit, task.ActivityInstanceId);
             if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
                 && activityInstance.ActivityState != (short)ActivityStateEnum.Running)
             {
-                return WfDataManagedResult.Exception("Transfer activity is not ready/running.");
+                return WfDataManagedResult.Exception(
+                    Sail.Messages.GetEngineMessage("taskmanager.transfer.activityNotRunning.warn"));
             }
 
-            // 关闭原人待办：Closed（勿用 Completed，避免被会签计为已办）
-            ApplyTaskEnd(task, TaskStateEnum.Closed, runner, TaskEndTypes.TransferredOut);
-            Update(kit, task);
-            Sail.CapabilityDispatcher.FireTaskLifecycle(
-                kit, task, activityInstance, runner, TaskNotifyKind.Entrusted);
-
+            // 校验须在关原待办之前，避免拒绝时留下 Closed 脏状态
             var existing = GetTaskListByActivity(
                 kit,
                 activityInstance.ProcessInstanceId,
                 activityInstance.ActivityInstanceId);
-
+            var accepted = new PerformerList();
             foreach (var target in targets)
             {
                 if (string.IsNullOrWhiteSpace(target?.UserId))
                     continue;
                 if (string.Equals(target.UserId, runner.UserId, StringComparison.OrdinalIgnoreCase))
-                    return WfDataManagedResult.Exception("Cannot transfer to self.");
+                    return WfDataManagedResult.Exception(
+                        Sail.Messages.GetEngineMessage("taskmanager.transfer.toSelf.warn"));
 
                 var hasOpen = existing.Any(t =>
                     string.Equals(t.SignId, target.UserId, StringComparison.OrdinalIgnoreCase)
@@ -912,8 +913,23 @@ namespace sailflow.engine.Manager
                         || t.TaskState == (short)TaskStateEnum.Reading));
                 if (hasOpen)
                     return WfDataManagedResult.Exception(
-                        $"Transfer target already has an open task: {target.UserId}");
+                        Sail.Messages.GetEngineMessage(
+                            "taskmanager.transfer.targetHasOpen.warn", target.UserId));
 
+                accepted.Add(target);
+            }
+            if (accepted.Count == 0)
+                return WfDataManagedResult.Exception(
+                    Sail.Messages.GetEngineMessage("taskmanager.transfer.noneTargets.warn"));
+
+            // 关闭原人待办：Closed（勿用 Completed，避免被会签计为已办）
+            ApplyTaskEnd(task, TaskStateEnum.Closed, runner, TaskEndTypes.TransferredOut);
+            Update(kit, task);
+            Sail.CapabilityDispatcher.FireTaskLifecycle(
+                kit, task, activityInstance, runner, TaskNotifyKind.Entrusted);
+
+            foreach (var target in accepted)
+            {
                 Insert(kit, activityInstance, target.UserId, target.UserName,
                     runner.UserId, runner.UserName, taskId, runner);
             }
