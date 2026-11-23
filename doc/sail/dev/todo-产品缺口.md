@@ -11,7 +11,7 @@
 
 | 序 | 项 | 优先级 | 说明 |
 |----|----|--------|------|
-| 1 | 联调 A–J / Extra 场景 | P0 | 代码债已清；运行时场景见清单（环境就绪后勾） |
+| 1 | 联调 A–J / Extra 场景 | P0 | **API 主链已脚本化**（core+matrix fails=0）；余：A2–A12 策略全矩阵 / E4–E5 / 浏览器细点 |
 | 2 | ~~R10 收口~~ | ✅ | `LegacySkipDrain` 默认 false；仅 `LegacyDrain=true` 回滚 |
 | 3 | ~~`BackSrcUserId`~~ | ✅ | Workbench 取 BackSrc.`EndedUser*` |
 | 4 | 空人整单 Reject 选项 | P2 | 与默认 `=2` 分离；未拍板开做 |
@@ -33,10 +33,16 @@
 - [x] **J** SendBack 无目标 → `SendBackTargetMissing`
 - [x] **H** Leave Create→Approve→Status=2（FormBiz 首跳默认办理人 + OnFinish 同事务 Kit）
 - [x] **Extra E1** 撤回闸 `WithdrawNotAllowed`（AllowWithdrawTask 默认 false）
+- [x] **Extra E2 / E3 / E6** 发起人 Close；Title+BizCode 规则；打印模板闸（matrix 2026-11-23）
+- [x] **P3** ProbeInstalledFeatures（matrix）
 - [x] **R2** UAT-C `signEnable=true`（办理弹窗强制签名产品点验可补）
 - [x] **CA1 / R1 / U1 / R3** 改派、减签、催办、常用语（API）
+- [ ] **Extra E4 / E5** 去重二次发起闸未单独立项；HTTP 出站需探针端点
+- [ ] **A2–A12** 空人=3/4、同人自动过、超时 Job 全矩阵（可选 `sail-uat-matrix.ps1 -IncludeTimeout` 仅 A7）
 
-脚本：`sleveen-admin/doc/scripts/sail-uat-core.ps1`（2026-11-16 晚 fails=0）。
+脚本：
+- `sleveen-admin/doc/scripts/sail-uat-core.ps1`（2026-11-16 / **2026-11-23 fails=0**）
+- `sleveen-admin/doc/scripts/sail-uat-matrix.ps1`（**2026-11-23 fails=0**；余债 API）
 
 szkfpt 体验包：常用语 / 时间线意见·签名 / 附件面板 / 分类排序 API / 委托·常用语菜单已落地；分类列表本环境不足 2 条时 sort 烟跳过。
 
