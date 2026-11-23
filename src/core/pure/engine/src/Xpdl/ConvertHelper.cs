@@ -119,8 +119,12 @@ namespace sailflow.engine.Xpdl
             {
                 var multipleDetailNode = node.SelectSingleNode(XPDLDefinition.Sf_StrXmlPath_MultiSignDetail, 
                     XPDLHelper.GetSailflowXmlNamespaceManager(node.OwnerDocument));
-                if (multipleDetailNode != null) activityType = ActivityTypeEnum.MultiSignNode;
-                else activityType = ActivityTypeEnum.TaskNode;
+                // 仅有效会签类型才升格 MultiSignNode；complexType=0/空/Optiondefault 等按普通任务
+                if (multipleDetailNode != null && IsValidMultiSignComplexType(
+                    XMLHelper.GetXmlAttribute(multipleDetailNode, "complexType")))
+                    activityType = ActivityTypeEnum.MultiSignNode;
+                else
+                    activityType = ActivityTypeEnum.TaskNode;
             }
             else if(node.Name == XPDLDefinition.BPMN_ElementName_ServiceTask
                 || node.Name == XPDLDefinition.BPMN_ElementName_BusinessRuleTask)
@@ -151,6 +155,20 @@ namespace sailflow.engine.Xpdl
                 throw new ApplicationException(string.Format("ConvertHelper:Not supported node name:{0}", node.Name));
             }
             return activityType;
+        }
+
+        /// <summary>
+        /// 有效会签/加签 complexType：1/SignTogether 或 2/SignForward（忽略大小写）。
+        /// </summary>
+        static bool IsValidMultiSignComplexType(string complexType)
+        {
+            if (string.IsNullOrWhiteSpace(complexType))
+                return false;
+            var ct = complexType.Trim();
+            return ct == "1"
+                || ct == "2"
+                || string.Equals(ct, "SignTogether", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(ct, "SignForward", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
