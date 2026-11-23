@@ -156,6 +156,7 @@ namespace sailflow.biz.query
         /// <summary>
         /// 判断当前任务是否是最后一个任务（会签/加签/单节点）。
         /// 加签：容器末席且外层仍 Waiting → false；仅外层亦将 Passed 时 true。
+        /// 外层非 Race 时计入父节点扁平旁人打开审批待办（Collaborate+加签抬席场景）。
         /// </summary>
         public bool IsLastTask(string taskId)
         {
@@ -339,8 +340,53 @@ namespace sailflow.biz.query
                     || c.ActivityState == (short)ActivityStateEnum.Suspended)
                 .Where(c => !string.Equals(c.ActivityInstanceId, container.ActivityInstanceId, StringComparison.OrdinalIgnoreCase))
                 .ToList();
-            // 保守：外层非 Race 且存在其他活动席/兄弟 → 非 Last（扁平旁人打开待办由工作台另判）
-            return siblingChildren.Count == 0;
+            // 外层非 Race：兄弟子 AI 或父节点上扁平旁人打开审批待办 → 非 Last（对齐 LeaveSeatProjector 直属 Task∪子 AI）
+            if (siblingChildren.Count > 0)
+                return false;
+            if (HasOpenPeerApproverTasksOnParent(parent, container))
+                return false;
+            return true;
+        }
+
+        /// <summary>
+        /// 父节点 AI 上是否仍有旁人（非本加签容器发起人）的打开审批待办。
+        /// 扁平 Collaborate 多人时旁人仍挂在节点 AI，抬席后不会变成兄弟子 AI。
+        /// </summary>
+        private bool HasOpenPeerApproverTasksOnParent(
+            ActivityInstanceEntity parent,
+            ActivityInstanceEntity container)
+        {
+            if (parent == null
+                || string.IsNullOrEmpty(parent.ActivityInstanceId)
+                || string.IsNullOrEmpty(parent.ProcessInstanceId))
+                return false;
+
+            var clip = Sail.UseRunSQL().useClip();
+            clip.from<TaskEntity>(out var t)
+                .where(() => t.ProcessInstanceId, parent.ProcessInstanceId)
+                .where(() => t.ActivityInstanceId, parent.ActivityInstanceId)
+                .whereIn(() => t.TaskState, new short?[]
+                {
+                    (short)TaskStateEnum.Waiting,
+                    (short)TaskStateEnum.Reading
+                });
+            var open = clip.select(t).queryList();
+            if (open == null || open.Count() == 0)
+                return false;
+
+            var initiatorId = container?.SignIds;
+            foreach (var task in open)
+            {
+                if (task == null)
+                    continue;
+                if (AssigneeRoleHelper.IsParticipant(task.AssigneeRole))
+                    continue;
+                if (!string.IsNullOrEmpty(initiatorId)
+                    && string.Equals(task.SignId, initiatorId, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                return true;
+            }
+            return false;
         }
 
         /// <summary>并加签同级：容器上发起人（SignIds）仍有 Waiting/Reading 审批待办。</summary>
