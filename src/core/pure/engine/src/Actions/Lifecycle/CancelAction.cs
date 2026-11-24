@@ -26,8 +26,8 @@ namespace sailflow.engine.Actions.Lifecycle
         protected override bool TryLoadContext(out LifecycleActionContext ctx, WfExecutedResult result)
         {
             ctx = null!;
-            if (string.IsNullOrWhiteSpace(Runner?.BizPK)
-                || string.IsNullOrWhiteSpace(Runner?.ProcessId))
+            if (string.IsNullOrWhiteSpace(Context?.BizPK)
+                || string.IsNullOrWhiteSpace(Context?.ProcessId))
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Cancel_ErrorArguments;
@@ -36,7 +36,7 @@ namespace sailflow.engine.Actions.Lifecycle
             }
 
             var pim = SailFactoryAccess.Managers(Sail).ProcessInstances;
-            var processInstance = pim.GetProcessInstanceLatest(Kit, Runner.BizPK, Runner.ProcessId, Runner.Version);
+            var processInstance = pim.GetProcessInstanceLatest(Kit, Context.BizPK, Context.ProcessId, Context.Version);
             if (processInstance == null || string.IsNullOrWhiteSpace(processInstance.ProcessInstanceId))
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -49,7 +49,7 @@ namespace sailflow.engine.Actions.Lifecycle
             {
                 ProcessInstanceId = processInstance.ProcessInstanceId,
                 ProcessInstance = processInstance,
-                TaskId = Runner?.TaskId,
+                TaskId = Context?.TaskId,
                 ActivityInstance = null
             };
             return true;
@@ -57,7 +57,7 @@ namespace sailflow.engine.Actions.Lifecycle
 
         protected override void ExecuteCore(LifecycleActionContext ctx, WfExecutedResult result)
         {
-            SailFactoryAccess.Managers(Sail).ProcessInstances.Cancel(Kit, Runner);
+            SailFactoryAccess.Managers(Sail).ProcessInstances.Cancel(Kit, Context);
             result.Status = WfExecutedStatus.Success;
             result.Message = "Cancel succeeded.";
             result.ProcessInstanceIdStarted = ctx.ProcessInstanceId;

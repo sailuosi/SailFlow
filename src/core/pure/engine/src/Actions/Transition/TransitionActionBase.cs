@@ -133,7 +133,7 @@ namespace sailflow.engine.Actions.Transition
             result.Message = FormatFailedMessage(e);
             ApplyFailedExceptionType(result, e);
             SailFailLog.Exception(Sail, SailLogCategories.Transition, GetType().Name, e, result.Message);
-            LogManager.RecordLog(Sail, ErrorLogName, LogEventType.Error, LogPriority.High, Runner, e);
+            LogManager.RecordLog(Sail, ErrorLogName, LogEventType.Error, LogPriority.High, Context, e);
             return result;
         }
 

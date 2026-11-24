@@ -31,7 +31,7 @@ namespace sailflow.engine.Actions.Assignee
         protected override bool TryLoadContext(out AssigneeActionContext ctx, WfExecutedResult result)
         {
             ctx = null!;
-            if (Runner == null || string.IsNullOrWhiteSpace(Runner.TaskId))
+            if (Context == null || string.IsNullOrWhiteSpace(Context.TaskId))
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Consult_ErrorArguments;
@@ -39,7 +39,7 @@ namespace sailflow.engine.Actions.Assignee
                 return false;
             }
 
-            _targets = TransferAction.FlattenTransferTargets(Runner);
+            _targets = TransferAction.FlattenTransferTargets(Context);
             if (_targets.Count == 0)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -49,7 +49,7 @@ namespace sailflow.engine.Actions.Assignee
             }
 
             var tm = Sail.ManagerFactory.Tasks;
-            var taskView = tm.GetTaskView(Kit, Runner.TaskId);
+            var taskView = tm.GetTaskView(Kit, Context.TaskId);
             if (taskView?.ActivityInstanceId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -64,14 +64,14 @@ namespace sailflow.engine.Actions.Assignee
                 TaskView = taskView,
                 ActivityInstance = activityInstance,
                 ProcessInstanceId = activityInstance.ProcessInstanceId,
-                TaskId = Runner.TaskId
+                TaskId = Context.TaskId
             };
             return true;
         }
 
         protected override void ExecuteCore(AssigneeActionContext ctx, WfExecutedResult result)
         {
-            var managed = Sail.ManagerFactory.Tasks.Consult(Kit, ctx.TaskId, Runner, _targets);
+            var managed = Sail.ManagerFactory.Tasks.Consult(Kit, ctx.TaskId, Context, _targets);
             if (managed.Status != WfDataManagedStatusEnum.Success)
             {
                 result.Status = WfExecutedStatus.Exception;

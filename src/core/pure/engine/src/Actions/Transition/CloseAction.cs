@@ -26,8 +26,8 @@ namespace sailflow.engine.Actions.Transition
         protected override bool TryLoadContext(out TransitionActionContext ctx, ref WfExecutedResult result)
         {
             ctx = null!;
-            Runner.NextActivityPerformers = TransitionNextPerformers.Fill(Sail, Runner, JumpOptionEnum.End);
-            var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceClose(Runner, ref result);
+            Context.NextActivityPerformers = TransitionNextPerformers.Fill(Sail, Context, JumpOptionEnum.End);
+            var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceClose(Context, ref result);
             if (result.Status == WfExecutedStatus.Exception || runtime == null)
                 return false;
 

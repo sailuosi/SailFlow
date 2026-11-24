@@ -36,7 +36,7 @@ namespace sailflow.engine.Actions.Transition
         public new WfExecutedResult Execute()
         {
             EnsureControlSheet();
-            var mode = RejectTargetResolver.ReadMode(Runner);
+            var mode = RejectTargetResolver.ReadMode(Context);
             if (string.IsNullOrEmpty(mode))
             {
                 var bad = WfExecutedResult.Default();
@@ -55,7 +55,7 @@ namespace sailflow.engine.Actions.Transition
         WfExecutedResult ExecuteTerminateAsReject()
         {
             // 计划定稿：Terminate 模式发 Terminate 成功事件；Message/Reason 标明来自驳回配置
-            var term = new TerminateAction(Sail, Kit, Runner);
+            var term = new TerminateAction(Sail, Kit, Context);
             var result = term.Execute();
             if (result.Status == WfExecutedStatus.Success)
             {
@@ -73,7 +73,7 @@ namespace sailflow.engine.Actions.Transition
             ctx = null!;
             EnsureControlSheet();
 
-            var resolved = RejectTargetResolver.ResolveBackwardTarget(Sail, Runner);
+            var resolved = RejectTargetResolver.ResolveBackwardTarget(Sail, Context);
             if (!resolved.Ok)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -83,12 +83,12 @@ namespace sailflow.engine.Actions.Transition
             }
 
             // 覆盖客户端传入，保证极简、防篡改
-            Runner.NextActivityPerformers = new System.Collections.Generic.Dictionary<string, PerformerList>
+            Context.NextActivityPerformers = new System.Collections.Generic.Dictionary<string, PerformerList>
             {
                 [resolved.ActivityId!] = resolved.Performers!
             };
 
-            var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceReject(Runner, ref result);
+            var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceReject(Context, ref result);
             if (result.Status == WfExecutedStatus.Exception || runtime == null)
                 return false;
 
@@ -107,9 +107,9 @@ namespace sailflow.engine.Actions.Transition
 
         void EnsureControlSheet()
         {
-            if (Runner == null)
+            if (Context == null)
                 return;
-            Runner.ControlParameterSheet ??= new ControlParameterSheet();
+            Context.ControlParameterSheet ??= new ControlParameterSheet();
         }
     }
 }

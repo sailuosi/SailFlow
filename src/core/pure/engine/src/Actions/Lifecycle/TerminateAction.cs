@@ -29,10 +29,10 @@ namespace sailflow.engine.Actions.Lifecycle
             ctx = null!;
             var pim = SailFactoryAccess.Managers(Sail).ProcessInstances;
             ProcessInstanceEntity processInstance;
-            if (!string.IsNullOrWhiteSpace(Runner?.ProcessInstanceId))
-                processInstance = pim.GetById(Kit, Runner.ProcessInstanceId);
-            else if (!string.IsNullOrWhiteSpace(Runner?.BizPK) && !string.IsNullOrWhiteSpace(Runner?.ProcessId))
-                processInstance = pim.GetProcessInstanceLatest(Kit, Runner.BizPK, Runner.ProcessId, Runner.Version);
+            if (!string.IsNullOrWhiteSpace(Context?.ProcessInstanceId))
+                processInstance = pim.GetById(Kit, Context.ProcessInstanceId);
+            else if (!string.IsNullOrWhiteSpace(Context?.BizPK) && !string.IsNullOrWhiteSpace(Context?.ProcessId))
+                processInstance = pim.GetProcessInstanceLatest(Kit, Context.BizPK, Context.ProcessId, Context.Version);
             else
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -53,7 +53,7 @@ namespace sailflow.engine.Actions.Lifecycle
             {
                 ProcessInstanceId = processInstance.ProcessInstanceId,
                 ProcessInstance = processInstance,
-                TaskId = Runner?.TaskId,
+                TaskId = Context?.TaskId,
                 ActivityInstance = null
             };
             return true;
@@ -62,7 +62,7 @@ namespace sailflow.engine.Actions.Lifecycle
         protected override void ExecuteCore(LifecycleActionContext ctx, WfExecutedResult result)
         {
             // PIM 内级联 Cancelled Notifier；命令级 OnProcessTerminated 仍由族基类 Hook
-            SailFactoryAccess.Managers(Sail).ProcessInstances.Terminate(Kit, ctx.ProcessInstance, Runner);
+            SailFactoryAccess.Managers(Sail).ProcessInstances.Terminate(Kit, ctx.ProcessInstance, Context);
             result.Status = WfExecutedStatus.Success;
             result.Message = "Terminate succeeded.";
             result.ProcessInstanceIdStarted = ctx.ProcessInstanceId;

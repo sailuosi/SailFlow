@@ -27,7 +27,7 @@ namespace sailflow.engine.Actions.Assignee
         protected override bool TryLoadContext(out AssigneeActionContext ctx, WfExecutedResult result)
         {
             ctx = null!;
-            if (Runner == null || string.IsNullOrWhiteSpace(Runner.TaskId))
+            if (Context == null || string.IsNullOrWhiteSpace(Context.TaskId))
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RecallConsult_ErrorArguments;
@@ -36,7 +36,7 @@ namespace sailflow.engine.Actions.Assignee
             }
 
             var tm = Sail.ManagerFactory.Tasks;
-            var taskView = tm.GetTaskView(Kit, Runner.TaskId);
+            var taskView = tm.GetTaskView(Kit, Context.TaskId);
             if (taskView?.ActivityInstanceId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -51,14 +51,14 @@ namespace sailflow.engine.Actions.Assignee
                 TaskView = taskView,
                 ActivityInstance = activityInstance,
                 ProcessInstanceId = activityInstance.ProcessInstanceId,
-                TaskId = Runner.TaskId
+                TaskId = Context.TaskId
             };
             return true;
         }
 
         protected override void ExecuteCore(AssigneeActionContext ctx, WfExecutedResult result)
         {
-            var managed = Sail.ManagerFactory.Tasks.RecallConsult(Kit, ctx.TaskId, Runner);
+            var managed = Sail.ManagerFactory.Tasks.RecallConsult(Kit, ctx.TaskId, Context);
             if (managed.Status != WfDataManagedStatusEnum.Success)
             {
                 result.Status = WfExecutedStatus.Exception;

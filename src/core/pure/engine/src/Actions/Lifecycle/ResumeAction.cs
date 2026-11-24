@@ -52,7 +52,7 @@ namespace sailflow.engine.Actions.Lifecycle
             {
                 ProcessInstanceId = _processInstanceId,
                 ProcessInstance = processInstance,
-                TaskId = Runner?.TaskId,
+                TaskId = Context?.TaskId,
                 ActivityInstance = null
             };
             return true;
@@ -60,7 +60,7 @@ namespace sailflow.engine.Actions.Lifecycle
 
         protected override void ExecuteCore(LifecycleActionContext ctx, WfExecutedResult result)
         {
-            SailFactoryAccess.Managers(Sail).ProcessInstances.Resume(Kit, ctx.ProcessInstanceId, Runner);
+            SailFactoryAccess.Managers(Sail).ProcessInstances.Resume(Kit, ctx.ProcessInstanceId, Context);
             result.Status = WfExecutedStatus.Success;
             result.Message = "Resume succeeded.";
             result.ProcessInstanceIdStarted = ctx.ProcessInstanceId;

@@ -23,7 +23,7 @@ namespace sailflow.engine.Actions.Transition
         protected override bool TryLoadContext(out TransitionActionContext ctx, ref WfExecutedResult result)
         {
             ctx = null!;
-            var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceSignForward(Runner, ref result);
+            var runtime = Sail.RuntimeFactory.CreateRuntimeInstanceSignForward(Context, ref result);
             if (result.Status == WfExecutedStatus.Exception || runtime == null)
                 return false;
             ctx = ToContext(runtime);

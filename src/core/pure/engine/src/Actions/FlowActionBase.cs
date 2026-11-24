@@ -14,16 +14,16 @@ namespace sailflow.engine.Actions
     /// </summary>
     public abstract class FlowActionBase
     {
-        protected FlowActionBase(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
+        protected FlowActionBase(SailClient sail, SQLBuilder kit, FlowCommandContext context)
         {
             Sail = sail ?? throw new System.ArgumentNullException(nameof(sail));
             Kit = kit ?? throw new System.ArgumentNullException(nameof(kit));
-            Runner = runner;
+            Context = context;
         }
 
         protected SailClient Sail { get; }
         protected SQLBuilder Kit { get; }
-        protected FlowCommandContext Runner { get; }
+        protected FlowCommandContext Context { get; }
 
         /// <summary>Gate / Hook / 审计身份。</summary>
         public abstract FlowOperation Operation { get; }
@@ -33,7 +33,7 @@ namespace sailflow.engine.Actions
             ActivityInstanceEntity activityInstance,
             string taskId) =>
             FlowCapabilityPipeline.BuildGateContext(
-                Sail, Kit, Runner, processInstanceId, activityInstance, taskId, Operation);
+                Sail, Kit, Context, processInstanceId, activityInstance, taskId, Operation);
 
         protected FlowHookContext BuildHookContext(
             string processInstanceId,
@@ -41,7 +41,7 @@ namespace sailflow.engine.Actions
             string taskId,
             EventFireTypeEnum eventType) =>
             FlowCapabilityPipeline.BuildHookContext(
-                Sail, Kit, Runner, processInstanceId, activityInstance, taskId, eventType, Operation);
+                Sail, Kit, Context, processInstanceId, activityInstance, taskId, eventType, Operation);
 
         /// <summary>适配现有 TryGate；Reject 时写入 <paramref name="result"/>。</summary>
         protected bool TryGate(FlowHookContext gateCtx, WfExecutedResult result) =>

@@ -30,7 +30,7 @@ namespace sailflow.engine.Actions.Assignee
         protected override bool TryLoadContext(out AssigneeActionContext ctx, WfExecutedResult result)
         {
             ctx = null!;
-            if (Runner == null || Runner.TaskId == null)
+            if (Context == null || Context.TaskId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Transfer_ErrorArguments;
@@ -38,7 +38,7 @@ namespace sailflow.engine.Actions.Assignee
                 return false;
             }
 
-            var targets = FlattenTransferTargets(Runner);
+            var targets = FlattenTransferTargets(Context);
             if (targets.Count == 0)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -48,7 +48,7 @@ namespace sailflow.engine.Actions.Assignee
             }
 
             var tm = Sail.ManagerFactory.Tasks;
-            var taskView = tm.GetTaskView(Kit, Runner.TaskId);
+            var taskView = tm.GetTaskView(Kit, Context.TaskId);
             if (taskView?.ActivityInstanceId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -63,7 +63,7 @@ namespace sailflow.engine.Actions.Assignee
                 TaskView = taskView,
                 ActivityInstance = activityInstance,
                 ProcessInstanceId = activityInstance.ProcessInstanceId,
-                TaskId = Runner.TaskId
+                TaskId = Context.TaskId
             };
             // stash targets for Core via runner already; keep local via field
             _targets = targets;
@@ -74,7 +74,7 @@ namespace sailflow.engine.Actions.Assignee
 
         protected override void ExecuteCore(AssigneeActionContext ctx, WfExecutedResult result)
         {
-            var managed = Sail.ManagerFactory.Tasks.Transfer(Kit, ctx.TaskId, Runner, _targets);
+            var managed = Sail.ManagerFactory.Tasks.Transfer(Kit, ctx.TaskId, Context, _targets);
             if (managed.Status != WfDataManagedStatusEnum.Success)
             {
                 result.Status = WfExecutedStatus.Exception;

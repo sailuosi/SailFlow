@@ -62,7 +62,7 @@ namespace sailflow.engine.Actions.Lifecycle
                 result.Message = FormatFailedMessage(e);
                 ApplyFailedExceptionType(result, e);
                 SailFailLog.Exception(Sail, SailLogCategories.Lifecycle, action, e, result.Message);
-                LogManager.RecordLog(Sail, ErrorLogName, LogEventType.Error, LogPriority.High, Runner, e);
+                LogManager.RecordLog(Sail, ErrorLogName, LogEventType.Error, LogPriority.High, Context, e);
             }
 
             return result;

@@ -80,7 +80,7 @@ namespace sailflow.engine.Actions.Assignee
                 result.Message = FormatFailedMessage(e);
                 ApplyFailedExceptionType(result, e);
                 SailFailLog.Exception(Sail, SailLogCategories.AssigneeAction, action, e, result.Message);
-                LogManager.RecordLog(Sail, ErrorLogName, LogEventType.Error, LogPriority.High, Runner, e);
+                LogManager.RecordLog(Sail, ErrorLogName, LogEventType.Error, LogPriority.High, Context, e);
             }
 
             return result;
