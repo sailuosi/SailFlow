@@ -1,6 +1,6 @@
 using sailflow.hosting;
 
-namespace sailflow.engine.Client;
+namespace sailflow.hosting;
 
 public partial class SailClient
 {

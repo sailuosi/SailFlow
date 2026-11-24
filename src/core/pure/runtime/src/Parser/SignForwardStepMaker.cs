@@ -9,7 +9,7 @@ using sailflow.xml;
 using System.Reflection;
 using sailflow.run;
 
-using sailflow.engine.Client;
+using sailflow.hosting;
 namespace sailflow.runtime.Parser
 {
     /// <summary>

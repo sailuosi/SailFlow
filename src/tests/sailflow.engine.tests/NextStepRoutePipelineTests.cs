@@ -1,4 +1,4 @@
-using sailflow.engine.Client;
+using sailflow.hosting;
 using sailflow.utils;
 using sailflow.nextStep;
 using sailflow.xml;
@@ -133,7 +133,7 @@ public sealed class NextStepRoutePipelineTests
             NextActivityMatchedType.Successed, root);
 
         // ApplyFilter needs Sail with pipeline — use direct collect + filter + guard path via runtime helper
-        var sail = new sailflow.engine.Client.SailClient();
+        var sail = new sailflow.hosting.SailClient();
         sail.useNextStepRoute(pipeline);
 
         var list = NextStepRouteRuntime.ApplyFilter(

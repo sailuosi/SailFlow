@@ -1,5 +1,5 @@
 using System;
-using sailflow.engine.Client;
+using sailflow.hosting;
 
 namespace sailflow.nextStep;
 /// <summary>条件求值前置：无管道 / 无 Evaluator 时快速失败，迫使业务侧显式配置。</summary>

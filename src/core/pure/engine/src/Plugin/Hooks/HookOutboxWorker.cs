@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using mooSQL.data;
 using sailflow.data;
-using sailflow.engine.Client;
+using sailflow.hosting;
 
 namespace sailflow.hooks
 {

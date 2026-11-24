@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 using sailflow.data.Lifecycle;
-using sailflow.engine.Client;
+using sailflow.hosting;
 using sailflow.data;
 using sailflow.engine.HotShard;
 

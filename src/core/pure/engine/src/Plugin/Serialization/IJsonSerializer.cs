@@ -1,4 +1,4 @@
-namespace sailflow.engine.Client;
+namespace sailflow.hosting;
 
 /// <summary>
 /// JSON 序列化插槽（engine 只依赖本契约；Newtonsoft / STJ 等由宿主挂载）。

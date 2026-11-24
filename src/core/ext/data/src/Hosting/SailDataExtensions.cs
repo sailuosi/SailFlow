@@ -1,6 +1,5 @@
 using System;
 using sailflow.data.HotShard;
-using sailflow.engine.Client;
 using sailflow.hosting;
 
 namespace sailflow.data.Hosting

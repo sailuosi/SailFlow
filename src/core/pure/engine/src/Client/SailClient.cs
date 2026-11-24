@@ -14,7 +14,7 @@ using sailflow.engine.Rules;
 using sailflow.hub.Essential;
 using sailflow.hub.Localize;
 
-namespace sailflow.engine.Client;
+namespace sailflow.hosting;
 
 /// <summary>
 /// A · 流程运行根实例（对齐 BeeFlow Client 模式；每实例一套富功能/工厂）。

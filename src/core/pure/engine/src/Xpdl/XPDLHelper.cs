@@ -8,7 +8,7 @@ using sailflow.utils;
 using sailflow.xml;
 using sailflow.data;
 
-using sailflow.engine.Client;
+using sailflow.hosting;
 namespace sailflow.xml
 {
     /// <summary>

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using mooSQL.data;
 using sailflow.data;
-using sailflow.engine.Client;
+using sailflow.hosting;
 
 namespace sailflow.engine.HotShard
 {

@@ -3,7 +3,7 @@ using sailflow.utils;
 using sailflow.factory;
 using sailflow.data;
 
-namespace sailflow.engine.Client;
+namespace sailflow.hosting;
 
 /// <summary>
 /// A · 四工厂槽 + RunBuilder 入口（D3 已落地）。

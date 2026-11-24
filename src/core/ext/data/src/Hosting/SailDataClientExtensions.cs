@@ -2,7 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using sailflow.data.Lifecycle;
 using sailflow.data.Logging;
-using sailflow.engine.Client;
+using sailflow.hosting;
 using sailflow.log;
 
 namespace sailflow.data.Hosting

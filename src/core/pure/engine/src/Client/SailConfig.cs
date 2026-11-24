@@ -1,7 +1,7 @@
 using System;
 using sailflow.engine.Config;
 
-namespace sailflow.engine.Client;
+namespace sailflow.hosting;
 
 /// <summary>
 /// 引擎运行参数形状（类比 mooSQL <c>DBPosition</c>）。

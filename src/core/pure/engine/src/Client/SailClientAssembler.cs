@@ -1,6 +1,6 @@
 using System;
 
-namespace sailflow.engine.Client;
+namespace sailflow.hosting;
 
 /// <summary>
 /// 组装 <see cref="SailClient"/> 骨架。具体 <see cref="SailDBFactory"/> 由调用方注入（应用宿主构建）。

@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 
-using sailflow.engine.Client;
+using sailflow.hosting;
 namespace sailflow.xml
 {
     /// <summary>

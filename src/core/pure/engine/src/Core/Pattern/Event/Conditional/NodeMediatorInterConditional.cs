@@ -11,7 +11,7 @@ using sailflow.xml;
 using sailflow.run;
 using Microsoft.VisualBasic;
 
-using sailflow.engine.Client;
+using sailflow.hosting;
 namespace sailflow.run{
     /// <summary>
     /// 中间事件节点(条件)处理类

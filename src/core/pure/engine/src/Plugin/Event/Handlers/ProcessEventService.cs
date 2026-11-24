@@ -8,7 +8,7 @@ using mooSQL.data;
 using sailflow.utils;
 using sailflow.events;
 
-using sailflow.engine.Client;
+using sailflow.hosting;
 namespace sailflow.events
 {
     /// <summary>

@@ -1,6 +1,5 @@
 using System;
 using Microsoft.Extensions.Configuration;
-using sailflow.engine.Client;
 using sailflow.hosting;
 using AppSettingsManager = System.Configuration.ConfigurationManager;
 

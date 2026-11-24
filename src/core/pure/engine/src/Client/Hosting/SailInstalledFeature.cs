@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using sailflow.engine.Client;
+using sailflow.hosting;
 
 namespace sailflow.hosting;
 /// <summary>Build 完成后挂在 <see cref="SailClient"/> 上的已装能力快照。</summary>

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
 using sailflow.data;
-using sailflow.engine.Client;
+using sailflow.hosting;
 using sailflow.hooks;
 
 namespace sailflow.biz.query

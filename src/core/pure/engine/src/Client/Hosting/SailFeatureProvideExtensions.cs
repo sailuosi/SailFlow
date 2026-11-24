@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using sailflow.engine.Client;
+using sailflow.hosting;
 
 namespace sailflow.hosting;
 /// <summary>声明「本集合已提供某能力名」的薄标记（无副作用，供 DependsOn / 探针使用）。</summary>

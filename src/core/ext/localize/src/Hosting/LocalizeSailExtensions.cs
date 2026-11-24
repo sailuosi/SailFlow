@@ -58,7 +58,7 @@ namespace sailflow.hub.Hosting
             return services;
         }
 
-        static void Apply(sailflow.engine.Client.SailClient client, ISailCollection coll, ILocalizeMessages messages)
+        static void Apply(sailflow.hosting.SailClient client, ISailCollection coll, ILocalizeMessages messages)
         {
             coll.Properties[SailBuilderKeys.LocalizeMessages] = messages;
             client.Messages = messages;

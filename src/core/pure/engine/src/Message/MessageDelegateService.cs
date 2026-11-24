@@ -8,7 +8,7 @@ using sailflow.data;
 using sailflow.xml;
 using sailflow.hub.Essential;
 
-using sailflow.engine.Client;
+using sailflow.hosting;
 namespace sailflow.engine.Message
 {
     /// <summary>

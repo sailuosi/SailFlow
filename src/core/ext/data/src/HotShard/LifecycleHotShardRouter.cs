@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using sailflow.engine.Client;
+using sailflow.hosting;
 using sailflow.engine.HotShard;
 
 namespace sailflow.data.HotShard

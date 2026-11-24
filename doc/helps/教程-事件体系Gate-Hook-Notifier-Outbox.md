@@ -59,7 +59,7 @@ Gate（推进落库前，可 Reject）
 ### 2.1 `Add*` 显式实例（可带构造参数）
 
 ```csharp
-using sailflow.engine.Client;
+using sailflow.hosting;
 using sailflow.events;
 using sailflow.hosting;
 using sailflow.hooks;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Xml;
 using sailflow.data;
 using sailflow.utils;
-using sailflow.engine.Client;
+using sailflow.hosting;
 
 namespace sailflow.xml
 {

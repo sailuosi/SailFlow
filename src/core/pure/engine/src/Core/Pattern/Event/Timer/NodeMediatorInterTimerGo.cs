@@ -10,7 +10,7 @@ using sailflow.hub.Localize;
 using sailflow.run;
 using sailflow.xml;
 
-using sailflow.engine.Client;
+using sailflow.hosting;
 namespace sailflow.run{
     /// <summary>
     /// 中间事件节点处理类

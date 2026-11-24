@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace sailflow.engine.Client;
+namespace sailflow.hosting;
 
 /// <summary>
 /// 冷热归档 / 冷库 / 引擎日志落点等与「性能分表」相关的运行参数。

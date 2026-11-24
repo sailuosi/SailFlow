@@ -12,7 +12,7 @@ using sailflow.engine.Result;
 using sailflow.events;
 using sailflow.engine.Message;
 
-using sailflow.engine.Client;
+using sailflow.hosting;
 using sailflow.hooks;
 using sailflow.factory;
 namespace sailflow.run{
