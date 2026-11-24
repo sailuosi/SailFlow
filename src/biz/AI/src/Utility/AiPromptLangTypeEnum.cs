@@ -1,4 +1,4 @@
-namespace sailflow.AI.Utility
+namespace sailflow.utils
 {
     /// <summary>
     /// AI 提示词/语种检测用语言类型（与 <c>sailflow.hub.Localize.LangTypeEnum</c> 无关）。

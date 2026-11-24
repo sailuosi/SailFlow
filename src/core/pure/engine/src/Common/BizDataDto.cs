@@ -1,4 +1,4 @@
-namespace sailflow.engine.Common
+namespace sailflow.utils
 {
     /// <summary>B · 启动/创建时注入的业务数据袋；不注入保持空。</summary>
     public sealed class BizDataDto

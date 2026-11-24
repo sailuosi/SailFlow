@@ -62,7 +62,7 @@ namespace sailflow.hub.External.Tests
                 Console.WriteLine("--- Running CustomerSaveService ---");
                 var saveService = new ContactSaveService();
                 saveService.Executable(eventService);
-                var customerId = eventService.GetVariable(sailflow.engine.Common.ProcessVariableScopeEnum.Process, "customer_id");
+                var customerId = eventService.GetVariable(sailflow.utils.ProcessVariableScopeEnum.Process, "customer_id");
                 Console.WriteLine("CustomerSaveService done. customer_id = {0}\n", customerId ?? "(none)");
 
                 // 5. Run MessageService: save user_message + ai_response → biz_conversation (with customer_id if set)

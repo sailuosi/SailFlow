@@ -20,14 +20,14 @@ namespace sailflow.data
         public string LogId { get; set; }
 
         /// <summary>
-        /// 事件类型 Id（列 <c>lg_evt_type_id</c>），见 <see cref="sailflow.engine.Common.LogEventType"/>。
+        /// 事件类型 Id（列 <c>lg_evt_type_id</c>），见 <see cref="sailflow.utils.LogEventType"/>。
         /// 0=Warnning；1=Exception；2=Error。
         /// </summary>
         [SooColumn(Name = "lg_evt_type_id")]
         public int? EventTypeId { get; set; }
 
         /// <summary>
-        /// 优先级（列 <c>lg_priority</c>），见 <see cref="sailflow.engine.Common.LogPriority"/>。
+        /// 优先级（列 <c>lg_priority</c>），见 <see cref="sailflow.utils.LogPriority"/>。
         /// 0=Emergency；1=High；2=Normal；3=Low。
         /// </summary>
         [SooColumn(Name = "lg_priority")]

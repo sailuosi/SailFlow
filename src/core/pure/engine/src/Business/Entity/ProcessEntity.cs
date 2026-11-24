@@ -92,7 +92,7 @@ namespace sailflow.data
         public int? AuthLevel { get; set; }
 
         /// <summary>
-        /// 流程包类型（列 <c>p_pkg_type</c>），见 <see cref="sailflow.engine.Common.PackageTypeEnum"/>。
+        /// 流程包类型（列 <c>p_pkg_type</c>），见 <see cref="sailflow.utils.PackageTypeEnum"/>。
         /// 1=Package 协作流程包；2=Pool 泳道流程。
         /// </summary>
         [SooColumn(Name = "p_pkg_type")]
@@ -139,7 +139,7 @@ namespace sailflow.data
         public string XmlContent { get; set; }
 
         /// <summary>
-        /// 流程启动类型（列 <c>p_start_type</c>），见 <see cref="sailflow.engine.Common.ProcessStartTypeEnum"/>。
+        /// 流程启动类型（列 <c>p_start_type</c>），见 <see cref="sailflow.utils.ProcessStartTypeEnum"/>。
         /// 0=None；1=Timer 定时启动；2=Message 消息启动。
         /// </summary>
         [SooColumn(Name = "p_start_type")]
@@ -153,7 +153,7 @@ namespace sailflow.data
         public string StartExpression { get; set; }
 
         /// <summary>
-        /// 流程结束类型（列 <c>p_end_type</c>），见 <see cref="sailflow.engine.Common.ProcessEndTypeEnum"/>。
+        /// 流程结束类型（列 <c>p_end_type</c>），见 <see cref="sailflow.utils.ProcessEndTypeEnum"/>。
         /// 0=None；1=Timer 定时结束；2=Message 消息结束。
         /// Timer 时创建实例会据 EndExpression 计算 <see cref="ProcessInstanceEntity.DueAt"/>。
         /// </summary>

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace sailflow.AI.Common
+namespace sailflow.utils
 {
     public enum AxConfigVariableDirectionEnum
     {

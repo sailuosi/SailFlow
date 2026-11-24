@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace sailflow.engine.Utility
+namespace sailflow.utils
 {
     /// <summary>
     /// 进程路径等与外部配置源无关的工具。

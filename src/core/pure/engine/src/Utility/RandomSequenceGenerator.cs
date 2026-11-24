@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace sailflow.engine.Utility
+namespace sailflow.utils
 {
     /// <summary>
     /// Random sequence generator

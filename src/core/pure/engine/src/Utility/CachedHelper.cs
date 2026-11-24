@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 
-namespace sailflow.engine.Utility
+namespace sailflow.utils
 {
     /// <summary>
     /// Process definition file cache

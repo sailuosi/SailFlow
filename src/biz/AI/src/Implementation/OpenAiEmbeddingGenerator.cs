@@ -1,4 +1,4 @@
-using sailflow.AI.Utility;
+using sailflow.utils;
 
 namespace sailflow.AI.Implementation
 {

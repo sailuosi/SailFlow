@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using sailflow.hub.Resource;
 
-namespace sailflow.engine.Common
+namespace sailflow.utils
 {
     /// <summary>
     /// View objects of workflow flow nodes

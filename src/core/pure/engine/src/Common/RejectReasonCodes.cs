@@ -1,5 +1,4 @@
-namespace sailflow.engine.Common;
-
+namespace sailflow.utils;
 /// <summary>驳回命令可识别 ReasonCode。</summary>
 public static class RejectReasonCodes
 {

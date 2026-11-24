@@ -10,7 +10,7 @@ namespace sailflow.biz.query
         public string? Version { get; set; }
         public string? Title { get; set; }
 
-        /// <summary><see cref="sailflow.engine.Common.ProcessStateEnum"/> 数值。</summary>
+        /// <summary><see cref="sailflow.utils.ProcessStateEnum"/> 数值。</summary>
         public short? ProcessState { get; set; }
 
         public string? CreatedUserId { get; set; }

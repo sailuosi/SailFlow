@@ -11,7 +11,7 @@ using iText.Layout.Properties;
 using LayoutDocument = iText.Layout.Document;
 using PageSize = iText.Kernel.Geom.PageSize;
 
-namespace sailflow.biz.Utility
+namespace sailflow.utils
 {
     /// <summary>
     /// PDF document generation utility for workflow process documents

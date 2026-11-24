@@ -1,7 +1,7 @@
 using sailflow.AI.Entity;
 using sailflow.AI.Configuration;
 using sailflow.AI.Implementation;
-using sailflow.AI.Utility;
+using sailflow.utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;

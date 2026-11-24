@@ -6,7 +6,7 @@ using sailflow.engine;
 using sailflow.hub.Resource;
 
 
-namespace sailflow.engine.Common
+namespace sailflow.utils
 {
     /// <summary>
     /// Resources related to activity

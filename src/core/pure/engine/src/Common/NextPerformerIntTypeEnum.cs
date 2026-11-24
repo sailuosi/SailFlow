@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace sailflow.engine.Common
+namespace sailflow.utils
 {
     /// <summary>
     /// The next step is to handle the user specified type

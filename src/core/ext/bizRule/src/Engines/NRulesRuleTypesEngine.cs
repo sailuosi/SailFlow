@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 using NRules;
 using NRules.Fluent;
 using sailflow.data;
-using sailflow.engine.Common;
+using sailflow.utils;
 using sailflow.engine.Rules;
 
 namespace sailflow.hub.BusinessRule

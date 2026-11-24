@@ -2,7 +2,7 @@ using sailflow.assignee.Builtin;
 using sailflow.assignee.Job;
 using sailflow.assignee.Store;
 using sailflow.engine.Client;
-using sailflow.engine.Common;
+using sailflow.utils;
 
 namespace sailflow.assignee.Hosting;
 

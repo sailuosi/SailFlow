@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 
-namespace sailflow.WebUtility
+namespace sailflow.utils
 {
     /// <summary>
     /// Mime format

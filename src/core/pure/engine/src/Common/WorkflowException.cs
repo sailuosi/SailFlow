@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace sailflow.engine.Common
+namespace sailflow.utils
 {
     /// <summary>
     /// Process business data access exception class

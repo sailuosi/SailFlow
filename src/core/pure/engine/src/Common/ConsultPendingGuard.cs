@@ -5,7 +5,7 @@ using sailflow.hooks;
 using sailflow.log;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Common
+namespace sailflow.utils
 {
     /// <summary>
     /// 沟通等待协议硬锁：源审批 Task 下仍有打开参与者时，禁止推进/改责任类动词。

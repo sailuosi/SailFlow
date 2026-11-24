@@ -68,21 +68,21 @@ namespace sailflow.data
         public string ActivityCode { get; set; }
 
         /// <summary>
-        /// 活动类型（列 <c>ai_activity_type</c>），见 <see cref="sailflow.engine.Common.ActivityTypeEnum"/>。
+        /// 活动类型（列 <c>ai_activity_type</c>），见 <see cref="sailflow.utils.ActivityTypeEnum"/>。
         /// 1=Start；2=End；3=Intermediate；4=Task；5=SubProcess；6=MultiSign；8=Gateway；16=Service；17=AIService；18=Script。
         /// </summary>
         [SooColumn(Name = "ai_activity_type")]
         public short? ActivityType { get; set; }
 
         /// <summary>
-        /// 活动运行状态（列 <c>ai_activity_state</c>），见 <see cref="sailflow.engine.Common.ActivityStateEnum"/>。
+        /// 活动运行状态（列 <c>ai_activity_state</c>），见 <see cref="sailflow.utils.ActivityStateEnum"/>。
         /// 1=Ready；2=Running；4=Completed；5=Suspended；6=Withdrawed；7=Sendbacked；8=Cancelled；9=Terminated。
         /// </summary>
         [SooColumn(Name = "ai_activity_state")]
         public short? ActivityState { get; set; }
 
         /// <summary>
-        /// 是否工作项（列 <c>ai_work_item_type</c>），见 <see cref="sailflow.engine.Common.WorkItemTypeEnum"/>。
+        /// 是否工作项（列 <c>ai_work_item_type</c>），见 <see cref="sailflow.utils.WorkItemTypeEnum"/>。
         /// 0=NonWorkItem（开始/结束/网关/中间事件）；1=IsWorkItem（任务/多实例等可生成待办）。
         /// </summary>
         [SooColumn(Name = "ai_work_item_type")]
@@ -151,7 +151,7 @@ namespace sailflow.data
         public string ProxySignId { get; set; }
 
         /// <summary>
-        /// 网关方向类型（列 <c>ai_gw_dir_type_id</c>），见 <see cref="sailflow.engine.Common.GatewayDirectionEnum"/>。
+        /// 网关方向类型（列 <c>ai_gw_dir_type_id</c>），见 <see cref="sailflow.utils.GatewayDirectionEnum"/>。
         /// 分支：OrSplit/XOrSplit/AndSplit/AndSplitMI/ApprovalOrSplit；
         /// 合并：OrJoin/XOrJoin/EOrJoin/AndJoin/AndJoinMI。
         /// </summary>
@@ -166,7 +166,7 @@ namespace sailflow.data
         public byte? CanNotRenewInstance { get; set; }
 
         /// <summary>
-        /// 审批意见态（列 <c>ai_aprv_state</c>），见 <see cref="sailflow.engine.Common.ApprovalStatusEnum"/>。
+        /// 审批意见态（列 <c>ai_aprv_state</c>），见 <see cref="sailflow.utils.ApprovalStatusEnum"/>。
         /// -1=Refused；0=Null 默认；1=Agreed。
         /// </summary>
         [SooColumn(Name = "ai_aprv_state")]
@@ -187,13 +187,13 @@ namespace sailflow.data
         public int? TokensHad { get; set; }
 
         /// <summary>
-        /// 活动级作业定时器类型（列 <c>ai_job_time_type</c>），见 <see cref="sailflow.engine.Common.JobTimerTypeEnum"/>。
+        /// 活动级作业定时器类型（列 <c>ai_job_time_type</c>），见 <see cref="sailflow.utils.JobTimerTypeEnum"/>。
         /// </summary>
         [SooColumn(Name = "ai_job_time_type")]
         public short? JobTimerType { get; set; }
 
         /// <summary>
-        /// 活动级作业定时器状态（列 <c>ai_job_time_state</c>），见 <see cref="sailflow.engine.Common.JobTimerStatusEnum"/>。
+        /// 活动级作业定时器状态（列 <c>ai_job_time_state</c>），见 <see cref="sailflow.utils.JobTimerStatusEnum"/>。
         /// </summary>
         [SooColumn(Name = "ai_job_time_state")]
         public short? JobTimerStatus { get; set; }
@@ -273,7 +273,7 @@ namespace sailflow.data
         public string LeaveJudgeParams { get; set; }
 
         /// <summary>
-        /// 退回/撤销类后退类型（列 <c>ai_bwd_type</c>），见 <see cref="sailflow.engine.Common.BackwardTypeEnum"/>。
+        /// 退回/撤销类后退类型（列 <c>ai_bwd_type</c>），见 <see cref="sailflow.utils.BackwardTypeEnum"/>。
         /// 1=Withdrawed 撤销；2=Sendback 退回；3=Reversed 返签。
         /// </summary>
         [SooColumn(Name = "ai_bwd_type")]

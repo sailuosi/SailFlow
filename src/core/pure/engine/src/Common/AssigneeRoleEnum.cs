@@ -1,4 +1,4 @@
-namespace sailflow.engine.Common
+namespace sailflow.utils
 {
     /// <summary>
     /// 办理人角色（<c>sf_task.tk_assignee_role</c>）。

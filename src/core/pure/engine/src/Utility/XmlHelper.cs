@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace sailflow.engine.Utility
+namespace sailflow.utils
 {
     /// <summary>
     /// XMLHelper 

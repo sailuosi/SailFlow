@@ -1,6 +1,6 @@
 using System;
 
-namespace sailflow.engine.Common
+namespace sailflow.utils
 {
     /// <summary>
     /// 内置 mode 的枚举便利值（自定义引擎可只用字符串 mode，不必进本枚举）。

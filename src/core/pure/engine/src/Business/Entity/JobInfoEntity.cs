@@ -71,7 +71,7 @@ namespace sailflow.data
         public string TriggerType { get; set; }
 
         /// <summary>
-        /// 消息方向（列 <c>jb_msg_direction</c>），见 <see cref="sailflow.engine.Common.MessageDirectionEnum"/>。
+        /// 消息方向（列 <c>jb_msg_direction</c>），见 <see cref="sailflow.utils.MessageDirectionEnum"/>。
         /// Catch=捕获；Throw=抛出；None=默认。
         /// </summary>
         [SooColumn(Name = "jb_msg_direction", Length = 64)]

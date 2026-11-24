@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 using mooSQL.data;
-using sailflow.engine.Common;
+using sailflow.utils;
 using sailflow.data;
 
 namespace sailflow.hooks

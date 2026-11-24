@@ -1,4 +1,4 @@
-namespace sailflow.engine.Common
+namespace sailflow.utils
 {
     /// <summary>
     /// 任务结束类型码（string；写入 <c>TaskEntity.EndType</c>）。

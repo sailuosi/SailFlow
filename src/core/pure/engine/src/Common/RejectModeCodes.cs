@@ -1,7 +1,6 @@
 using System;
 
-namespace sailflow.engine.Common;
-
+namespace sailflow.utils;
 /// <summary>
 /// 驳回落点模式（string 码；由 Host 写入 <see cref="ControlParameterSheet.RejectMode"/>）。
 /// 办理 UX 不选目标/不选人；引擎按模式自动解析。

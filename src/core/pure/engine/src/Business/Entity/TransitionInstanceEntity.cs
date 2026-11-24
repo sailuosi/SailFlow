@@ -50,7 +50,7 @@ namespace sailflow.data
         public string ProcessId { get; set; }
 
         /// <summary>
-        /// 转移类型（列 <c>ti_tran_type</c>），见 <see cref="sailflow.engine.Common.TransitionTypeEnum"/>。
+        /// 转移类型（列 <c>ti_tran_type</c>），见 <see cref="sailflow.utils.TransitionTypeEnum"/>。
         /// 1=Forward 前行；2=Withdrawed 撤销；4=Sendback 退回；8=Reversed 返签；
         /// 14=Backward（后退合集）；16=Loop 自身循环。
         /// </summary>
@@ -58,7 +58,7 @@ namespace sailflow.data
         public byte? TransitionType { get; set; }
 
         /// <summary>
-        /// 跳转飞行类型（列 <c>ti_fly_type</c>），见 <see cref="sailflow.engine.Common.TransitionFlyingTypeEnum"/>。
+        /// 跳转飞行类型（列 <c>ti_fly_type</c>），见 <see cref="sailflow.utils.TransitionFlyingTypeEnum"/>。
         /// 0=NotFlying 普通连线；1=ForwardFlying 向前跳转；2=BackwardFlying 向后跳转。
         /// </summary>
         [SooColumn(Name = "ti_fly_type")]
@@ -77,7 +77,7 @@ namespace sailflow.data
         public string FromActId { get; set; }
 
         /// <summary>
-        /// 来源活动类型（列 <c>ti_frm_activity_type</c>），见 <see cref="sailflow.engine.Common.ActivityTypeEnum"/>。
+        /// 来源活动类型（列 <c>ti_frm_activity_type</c>），见 <see cref="sailflow.utils.ActivityTypeEnum"/>。
         /// </summary>
         [SooColumn(Name = "ti_from_act_type")]
         public short? FromActType { get; set; }
@@ -101,7 +101,7 @@ namespace sailflow.data
         public string ToActId { get; set; }
 
         /// <summary>
-        /// 去向活动类型（列 <c>ti_to_activity_type</c>），见 <see cref="sailflow.engine.Common.ActivityTypeEnum"/>。
+        /// 去向活动类型（列 <c>ti_to_activity_type</c>），见 <see cref="sailflow.utils.ActivityTypeEnum"/>。
         /// </summary>
         [SooColumn(Name = "ti_to_act_type")]
         public short? ToActType { get; set; }
@@ -113,7 +113,7 @@ namespace sailflow.data
         public string ToActName { get; set; }
 
         /// <summary>
-        /// 连线条件解析结果（列 <c>ti_cond_result</c>），见 <see cref="sailflow.engine.Common.ConditionParseResultEnum"/>。
+        /// 连线条件解析结果（列 <c>ti_cond_result</c>），见 <see cref="sailflow.utils.ConditionParseResultEnum"/>。
         /// 0=NotPassed 未通过；1=Passed 满足条件（本转移被选中执行）。
         /// </summary>
         [SooColumn(Name = "ti_cond_result")]

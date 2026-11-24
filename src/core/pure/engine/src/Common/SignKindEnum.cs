@@ -1,4 +1,4 @@
-namespace sailflow.engine.Common
+namespace sailflow.utils
 {
     /// <summary>
     /// 办理对象类型（<c>sf_task.tk_sign_kind</c>）。

@@ -82,14 +82,14 @@ namespace sailflow.data
         public string BizName { get; set; }
 
         /// <summary>
-        /// 流程实例运行状态（列 <c>pi_process_state</c>），见 <see cref="sailflow.engine.Common.ProcessStateEnum"/>。
+        /// 流程实例运行状态（列 <c>pi_process_state</c>），见 <see cref="sailflow.utils.ProcessStateEnum"/>。
         /// 0=NotStart；1=Ready；2=Running；4=Completed；5=Suspended；6=Canceled；7=Discarded；8=Terminated（如超期自然终止）。
         /// </summary>
         [SooColumn(Name = "pi_process_state")]
         public short? ProcessState { get; set; }
 
         /// <summary>
-        /// 子流程类型（列 <c>pi_sub_proc_type</c>），见 <see cref="sailflow.engine.Common.SubProcessTypeEnum"/>。
+        /// 子流程类型（列 <c>pi_sub_proc_type</c>），见 <see cref="sailflow.utils.SubProcessTypeEnum"/>。
         /// 0=None 主流程；1=Nested 嵌入式；2=Referenced 外部引用。
         /// </summary>
         [SooColumn(Name = "pi_sub_proc_type")]
@@ -122,14 +122,14 @@ namespace sailflow.data
         public string InvokedActivityId { get; set; }
 
         /// <summary>
-        /// 实例级作业定时器类型（列 <c>pi_job_time_type</c>），见 <see cref="sailflow.engine.Common.JobTimerTypeEnum"/>。
+        /// 实例级作业定时器类型（列 <c>pi_job_time_type</c>），见 <see cref="sailflow.utils.JobTimerTypeEnum"/>。
         /// 0=None；1=Timer；2=Conditional；3=EMail；4=Message。
         /// </summary>
         [SooColumn(Name = "pi_job_time_type")]
         public short? JobTimerType { get; set; }
 
         /// <summary>
-        /// 实例级作业定时器状态（列 <c>pi_job_time_state</c>），见 <see cref="sailflow.engine.Common.JobTimerStatusEnum"/>。
+        /// 实例级作业定时器状态（列 <c>pi_job_time_state</c>），见 <see cref="sailflow.utils.JobTimerStatusEnum"/>。
         /// 0=None；1=Ready；4=Completed（已关闭）。
         /// </summary>
         [SooColumn(Name = "pi_job_time_state")]
