@@ -1,6 +1,6 @@
 using System;
 
-namespace sailflow.engine.Logging
+namespace sailflow.log
 {
     /// <summary>无操作运行时日志（测试或显式关闭）。</summary>
     public sealed class NullSailLogger : ISailLogger

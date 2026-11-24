@@ -2,7 +2,7 @@ using System;
 using sailflow.data;
 using sailflow.hub.Logging;
 
-namespace sailflow.engine.Logging
+namespace sailflow.log
 {
     /// <summary>
     /// 引擎诊断日志契约。写表仅为默认实现；可替换为文件 / Host Logger 等。

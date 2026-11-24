@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using mooSQL.data;
 using sailflow.engine.Client;
 using sailflow.hooks;
-using sailflow.engine.Logging;
+using sailflow.log;
 using sailflow.engine.Result;
 
 namespace sailflow.engine.Common

@@ -4,7 +4,7 @@ using System.Threading;
 using sailflow.engine.Client;
 using sailflow.events;
 using sailflow.hooks;
-using sailflow.engine.Logging;
+using sailflow.log;
 using Xunit;
 
 namespace sailflow.engine.tests;

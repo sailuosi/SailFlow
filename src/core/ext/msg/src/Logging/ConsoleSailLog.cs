@@ -1,5 +1,5 @@
 using System;
-using sailflow.engine.Logging;
+using sailflow.log;
 
 namespace sailflow.msg.Logging
 {

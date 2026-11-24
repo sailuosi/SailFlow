@@ -1,7 +1,7 @@
 using System;
 using sailflow.engine.Client;
 using sailflow.engine.Hosting;
-using sailflow.engine.Logging;
+using sailflow.log;
 using sailflow.msg.Logging;
 
 namespace sailflow.msg.Hosting

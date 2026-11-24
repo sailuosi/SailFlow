@@ -1,4 +1,4 @@
-namespace sailflow.engine.Logging
+namespace sailflow.log
 {
     /// <summary>
     /// 运行时诊断日志级别（与 <see cref="IEngineLogSink"/> 落库实体分工，见钩子治理专题 D10）。

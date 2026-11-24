@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using sailflow.data.Lifecycle;
 using sailflow.data.Logging;
 using sailflow.engine.Client;
-using sailflow.engine.Logging;
+using sailflow.log;
 
 namespace sailflow.data.Hosting
 {

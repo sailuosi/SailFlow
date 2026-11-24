@@ -1,6 +1,6 @@
 using System;
 
-namespace sailflow.engine.Logging
+namespace sailflow.log
 {
     /// <summary>
     /// 引擎默认控制台日志：继承 <see cref="SailLoggerBase"/>，同步 <see cref="Console"/> 写出。

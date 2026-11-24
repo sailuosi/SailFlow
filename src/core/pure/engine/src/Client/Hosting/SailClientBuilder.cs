@@ -9,7 +9,7 @@ using sailflow.engine.Rules;
 using sailflow.hub.Essential;
 using sailflow.hub.Localize;
 using sailflow.engine.Client;
-using sailflow.engine.Logging;
+using sailflow.log;
 
 namespace sailflow.engine.Hosting;
 

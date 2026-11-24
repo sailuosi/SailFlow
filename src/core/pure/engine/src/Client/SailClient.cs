@@ -8,7 +8,7 @@ using sailflow.assignee;
 using sailflow.engine.Hosting;
 using sailflow.hooks;
 using sailflow.engine.Ids;
-using sailflow.engine.Logging;
+using sailflow.log;
 using sailflow.nextStep;
 using sailflow.engine.Rules;
 using sailflow.hub.Essential;
@@ -219,23 +219,23 @@ public partial class SailClient
     /// </summary>
     public SailDataLifecycleOptions DataLifecycleOptions { get; set; } = new();
 
-    private Logging.IEngineLogSink _logSink;
+    private IEngineLogSink _logSink;
 
     /// <summary>
     /// 引擎诊断日志 Sink。默认写表实现在 sailflow.data（<c>UseSailData</c> / <c>useDefaultTableLogSink</c>）。
     /// </summary>
-    public Logging.IEngineLogSink LogSink
+    public IEngineLogSink LogSink
     {
         get => _logSink;
         set => _logSink = value;
     }
 
     /// <summary>解析日志 Sink：显式注入优先；未挂载时为空操作（由 sailflow.data 注册 Table Sink）。</summary>
-    public Logging.IEngineLogSink GetLogSink() =>
-        _logSink ??= Logging.NullEngineLogSink.Instance;
+    public IEngineLogSink GetLogSink() =>
+        _logSink ??= NullEngineLogSink.Instance;
 
     /// <summary>替换日志 Sink（如 Host ILogger 适配器 / TableEngineLogSink）。</summary>
-    public SailClient useLogSink(Logging.IEngineLogSink sink)
+    public SailClient useLogSink(IEngineLogSink sink)
     {
         _logSink = sink ?? throw new ArgumentNullException(nameof(sink));
         return this;

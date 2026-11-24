@@ -7,7 +7,7 @@ using sailflow.hub.Localize;
 using sailflow.engine.Common;
 using sailflow.engine.Client;
 using sailflow.engine.HotShard;
-using sailflow.engine.Logging;
+using sailflow.log;
 using sailflow.run;
 
 namespace sailflow.data

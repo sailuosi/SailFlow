@@ -1,4 +1,4 @@
-namespace sailflow.engine.Logging
+namespace sailflow.log
 {
     /// <summary>运行时日志 category 约定（便于过滤）。</summary>
     public static class SailLogCategories

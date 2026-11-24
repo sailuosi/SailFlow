@@ -1,6 +1,6 @@
 using System;
 
-namespace sailflow.engine.Logging
+namespace sailflow.log
 {
     /// <summary>
     /// 运行时诊断日志契约（Gate / Hook / Notifier 等）。非 <see cref="IEngineLogSink"/> 落库通道。

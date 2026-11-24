@@ -2,7 +2,7 @@ using System;
 using sailflow.engine.Client;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Logging
+namespace sailflow.log
 {
     /// <summary>
     /// 引擎中断 / 失败 / 抛错的统一运行时日志入口（与 <see cref="IEngineLogSink"/> 落库并行）。

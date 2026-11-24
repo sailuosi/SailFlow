@@ -1,4 +1,4 @@
-namespace sailflow.engine.Logging
+namespace sailflow.log
 {
     /// <summary>SailClient 顶级运行时日志配置（与 CapabilityOptions 平级）。</summary>
     public sealed class SailLogOptions

@@ -3,7 +3,7 @@ using mooSQL.data;
 using sailflow.data.Lifecycle;
 using sailflow.data;
 using sailflow.engine.Client;
-using sailflow.engine.Logging;
+using sailflow.log;
 using sailflow.hub.Logging;
 
 namespace sailflow.data.Logging

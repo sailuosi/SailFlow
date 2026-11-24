@@ -10,7 +10,7 @@ using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.events;
 using sailflow.hooks;
-using sailflow.engine.Logging;
+using sailflow.log;
 using sailflow.engine.Xpdl;
 using sailflow.hub.Localize;
 using sailflow.hub.Resource;

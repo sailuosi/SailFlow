@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace sailflow.engine.Logging
+namespace sailflow.log
 {
     /// <summary>
     /// <see cref="ISailLogger"/> 抽象基类：级别过滤、category 白名单、占位符格式化、行模板。
