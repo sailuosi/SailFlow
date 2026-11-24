@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
+	  <TargetFrameworks>net6.0;net8.0;net10.0;net11.0</TargetFrameworks>
 	  <LangVersion>14.0</LangVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
@@ -40,8 +40,11 @@
     <EmbeddedResource Include="src\Web\zh.json" LogicalName="sailflow.hub.Localize.Web.zh.json" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'net11.0'">
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.8" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="11.0.0" />
   </ItemGroup>
 
   <ItemGroup>
