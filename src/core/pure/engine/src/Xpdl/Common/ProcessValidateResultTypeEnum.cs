@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Process Validate Result Type

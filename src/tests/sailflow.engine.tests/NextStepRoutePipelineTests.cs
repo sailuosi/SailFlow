@@ -1,7 +1,7 @@
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.nextStep;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 using Xunit;
 
 namespace sailflow.engine.tests;

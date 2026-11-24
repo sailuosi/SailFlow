@@ -1,9 +1,9 @@
 using System;
 using sailflow.data;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 using sailflow.WebUtility;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Maps <see cref="VariableEntity"/> (sf_variable) to runtime <see cref="VariableDetail"/>.

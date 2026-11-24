@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 using sailflow.events;
 using sailflow.run;
 
@@ -10,7 +10,7 @@ namespace sailflow.run{
     /// </summary>
     internal class ActionExecutor
     {
-        internal static void ExecuteActionList(IList<sailflow.engine.Xpdl.Action> actionList,
+        internal static void ExecuteActionList(IList<sailflow.xml.Action> actionList,
             IEventService eventService)
         {
             if (actionList != null && actionList.Count > 0)
@@ -26,7 +26,7 @@ namespace sailflow.run{
             }
         }
 
-        internal static void ExecuteActionListBefore(IList<sailflow.engine.Xpdl.Action> actionList,
+        internal static void ExecuteActionListBefore(IList<sailflow.xml.Action> actionList,
             IEventService eventService)
         {
             if (actionList != null && actionList.Count > 0)
@@ -39,7 +39,7 @@ namespace sailflow.run{
             }
         }
 
-        internal static void ExecuteActionListAfter(IList<sailflow.engine.Xpdl.Action> actionList,
+        internal static void ExecuteActionListAfter(IList<sailflow.xml.Action> actionList,
             IEventService eventService)
         {
             if (actionList != null && actionList.Count > 0)
@@ -52,7 +52,7 @@ namespace sailflow.run{
             }
         }
 
-        private static void Execute(sailflow.engine.Xpdl.Action action, IEventService eventService)
+        private static void Execute(sailflow.xml.Action action, IEventService eventService)
         {
             if (action.ActionType != ActionTypeEnum.Event)
                 return;

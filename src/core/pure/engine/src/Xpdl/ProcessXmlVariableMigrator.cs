@@ -6,7 +6,7 @@ using sailflow.data;
 using sailflow.engine.Utility;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// 将历史流程 XML（sf_process.xml_content）中节点上的 <c>sf:variables/sf:variable</c> 迁移到 <c>sf_variable</c> 表。

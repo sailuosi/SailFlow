@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Mutiple instance sign togerthe and sign forward

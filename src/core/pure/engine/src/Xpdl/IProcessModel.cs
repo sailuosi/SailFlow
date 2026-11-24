@@ -12,9 +12,9 @@ using sailflow.hub.Form;
 using sailflow.hub.Resource;
 using sailflow.engine.Utility;
 using sailflow.engine.Common;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Process Model Interface
@@ -23,14 +23,14 @@ namespace sailflow.engine.Xpdl
     {
         Process Process { get; }
         ProcessEntity ProcessEntity { get; set; }
-        sailflow.engine.Xpdl.Activity GetStartActivity();
-        sailflow.engine.Xpdl.Activity GetFirstActivity();
-        NextActivityMatchedResult GetFirstActivityList(sailflow.engine.Xpdl.Activity startActivity, IDictionary<string, string> conditionKeyValuePair, FlowCommandContext context = null);
-        sailflow.engine.Xpdl.Activity GetEndActivity();
-        sailflow.engine.Xpdl.Activity GetActivity(string activityId);
-        IList<sailflow.engine.Xpdl.Activity> GetActivityList();
-        IList<string> GetActivityOutputVarialbeNameList(sailflow.engine.Xpdl.Activity activity);
-        sailflow.engine.Xpdl.Activity GetNextActivity(string activityId);
+        sailflow.xml.Activity GetStartActivity();
+        sailflow.xml.Activity GetFirstActivity();
+        NextActivityMatchedResult GetFirstActivityList(sailflow.xml.Activity startActivity, IDictionary<string, string> conditionKeyValuePair, FlowCommandContext context = null);
+        sailflow.xml.Activity GetEndActivity();
+        sailflow.xml.Activity GetActivity(string activityId);
+        IList<sailflow.xml.Activity> GetActivityList();
+        IList<string> GetActivityOutputVarialbeNameList(sailflow.xml.Activity activity);
+        sailflow.xml.Activity GetNextActivity(string activityId);
         /// <summary>
         /// Structural routing API: get the next activity tree purely from the process model.
         /// Does not include runtime user resolution. For business/UI usage, prefer WorkflowService.GetNextStepInfo.
@@ -48,7 +48,7 @@ namespace sailflow.engine.Xpdl
         /// Structural routing API for the beginning of the process, starting from the start activity.
         /// 结构层路由接口：从开始活动起点计算“第一步”可达的活动树。
         /// </summary>
-        IList<NodeView> GetFirstActivityTreeView(sailflow.engine.Xpdl.Activity startActivity, IDictionary<string, string> conditions);
+        IList<NodeView> GetFirstActivityTreeView(sailflow.xml.Activity startActivity, IDictionary<string, string> conditions);
         NextActivityListViewResult GetNextActivityListView(string currentActivityId,
             string activityInstanceId,
             IDictionary<string, string> conditions,
@@ -63,16 +63,16 @@ namespace sailflow.engine.Xpdl
             string activityInstanceId,
             IDictionary<string, string> conditionKeyValuePair,
             ActivityResource activityResource,
-            Expression<Func<ActivityResource, sailflow.engine.Xpdl.Activity, bool>> expression,
+            Expression<Func<ActivityResource, sailflow.xml.Activity, bool>> expression,
             SQLBuilder kit);
-        IList<sailflow.engine.Xpdl.Activity> GetNextActivityListWithoutCondition(string activityId);
+        IList<sailflow.xml.Activity> GetNextActivityListWithoutCondition(string activityId);
 
         IList<NodeView> GetPreviousActivityTree(string currentActivityId);
-        IList<sailflow.engine.Xpdl.Activity> GetPreviousActivityList(string currentActivityId);
-        IList<sailflow.engine.Xpdl.Activity> GetPreviousActivityList(string currentActivityId, out bool hasGatewayPassed);
-        IList<sailflow.engine.Xpdl.Activity> GetFromActivityList(string toActivityId);
+        IList<sailflow.xml.Activity> GetPreviousActivityList(string currentActivityId);
+        IList<sailflow.xml.Activity> GetPreviousActivityList(string currentActivityId, out bool hasGatewayPassed);
+        IList<sailflow.xml.Activity> GetFromActivityList(string toActivityId);
 
-        sailflow.engine.Xpdl.Activity GetBackwardGatewayActivity(sailflow.engine.Xpdl.Activity gatewayActivity, 
+        sailflow.xml.Activity GetBackwardGatewayActivity(sailflow.xml.Activity gatewayActivity, 
             ref int joinCount, ref int splitCount);
         Int32 GetBackwardTransitionListCount(string activityId);
         Transition GetForwardTransition(string fromActivityId, string toActivityId);
@@ -80,20 +80,20 @@ namespace sailflow.engine.Xpdl
         IList<Transition> GetForwardTransitionList(string activityId, IDictionary<string, string> conditionKeyValuePair);
         IList<Transition> GetBackwardTransitionList(string toActivityId);
         Boolean IsValidTransition(Transition transition, IDictionary<string, string> conditionValuePair);
-        IList<sailflow.engine.Xpdl.Activity> GetTaskActivityList();
-        IList<sailflow.engine.Xpdl.Activity> GetAllTaskActivityList();
-        IList<sailflow.engine.Xpdl.Activity> GetAllTaskActivityList(sailflow.engine.Xpdl.Activity splitActivity, sailflow.engine.Xpdl.Activity joinActivity);
+        IList<sailflow.xml.Activity> GetTaskActivityList();
+        IList<sailflow.xml.Activity> GetAllTaskActivityList();
+        IList<sailflow.xml.Activity> GetAllTaskActivityList(sailflow.xml.Activity splitActivity, sailflow.xml.Activity joinActivity);
 
-        int GetForcedBranchesCountBeforeEOrJoin(sailflow.engine.Xpdl.Activity gatewayActivity, out IList<Transition> forcedTransitionList);
+        int GetForcedBranchesCountBeforeEOrJoin(sailflow.xml.Activity gatewayActivity, out IList<Transition> forcedTransitionList);
 
         //Activity type
-        Boolean IsMIParallel(sailflow.engine.Xpdl.Activity activity);
-        Boolean IsMISequence(sailflow.engine.Xpdl.Activity activity);
-        Boolean IsMINode(sailflow.engine.Xpdl.Activity activity);
+        Boolean IsMIParallel(sailflow.xml.Activity activity);
+        Boolean IsMISequence(sailflow.xml.Activity activity);
+        Boolean IsMINode(sailflow.xml.Activity activity);
         Boolean IsMINode(ActivityInstanceEntity activityInstance);
-        Boolean IsTaskNode(sailflow.engine.Xpdl.Activity activity);
+        Boolean IsTaskNode(sailflow.xml.Activity activity);
         Boolean IsTaskNode(ActivityInstanceEntity activityInstance);
-        Boolean IsAndSplitMI(sailflow.engine.Xpdl.Activity activity);
+        Boolean IsAndSplitMI(sailflow.xml.Activity activity);
 
         //Resource
         IList<Role> GetRoles();

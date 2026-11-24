@@ -1,7 +1,7 @@
 using sailflow.data;
 using sailflow.engine.Common;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Rule task config: <see cref="RuleSetCode"/> from BPMN; rule body and mode from <see cref="MergeFrom"/> / <c>sf_rule_set</c>.

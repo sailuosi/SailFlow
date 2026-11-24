@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Structured validate message (path next-hop / issue / summary).

@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 using sailflow.data;
 using sailflow.engine.Common;
 using sailflow.engine.Rules;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
 namespace sailflow.hub.BusinessRule
 {

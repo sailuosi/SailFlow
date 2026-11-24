@@ -5,13 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using sailflow.engine.Common;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 using sailflow.data;
 using sailflow.engine.Utility;
-using sailflow.engine.Xpdl;
 
 using sailflow.engine.Client;
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// XPDL Helper

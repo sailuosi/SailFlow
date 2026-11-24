@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 using sailflow.engine.Utility;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Convert collaborative models into entities

@@ -2,7 +2,7 @@ using System;
 using sailflow.engine.Common;
 
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Group Behaviour on Transiton

@@ -1,4 +1,4 @@
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
 namespace sailflow.nextStep;
 /// <summary>结构演算后的候选节点（可标注）。</summary>

@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using sailflow.engine.Common;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Service Detail

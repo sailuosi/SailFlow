@@ -1,6 +1,6 @@
 using sailflow.events;
-using sailflow.engine.Xpdl;
-using ActionEntity = sailflow.engine.Xpdl.Action;
+using sailflow.xml;
+using ActionEntity = sailflow.xml.Action;
 
 namespace sailflow.lanes
 {

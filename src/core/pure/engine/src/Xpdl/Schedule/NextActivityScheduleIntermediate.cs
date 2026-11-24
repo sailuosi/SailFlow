@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using sailflow.data;
 using mooSQL.data;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Next scheduling for intermediate event nodes

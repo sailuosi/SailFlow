@@ -4,11 +4,11 @@ using sailflow.data;
 using mooSQL.data;
 using sailflow.hub.Localize;
 using sailflow.engine.Common;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
 using sailflow.engine.Factories;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Next Activity Schedule

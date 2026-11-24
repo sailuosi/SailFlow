@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// 单一下一步节点(不包含子节点）

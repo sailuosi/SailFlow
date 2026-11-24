@@ -1,6 +1,6 @@
 using sailflow.AI.Abstractions;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     public class AiServiceDetail
     {

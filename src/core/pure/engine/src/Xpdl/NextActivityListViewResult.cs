@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using sailflow.engine.Common;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Next Activity Tree Result

@@ -3,7 +3,7 @@ using System.Linq;
 using sailflow.hub.Form;
 using sailflow.hub.Resource;
 using sailflow.engine.Common;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
 namespace sailflow.engine.Service
 {

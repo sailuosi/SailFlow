@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using sailflow.data;
 using sailflow.engine.Client;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Injects activity variable definitions from <c>sf_variable</c> after BPMN XML is parsed.

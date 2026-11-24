@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using sailflow.data;
 using mooSQL.data;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Merge types to obtain the next node list

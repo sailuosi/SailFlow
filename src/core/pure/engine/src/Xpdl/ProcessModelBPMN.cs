@@ -2,7 +2,7 @@ using sailflow.data;
 using mooSQL.data;
 using sailflow.engine.Common;
 using sailflow.engine.Utility;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 using sailflow.hub.Form;
 using sailflow.hub.Localize;
 using sailflow.hub.Resource;
@@ -16,7 +16,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Xml;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// BPMN Process Model
@@ -148,7 +148,7 @@ namespace sailflow.engine.Xpdl
         /// Get Activity Output Variable Name List
         /// </summary>
         /// <returns></returns>
-        public IList<string> GetActivityOutputVarialbeNameList(sailflow.engine.Xpdl.Activity activity)
+        public IList<string> GetActivityOutputVarialbeNameList(sailflow.xml.Activity activity)
         {
             var names = new List<string>();
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

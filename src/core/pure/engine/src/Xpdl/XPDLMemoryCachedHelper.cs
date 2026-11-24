@@ -1,9 +1,9 @@
 using System;
 using mooSQL.data;
 using sailflow.engine.Utility;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// XPDL / BPMN 流程定义缓存键与读写（经 <see cref="ISooCache"/>，由 <c>SailClient.Cache</c> 提供）。

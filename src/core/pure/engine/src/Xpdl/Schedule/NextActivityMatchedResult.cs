@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using sailflow.hub.Localize;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Next Activity Matched Result

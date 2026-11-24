@@ -2,7 +2,7 @@ using sailflow.assignee.Builtin;
 using sailflow.assignee;
 using sailflow.engine.Common;
 using sailflow.data;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 using Xunit;
 
 namespace sailflow.engine.tests;

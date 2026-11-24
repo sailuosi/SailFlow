@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using sailflow.engine.Common;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Condtion Detail on Transition

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using sailflow.hub.Localize;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Next Activity Component

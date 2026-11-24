@@ -1,9 +1,9 @@
 using System;
 using sailflow.hub.Localize;
 using sailflow.engine.Common;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// C · 下一步活动组件纯构造（无 Client 策略）

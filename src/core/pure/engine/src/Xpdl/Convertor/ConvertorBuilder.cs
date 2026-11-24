@@ -2,14 +2,14 @@ using sailflow.AI.Abstractions;
 using sailflow.data;
 using sailflow.engine.Common;
 using sailflow.engine.Utility;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 using System;
 using System.Collections.Generic;
 using System.Xml;
 using sailflow.WebUtility;
 
 using sailflow.engine.Client;
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Convertor Builder
@@ -227,7 +227,7 @@ namespace sailflow.engine.Xpdl
             if (actionsNode != null)
             {
                 var xmlActionList = actionsNode.ChildNodes;
-                var actionList = new List<sailflow.engine.Xpdl.Action>();
+                var actionList = new List<sailflow.xml.Action>();
                 foreach (XmlNode element in xmlActionList)
                 {
                     actionList.Add(ConvertXmlActionNodeToActionEntity(element));
@@ -468,11 +468,11 @@ namespace sailflow.engine.Xpdl
         /// </summary>
         /// <param name="node">XML节点</param>
         /// <returns>操作实体</returns>
-        private sailflow.engine.Xpdl.Action ConvertXmlActionNodeToActionEntity(XmlNode node)
+        private sailflow.xml.Action ConvertXmlActionNodeToActionEntity(XmlNode node)
         {
             if (node == null) return null;
 
-            sailflow.engine.Xpdl.Action action = new sailflow.engine.Xpdl.Action();
+            sailflow.xml.Action action = new sailflow.xml.Action();
             var actionType = XMLHelper.GetXmlAttribute(node, "type");
             action.ActionType = EnumHelper.TryParseEnum<ActionTypeEnum>(actionType);
 

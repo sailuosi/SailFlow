@@ -6,10 +6,10 @@ using System.Xml;
 using System.Linq;
 using sailflow.engine.Common;
 using sailflow.data;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 using sailflow.engine.Utility;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Process Model Helper
@@ -152,7 +152,7 @@ namespace sailflow.engine.Xpdl
         /// <summary>
         /// Convert to process
         /// </summary>
-        public static sailflow.engine.Xpdl.Process ConvertToXPDLProcess(XmlDocument xmlDoc)
+        public static sailflow.xml.Process ConvertToXPDLProcess(XmlDocument xmlDoc)
         {
             var root = xmlDoc.DocumentElement;
             var xmlNodeProcess = root.SelectSingleNode(XPDLDefinition.BPMN_StrXmlPath_Process,

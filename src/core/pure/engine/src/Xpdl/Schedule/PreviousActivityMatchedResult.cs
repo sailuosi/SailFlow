@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using sailflow.engine.Common;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Previous Activity Mathced Result

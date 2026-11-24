@@ -4,11 +4,11 @@ using System.Text;
 using System.Xml;
 using sailflow.engine.Common;
 using sailflow.data;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 using sailflow.engine.Utility;
 using System.Xml.Linq;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     /// <summary>
     /// Convert Helper

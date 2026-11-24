@@ -217,14 +217,14 @@ namespace sailflow.data
         public DateTime? JobDoneAt { get; set; }
 
         /// <summary>
-        /// 会签/加签复杂类型（列 <c>ai_cplx_type</c>），见 <see cref="sailflow.engine.Xpdl.ComplexTypeEnum"/>。
+        /// 会签/加签复杂类型（列 <c>ai_cplx_type</c>），见 <see cref="sailflow.xml.ComplexTypeEnum"/>。
         /// 1=SignTogether 会签；2=SignForward 加签。
         /// </summary>
         [SooColumn(Name = "ai_sign_type")]
         public short? ComplexType { get; set; }
 
         /// <summary>
-        /// 会签执行合并方式（列 <c>ai_merge_type</c>），见 <see cref="sailflow.engine.Xpdl.MergeTypeEnum"/>。
+        /// 会签执行合并方式（列 <c>ai_merge_type</c>），见 <see cref="sailflow.xml.MergeTypeEnum"/>。
         /// 1=Sequence 串行；2=Parallel 并行。
         /// </summary>
         [SooColumn(Name = "ai_merge_type")]
@@ -238,7 +238,7 @@ namespace sailflow.data
         public string MainActInstanceId { get; set; }
 
         /// <summary>
-        /// 会签通过率比较类型（列 <c>ai_cmp_type</c>），见 <see cref="sailflow.engine.Xpdl.CompareTypeEnum"/>。
+        /// 会签通过率比较类型（列 <c>ai_cmp_type</c>），见 <see cref="sailflow.xml.CompareTypeEnum"/>。
         /// 1=Count 个数；2=Percentage 百分比。
         /// </summary>
         [SooColumn(Name = "ai_cmp_type")]
@@ -253,7 +253,7 @@ namespace sailflow.data
         public float? CompleteOrder { get; set; }
 
         /// <summary>
-        /// 加签类型（列 <c>ai_sign_fwd_type</c>），见 <see cref="sailflow.engine.Xpdl.SignForwardTypeEnum"/>。
+        /// 加签类型（列 <c>ai_sign_fwd_type</c>），见 <see cref="sailflow.xml.SignForwardTypeEnum"/>。
         /// 0=None；1=SignForwardBefore 前加签；2=SignForwardBehind 后加签；3=SignForwardParallel 并加签。
         /// </summary>
         [SooColumn(Name = "ai_sign_fwd_type")]

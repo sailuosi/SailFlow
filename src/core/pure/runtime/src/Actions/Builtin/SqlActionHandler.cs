@@ -2,8 +2,8 @@ using sailflow.data;
 using sailflow.lanes;
 using sailflow.engine.Common;
 using sailflow.events;
-using sailflow.engine.Xpdl;
-using ActionEntity = sailflow.engine.Xpdl.Action;
+using sailflow.xml;
+using ActionEntity = sailflow.xml.Action;
 
 namespace sailflow.runtime.Actions;
 

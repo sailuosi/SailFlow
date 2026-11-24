@@ -1,7 +1,7 @@
 using sailflow.data;
 using mooSQL.data;
 using sailflow.engine.Common;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 using sailflow.hub.Localize;
 using sailflow.engine.Client;
 using System;
@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using sailflow.engine.Factories;
 using sailflow.nextStep;
 
-namespace sailflow.engine.Xpdl
+namespace sailflow.xml
 {
     internal class ProcessModelBPMNCore
     {

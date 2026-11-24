@@ -4,7 +4,7 @@ using System.Linq;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.data;
-using sailflow.engine.Xpdl;
+using sailflow.xml;
 
 namespace sailflow.nextStep;
 /// <summary>下一跳管道运行时入口（Prepare / Filter）。</summary>
