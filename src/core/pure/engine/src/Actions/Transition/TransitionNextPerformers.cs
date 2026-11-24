@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 
-namespace sailflow.engine.Actions.Transition
+namespace sailflow.lanes
 {
     /// <summary>Reject / Close / Jump 共用：按 JumpOption 填充下一办理人。</summary>
     internal static class TransitionNextPerformers

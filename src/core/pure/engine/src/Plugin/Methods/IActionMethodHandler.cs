@@ -2,7 +2,7 @@ using sailflow.events;
 using sailflow.engine.Xpdl;
 using ActionEntity = sailflow.engine.Xpdl.Action;
 
-namespace sailflow.engine.Actions
+namespace sailflow.lanes
 {
     /// <summary>
     /// BPMN Action 方法处理器（按 <see cref="ActionMethodEnum"/> 注册）。

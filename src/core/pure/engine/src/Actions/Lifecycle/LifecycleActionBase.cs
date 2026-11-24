@@ -7,7 +7,7 @@ using sailflow.engine.Logging;
 using sailflow.data;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Lifecycle
+namespace sailflow.lanes
 {
     /// <summary>
     /// 流程实例状态变化族：固化 Gate → Core → 成功 Hook；默认不 FireTaskLifecycle。

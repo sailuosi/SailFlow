@@ -7,7 +7,7 @@ using sailflow.engine.Factories;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Transition
+namespace sailflow.lanes
 {
     /// <summary>关闭：填 End 办理人 → CreateRuntimeInstanceClose → Execute。</summary>
     public sealed class CloseAction : TransitionActionBase

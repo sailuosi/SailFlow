@@ -6,7 +6,7 @@ using sailflow.events;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Assignee
+namespace sailflow.lanes
 {
     /// <summary>阅办：参与者办结自己的沟通待办。</summary>
     public sealed class AcknowledgeAction : AssigneeActionBase

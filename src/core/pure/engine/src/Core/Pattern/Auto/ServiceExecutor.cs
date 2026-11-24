@@ -5,7 +5,7 @@ using sailflow.run;
 
 namespace sailflow.run{
     /// <summary>
-    /// Service Executor — 按 <see cref="sailflow.engine.Actions.ServiceMethodRegistry"/> 分发。
+    /// Service Executor — 按 <see cref="sailflow.lanes.ServiceMethodRegistry"/> 分发。
     /// </summary>
     internal class ServiceExecutor
     {

@@ -7,7 +7,7 @@ using sailflow.engine.Factories;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Transition
+namespace sailflow.lanes
 {
     public sealed class ResendAction : TransitionActionBase
     {

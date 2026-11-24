@@ -6,7 +6,7 @@ using sailflow.events;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions
+namespace sailflow.lanes
 {
     /// <summary>
     /// 动作骨架共同父类：横切工具箱（Gate/Hook/诊断能力），不排统一时序。

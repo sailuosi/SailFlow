@@ -7,7 +7,7 @@ using sailflow.engine.Factories;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Transition
+namespace sailflow.lanes
 {
     /// <summary>
     /// 自动推进：CreateRuntimeInstanceRunAuto →（无 Gate）→ Execute → OnProcessContinued。

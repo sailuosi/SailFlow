@@ -8,7 +8,7 @@ using sailflow.engine.Factories;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Lifecycle
+namespace sailflow.lanes
 {
     /// <summary>终止流程实例（ProcessInstanceId 或 BizPK+ProcessId+Version；级联收口待办）。</summary>
     public sealed class TerminateAction : LifecycleActionBase

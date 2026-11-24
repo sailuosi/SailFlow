@@ -1,7 +1,7 @@
 using sailflow.data;
 using sailflow.run;
 
-namespace sailflow.engine.Actions.Transition
+namespace sailflow.lanes
 {
     /// <summary>
     /// Transition 族 Core 上下文：持本命令 Runtime 编排袋（可含 Forward/回退路径）。

@@ -6,7 +6,7 @@ using sailflow.events;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Assignee
+namespace sailflow.lanes
 {
     /// <summary>
     /// 转办：本节点交人、不推进下一节点。族群时序由 <see cref="AssigneeActionBase"/> 固化。

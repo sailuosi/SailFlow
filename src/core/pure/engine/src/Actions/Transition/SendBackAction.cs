@@ -7,7 +7,7 @@ using sailflow.engine.Factories;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Transition
+namespace sailflow.lanes
 {
     /// <summary>退回：CreateRuntimeInstanceSendBack → Execute；族群固化 Gate/成功 Hook。</summary>
     public sealed class SendBackAction : TransitionActionBase

@@ -7,7 +7,7 @@ using sailflow.engine.Factories;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Transition
+namespace sailflow.lanes
 {
     /// <summary>跳转：按 JumpOption 填办理人 → CreateRuntimeInstanceJump → Execute。</summary>
     public sealed class JumpAction : TransitionActionBase

@@ -5,7 +5,7 @@ using sailflow.run;
 
 namespace sailflow.run{
     /// <summary>
-    /// Script Executor — 按 <see cref="sailflow.engine.Actions.ScriptMethodRegistry"/> 分发。
+    /// Script Executor — 按 <see cref="sailflow.lanes.ScriptMethodRegistry"/> 分发。
     /// </summary>
     internal class ScriptExecutor
     {

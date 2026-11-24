@@ -5,8 +5,7 @@ using sailflow.engine.Common;
 using sailflow.data;
 using sailflow.engine.Factories;
 
-namespace sailflow.engine.Actions.Transition;
-
+namespace sailflow.lanes;
 /// <summary>
 /// 驳回落点解析：按 <see cref="RejectModeCodes"/> 算出唯一 ActivityId + 历史办理人（覆盖客户端传入）。
 /// </summary>

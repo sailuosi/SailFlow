@@ -1,7 +1,7 @@
 using sailflow.events;
 using sailflow.engine.Xpdl;
 
-namespace sailflow.engine.Actions
+namespace sailflow.lanes
 {
     /// <summary>
     /// BPMN Service 方法处理器（按 <see cref="ServiceMethodEnum"/> 注册）。

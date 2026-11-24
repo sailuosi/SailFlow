@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using sailflow.engine.Xpdl;
 
-namespace sailflow.engine.Actions
+namespace sailflow.lanes
 {
     public sealed class ScriptMethodRegistry
     {

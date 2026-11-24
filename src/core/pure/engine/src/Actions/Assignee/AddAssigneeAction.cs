@@ -6,7 +6,7 @@ using sailflow.events;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Assignee
+namespace sailflow.lanes
 {
     /// <summary>
     /// 加人：向当前扁节点追加普通办理人待办，不推进下一节点、不压加签栈。

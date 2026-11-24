@@ -7,7 +7,7 @@ using sailflow.engine.Factories;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Lifecycle
+namespace sailflow.lanes
 {
     /// <summary>恢复已挂起的流程实例（由 ProcessInstanceId 定位）。</summary>
     public sealed class ResumeAction : LifecycleActionBase

@@ -1,6 +1,6 @@
 using System;
 using mooSQL.data;
-using sailflow.engine.Actions.Lifecycle;
+using sailflow.lanes;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.events;
@@ -8,7 +8,7 @@ using sailflow.engine.Factories;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Transition
+namespace sailflow.lanes
 {
     /// <summary>
     /// 驳回（极简）：不依赖办理人选目标/选人。

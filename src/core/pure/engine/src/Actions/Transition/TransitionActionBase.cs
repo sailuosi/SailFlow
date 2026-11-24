@@ -9,7 +9,7 @@ using sailflow.data;
 using sailflow.engine.Result;
 using sailflow.run;
 
-namespace sailflow.engine.Actions.Transition
+namespace sailflow.lanes
 {
     /// <summary>
     /// 流转族：固化 Gate → Runtime.Execute(Core) → 成功 Hook。

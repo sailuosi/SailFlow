@@ -6,7 +6,7 @@ using sailflow.events;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Assignee
+namespace sailflow.lanes
 {
     /// <summary>收回沟通：取消源 Task 下仍打开的参与者待办。</summary>
     public sealed class RecallConsultAction : AssigneeActionBase

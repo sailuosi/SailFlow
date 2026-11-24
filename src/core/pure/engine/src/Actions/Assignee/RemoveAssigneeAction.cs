@@ -6,7 +6,7 @@ using sailflow.events;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Assignee
+namespace sailflow.lanes
 {
     /// <summary>
     /// 减签：从当前多人节点移除指定未办办理人，不推进下一节点。

@@ -1,6 +1,6 @@
 using sailflow.data;
 
-namespace sailflow.engine.Actions.Lifecycle
+namespace sailflow.lanes
 {
     /// <summary>
     /// Lifecycle 族 Core 上下文：以 ProcessInstance 为主；Task/Activity 可选。

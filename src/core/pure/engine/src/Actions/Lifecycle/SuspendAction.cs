@@ -8,7 +8,7 @@ using sailflow.engine.Factories;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Lifecycle
+namespace sailflow.lanes
 {
     /// <summary>挂起运行中的流程实例（由待办 TaskId 定位实例）。</summary>
     public sealed class SuspendAction : LifecycleActionBase

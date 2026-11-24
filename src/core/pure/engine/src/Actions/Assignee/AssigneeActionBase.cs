@@ -7,7 +7,7 @@ using sailflow.engine.Logging;
 using sailflow.data;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Assignee
+namespace sailflow.lanes
 {
     /// <summary>
     /// 待办人/办理人变化族：固化 Gate → Core → 成功 Hook（→ 可选 TaskLifecycle）时序。

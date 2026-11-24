@@ -1,6 +1,6 @@
 using sailflow.data;
 
-namespace sailflow.engine.Actions.Assignee
+namespace sailflow.lanes
 {
     /// <summary>
     /// Assignee 族 Core 上下文：Task / ActivityInstance / ProcessInstanceId。

@@ -6,7 +6,7 @@ using sailflow.events;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Assignee
+namespace sailflow.lanes
 {
     /// <summary>
     /// 改派：用 <c>NextActivityPerformers</c> 作为新办理人全集，差量关旧/建新；不推进下一节点。

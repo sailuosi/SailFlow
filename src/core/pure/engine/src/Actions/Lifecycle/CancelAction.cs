@@ -7,7 +7,7 @@ using sailflow.engine.Factories;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Lifecycle
+namespace sailflow.lanes
 {
     /// <summary>取消运行中的流程实例（按 BizPK+ProcessId+Version 定位，同旧 PIM.Cancel）。</summary>
     public sealed class CancelAction : LifecycleActionBase

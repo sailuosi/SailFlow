@@ -6,7 +6,7 @@ using sailflow.events;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Assignee
+namespace sailflow.lanes
 {
     /// <summary>
     /// 委派：本人待办交给一人代办（挂 EntrustedTaskId）；受托人办结后自动回转原人，不推进节点。

@@ -7,7 +7,7 @@ using sailflow.engine.Factories;
 using sailflow.hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Actions.Transition
+namespace sailflow.lanes
 {
     /// <summary>同意/推进：CreateRuntimeInstanceAppRunning(kit) → Gate → Execute → OnProcessContinued。</summary>
     public sealed class RunAction : TransitionActionBase

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using mooSQL.data;
-using sailflow.engine.Actions;
+using sailflow.lanes;
 using sailflow.assignee;
 using sailflow.engine.Hosting;
 using sailflow.hooks;
