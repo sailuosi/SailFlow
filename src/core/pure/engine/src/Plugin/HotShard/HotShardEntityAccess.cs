@@ -4,7 +4,7 @@ using mooSQL.data;
 using sailflow.data;
 using sailflow.hosting;
 
-namespace sailflow.engine.HotShard
+namespace sailflow.data.HotShard
 {
     /// <summary>按物理表名对实体做 CRUD（热分表路由后使用）。</summary>
     public static class HotShardEntityAccess

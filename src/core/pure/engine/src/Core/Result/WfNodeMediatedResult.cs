@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using sailflow.run;
 
-namespace sailflow.engine.Result
+namespace sailflow.result
 {
     /// <summary>
     /// Node mediator result

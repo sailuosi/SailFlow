@@ -10,9 +10,9 @@ using mooSQL.data;
 using sailflow.hosting;
 using sailflow.xml;
 using sailflow.run;
-using sailflow.engine.Result;
+using sailflow.result;
 
-namespace sailflow.engine.Service
+namespace sailflow.service
 {
     /// <summary>
     /// Workflow Service - Query Methods

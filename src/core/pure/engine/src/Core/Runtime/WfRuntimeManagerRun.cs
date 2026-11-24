@@ -2,7 +2,7 @@ using sailflow.data;
 using mooSQL.data;
 using sailflow.utils;
 using sailflow.run;
-using sailflow.engine.Result;
+using sailflow.result;
 using sailflow.events;
 using sailflow.hooks;
 

@@ -9,7 +9,7 @@ using sailflow.assignee;
 using sailflow.hosting;
 using sailflow.run;
 using sailflow.hooks;
-using sailflow.engine.Result;
+using sailflow.result;
 
 namespace sailflow.run{
     /// <summary>

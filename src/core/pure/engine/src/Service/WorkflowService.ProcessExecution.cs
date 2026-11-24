@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using sailflow.utils;
-using sailflow.engine.Result;
+using sailflow.result;
 using sailflow.events;
 using sailflow.run;
 using sailflow.hosting;
@@ -12,7 +12,7 @@ using mooSQL.data;
 
 using sailflow.lanes;
 
-namespace sailflow.engine.Service
+namespace sailflow.service
 {
     /// <summary>
     /// Workflow Service - Process Execution

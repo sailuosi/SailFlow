@@ -7,7 +7,7 @@ using sailflow.utils;
 using sailflow.data;
 using mooSQL.data;
 using sailflow.xml;
-using sailflow.engine.Message;
+using sailflow.signal;
 
 using sailflow.hosting;
 using sailflow.run;

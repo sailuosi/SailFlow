@@ -7,7 +7,7 @@ using sailflow.utils;
 using sailflow.run;
 using sailflow.hooks;
 
-namespace sailflow.engine.Result
+namespace sailflow.result
 {
     /// <summary>
     /// 执行结果对象封装

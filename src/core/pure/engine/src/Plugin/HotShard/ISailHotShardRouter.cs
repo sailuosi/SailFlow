@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace sailflow.engine.HotShard
+namespace sailflow.data.HotShard
 {
     /// <summary>
     /// 轨迹 / 变量热表白名单分表路由。默认实现恒返回默认表名；白名单实现由 sailflow.data 挂载。

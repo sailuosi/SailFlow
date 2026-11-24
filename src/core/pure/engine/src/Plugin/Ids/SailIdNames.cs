@@ -1,4 +1,4 @@
-namespace sailflow.engine.Ids
+namespace sailflow.ids
 {
     /// <summary>AutoKey / Tag 约定名（与 <see cref="ISailIdSource"/> 配套）。</summary>
     public static class SailIdNames

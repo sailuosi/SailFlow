@@ -1,11 +1,11 @@
-using sailflow.engine.Result;
+using sailflow.result;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace sailflow.engine.Result
+namespace sailflow.result
 {
     public class WfDataManagedResult
     {

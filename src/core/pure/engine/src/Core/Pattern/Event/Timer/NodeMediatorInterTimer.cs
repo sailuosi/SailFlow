@@ -8,7 +8,7 @@ using mooSQL.data;
 using sailflow.hub.Localize;
 using sailflow.xml;
 using sailflow.run;
-using sailflow.engine.Message;
+using sailflow.signal;
 
 using sailflow.hosting;
 namespace sailflow.run{

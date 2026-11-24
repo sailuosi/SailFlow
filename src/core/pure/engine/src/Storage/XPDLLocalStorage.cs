@@ -3,7 +3,7 @@ using System.IO;
 using System.Xml;
 using sailflow.data;
 
-namespace sailflow.engine.Storage
+namespace sailflow.xml
 {
     /// <summary>
     /// Process definition file storage (local path from registered <c>SailConfig.WorkflowFileServer</c>).

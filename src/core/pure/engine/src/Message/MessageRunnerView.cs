@@ -5,7 +5,7 @@ using sailflow.utils;
 using sailflow.data;
 using sailflow.xml;
 
-namespace sailflow.engine.Message
+namespace sailflow.signal
 {
     /// <summary>
     /// Message Runner View

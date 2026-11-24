@@ -1,4 +1,4 @@
-namespace sailflow.engine.Ids
+namespace sailflow.ids
 {
     /// <summary>
     /// 引擎统一 string Id 发号源。实现放 runtime/宿主；pure 仅契约 + 默认 Guid 实现。

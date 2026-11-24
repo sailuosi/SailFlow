@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using mooSQL.data;
 using sailflow.data;
-using sailflow.engine.Ids;
+using sailflow.ids;
 using Xunit;
 
 namespace sailflow.engine.tests

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
-using sailflow.engine.External;
+using sailflow.plugin;
 using sailflow.hub.External.Customer;
 using sailflow.hub.External.Customer.Entity;
 using sailflow.hub.External.Data;
 
-namespace sailflow.hub.External.Tests
+namespace sailflow.hub.External
 {
     /// <summary>
     /// Simulates a customer–AI chat: sets user_message and ai_response,

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using sailflow.data;
 using sailflow.hosting;
 using sailflow.utils;
-using sailflow.engine.Rules;
+using sailflow.rules;
 using sailflow.run;
 
 namespace sailflow.data

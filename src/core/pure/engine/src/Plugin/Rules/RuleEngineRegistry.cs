@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace sailflow.engine.Rules
+namespace sailflow.rules
 {
     /// <summary>
     /// 规则引擎注册表（按 mode 字符串调度）。

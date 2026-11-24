@@ -6,7 +6,7 @@ using NRules;
 using NRules.Fluent;
 using sailflow.data;
 using sailflow.utils;
-using sailflow.engine.Rules;
+using sailflow.rules;
 
 namespace sailflow.hub.BusinessRule
 {

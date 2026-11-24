@@ -1,6 +1,6 @@
 using System;
 using sailflow.hosting;
-using sailflow.engine.Rules;
+using sailflow.rules;
 using sailflow.hub.BusinessRule;
 
 namespace sailflow.hub.Hosting

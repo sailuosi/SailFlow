@@ -8,7 +8,7 @@ using sailflow.utils;
 using sailflow.xml;
 using sailflow.assignee;
 using sailflow.hosting;
-using sailflow.engine.Result;
+using sailflow.result;
 using sailflow.run;
 using sailflow.events;
 using sailflow.hooks;

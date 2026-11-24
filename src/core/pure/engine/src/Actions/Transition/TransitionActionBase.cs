@@ -6,7 +6,7 @@ using sailflow.events;
 using sailflow.hooks;
 using sailflow.log;
 using sailflow.data;
-using sailflow.engine.Result;
+using sailflow.result;
 using sailflow.run;
 
 namespace sailflow.lanes

@@ -4,7 +4,7 @@ using mooSQL.data;
 using sailflow.utils;
 using sailflow.events;
 
-namespace sailflow.hub.External.Tests
+namespace sailflow.hub.External
 {
     /// <summary>
     /// In-memory IEventService for testing CustomerExtractService, CustomerSaveService and MessageService

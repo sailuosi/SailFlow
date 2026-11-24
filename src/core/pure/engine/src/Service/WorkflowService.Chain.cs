@@ -1,4 +1,4 @@
-namespace sailflow.engine.Service
+namespace sailflow.service
 {
     /// <summary>
     /// 链式建造已迁出：请使用 <c>SailClient.CreateRunBuilder(...)</c>（B），再 <c>XxxProcess(runner)</c>。

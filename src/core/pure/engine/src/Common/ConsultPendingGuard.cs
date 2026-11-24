@@ -3,7 +3,7 @@ using mooSQL.data;
 using sailflow.hosting;
 using sailflow.hooks;
 using sailflow.log;
-using sailflow.engine.Result;
+using sailflow.result;
 
 namespace sailflow.utils
 {

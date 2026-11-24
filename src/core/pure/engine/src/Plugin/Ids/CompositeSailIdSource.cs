@@ -1,6 +1,6 @@
 using System;
 
-namespace sailflow.engine.Ids
+namespace sailflow.ids
 {
     /// <summary>行键与设计键分流到两个 Source（仍对外一个 ISailIdSource）。</summary>
     public sealed class CompositeSailIdSource : ISailIdSource

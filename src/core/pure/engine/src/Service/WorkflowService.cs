@@ -4,7 +4,7 @@ using sailflow.hub.Form;
 using sailflow.hosting;
 using sailflow.factory;
 
-namespace sailflow.engine.Service
+namespace sailflow.service
 {
     /// <summary>
     /// H · 无状态办理执行器：持 A=<see cref="SailClient"/>，动词只吃 <see cref="FlowCommandContext"/> 参数；

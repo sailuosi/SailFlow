@@ -7,10 +7,10 @@ using sailflow.lanes;
 using sailflow.assignee;
 using sailflow.hosting;
 using sailflow.hooks;
-using sailflow.engine.Ids;
+using sailflow.ids;
 using sailflow.log;
 using sailflow.nextStep;
-using sailflow.engine.Rules;
+using sailflow.rules;
 using sailflow.hub.Essential;
 using sailflow.hub.Localize;
 
@@ -241,19 +241,19 @@ public partial class SailClient
         return this;
     }
 
-    private sailflow.engine.HotShard.ISailHotShardRouter _hotShard;
+    private sailflow.data.HotShard.ISailHotShardRouter _hotShard;
 
     /// <summary>
-    /// 轨迹/变量热表白名单分表路由（默认 <see cref="sailflow.engine.HotShard.NullSailHotShardRouter"/>）。
+    /// 轨迹/变量热表白名单分表路由（默认 <see cref="sailflow.data.HotShard.NullSailHotShardRouter"/>）。
     /// 白名单实现由 sailflow.data <c>UseSailData</c> 按 Options 挂载。
     /// </summary>
-    public sailflow.engine.HotShard.ISailHotShardRouter HotShard
+    public sailflow.data.HotShard.ISailHotShardRouter HotShard
     {
-        get => _hotShard ??= sailflow.engine.HotShard.NullSailHotShardRouter.Instance;
+        get => _hotShard ??= sailflow.data.HotShard.NullSailHotShardRouter.Instance;
         set => _hotShard = value;
     }
 
-    public SailClient useHotShard(sailflow.engine.HotShard.ISailHotShardRouter router)
+    public SailClient useHotShard(sailflow.data.HotShard.ISailHotShardRouter router)
     {
         _hotShard = router ?? throw new ArgumentNullException(nameof(router));
         return this;

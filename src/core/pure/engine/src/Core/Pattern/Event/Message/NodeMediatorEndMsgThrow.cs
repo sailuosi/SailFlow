@@ -8,9 +8,9 @@ using sailflow.hub.Localize;
 using sailflow.hub.Resource;
 using sailflow.xml;
 using sailflow.run;
-using sailflow.engine.Result;
+using sailflow.result;
 using sailflow.events;
-using sailflow.engine.Message;
+using sailflow.signal;
 
 using sailflow.hosting;
 using sailflow.hooks;

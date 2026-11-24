@@ -7,10 +7,10 @@ using sailflow.hub.Resource;
 using sailflow.utils;
 using sailflow.events;
 using sailflow.data;
-using sailflow.engine.Result;
+using sailflow.result;
 using sailflow.xml;
 
-namespace sailflow.engine.Service
+namespace sailflow.service
 {
     /// <summary>
     /// Workflow Service Interface

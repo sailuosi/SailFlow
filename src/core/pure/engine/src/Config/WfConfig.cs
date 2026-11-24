@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace sailflow.engine.Config
+namespace sailflow.hosting
 {
     /// <summary>
     /// Workflow Paramters Configuration

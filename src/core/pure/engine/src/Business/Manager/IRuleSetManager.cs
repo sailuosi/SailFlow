@@ -12,7 +12,7 @@ using sailflow.assignee;
 using sailflow.utils;
 using sailflow.hooks;
 using sailflow.xml;
-using sailflow.engine.Result;
+using sailflow.result;
 using sailflow.hosting;
 using sailflow.log;
 using sailflow.run;

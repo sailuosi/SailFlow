@@ -1,4 +1,4 @@
-namespace sailflow.engine.Ids
+namespace sailflow.ids
 {
     /// <summary>流程设计键 ProcessId ↔ BPMN process@id / Plane 互转（与发号正交）。</summary>
     public interface ISailBpmnIdCodec

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using sailflow.data;
 
-namespace sailflow.engine.Rules
+namespace sailflow.rules
 {
     /// <summary>
     /// 规则引擎契约：按 <see cref="Mode"/>（对应 <c>sf_rule_set.mode</c>）执行与校验。

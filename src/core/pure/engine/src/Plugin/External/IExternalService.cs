@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace sailflow.engine.External
+namespace sailflow.plugin
 {
     /// <summary>
     /// External Service Interface

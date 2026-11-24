@@ -2,7 +2,7 @@ using mooSQL.data;
 using sailflow.utils;
 using sailflow.data;
 using sailflow.hosting;
-using sailflow.engine.Result;
+using sailflow.result;
 using sailflow.events;
 
 namespace sailflow.hooks

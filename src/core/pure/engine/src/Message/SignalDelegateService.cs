@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using sailflow.utils;
-using sailflow.engine.Result;
-using sailflow.engine.Service;
+using sailflow.result;
+using sailflow.service;
 using sailflow.data;
 using sailflow.xml;
 using sailflow.hub.Essential;
 
 using sailflow.hosting;
-namespace sailflow.engine.Message
+namespace sailflow.signal
 {
     /// <summary>
     /// Signal Delegate Service
