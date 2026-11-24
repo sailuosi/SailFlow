@@ -62,7 +62,7 @@ namespace sailflow.engine.Pattern
             FlowCommandContext runner,
             SQLBuilder kit)
         {
-            base.ActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance, runner);
+            base.IActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance, runner);
             base.LinkContext.CurrentActivityInstance = toActivityInstance;
 
             base.InsertTransitionInstance(processInstance,

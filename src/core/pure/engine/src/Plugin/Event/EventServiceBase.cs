@@ -126,7 +126,7 @@ namespace sailflow.engine.Event
                 };
             }
             var kit = Kit.useSQL();
-            var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
+            var pvm = Sail.ManagerFactory.ProcessVariables;
             pvm.SaveVariable(kit, processVariable);
         }
 
@@ -140,7 +140,7 @@ namespace sailflow.engine.Event
         public string GetVariable(ProcessVariableScopeEnum variableType, string name)
         {
             var kit = Kit.useSQL();
-            var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
+            var pvm = Sail.ManagerFactory.ProcessVariables;
             var variable = pvm.GetVariable(kit, variableType, name, this.EventContext);
             return variable;
         }
@@ -154,7 +154,7 @@ namespace sailflow.engine.Event
         public string GetVariableByScopePriority(string name)
         {
             var kit = Kit.useSQL();
-            var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
+            var pvm = Sail.ManagerFactory.ProcessVariables;
             var variable = pvm.GetVariableByScopePriority(kit, name, this.EventContext);
             return variable;
         }

@@ -25,7 +25,7 @@ namespace sailflow.engine.Actions.Assignee
 
         protected override EventFireTypeEnum SuccessEvent => EventFireTypeEnum.OnAssigneeChanged;
 
-        /// <summary><see cref="Manager.TaskManager.ChangeAssignees"/> 内已发 Cancelled/Created。</summary>
+        /// <summary><see cref="Manager.ITaskManager.ChangeAssignees"/> 内已发 Cancelled/Created。</summary>
         protected override bool FireTaskLifecycleAfterCore => false;
 
         protected override string ErrorLogName => "WF_PROCESS_CHANGE_ASSIGNEE_ERROR";

@@ -32,8 +32,8 @@ namespace sailflow.engine.Pattern
             int joinCount = 0, splitCount = 0;
             var gatewayNode = base.ProcessModel.GetBackwardGatewayActivity(joinNode, ref joinCount, ref splitCount);
 
-            var gatewayActivityInstance = base.ActivityInstanceManager.GetActivityInstanceLatest(Kit.useSQL(), processInstanceId, gatewayNode.ActivityId);
-            var splitedActivityInstanceList = base.ActivityInstanceManager.GetValidSplitedActivityInstanceList(Kit.useSQL(), processInstanceId, gatewayActivityInstance.ActivityInstanceId);
+            var gatewayActivityInstance = base.IActivityInstanceManager.GetActivityInstanceLatest(Kit.useSQL(), processInstanceId, gatewayNode.ActivityId);
+            var splitedActivityInstanceList = base.IActivityInstanceManager.GetValidSplitedActivityInstanceList(Kit.useSQL(), processInstanceId, gatewayActivityInstance.ActivityInstanceId);
             int tokensCount = splitedActivityInstanceList.Count;
 
             return tokensCount;
@@ -50,7 +50,7 @@ namespace sailflow.engine.Pattern
             SQLBuilder kit)
         {
             //检查是否已有运行中的合并节点实例
-            ActivityInstanceEntity joinNode = base.ActivityInstanceManager.GetActivityRunning(kit.useSQL(), processInstance.ProcessInstanceId, base.GatewayActivity.ActivityId);
+            ActivityInstanceEntity joinNode = base.IActivityInstanceManager.GetActivityRunning(kit.useSQL(), processInstance.ProcessInstanceId, base.GatewayActivity.ActivityId);
 
             int tokensRequired = 0;
             int tokensHad = 0;
@@ -89,7 +89,7 @@ namespace sailflow.engine.Pattern
                 tokensHad = base.GatewayActivityInstance.TokensHad.Value;
 
                 //更新令牌计数
-                base.ActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.ActivityInstanceId, runner);
+                base.IActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.ActivityInstanceId, runner);
                 base.InsertTransitionInstance(processInstance,
                     transitionId,
                     fromActivityInstance,

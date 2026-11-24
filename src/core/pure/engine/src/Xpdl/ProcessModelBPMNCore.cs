@@ -74,7 +74,7 @@ namespace sailflow.engine.Xpdl
                         }
                         else if (XPDLHelper.IsGatewayComponentNode(transition.ToActivity.ActivityType) == true)
                         {
-                            NextActivityScheduleBase activitySchedule = SailFactoryAccess.ProcessModels(client).CreateActivityScheduleGateway(processModel,
+                            NextActivityScheduleBase activitySchedule = client.ProcessModelFactory.CreateActivityScheduleGateway(processModel,
                                 transition.ToActivity.GatewayDetail.SplitJoinType,
                                 activityInstanceId);
 
@@ -100,7 +100,7 @@ namespace sailflow.engine.Xpdl
                         else
                         {
                             var errMsg = string.Format("Unknown node type：{0}", transition.ToActivity.ActivityType.ToString());
-                            LogManager.RecordLog(client, client.Messages.GetEngineMessage("processmodel.getnextactivitylist.error"),
+                            ILogManager.RecordLog(client, client.Messages.GetEngineMessage("processmodel.getnextactivitylist.error"),
                                 LogEventType.Exception,
                                 LogPriority.Normal,
                                 null,
@@ -124,7 +124,7 @@ namespace sailflow.engine.Xpdl
             }
             catch (System.Exception e)
             {
-                LogManager.RecordLog(client, client.Messages.GetEngineMessage("processmodel.getnextactivitylist.error"),
+                ILogManager.RecordLog(client, client.Messages.GetEngineMessage("processmodel.getnextactivitylist.error"),
                     LogEventType.Exception,
                     LogPriority.Normal,
                     null,

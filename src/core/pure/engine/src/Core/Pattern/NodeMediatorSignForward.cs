@@ -43,14 +43,14 @@ namespace sailflow.engine.Pattern
                 if (signForwardType == SignForwardTypeEnum.SignForwardBefore
                     || signForwardType == SignForwardTypeEnum.SignForwardBehind)
                 {
-                    var children = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithState(
+                    var children = base.IActivityInstanceManager.GetActivityMulitipleInstanceWithState(
                         Kit.useSQL(),
                         container.ActivityInstanceId,
                         container.ProcessInstanceId,
                         null);
                     // 席位数 = 直属发起人 Task(1) + 加签子 AI
                     container.CompleteOrder = children.Count + 1;
-                    base.ActivityInstanceManager.Update(Kit.useSQL(), container);
+                    base.IActivityInstanceManager.Update(Kit.useSQL(), container);
                 }
             }
             catch (System.Exception)
@@ -69,10 +69,10 @@ namespace sailflow.engine.Pattern
             ActivityResource resource,
             FlowCommandContext runner)
         {
-            if (sailflow.engine.Manager.ActivityInstanceManager.IsSignForwardContainer(current))
+            if (IActivityInstanceManager.IsSignForwardContainer(current))
             {
                 ApplyStackLeaveOnContainer(current, signForwardType, controlParamSheet);
-                base.ActivityInstanceManager.Update(Kit.useSQL(), current);
+                base.IActivityInstanceManager.Update(Kit.useSQL(), current);
                 // 前加签再加人：发起人待办仍后置
                 CloseInitiatorOpenTasksIfBefore(current, signForwardType, runner);
                 return current;
@@ -92,7 +92,7 @@ namespace sailflow.engine.Pattern
                 // 容器保持可办（发起人直属 Task）；勿 Suspended
                 if (current.ActivityState == (short)ActivityStateEnum.Suspended)
                     current.ActivityState = (short)ActivityStateEnum.Ready;
-                base.ActivityInstanceManager.Update(Kit.useSQL(), current);
+                base.IActivityInstanceManager.Update(Kit.useSQL(), current);
                 EnsureInitiatorDirectTask(current, resource, signForwardType, runner);
                 CloseInitiatorOpenTasksIfBefore(current, signForwardType, runner);
                 return current;
@@ -100,7 +100,7 @@ namespace sailflow.engine.Pattern
 
             // 扁平节点：抬席——新建容器挂到节点下，迁发起人 Task；节点 Leave 不动
             var node = current;
-            var container = base.ActivityInstanceManager.CreateActivityInstanceObject(node);
+            var container = base.IActivityInstanceManager.CreateActivityInstanceObject(node);
             container.MainActInstanceId = node.ActivityInstanceId;
             container.SignIds = runner.UserId;
             container.SignNames = runner.UserName;
@@ -110,7 +110,7 @@ namespace sailflow.engine.Pattern
             container.LeaveJudgeParams = null;
             ApplyStackLeaveOnContainer(container, signForwardType, controlParamSheet);
             container.ActivityState = (short)ActivityStateEnum.Ready;
-            base.ActivityInstanceManager.Insert(Kit.useSQL(), container);
+            base.IActivityInstanceManager.Insert(Kit.useSQL(), container);
 
             RelocateInitiatorTaskToContainer(node, container, runner);
             EnsureInitiatorDirectTask(container, resource, signForwardType, runner);
@@ -130,7 +130,7 @@ namespace sailflow.engine.Pattern
             if (signForwardType != SignForwardTypeEnum.SignForwardBefore)
                 return;
 
-            var open = base.TaskManager.GetTaskListByActivity(
+            var open = base.ITaskManager.GetTaskListByActivity(
                     Kit.useSQL(), container.ProcessInstanceId, container.ActivityInstanceId)
                 .Where(t => string.Equals(t.SignId, runner.UserId, StringComparison.OrdinalIgnoreCase)
                     && (t.TaskState == (short)TaskStateEnum.Waiting
@@ -139,8 +139,8 @@ namespace sailflow.engine.Pattern
 
             foreach (var t in open)
             {
-                TaskManager.ApplyTaskEnd(t, TaskStateEnum.Closed, runner, TaskEndTypes.SignedForwardOut);
-                base.TaskManager.Update(Kit.useSQL(), t);
+                ITaskManager.ApplyTaskEnd(t, TaskStateEnum.Closed, runner, TaskEndTypes.SignedForwardOut);
+                base.ITaskManager.Update(Kit.useSQL(), t);
             }
         }
 
@@ -177,11 +177,11 @@ namespace sailflow.engine.Pattern
             var taskId = ActivityForwardContext.TaskId;
             TaskEntity task = null;
             if (!string.IsNullOrEmpty(taskId))
-                task = base.TaskManager.GetTask(Kit.useSQL(), taskId);
+                task = base.ITaskManager.GetTask(Kit.useSQL(), taskId);
 
             if (task == null)
             {
-                var list = base.TaskManager.GetTaskListByActivity(
+                var list = base.ITaskManager.GetTaskListByActivity(
                     Kit.useSQL(), node.ProcessInstanceId, node.ActivityInstanceId);
                 task = list.FirstOrDefault(t =>
                     string.Equals(t.SignId, runner.UserId, StringComparison.OrdinalIgnoreCase)
@@ -195,7 +195,7 @@ namespace sailflow.engine.Pattern
             task.ActivityInstanceId = container.ActivityInstanceId;
             task.ActivityId = container.ActivityId;
             task.ActivityName = container.ActivityName;
-            base.TaskManager.Update(Kit.useSQL(), task);
+            base.ITaskManager.Update(Kit.useSQL(), task);
         }
 
         private void EnsureInitiatorDirectTask(
@@ -204,7 +204,7 @@ namespace sailflow.engine.Pattern
             SignForwardTypeEnum signForwardType,
             FlowCommandContext runner)
         {
-            var existing = base.TaskManager.GetTaskListByActivity(
+            var existing = base.ITaskManager.GetTaskListByActivity(
                     Kit.useSQL(), container.ProcessInstanceId, container.ActivityInstanceId)
                 .Where(t => string.Equals(t.SignId, runner.UserId, StringComparison.OrdinalIgnoreCase)
                     && (t.TaskState == (short)TaskStateEnum.Waiting
@@ -220,7 +220,7 @@ namespace sailflow.engine.Pattern
                 return;
 
             var signer = new Performer(runner.UserId, runner.UserName);
-            base.TaskManager.Insert(Kit.useSQL(), container, signer, runner);
+            base.ITaskManager.Insert(Kit.useSQL(), container, signer, runner);
         }
 
         private void CreateSigneeChildren(
@@ -234,7 +234,7 @@ namespace sailflow.engine.Pattern
 
             for (var i = 0; i < plist.Count; i++)
             {
-                var child = base.ActivityInstanceManager.CreateActivityInstanceObject(container);
+                var child = base.IActivityInstanceManager.CreateActivityInstanceObject(container);
                 child.LeaveJudgeType = null;
                 child.LeaveJudgeParams = null;
                 child.ComplexType = null;
@@ -265,8 +265,8 @@ namespace sailflow.engine.Pattern
                     child.CompleteOrder = -1;
                 }
 
-                base.ActivityInstanceManager.Insert(Kit.useSQL(), child);
-                base.TaskManager.Insert(Kit.useSQL(), child, plist[i], resource.AppRunner);
+                base.IActivityInstanceManager.Insert(Kit.useSQL(), child);
+                base.ITaskManager.Insert(Kit.useSQL(), child, plist[i], resource.AppRunner);
             }
         }
     }

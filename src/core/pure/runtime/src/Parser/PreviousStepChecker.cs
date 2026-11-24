@@ -10,16 +10,17 @@ using sailflow.engine.Xpdl;
 using sailflow.engine.Entity;
 using sailflow.engine.Manager;
 using sailflow.WebUtility;
+using sailflow.engine.Runtime;
 
 using sailflow.engine.Client;
 using sailflow.engine.Core;
-namespace sailflow.engine.Runtime
+namespace sailflow.runtime.Parser
 {
     /// <summary>
     /// Previous Activity Node Parser
     /// 上一步活动节点解析器
     /// </summary>
-    internal class PreviousStepChecker
+    public class PreviousStepChecker : IPreviousStepChecker
     {
         public PreviousStepChecker(SailClient client)
         {
@@ -33,7 +34,7 @@ namespace sailflow.engine.Runtime
         /// Retrieve the previous node tree
         /// 获取上一步节点树
         /// </summary>
-        internal IList<NodeView> GetPreviousActivityTree(string taskId, out Boolean hasGatewayPassed)
+        public IList<NodeView> GetPreviousActivityTree(string taskId, out Boolean hasGatewayPassed)
         {
             hasGatewayPassed = false;
             var aim = Sail.ManagerFactory.Activities;
@@ -47,7 +48,7 @@ namespace sailflow.engine.Runtime
         /// Retrieve the previous node tree
         /// 获取上一步节点树
         /// </summary>
-        internal IList<NodeView> GetPreviousActivityTree(FlowCommandContext runner, out Boolean hasGatewayPassed)
+        public IList<NodeView> GetPreviousActivityTree(FlowCommandContext runner, out Boolean hasGatewayPassed)
         {
             hasGatewayPassed = false;
             var aim = Sail.ManagerFactory.Activities;
@@ -219,7 +220,7 @@ namespace sailflow.engine.Runtime
         ///    (其中涉及到多实例节点的主节点跨越模式)
         /// 2. 普通节点模式按照是否有Gateway节点递归回溯；
         /// </summary>
-        internal IList<Activity> GetPreviousActivityList(ActivityInstanceEntity runningNode,
+        public IList<Activity> GetPreviousActivityList(ActivityInstanceEntity runningNode,
             IProcessModel processModel,
             out Boolean hasGatewayPassed)
         {
@@ -227,7 +228,7 @@ namespace sailflow.engine.Runtime
 
             IList<Activity> activityList = new List<Activity>();
             // 加签容器：CompleteOrder 是 Leave 阈，不是 MI 子序——勿走 CompleteOrder-1
-            var isSignForwardContainer = Manager.ActivityInstanceManager.IsSignForwardContainer(runningNode);
+            var isSignForwardContainer = IActivityInstanceManager.IsSignForwardContainer(runningNode);
 
             //判断当前节点是否是多实例节点
             //Determine whether the current node is a multi instance node
@@ -282,7 +283,7 @@ namespace sailflow.engine.Runtime
         /// Query the predecessor nodes of the instance node
         /// 查询实例节点的前置节点
         /// </summary>
-        internal ActivityInstanceEntity GetPreviousOfMultipleInstanceNode(string mainActivityInstanceId,
+        public ActivityInstanceEntity GetPreviousOfMultipleInstanceNode(string mainActivityInstanceId,
             string activityInstanceId,
             float completeOrder)
         {
@@ -300,7 +301,7 @@ namespace sailflow.engine.Runtime
         /// Read the previous node information of the node
         /// 读取节点的上一步节点信息
         /// </summary>
-        internal IList<ActivityInstanceEntity> GetPreviousActivityInstanceList(ActivityInstanceEntity runningNode,
+        public IList<ActivityInstanceEntity> GetPreviousActivityInstanceList(ActivityInstanceEntity runningNode,
             bool isLookUpBackSource,
             out bool hasPassedGatewayNode)
         {

@@ -63,7 +63,7 @@ Gate / 成功后 Hook：
 | `kit.useRepo<TEntity, TKey>()` | 主键 CRUD（`GetById` / `InsertReturnId` / `Update`…） |
 | `kit.useClip()` | 条件查询 / 批量更新 |
 
-Manager 经 `Sail.ManagerFactory` / `SailFactoryAccess.Managers`；模型经 `Sail.ProcessModelFactory.CreateBy*`。
+Manager 经 `Sail.ManagerFactory`（契约 `I*Manager`，默认实现由 `UseSailRuntimeDefaults` 挂载）；模型经 `Sail.ProcessModelFactory.CreateBy*`。
 
 ---
 

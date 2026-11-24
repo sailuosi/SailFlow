@@ -13,7 +13,7 @@ namespace sailflow.engine.Actions.Transition
 {
     /// <summary>
     /// 流转族：固化 Gate → Runtime.Execute(Core) → 成功 Hook。
-    /// Service 级 AfterSuccess 由本族拥有；路径内 TaskNotifier（Mediator/TaskManager）不在此重复。
+    /// Service 级 AfterSuccess 由本族拥有；路径内 TaskNotifier（Mediator/ITaskManager）不在此重复。
     /// </summary>
     public abstract class TransitionActionBase : FlowActionBase
     {
@@ -133,7 +133,7 @@ namespace sailflow.engine.Actions.Transition
             result.Message = FormatFailedMessage(e);
             ApplyFailedExceptionType(result, e);
             SailFailLog.Exception(Sail, SailLogCategories.Transition, GetType().Name, e, result.Message);
-            LogManager.RecordLog(Sail, ErrorLogName, LogEventType.Error, LogPriority.High, Context, e);
+            ILogManager.RecordLog(Sail, ErrorLogName, LogEventType.Error, LogPriority.High, Context, e);
             return result;
         }
 

@@ -36,11 +36,11 @@ namespace sailflow.engine.Runtime
 
         protected SailClient Sail { get; }
 
-        protected ActivityInstanceManager ActivityInstanceManager => Sail.ManagerFactory.Activities;
+        protected IActivityInstanceManager IActivityInstanceManager => Sail.ManagerFactory.Activities;
 
-        protected TaskManager TaskManager => Sail.ManagerFactory.Tasks;
+        protected ITaskManager ITaskManager => Sail.ManagerFactory.Tasks;
 
-        protected TransitionInstanceManager TransitionInstanceManager => Sail.ManagerFactory.Transitions;
+        protected ITransitionInstanceManager ITransitionInstanceManager => Sail.ManagerFactory.Transitions;
         #endregion
 
         #region Abstract Method
@@ -57,7 +57,7 @@ namespace sailflow.engine.Runtime
             string backOrgActivityInstanceId,
             FlowCommandContext runner)
         {
-            ActivityInstanceEntity entity = ActivityInstanceManager.CreateBackwardActivityInstanceObject(
+            ActivityInstanceEntity entity = IActivityInstanceManager.CreateBackwardActivityInstanceObject(
                 processInstance.BizChannel,
                 processInstance.BizPK,
                 processInstance.BizCode,
@@ -88,7 +88,7 @@ namespace sailflow.engine.Runtime
             var transition = SendBackOperation.ProcessModel.GetForwardTransition(toActivityInstance.ActivityId,
                 fromActivityInstance.ActivityId);
             var transitionId = transition != null ? transition.TransitionId : WfDefine.WF_XPDL_SEND_BACK_UNKNOWN_GUID;
-            var transitionInstanceObject = this.TransitionInstanceManager.CreateTransitionInstanceObject(processInstance,
+            var transitionInstanceObject = this.ITransitionInstanceManager.CreateTransitionInstanceObject(processInstance,
                 transitionId,
                 fromActivityInstance,
                 toActivityInstance,
@@ -96,7 +96,7 @@ namespace sailflow.engine.Runtime
                 flyingType,
                 runner,
                 (byte)ConditionParseResultEnum.Passed);
-            var newId = this.TransitionInstanceManager.Insert(kit.useSQL(), transitionInstanceObject);
+            var newId = this.ITransitionInstanceManager.Insert(kit.useSQL(), transitionInstanceObject);
 
             return newId;
         }
@@ -114,14 +114,14 @@ namespace sailflow.engine.Runtime
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            var previousActivityInstance = this.ActivityInstanceManager.GetPreviousActivityInstanceSimple(kit.useSQL(), fromActivityInstance, backwardToTaskActivity.ActivityId);
+            var previousActivityInstance = this.IActivityInstanceManager.GetPreviousActivityInstanceSimple(kit.useSQL(), fromActivityInstance, backwardToTaskActivity.ActivityId);
 
             if (previousActivityInstance == null)
             {
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("nodesendback.CreateBackwardActivityTaskTransitionInstance.error"));
             }
 
-            var toActivityInstance = this.ActivityInstanceManager.CreateBackwardActivityInstanceObject(
+            var toActivityInstance = this.IActivityInstanceManager.CreateBackwardActivityInstanceObject(
                processInstance.BizChannel,
                processInstance.BizPK,
                processInstance.BizCode,
@@ -139,9 +139,9 @@ namespace sailflow.engine.Runtime
             toActivityInstance.SignIds = SendBackOperation.BackwardToTaskPerformer.UserId;
             toActivityInstance.SignNames = SendBackOperation.BackwardToTaskPerformer.UserName;
 
-            this.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
+            this.IActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
-            this.TaskManager.Insert(kit.useSQL(), toActivityInstance, SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
+            this.ITaskManager.Insert(kit.useSQL(), toActivityInstance, SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
 
             InsertTransitionInstance(processInstance,
                 fromActivityInstance,

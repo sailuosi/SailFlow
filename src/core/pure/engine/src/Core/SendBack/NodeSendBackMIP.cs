@@ -26,7 +26,7 @@ namespace sailflow.engine.Runtime
         {
             var runner = base.SendBackOperation.ActivityResource.AppRunner;
             var runningNode = base.SendBackOperation.BackwardFromActivityInstance;
-            var previousActivityInstance = base.ActivityInstanceManager.GetPreviousActivityInstanceSimple(Kit.useSQL(), runningNode, base.SendBackOperation.BackwardToTaskActivity.ActivityId);
+            var previousActivityInstance = base.IActivityInstanceManager.GetPreviousActivityInstanceSimple(Kit.useSQL(), runningNode, base.SendBackOperation.BackwardToTaskActivity.ActivityId);
 
             //只退回到最后一个实例子节点的办理位置
             //Only return to the processing location of the last example node
@@ -53,7 +53,7 @@ namespace sailflow.engine.Runtime
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            var rollbackPreviousActivityInstance = base.ActivityInstanceManager.CreateBackwardActivityInstanceObject(processInstance.BizChannel,
+            var rollbackPreviousActivityInstance = base.IActivityInstanceManager.CreateBackwardActivityInstanceObject(processInstance.BizChannel,
                 processInstance.BizPK,
                 processInstance.BizCode,
                 processInstance.ProcessInstanceId,
@@ -74,9 +74,9 @@ namespace sailflow.engine.Runtime
             rollbackPreviousActivityInstance.SignIds = base.SendBackOperation.BackwardToTaskPerformer.UserId;      
             rollbackPreviousActivityInstance.SignNames = base.SendBackOperation.BackwardToTaskPerformer.UserName;
 
-            base.ActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
+            base.IActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
 
-            base.TaskManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance, base.SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
+            base.ITaskManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance, base.SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
 
             base.InsertTransitionInstance(processInstance,
                 fromActivityInstance,

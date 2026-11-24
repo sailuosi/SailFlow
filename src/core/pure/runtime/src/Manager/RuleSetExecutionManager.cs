@@ -4,13 +4,15 @@ using sailflow.engine.Entity;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.engine.Rules;
+using sailflow.engine.Manager;
+using sailflow.engine.Runtime;
 
-namespace sailflow.engine.Manager
+namespace sailflow.runtime.Manager
 {
     /// <summary>
     /// 按 <c>sf_rule_set.mode</c> 分派到已注册的 <see cref="IRuleEngine"/>（实现由业务侧挂载）。
     /// </summary>
-    public class RuleSetExecutionManager
+    public class RuleSetExecutionManager : IRuleSetExecutionManager
     {
         private readonly SailClient _client;
 

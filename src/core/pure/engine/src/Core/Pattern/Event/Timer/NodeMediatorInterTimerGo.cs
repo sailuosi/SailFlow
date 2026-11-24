@@ -89,10 +89,10 @@ namespace sailflow.engine.Pattern
             {
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
-                TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
+                ITaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
             }
 
-            ActivityInstanceManager.Complete(kit.useSQL(), LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
+            IActivityInstanceManager.Complete(kit.useSQL(), LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
 
             LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             bool canContinueForwardCurrentNode = LinkContext.FromActivityInstance.CanNotRenewInstance == 0;
@@ -143,9 +143,9 @@ namespace sailflow.engine.Pattern
                     entity.UnitName = plist[i].UnitName;
                     entity.ActivityState = (short)ActivityStateEnum.Ready;
 
-                    entity.ActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), entity);
+                    entity.ActivityInstanceId = IActivityInstanceManager.Insert(kit.useSQL(), entity);
 
-                    TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
+                    ITaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
 
                     InsertTransitionInstance(processInstance,
                         transitionId,
@@ -165,7 +165,7 @@ namespace sailflow.engine.Pattern
                 toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
                 toActivityInstance = GenerateActivitySignInfo(toActivityInstance, activityResource);
 
-                newActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
+                newActivityInstanceId = IActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
                 base.CreateNewTask(toActivityInstance, activityResource, kit);
 
                 InsertTransitionInstance(processInstance,

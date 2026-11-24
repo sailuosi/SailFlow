@@ -5,13 +5,15 @@ using mooSQL.data;
 using sailflow.data;
 using sailflow.engine.Entity;
 using sailflow.engine.Client;
+using sailflow.engine.Manager;
+using sailflow.engine.Runtime;
 
-namespace sailflow.engine.Manager
+namespace sailflow.runtime.Manager
 {
     /// <summary>
     /// Rule set manager (sf_rule_set)。终态：Client / kit，无 Session、conn、trans。
     /// </summary>
-    public class RuleSetManager
+    public class RuleSetManager : IRuleSetManager
     {
         public RuleSetManager(SailClient client)
         {

@@ -46,7 +46,7 @@ public static class SailEngineFactoryExtensions
         return builder;
     }
 
-    /// <summary>Build 时挂载；未设则 Client 属性懒创建默认实现。</summary>
+    /// <summary>Build 时挂载；Manager 默认实现由 runtime <c>UseSailRuntimeDefaults</c> 注册，未设则 Client 访问时快速失败。</summary>
     internal static void ApplyPendingFactories(SailClient client, ISailCollection services)
     {
         if (services.Properties.TryGetValue(SailBuilderKeys.RuntimeFactory, out var r)

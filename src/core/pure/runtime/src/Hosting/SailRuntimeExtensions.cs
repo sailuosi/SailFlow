@@ -1,16 +1,18 @@
 using System;
 using System.Linq;
 using sailflow.engine.Client;
+using sailflow.engine.Factories;
 using sailflow.engine.Hosting;
 using sailflow.engine.NextStep;
 using sailflow.runtime.Actions;
+using sailflow.runtime.Factories;
 using sailflow.runtime.NextStep;
 
 namespace sailflow.runtime.Hosting;
 
 /// <summary>
 /// 引擎默认扩展能力总包（pure、无重 NuGet）。
-/// 当前：NextStep LINQ Evaluator；Guid 发号；内置 Action/Script/Service（WebApi/SQL/…）。
+/// 当前：DefaultManagerFactory；NextStep LINQ Evaluator；Guid 发号；内置 Action/Script/Service。
 /// Assignee 仍见 <c>UseAssign</c> / <c>sailflow.assignee</c>（后续迁入本包）。
 /// </summary>
 public static class SailRuntimeExtensions
@@ -18,8 +20,8 @@ public static class SailRuntimeExtensions
     public const string FeatureName = SailFeatureNames.SailRuntimeDefaults;
 
     /// <summary>
-    /// 挂载 pure 默认实现：NextStep LINQ Evaluator + GuidString Id 发号 + 内置 Action 方法。
-    /// 可与宿主自己的 <c>UseNextStepRoute</c> / <c>UseSailIds</c> / <c>AddActionMethod</c> 并存（后注册覆盖）。
+    /// 挂载 pure 默认实现：Manager 工厂 + NextStep LINQ Evaluator + GuidString Id 发号 + 内置 Action 方法。
+    /// 可与宿主自己的 <c>UseManagerFactory</c> / <c>UseNextStepRoute</c> / <c>UseSailIds</c> / <c>AddActionMethod</c> 并存（后注册覆盖）。
     /// </summary>
     public static SailClientBuilder UseSailRuntimeDefaults(this SailClientBuilder builder)
     {
@@ -33,6 +35,9 @@ public static class SailRuntimeExtensions
     {
         if (services == null)
             throw new ArgumentNullException(nameof(services));
+
+        services.Properties[SailBuilderKeys.ManagerFactory] =
+            new Func<SailClient, IManagerFactory>(c => new DefaultManagerFactory(c));
 
         // 复用 NextStep 单一注册表；不另开 Evaluator 表
         services.UseNextStepRoute(r =>
@@ -60,11 +65,12 @@ public static class SailRuntimeExtensions
         return services;
     }
 
-    /// <summary>已 Build 的 Client：补挂默认 LINQ Evaluator + Guid 发号 + 内置 Action 方法。</summary>
+    /// <summary>已 Build 的 Client：补挂默认 Manager 工厂 + LINQ Evaluator + Guid 发号 + 内置 Action 方法。</summary>
     public static SailClient UseSailRuntimeDefaults(this SailClient client)
     {
         if (client == null)
             throw new ArgumentNullException(nameof(client));
+        client.ManagerFactory = new DefaultManagerFactory(client);
         client.UseNextStepRoute(r =>
         {
             r.WithoutDefaultLinqEvaluator();

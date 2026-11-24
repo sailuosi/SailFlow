@@ -633,7 +633,7 @@ namespace sailflow.engine.Hooks
         }
 
         private async Task<bool> ProcessOneOutboxRowAsync(
-            HookOutboxManager om,
+            IHookOutboxManager om,
             HookOutboxEntity row,
             int maxAttempts,
             CancellationToken cancellationToken)

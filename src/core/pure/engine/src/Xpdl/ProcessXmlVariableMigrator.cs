@@ -47,7 +47,7 @@ namespace sailflow.engine.Xpdl
             }
             catch (Exception ex)
             {
-                result.Errors.Add("ProcessManager.GetAll: " + ex.Message);
+                result.Errors.Add("IProcessManager.GetAll: " + ex.Message);
                 return result;
             }
 

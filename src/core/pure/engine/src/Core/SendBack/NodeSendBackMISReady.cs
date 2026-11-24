@@ -33,8 +33,8 @@ namespace sailflow.engine.Runtime
         {
             var runner = base.SendBackOperation.ActivityResource.AppRunner;
             var runningNode = base.SendBackOperation.BackwardFromActivityInstance;
-            var runningMainNode = base.ActivityInstanceManager.GetById(runningNode.MainActInstanceId);
-            var previousActivityInstance = base.ActivityInstanceManager.GetPreviousActivityInstanceSimple(Kit.useSQL(), runningNode, base.SendBackOperation.BackwardToTaskActivity.ActivityId);
+            var runningMainNode = base.IActivityInstanceManager.GetById(runningNode.MainActInstanceId);
+            var previousActivityInstance = base.IActivityInstanceManager.GetPreviousActivityInstanceSimple(Kit.useSQL(), runningNode, base.SendBackOperation.BackwardToTaskActivity.ActivityId);
 
             //创建撤销到上一步的节点记录
             //Create a node record to sendback to the previous step
@@ -51,7 +51,7 @@ namespace sailflow.engine.Runtime
             //If the previous node is also a co signing node, update the main node status to running status
             if (previousActivityInstance.ActivityType == (short)ActivityTypeEnum.MultiSignNode)
             {
-                base.ActivityInstanceManager.Rerun(Kit.useSQL(), previousActivityInstance.MainActInstanceId, runner);
+                base.IActivityInstanceManager.Rerun(Kit.useSQL(), previousActivityInstance.MainActInstanceId, runner);
             }
         }
 
@@ -84,9 +84,9 @@ namespace sailflow.engine.Runtime
             rollbackPreviousActivityInstance.SignIds = base.SendBackOperation.BackwardToTaskPerformer.UserId;     
             rollbackPreviousActivityInstance.SignNames = base.SendBackOperation.BackwardToTaskPerformer.UserName;
 
-            base.ActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
+            base.IActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
 
-            base.TaskManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance, base.SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
+            base.ITaskManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance, base.SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
 
             base.InsertTransitionInstance(processInstance,
                 fromActivityInstance,

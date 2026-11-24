@@ -14,14 +14,15 @@ using sailflow.engine.Logging;
 using sailflow.engine.Runtime;
 using sailflow.engine.Xpdl;
 using sailflow.hub.Localize;
+using sailflow.engine.Manager;
 
-namespace sailflow.engine.Manager
+namespace sailflow.runtime.Manager
 {
     /// <summary>
     /// Activity Instance Manager
     /// 活动实例管理类
     /// </summary>
-    public class ActivityInstanceManager
+    public class ActivityInstanceManager : IActivityInstanceManager
     {
         public ActivityInstanceManager(SailClient client)
         {
@@ -54,13 +55,13 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal ActivityInstanceEntity GetById(SQLBuilder kit, string activityInstanceId)
+        public ActivityInstanceEntity GetById(SQLBuilder kit, string activityInstanceId)
             => kit.findRowById<ActivityInstanceEntity>(activityInstanceId);
 
         /// <summary>
         /// 异步按 Id 取活动实例（Clip take(1)，可取消）。与同步 Repo.GetById 双轨。
         /// </summary>
-        internal async Task<ActivityInstanceEntity> GetByIdAsync(
+        public async Task<ActivityInstanceEntity> GetByIdAsync(
             SQLBuilder kit,
             string activityInstanceId,
             CancellationToken cancellationToken = default)
@@ -77,7 +78,7 @@ namespace sailflow.engine.Manager
         /// Obtain the current running node information of the process
         /// 获取流程当前运行节点信息
         /// </summary>
-        internal ActivityInstanceEntity GetRunningNode(FlowCommandContext runner)
+        public ActivityInstanceEntity GetRunningNode(FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             return GetRunningNode(kit, runner, out _);
@@ -87,7 +88,7 @@ namespace sailflow.engine.Manager
         /// Obtain the current running node information of the process
         /// 获取流程当前运行节点信息
         /// </summary>
-        internal ActivityInstanceEntity GetRunningNode(FlowCommandContext runner,
+        public ActivityInstanceEntity GetRunningNode(FlowCommandContext runner,
             out TaskViewEntity taskView)
         {
             var kit = Sail.UseRunSQL();
@@ -98,7 +99,7 @@ namespace sailflow.engine.Manager
         /// Obtain the current running node information of the process
         /// 获取流程当前运行节点信息
         /// </summary>
-        internal ActivityInstanceEntity GetRunningNode(SQLBuilder kit,
+        public ActivityInstanceEntity GetRunningNode(SQLBuilder kit,
             FlowCommandContext runner,
             out TaskViewEntity taskView)
         {
@@ -119,7 +120,7 @@ namespace sailflow.engine.Manager
             {
                 var message = Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.error");
                 var e = new WorkflowException(message);
-                LogManager.RecordLog(Sail, message, LogEventType.Exception, LogPriority.Normal, null, e);
+                ILogManager.RecordLog(Sail, message, LogEventType.Exception, LogPriority.Normal, null, e);
                 throw e;
             }
 
@@ -145,7 +146,7 @@ namespace sailflow.engine.Manager
                 {
                     var msgException = Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.unique.error");
                     var e = new WorkflowException(msgException);
-                    LogManager.RecordLog(Sail, Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.error"),
+                    ILogManager.RecordLog(Sail, Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.error"),
                         LogEventType.Exception, LogPriority.Normal, null, e);
                     throw e;
                 }
@@ -156,7 +157,7 @@ namespace sailflow.engine.Manager
         /// <summary>
         /// 异步获取当前运行节点（可取消）。返回 (Node, TaskView)；语义对齐同步 <see cref="GetRunningNode(SQLBuilder, FlowCommandContext, out TaskViewEntity)"/>。
         /// </summary>
-        internal async Task<(ActivityInstanceEntity Node, TaskViewEntity TaskView)> GetRunningNodeAsync(
+        public async Task<(ActivityInstanceEntity Node, TaskViewEntity TaskView)> GetRunningNodeAsync(
             SQLBuilder kit,
             FlowCommandContext runner,
             CancellationToken cancellationToken = default)
@@ -183,7 +184,7 @@ namespace sailflow.engine.Manager
             {
                 var message = Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.error");
                 var e = new WorkflowException(message);
-                LogManager.RecordLog(Sail, message, LogEventType.Exception, LogPriority.Normal, null, e);
+                ILogManager.RecordLog(Sail, message, LogEventType.Exception, LogPriority.Normal, null, e);
                 throw e;
             }
 
@@ -213,7 +214,7 @@ namespace sailflow.engine.Manager
                 {
                     var msgException = Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.unique.error");
                     var e = new WorkflowException(msgException);
-                    LogManager.RecordLog(Sail, Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.error"),
+                    ILogManager.RecordLog(Sail, Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.error"),
                         LogEventType.Exception, LogPriority.Normal, null, e);
                     throw e;
                 }
@@ -226,7 +227,7 @@ namespace sailflow.engine.Manager
         /// Get the instance of the return source activity
         /// 获取退回源活动实例
         /// </summary>
-        internal ActivityInstanceEntity GetBackSrcActivityInstance(string currentActivityInstanceId)
+        public ActivityInstanceEntity GetBackSrcActivityInstance(string currentActivityInstanceId)
         {
             var currentActivityInstance = GetById(currentActivityInstanceId);
             var backSrcActivityInstance = GetById(currentActivityInstance.BackSrcActInstanceId);
@@ -238,7 +239,7 @@ namespace sailflow.engine.Manager
         /// Determine whether it is a processing task for a certain user
         /// 判断是否是某个用户的办理任务（以打开中的 Task.SignId 为准，不用活动 SignIds 汇总）
         /// </summary>
-        internal bool IsMineTask(ActivityInstanceEntity entity,
+        public bool IsMineTask(ActivityInstanceEntity entity,
             string userId)
         {
             if (entity == null || string.IsNullOrWhiteSpace(userId))
@@ -252,7 +253,7 @@ namespace sailflow.engine.Manager
         /// Determine whether the node is in a running state
         /// 判断节点是否处于运行状态
         /// </summary>
-        internal Boolean IncludeRunningState(ActivityInstanceEntity activityInstance)
+        public Boolean IncludeRunningState(ActivityInstanceEntity activityInstance)
         {
             var isIncluded = false;
             if (activityInstance.ActivityState == (short)ActivityStateEnum.Ready
@@ -268,7 +269,7 @@ namespace sailflow.engine.Manager
         /// Get Activity Instance
         /// 获取活动节点实例
         /// </summary>
-        internal IList<ActivityInstanceEntity> GetActivityInstanceList(SQLBuilder kit, string processInstanceId)
+        public IList<ActivityInstanceEntity> GetActivityInstanceList(SQLBuilder kit, string processInstanceId)
         {
             var clip = kit.useClip();
             clip.from<ActivityInstanceEntity>(out var ai)
@@ -281,7 +282,7 @@ namespace sailflow.engine.Manager
         /// Get Activity Instance Latest
         /// 获取活动节点实例
         /// </summary>
-        internal ActivityInstanceEntity GetActivityInstanceLatest(string processInstanceId,
+        public ActivityInstanceEntity GetActivityInstanceLatest(string processInstanceId,
             string activityId)
         {
             var kit = Sail.UseRunSQL();
@@ -292,7 +293,7 @@ namespace sailflow.engine.Manager
         /// Get Activity Instance Latest
         /// 获取最近的节点实例
         /// </summary>
-        internal ActivityInstanceEntity GetActivityInstanceLatest(SQLBuilder kit, string processInstanceId,
+        public ActivityInstanceEntity GetActivityInstanceLatest(SQLBuilder kit, string processInstanceId,
             string activityId)
         {
             var clip = kit.useClip();
@@ -307,7 +308,7 @@ namespace sailflow.engine.Manager
         /// Get Activity Instance Latest
         /// 获取最近的节点实例
         /// </summary>
-        internal ActivityInstanceEntity GetActivityInstanceLatest(string bizPK,
+        public ActivityInstanceEntity GetActivityInstanceLatest(string bizPK,
             string processId,
             string activityId)
         {
@@ -315,7 +316,7 @@ namespace sailflow.engine.Manager
             return GetActivityInstanceLatest(kit, bizPK, processId, activityId);
         }
 
-        internal ActivityInstanceEntity GetActivityInstanceLatest(SQLBuilder kit, string bizPK,
+        public ActivityInstanceEntity GetActivityInstanceLatest(SQLBuilder kit, string bizPK,
             string processId,
             string activityId)
         {
@@ -341,7 +342,7 @@ namespace sailflow.engine.Manager
         /// Get Activity Instance List Latest
         /// 获取最近的节点实例
         /// </summary>
-        internal List<ActivityInstanceEntity> GetActivityInstanceList(string processId,
+        public List<ActivityInstanceEntity> GetActivityInstanceList(string processId,
             string version,
             string activityId)
         {
@@ -365,7 +366,7 @@ namespace sailflow.engine.Manager
         /// Get activity instances with running status
         /// 获取运行状态的活动实例
         /// </summary>
-        internal ActivityInstanceEntity GetActivityRunning(SQLBuilder kit, string processInstanceId,
+        public ActivityInstanceEntity GetActivityRunning(SQLBuilder kit, string processInstanceId,
             string activityId)
         {
             return GetActivityByState(kit, processInstanceId, activityId, ActivityStateEnum.Running);
@@ -375,7 +376,7 @@ namespace sailflow.engine.Manager
         /// Obtain activity instances based on states
         /// 根据状态获取活动实例
         /// </summary>
-        internal ActivityInstanceEntity GetActivityByState(SQLBuilder kit, string processInstanceId,
+        public ActivityInstanceEntity GetActivityByState(SQLBuilder kit, string processInstanceId,
             string activityId,
             ActivityStateEnum activityState)
         {
@@ -416,7 +417,7 @@ namespace sailflow.engine.Manager
         /// Obtain instances of activities that have already been completed in the previous step
         /// 获取上一步已经完成活动的实例
         /// </summary>
-        internal ActivityInstanceEntity GetPreviousActivityInstanceSimple(ActivityInstanceEntity runningNode,
+        public ActivityInstanceEntity GetPreviousActivityInstanceSimple(ActivityInstanceEntity runningNode,
             string previousActivityId)
         {
             var kit = Sail.UseRunSQL();
@@ -427,7 +428,7 @@ namespace sailflow.engine.Manager
         /// Obtain instances of activities that have already been completed in the previous step
         /// 获取上一步已经完成活动的实例
         /// </summary>
-        internal ActivityInstanceEntity GetPreviousActivityInstanceSimple(SQLBuilder kit, ActivityInstanceEntity runningNode,
+        public ActivityInstanceEntity GetPreviousActivityInstanceSimple(SQLBuilder kit, ActivityInstanceEntity runningNode,
             string previousActivityId)
         {
             ActivityInstanceEntity originalRunningNode = null;
@@ -465,7 +466,7 @@ namespace sailflow.engine.Manager
         /// Obtain activity instances with completion status
         /// 获取完成状态的活动实例
         /// </summary>
-        internal IList<ActivityInstanceEntity> GetActivityInstanceListCompletedSimple(string processInstanceId,
+        public IList<ActivityInstanceEntity> GetActivityInstanceListCompletedSimple(string processInstanceId,
             string activityId)
         {
             var kit = Sail.UseRunSQL();
@@ -476,7 +477,7 @@ namespace sailflow.engine.Manager
         /// Obtain activity instances with completion status
         /// 获取完成状态的活动实例
         /// </summary>
-        internal IList<ActivityInstanceEntity> GetActivityInstanceListCompletedSimple(SQLBuilder kit, string processInstanceId,
+        public IList<ActivityInstanceEntity> GetActivityInstanceListCompletedSimple(SQLBuilder kit, string processInstanceId,
             string activityId)
         {
             var clip = kit.useClip();
@@ -492,7 +493,7 @@ namespace sailflow.engine.Manager
         /// Retrieve activity instance information from task Id
         /// 由任务ID获取活动实例信息
         /// </summary>
-        internal ActivityInstanceEntity GetByTask(string taskId)
+        public ActivityInstanceEntity GetByTask(string taskId)
         {
             var kit = Sail.UseRunSQL();
             return GetByTask(kit, taskId);
@@ -502,7 +503,7 @@ namespace sailflow.engine.Manager
         /// Retrieve activity instance information from task Id
         /// 由任务ID获取活动实例信息
         /// </summary>
-        internal ActivityInstanceEntity GetByTask(SQLBuilder kit, string taskId)
+        public ActivityInstanceEntity GetByTask(SQLBuilder kit, string taskId)
         {
             ActivityInstanceEntity entity = null;
             var clip = kit.useClip();
@@ -533,7 +534,7 @@ namespace sailflow.engine.Manager
         /// Get the activity nodes running in the process instance
         /// 获取流程实例中运行的活动节点
         /// </summary>
-        internal IEnumerable<ActivityInstanceEntity> GetRunningActivityInstanceList(SQLBuilder kit, string bizPK,
+        public IEnumerable<ActivityInstanceEntity> GetRunningActivityInstanceList(SQLBuilder kit, string bizPK,
             string processId,
             string version)
         {
@@ -556,7 +557,7 @@ namespace sailflow.engine.Manager
         /// <summary>
         /// 异步获取运行中活动实例列表（可取消）。
         /// </summary>
-        internal async Task<IEnumerable<ActivityInstanceEntity>> GetRunningActivityInstanceListAsync(
+        public async Task<IEnumerable<ActivityInstanceEntity>> GetRunningActivityInstanceListAsync(
             SQLBuilder kit,
             string bizPK,
             string processId,
@@ -584,7 +585,7 @@ namespace sailflow.engine.Manager
         /// Retrieve the list of completed child nodes under the main node
         /// 获取主节点下已经完成的子节点列表
         /// </summary>
-        internal List<ActivityInstanceEntity> GetMultipleInstanceListCompleted(string mainActivityInstanceId)
+        public List<ActivityInstanceEntity> GetMultipleInstanceListCompleted(string mainActivityInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetMultipleInstanceListCompleted(kit, mainActivityInstanceId);
@@ -594,7 +595,7 @@ namespace sailflow.engine.Manager
         /// Retrieve the list of completed child nodes under the main node
         /// 获取主节点下已经完成的子节点列表
         /// </summary>
-        internal List<ActivityInstanceEntity> GetMultipleInstanceListCompleted(SQLBuilder kit, string mainActivityInstanceId)
+        public List<ActivityInstanceEntity> GetMultipleInstanceListCompleted(SQLBuilder kit, string mainActivityInstanceId)
         {
             var clip = kit.useClip();
             clip.from<ActivityInstanceEntity>(out var ai)
@@ -609,7 +610,7 @@ namespace sailflow.engine.Manager
         /// Retrieve completed multi instance nodes
         /// 获取已经完成的多实例子节点
         /// </summary>
-        internal List<ActivityInstanceEntity> GetPreviousParallelMultipleInstanceListCompleted(ActivityInstanceEntity runningNode,
+        public List<ActivityInstanceEntity> GetPreviousParallelMultipleInstanceListCompleted(ActivityInstanceEntity runningNode,
             string previousActivityId)
         {
             var kit = Sail.UseRunSQL();
@@ -620,7 +621,7 @@ namespace sailflow.engine.Manager
         /// Retrieve completed multi instance nodes
         /// 获取已经完成的多实例子节点
         /// </summary>
-        internal List<ActivityInstanceEntity> GetPreviousParallelMultipleInstanceListCompleted(SQLBuilder kit, ActivityInstanceEntity runningNode,
+        public List<ActivityInstanceEntity> GetPreviousParallelMultipleInstanceListCompleted(SQLBuilder kit, ActivityInstanceEntity runningNode,
             string previousActivityId)
         {
             ActivityInstanceEntity originalRunningNode = null;
@@ -697,7 +698,7 @@ namespace sailflow.engine.Manager
         /// 获取同一批的主节点下的子节点列表记录
         /// 包括：需要过滤回退后的回退标识类型的过滤
         /// </summary>
-        internal IList<ActivityInstanceEntity> GetActivityMulitipleInstanceWithStateBatch(SQLBuilder kit, string processInstanceId,
+        public IList<ActivityInstanceEntity> GetActivityMulitipleInstanceWithStateBatch(SQLBuilder kit, string processInstanceId,
             string mainActivityInstanceId,
             short? activityState)
         {
@@ -714,7 +715,7 @@ namespace sailflow.engine.Manager
         /// Obtain multi instance nodes of signing together nodes based on activity status
         /// 根据活动状态获取会签节点的多实例节点
         /// </summary>
-        internal List<ActivityInstanceEntity> GetActivityMulitipleInstanceWithState(SQLBuilder kit, string mainActivityInstanceId,
+        public List<ActivityInstanceEntity> GetActivityMulitipleInstanceWithState(SQLBuilder kit, string mainActivityInstanceId,
             string processInstanceId,
             short? activityState)
         {
@@ -734,7 +735,7 @@ namespace sailflow.engine.Manager
         /// Query the number of branch instances
         /// 查询分支实例的个数
         /// </summary>
-        internal int GetGatewayInstanceCountByTransition(SQLBuilder kit, string splitActivityId,
+        public int GetGatewayInstanceCountByTransition(SQLBuilder kit, string splitActivityId,
             string splitActivityInstanceId,
             string processInstanceId)
         {
@@ -751,7 +752,7 @@ namespace sailflow.engine.Manager
         /// Obtain the number of valid branches
         ///  获取有效的分支数目
         /// </summary>
-        internal List<ActivityInstanceEntity> GetValidSplitedActivityInstanceList(SQLBuilder kit, string processInstanceId,
+        public List<ActivityInstanceEntity> GetValidSplitedActivityInstanceList(SQLBuilder kit, string processInstanceId,
             string splitGatewayInstanceId)
         {
             var clip = kit.useClip();
@@ -772,7 +773,7 @@ namespace sailflow.engine.Manager
         /// Obtain the number of valid branches
         /// 获取有效的子节点列表
         /// </summary>
-        internal List<ActivityInstanceEntity> GetValidActivityInstanceListOfMI(string mainActivityInstanceId,
+        public List<ActivityInstanceEntity> GetValidActivityInstanceListOfMI(string mainActivityInstanceId,
             string processInstanceId)
         {
             var kit = Sail.UseRunSQL();
@@ -783,7 +784,7 @@ namespace sailflow.engine.Manager
         /// Obtain the number of valid branches
         /// 获取有效的子节点列表
         /// </summary>
-        internal List<ActivityInstanceEntity> GetValidActivityInstanceListOfMI(SQLBuilder kit, string mainActivityInstanceId,
+        public List<ActivityInstanceEntity> GetValidActivityInstanceListOfMI(SQLBuilder kit, string mainActivityInstanceId,
             string processInstanceId)
         {
             var clip = kit.useClip();
@@ -831,7 +832,7 @@ namespace sailflow.engine.Manager
         /// Create activity instance
         /// 创建活动实例的对象
         /// </summary>
-        internal ActivityInstanceEntity CreateActivityInstanceObject(string bizChannel,
+        public ActivityInstanceEntity CreateActivityInstanceObject(string bizChannel,
             string bizPK,
             string bizCode,
             string processId,
@@ -892,7 +893,7 @@ namespace sailflow.engine.Manager
         /// Copy child nodes based on the master node
         /// 根据主节点复制子节点
         /// </summary>
-        internal ActivityInstanceEntity CreateActivityInstanceObject(ActivityInstanceEntity main)
+        public ActivityInstanceEntity CreateActivityInstanceObject(ActivityInstanceEntity main)
         {
             ActivityInstanceEntity instance = new ActivityInstanceEntity();
             instance.ActivityId = main.ActivityId;
@@ -921,7 +922,7 @@ namespace sailflow.engine.Manager
         /// Create an object for the activity instance
         /// 创建活动实例的对象
         /// </summary>
-        internal ActivityInstanceEntity CreateBackwardActivityInstanceObject(string bizChannel,
+        public ActivityInstanceEntity CreateBackwardActivityInstanceObject(string bizChannel,
             string bizPK,
             string bizCode,
             string processInstanceId,
@@ -962,7 +963,7 @@ namespace sailflow.engine.Manager
         /// <summary>
         /// 从设计 Activity 拷贝 Leave 快照到 AI（加签只改发起人容器 Leave，不改节点快照）。
         /// </summary>
-        internal static void ApplyLeaveSnapshotFromActivity(ActivityInstanceEntity instance, Activity activity)
+        public static void ApplyLeaveSnapshotFromActivity(ActivityInstanceEntity instance, Activity activity)
         {
             if (instance == null || activity == null)
                 return;
@@ -974,7 +975,7 @@ namespace sailflow.engine.Manager
         /// Update the number of tokens for the activity node
         /// 更新活动节点的Token数目
         /// </summary>
-        internal void IncreaseTokensHad(SQLBuilder kit, string activityInstanceId,
+        public void IncreaseTokensHad(SQLBuilder kit, string activityInstanceId,
             FlowCommandContext runner)
         {
             // CAS 自增：WHERE TokensHad=旧值，避免并行汇聚丢 token
@@ -1011,7 +1012,7 @@ namespace sailflow.engine.Manager
         /// Activity instance read
         /// 活动实例被读取
         /// </summary>
-        internal void Read(SQLBuilder kit, string activityInstanceId,
+        public void Read(SQLBuilder kit, string activityInstanceId,
             FlowCommandContext runner)
         {
             SetActivityState(kit, activityInstanceId, ActivityStateEnum.Running, runner);
@@ -1037,7 +1038,7 @@ namespace sailflow.engine.Manager
         /// Withdraw activity instance
         /// 撤销活动实例
         /// </summary>
-        internal void Withdraw(SQLBuilder kit, string activityInstanceId,
+        public void Withdraw(SQLBuilder kit, string activityInstanceId,
             FlowCommandContext runner)
         {
             EndActivityState(kit, activityInstanceId, ActivityStateEnum.Withdrawed, runner);
@@ -1047,7 +1048,7 @@ namespace sailflow.engine.Manager
         /// Sendback activity instance
         /// 退回活动实例
         /// </summary>
-        internal void SendBack(SQLBuilder kit, string activityInstanceId,
+        public void SendBack(SQLBuilder kit, string activityInstanceId,
             FlowCommandContext runner)
         {
             EndActivityState(kit, activityInstanceId, ActivityStateEnum.Sendbacked, runner);
@@ -1074,13 +1075,13 @@ namespace sailflow.engine.Manager
         /// Complete activity instance
         /// 活动实例完成
         /// </summary>
-        internal void Complete(SQLBuilder kit, string activityInstanceId,
+        public void Complete(SQLBuilder kit, string activityInstanceId,
             FlowCommandContext runner)
         {
             EndActivityState(kit, activityInstanceId, ActivityStateEnum.Completed, runner);
         }
 
-        internal void Complete(SQLBuilder kit, ActivityInstanceEntity activityInstance,
+        public void Complete(SQLBuilder kit, ActivityInstanceEntity activityInstance,
             FlowCommandContext runner)
         {
             activityInstance.ActivityState = (short)ActivityStateEnum.Completed;
@@ -1095,7 +1096,7 @@ namespace sailflow.engine.Manager
         /// Update approval status to agree
         /// 更新审批状态为同意
         /// </summary>
-        internal void SetApprovalStatus(SQLBuilder kit, string activityInstanceId)
+        public void SetApprovalStatus(SQLBuilder kit, string activityInstanceId)
         {
             var activityInstance = GetById(kit, activityInstanceId);
             if (activityInstance.ApprovalStatus == (short)ApprovalStatusEnum.Null)
@@ -1109,7 +1110,7 @@ namespace sailflow.engine.Manager
         /// Update the running nodes between branches and merges to block status
         /// 更新分支和合并之间的运行节点为阻止状态
         /// </summary>
-        internal void UpdateActivityInstanceBlockedBetweenSplitJoin(SQLBuilder kit, Activity gatewayActivity,
+        public void UpdateActivityInstanceBlockedBetweenSplitJoin(SQLBuilder kit, Activity gatewayActivity,
             ActivityInstanceEntity gatewayInstance,
             IProcessModel processModel)
         {
@@ -1149,13 +1150,13 @@ namespace sailflow.engine.Manager
         /// Insert activity instance
         /// 插入活动实例
         /// </summary>
-        internal string Insert(ActivityInstanceEntity entity)
+        public string Insert(ActivityInstanceEntity entity)
         {
             var kit = Sail.UseRunSQL();
             return Insert(kit, entity);
         }
 
-        internal string Insert(SQLBuilder kit, ActivityInstanceEntity entity)
+        public string Insert(SQLBuilder kit, ActivityInstanceEntity entity)
         {
             if (entity.ActivityType == (short)ActivityTypeEnum.GatewayNode
                 && string.IsNullOrEmpty(entity.ActivityName))
@@ -1173,20 +1174,20 @@ namespace sailflow.engine.Manager
         /// Update activity instance
         /// 更新活动实例
         /// </summary>
-        internal void Update(ActivityInstanceEntity entity)
+        public void Update(ActivityInstanceEntity entity)
         {
             var kit = Sail.UseRunSQL();
             Update(kit, entity);
         }
 
-        internal void Update(SQLBuilder kit, ActivityInstanceEntity entity)
+        public void Update(SQLBuilder kit, ActivityInstanceEntity entity)
             => kit.useRepo<ActivityInstanceEntity>().Update(entity);
 
         /// <summary>
         /// Cancel activity instance
         /// 取消节点运行
         /// </summary>
-        internal void Cancel(SQLBuilder kit, string activityInstanceId,
+        public void Cancel(SQLBuilder kit, string activityInstanceId,
             FlowCommandContext runner)
         {
             var clip = kit.useClip();
@@ -1208,7 +1209,7 @@ namespace sailflow.engine.Manager
         /// <summary>
         /// 取消主下未完成子 AI，并<strong>递归</strong>取消其后代（加签嵌套子树）。
         /// </summary>
-        internal void CancelUnCompletedMultipleInstance(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner)
+        public void CancelUnCompletedMultipleInstance(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner)
         {
             CancelUnCompletedMultipleInstanceRecursive(kit, mainActivityInstanceId, runner, depth: 0);
         }
@@ -1216,7 +1217,7 @@ namespace sailflow.engine.Manager
         /// <summary>
         /// 淹没节点下全部未完成 SignForward 容器及其子树（Race 旁关时调用）。
         /// </summary>
-        internal void CancelSignForwardSubtreeUnder(SQLBuilder kit, string rootActivityInstanceId, FlowCommandContext runner)
+        public void CancelSignForwardSubtreeUnder(SQLBuilder kit, string rootActivityInstanceId, FlowCommandContext runner)
         {
             if (string.IsNullOrWhiteSpace(rootActivityInstanceId))
                 return;
@@ -1317,7 +1318,7 @@ namespace sailflow.engine.Manager
         /// Withdraw the master node and its multiple instance nodes below it
         /// 撤销主节点及其下面的多实例子节点
         /// </summary>
-        internal void WithdrawMainIncludedChildNodes(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner)
+        public void WithdrawMainIncludedChildNodes(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner)
         {
             SetActivityState(kit, mainActivityInstanceId, ActivityStateEnum.Withdrawed, runner);
             WithdrawMultipleInstance(kit, mainActivityInstanceId, runner);
@@ -1348,7 +1349,7 @@ namespace sailflow.engine.Manager
         /// Put the node back in a suspended state
         /// 重新使节点处于挂起状态
         /// </summary>
-        internal void Resuspend(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner)
+        public void Resuspend(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner)
         {
             SetActivityState(kit, activityInstanceId, ActivityStateEnum.Suspended, runner);
         }
@@ -1357,7 +1358,7 @@ namespace sailflow.engine.Manager
         /// Put the node back in a running state
         /// 重新使节点处于运行状态
         /// </summary>
-        internal void Rerun(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner)
+        public void Rerun(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner)
         {
             SetActivityState(kit, activityInstanceId, ActivityStateEnum.Running, runner);
         }
@@ -1366,13 +1367,13 @@ namespace sailflow.engine.Manager
         /// Delete activity instance
         /// 删除活动实例
         /// </summary>
-        internal void Delete(string activityInstanceId)
+        public void Delete(string activityInstanceId)
         {
             var kit = Sail.UseRunSQL();
             Delete(kit, activityInstanceId);
         }
 
-        internal void Delete(SQLBuilder kit, string activityInstanceId)
+        public void Delete(SQLBuilder kit, string activityInstanceId)
             => kit.useRepo<ActivityInstanceEntity, string>().DeleteById(activityInstanceId);
         #endregion
 
@@ -1381,7 +1382,7 @@ namespace sailflow.engine.Manager
         /// Agree
         /// 同意
         /// </summary>
-        internal void Agree(string taskId)
+        public void Agree(string taskId)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -1398,7 +1399,7 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal void Agree(SQLBuilder kit, string taskId)
+        public void Agree(SQLBuilder kit, string taskId)
         {
             var activityInstance = GetByTask(kit, taskId);
             activityInstance.ApprovalStatus = (short)ApprovalStatusEnum.Agreed;
@@ -1409,7 +1410,7 @@ namespace sailflow.engine.Manager
         /// Refuse
         /// 拒绝
         /// </summary>
-        internal void Refuse(string taskId)
+        public void Refuse(string taskId)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -1426,7 +1427,7 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal void Refuse(SQLBuilder kit, string taskId)
+        public void Refuse(SQLBuilder kit, string taskId)
         {
             var activityInstance = GetByTask(kit, taskId);
             activityInstance.ApprovalStatus = (short)ApprovalStatusEnum.Refused;
@@ -1437,7 +1438,7 @@ namespace sailflow.engine.Manager
         /// Check the pass type of the current node
         ///  检查当前节点的通过类型
         /// </summary>
-        internal NodePassedResult CheckActivityInstancePassedResult(SQLBuilder kit, string activityInstanceId)
+        public NodePassedResult CheckActivityInstancePassedResult(SQLBuilder kit, string activityInstanceId)
         {
             var result = NodePassedResult.Create(NodePassedTypeEnum.Default);
             if (activityInstanceId != null)
@@ -1461,7 +1462,7 @@ namespace sailflow.engine.Manager
         /// Check the satisfaction of the pass rate of the co signing nodes
         /// 检查会签节点通过率的满足情况
         /// </summary>
-        internal NodePassedTypeEnum CheckMIPassRateInfo(SQLBuilder kit, ActivityInstanceEntity currentActivityInstance,
+        public NodePassedTypeEnum CheckMIPassRateInfo(SQLBuilder kit, ActivityInstanceEntity currentActivityInstance,
             ActivityInstanceEntity mainActivityInstance)
         {
             return EvaluateLeaveOnActivity(kit, currentActivityInstance, mainActivityInstance);
@@ -1470,7 +1471,7 @@ namespace sailflow.engine.Manager
         /// <summary>
         /// 对主体 AI 做 Leave：seats = 直属 Task ∪ 直属子 AI 折合（同级）。
         /// </summary>
-        internal NodePassedTypeEnum EvaluateLeaveOnActivity(
+        public NodePassedTypeEnum EvaluateLeaveOnActivity(
             SQLBuilder kit,
             ActivityInstanceEntity currentActivityInstance,
             ActivityInstanceEntity subjectActivityInstance)
@@ -1574,7 +1575,7 @@ namespace sailflow.engine.Manager
         /// Obtain the approval rate type of the countersignature node
         /// 获取会签节点的审批通过率类型
         /// </summary>
-        internal Boolean GetMiApprovalThresholdStatus(SQLBuilder kit, ActivityInstanceEntity currentActivityInstance,
+        public Boolean GetMiApprovalThresholdStatus(SQLBuilder kit, ActivityInstanceEntity currentActivityInstance,
             ActivityInstanceEntity mainActivityInstance)
         {
             var finalPassed = false;

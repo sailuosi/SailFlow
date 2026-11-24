@@ -9,7 +9,7 @@ namespace sailflow.engine.Entity
 {
     /// <summary>
     /// 流程变量查询条件（非落库）。
-    /// 供 <c>ProcessVariableManager</c> 按作用域 + 实例/活动 + 名称检索运行时变量。
+    /// 供 <c>IProcessVariableManager</c> 按作用域 + 实例/活动 + 名称检索运行时变量。
     /// </summary>
     public class ProcessVariableQuery
     {

@@ -5,12 +5,14 @@ using mooSQL.data;
 using sailflow.engine.Entity;
 using sailflow.engine.Client;
 using sailflow.engine.Xpdl;
+using sailflow.engine.Manager;
+using sailflow.engine.Runtime;
 
 using sailflow.engine.Factories;
 
-namespace sailflow.engine.Manager
+namespace sailflow.runtime.Manager
 {
-    internal class ProcessVariableResolver
+    public class ProcessVariableResolver : IProcessVariableResolver
     {
         public ProcessVariableResolver(SailClient client)
         {
@@ -20,7 +22,7 @@ namespace sailflow.engine.Manager
         protected SailClient Sail { get; }
 
         /// <summary>检查必填输出变量是否存在（有事务时用上游 kit）。</summary>
-        internal bool CheckVariableRequired(
+        public bool CheckVariableRequired(
             SQLBuilder kit,
             TaskViewEntity taskView,
             Activity activity,
@@ -40,7 +42,7 @@ namespace sailflow.engine.Manager
             if (requiredNames.Count == 0)
                 return isCheckPassed;
 
-            var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
+            var pvm = Sail.ManagerFactory.ProcessVariables;
             var loaded = pvm.GetVariableListByActivity(
                 kit,
                 taskView.ProcessInstanceId,

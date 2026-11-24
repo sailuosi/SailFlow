@@ -16,14 +16,16 @@ using sailflow.engine.Xpdl;
 using sailflow.hub.Localize;
 using sailflow.hub.Resource;
 using sailflow.WebUtility;
+using sailflow.engine.Manager;
+using sailflow.engine.Runtime;
 
-namespace sailflow.engine.Manager
+namespace sailflow.runtime.Manager
 {
     /// <summary>
     /// 流程实例（sf_proc_instance）。
     /// 终态：无事务从 Client 取 kit；有事务只用传入的同一个 kit。
     /// </summary>
-    internal class ProcessInstanceManager
+    public class ProcessInstanceManager : IProcessInstanceManager
     {
         public ProcessInstanceManager(SailClient client)
         {
@@ -39,26 +41,26 @@ namespace sailflow.engine.Manager
             return ex;
         }
         #region Query
-        internal ProcessInstanceEntity GetProcessInstanceLatest(string bizPK, string processId, string version)
+        public ProcessInstanceEntity GetProcessInstanceLatest(string bizPK, string processId, string version)
         {
             var kit = Sail.UseRunSQL();
             return GetProcessInstanceLatest(kit, bizPK, processId, version);
         }
 
-        internal ProcessInstanceEntity GetProcessInstanceLatest(
+        public ProcessInstanceEntity GetProcessInstanceLatest(
             SQLBuilder kit, string bizPK, string processId, string version)
             => GetProcessInstanceCurrent(kit, bizPK, processId, version);
 
-        internal ProcessInstanceEntity GetById(string processInstanceId)
+        public ProcessInstanceEntity GetById(string processInstanceId)
             => Sail.UseRunSQL().findRowById<ProcessInstanceEntity>(processInstanceId);
 
-        internal ProcessInstanceEntity GetById(SQLBuilder kit, string processInstanceId)
+        public ProcessInstanceEntity GetById(SQLBuilder kit, string processInstanceId)
             => kit.findRowById<ProcessInstanceEntity>(processInstanceId);
 
         /// <summary>
         /// 异步按 Id 取流程实例（Clip take(1)，可取消）。
         /// </summary>
-        internal async Task<ProcessInstanceEntity> GetByIdAsync(
+        public async Task<ProcessInstanceEntity> GetByIdAsync(
             SQLBuilder kit,
             string processInstanceId,
             CancellationToken cancellationToken = default)
@@ -81,40 +83,40 @@ namespace sailflow.engine.Manager
             return clip.select(pi).take(1).queryList()?.FirstOrDefault();
         }
 
-        internal ProcessInstanceEntity GetByActivity(string activityInstanceId)
+        public ProcessInstanceEntity GetByActivity(string activityInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetByActivity(kit, activityInstanceId);
         }
 
-        internal ProcessInstanceEntity GetByActivity(SQLBuilder kit, string activityInstanceId)
+        public ProcessInstanceEntity GetByActivity(SQLBuilder kit, string activityInstanceId)
         {
             var activityInstance = kit.findRowById<ActivityInstanceEntity>(activityInstanceId);
             return kit.findRowById<ProcessInstanceEntity>(activityInstance.ProcessInstanceId);
         }
 
-        internal bool IsSubProcess(ProcessInstanceEntity entity)
+        public bool IsSubProcess(ProcessInstanceEntity entity)
             => !string.IsNullOrWhiteSpace(entity.InvokedActInstanceId) && !string.IsNullOrEmpty(entity.InvokedActivityId);
 
-        internal User GetProcessInitiator(string processInstanceId)
+        public User GetProcessInitiator(string processInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetProcessInitiator(kit, processInstanceId);
         }
 
-        internal User GetProcessInitiator(SQLBuilder kit, string processInstanceId)
+        public User GetProcessInitiator(SQLBuilder kit, string processInstanceId)
         {
             var entity = GetById(kit, processInstanceId);
             return new User { UserId = entity.CreatedUserId, UserName = entity.CreatedUserName };
         }
 
-        internal ProcessInstanceEntity GetProcessInstanceCurrent(string bizPK, string processId, string version)
+        public ProcessInstanceEntity GetProcessInstanceCurrent(string bizPK, string processId, string version)
         {
             var kit = Sail.UseRunSQL();
             return GetProcessInstanceCurrent(kit, bizPK, processId, version);
         }
 
-        internal ProcessInstanceEntity GetProcessInstanceCurrent(
+        public ProcessInstanceEntity GetProcessInstanceCurrent(
             SQLBuilder kit, string bizPK, string processId, string version)
         {
             var clip = kit.useClip();
@@ -127,7 +129,7 @@ namespace sailflow.engine.Manager
             return clip.select(pi).take(1).queryList()?.FirstOrDefault();
         }
 
-        internal IEnumerable<ProcessInstanceEntity> GetProcessInstance(string bizPK)
+        public IEnumerable<ProcessInstanceEntity> GetProcessInstance(string bizPK)
         {
             var kit = Sail.UseRunSQL();
             var clip = kit.useClip();
@@ -138,7 +140,7 @@ namespace sailflow.engine.Manager
             return clip.select(pi).queryList();
         }
 
-        internal IEnumerable<ProcessInstanceEntity> GetProcessInstance(
+        public IEnumerable<ProcessInstanceEntity> GetProcessInstance(
             SQLBuilder kit, string bizPK, string processId, string version)
         {
             var clip = kit.useClip();
@@ -151,7 +153,7 @@ namespace sailflow.engine.Manager
             return clip.select(pi).queryList();
         }
 
-        internal ProcessInstanceEntity GetSubProcessInstance(
+        public ProcessInstanceEntity GetSubProcessInstance(
             SQLBuilder kit, string bizPK, string processId, string subProcessId)
         {
             var clip = kit.useClip();
@@ -170,7 +172,7 @@ namespace sailflow.engine.Manager
             throw FailThrow(new WorkflowException(Sail.Messages.GetEngineMessage("processinstancemanager.GetSubProcessInstance.error")), "GetSubProcessInstance");
         }
 
-        internal ProcessInstanceEntity GetRunningProcessInstance(string bizPK, string processId)
+        public ProcessInstanceEntity GetRunningProcessInstance(string bizPK, string processId)
         {
             var kit = Sail.UseRunSQL();
             var clip = kit.useClip();
@@ -188,7 +190,7 @@ namespace sailflow.engine.Manager
             return EnumHelper.GetFirst<ProcessInstanceEntity>(list);
         }
 
-        internal bool CheckSubProcessInstanceCompleted(SQLBuilder kit, string activityInstanceId, string activityId)
+        public bool CheckSubProcessInstanceCompleted(SQLBuilder kit, string activityInstanceId, string activityId)
         {
             var clip = kit.useClip();
             clip.from<ProcessInstanceEntity>(out var pi)
@@ -203,29 +205,29 @@ namespace sailflow.engine.Manager
         #endregion
 
         #region Write
-        internal string Insert(ProcessInstanceEntity entity)
+        public string Insert(ProcessInstanceEntity entity)
         {
             var kit = Sail.UseRunSQL();
             return Insert(kit, entity);
         }
 
-        internal string Insert(SQLBuilder kit, ProcessInstanceEntity entity)
+        public string Insert(SQLBuilder kit, ProcessInstanceEntity entity)
         {
             var newId = kit.useRepo<ProcessInstanceEntity, string>().InsertReturnId(entity);
             entity.ProcessInstanceId = newId;
             return newId;
         }
 
-        internal void Update(ProcessInstanceEntity entity)
+        public void Update(ProcessInstanceEntity entity)
         {
             var kit = Sail.UseRunSQL();
             Update(kit, entity);
         }
 
-        internal void Update(SQLBuilder kit, ProcessInstanceEntity entity)
+        public void Update(SQLBuilder kit, ProcessInstanceEntity entity)
             => kit.useRepo<ProcessInstanceEntity>().Update(entity);
 
-        internal ProcessInstanceEntity CreateNewProcessInstanceObject(
+        public ProcessInstanceEntity CreateNewProcessInstanceObject(
             FlowCommandContext runner,
             ProcessEntity processEntity,
             SubProcessNode subProcessNode = null,
@@ -414,13 +416,13 @@ namespace sailflow.engine.Manager
         #endregion
 
         #region Business rules
-        internal ProcessInstanceEntity Complete(string processInstanceId, FlowCommandContext runner)
+        public ProcessInstanceEntity Complete(string processInstanceId, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             return Complete(kit, processInstanceId, runner);
         }
 
-        internal ProcessInstanceEntity Complete(SQLBuilder kit, string processInstanceId, FlowCommandContext runner)
+        public ProcessInstanceEntity Complete(SQLBuilder kit, string processInstanceId, FlowCommandContext runner)
         {
             var processInstance = GetById(kit, processInstanceId);
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), processInstance.ProcessState.ToString());
@@ -439,13 +441,13 @@ namespace sailflow.engine.Manager
             return processInstance;
         }
 
-        internal void Suspend(string processInstanceId, FlowCommandContext runner)
+        public void Suspend(string processInstanceId, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             Suspend(kit, processInstanceId, runner);
         }
 
-        internal void Suspend(SQLBuilder kit, string processInstanceId, FlowCommandContext runner)
+        public void Suspend(SQLBuilder kit, string processInstanceId, FlowCommandContext runner)
         {
             var bEntity = GetById(kit, processInstanceId);
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), bEntity.ProcessState.ToString());
@@ -463,13 +465,13 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal void Resume(string processInstanceId, FlowCommandContext runner)
+        public void Resume(string processInstanceId, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             Resume(kit, processInstanceId, runner);
         }
 
-        internal void Resume(SQLBuilder kit, string processInstanceId, FlowCommandContext runner)
+        public void Resume(SQLBuilder kit, string processInstanceId, FlowCommandContext runner)
         {
             var bEntity = GetById(kit, processInstanceId);
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), bEntity.ProcessState.ToString());
@@ -488,7 +490,7 @@ namespace sailflow.engine.Manager
         }
 
 
-        internal void RecallSubProcess(SQLBuilder kit, string invokedActivityInstanceId, FlowCommandContext runner)
+        public void RecallSubProcess(SQLBuilder kit, string invokedActivityInstanceId, FlowCommandContext runner)
         {
             var clip = kit.useClip();
             clip.from<ProcessInstanceEntity>(out var pi)
@@ -513,7 +515,7 @@ namespace sailflow.engine.Manager
         }
 
 
-        internal void Reverse(SQLBuilder kit, string processInstanceId, FlowCommandContext currentUser)
+        public void Reverse(SQLBuilder kit, string processInstanceId, FlowCommandContext currentUser)
         {
             var bEntity = GetById(kit, processInstanceId);
             if (bEntity.ProcessState == (short)ProcessStateEnum.Completed)
@@ -530,7 +532,7 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal bool Cancel(FlowCommandContext runner)
+        public bool Cancel(FlowCommandContext runner)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -548,7 +550,7 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal bool Cancel(SQLBuilder kit, FlowCommandContext runner)
+        public bool Cancel(SQLBuilder kit, FlowCommandContext runner)
         {
             try
             {
@@ -570,7 +572,7 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal bool Discard(FlowCommandContext runner)
+        public bool Discard(FlowCommandContext runner)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -588,7 +590,7 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal void Discard(SQLBuilder kit, FlowCommandContext runner)
+        public void Discard(SQLBuilder kit, FlowCommandContext runner)
         {
             var clip = kit.useClip();
             clip.setTable<ProcessInstanceEntity>(out var pi)
@@ -603,7 +605,7 @@ namespace sailflow.engine.Manager
                 .doUpdate();
         }
 
-        internal bool Terminate(FlowCommandContext runner)
+        public bool Terminate(FlowCommandContext runner)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -626,10 +628,10 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, string userId, string userName)
+        public bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, string userId, string userName)
             => Terminate(kit, entity, new FlowCommandContext { UserId = userId, UserName = userName });
 
-        internal bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, FlowCommandContext runner)
+        public bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, FlowCommandContext runner)
         {
             if (entity == null)
                 throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error")), "Terminate");
@@ -706,13 +708,13 @@ namespace sailflow.engine.Manager
             throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error")), "Terminate");
         }
 
-        internal bool SetOverdue(string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
+        public bool SetOverdue(string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             return SetOverdue(kit, processInstanceId, overdueDateTime, runner);
         }
 
-        internal bool SetOverdue(SQLBuilder kit, string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
+        public bool SetOverdue(SQLBuilder kit, string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
         {
             var entity = GetById(kit, processInstanceId);
             if (entity.ProcessState == (int)ProcessStateEnum.Running
@@ -729,7 +731,7 @@ namespace sailflow.engine.Manager
             throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.setoverdue.error")), "SetOverdue");
         }
 
-        internal bool Delete(string processInstanceId, bool isForced = false)
+        public bool Delete(string processInstanceId, bool isForced = false)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -747,7 +749,7 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal bool Delete(SQLBuilder kit, string processInstanceId, bool isForced = false)
+        public bool Delete(SQLBuilder kit, string processInstanceId, bool isForced = false)
         {
             var entity = GetById(kit, processInstanceId);
             if (entity.ProcessState == (int)ProcessStateEnum.Canceled || isForced)
@@ -808,7 +810,7 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal bool Delete(string processId, string version)
+        public bool Delete(string processId, string version)
         {
             using (var kit = Sail.UseRunSQL())
             {

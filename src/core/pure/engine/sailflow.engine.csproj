@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="sailflow.engine.tests" />
+    <InternalsVisibleTo Include="sailflow.runtime" />
   </ItemGroup>
 
   <ItemGroup>

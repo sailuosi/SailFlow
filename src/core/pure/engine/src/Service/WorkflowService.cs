@@ -21,8 +21,8 @@ namespace sailflow.engine.Service
         /// <summary>A · Runtime 工厂。</summary>
         protected IRuntimeFactory Runtimes => Sail.RuntimeFactory;
 
-        /// <summary>A · Manager 工厂（含 internal ProcessInstances）。</summary>
-        protected DefaultManagerFactory Managers => SailFactoryAccess.Managers(Sail);
+        /// <summary>A · Manager 工厂。</summary>
+        protected IManagerFactory Managers => Sail.ManagerFactory;
 
         /// <summary>
         /// Role User Resource Service Interface

@@ -70,7 +70,7 @@ namespace sailflow.engine.Executor
             {
                 result.Status = WfExecutedStatus.Failed;
                 result.Message = $"Auto orchestration execution failed: {ex.Message}";
-                LogManager.RecordLog(Sail, WfDefine.WF_WORKFLOW_EXECUTOR_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, ex);
+                ILogManager.RecordLog(Sail, WfDefine.WF_WORKFLOW_EXECUTOR_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, ex);
             }
 
             return Task.FromResult(result);

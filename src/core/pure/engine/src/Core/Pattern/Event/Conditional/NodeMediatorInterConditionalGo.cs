@@ -72,7 +72,7 @@ namespace sailflow.engine.Pattern
         private void CheckBeingExecutedInfo(SQLBuilder kit)
         {
             var expression = ActivityForwardContext.CurrentActivity.TriggerDetail.Expression;
-            var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
+            var pvm = Sail.ManagerFactory.ProcessVariables;
             var isConditionPassed = pvm.ValidateProcessVariable(kit, LinkContext.FromActivityInstance.ProcessInstanceId,
                 expression);
             if (isConditionPassed == false)
@@ -98,12 +98,12 @@ namespace sailflow.engine.Pattern
             {
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
-                TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
+                ITaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
             }
 
             //设置活动节点的状态为完成状态
             //将活动节点状态设为完成
-            ActivityInstanceManager.Complete(kit.useSQL(), LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
+            IActivityInstanceManager.Complete(kit.useSQL(), LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
 
             LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             bool canContinueForwardCurrentNode = LinkContext.FromActivityInstance.CanNotRenewInstance == 0;
@@ -154,9 +154,9 @@ namespace sailflow.engine.Pattern
                     entity.ActivityState = (short)ActivityStateEnum.Ready;
                     //插入活动实例数据
                     //插入活动实例
-                    entity.ActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), entity);
+                    entity.ActivityInstanceId = IActivityInstanceManager.Insert(kit.useSQL(), entity);
                     //插入任务
-                    TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
+                    ITaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
                     //插入转移数据
                     //插入转移实例
                     InsertTransitionInstance(processInstance,
@@ -181,7 +181,7 @@ namespace sailflow.engine.Pattern
 
                 //插入活动实例数据
                 //插入活动实例
-                newActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
+                newActivityInstanceId = IActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
                 //插入任务数据
                 base.CreateNewTask(toActivityInstance, activityResource, kit);

@@ -70,18 +70,18 @@ namespace sailflow.engine.Pattern
 
             if (taskId != null)
             {
-                if (base.TaskManager.TryCompleteAsDelegationReturn(
+                if (base.ITaskManager.TryCompleteAsDelegationReturn(
                         kit.useSQL(), taskId, activityResource.AppRunner))
                     return false;
 
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
-                base.TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
+                base.ITaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
             }
 
             //设置活动节点的状态为完成状态
             //将活动节点状态设为完成
-            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
+            base.IActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
 
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 
@@ -98,7 +98,7 @@ namespace sailflow.engine.Pattern
                 //取出主节点信息
                 //获取主活动实例
                 var mainNodeIndex = base.LinkContext.FromActivityInstance.MainActInstanceId;
-                var mainActivityInstance = base.ActivityInstanceManager.GetById(mainNodeIndex);
+                var mainActivityInstance = base.IActivityInstanceManager.GetById(mainNodeIndex);
 
                 //串行会签和并行会签的处理
                 //处理串行/并行会签
@@ -108,7 +108,7 @@ namespace sailflow.engine.Pattern
                     {
                         //取出处于挂起状态多实例节点列表
                         //获取挂起状态的多实例节点列表
-                        var childList = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(kit.useSQL(), mainActivityInstance.ActivityInstanceId, mainActivityInstance.ProcessInstanceId);
+                        var childList = base.IActivityInstanceManager.GetValidActivityInstanceListOfMI(kit.useSQL(), mainActivityInstance.ActivityInstanceId, mainActivityInstance.ProcessInstanceId);
                         var sqList = childList.Where(a => a.ActivityState == (short)ActivityStateEnum.Suspended).ToList();
                         short maxOrder = 0;
                         if (sqList != null && sqList.Count > 0)
@@ -133,31 +133,31 @@ namespace sailflow.engine.Pattern
                                 //将下一任务设为就绪
                                 var nextActivityInstance = sqList[0];     //Always take the first suspended instance
                                 nextActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
-                                base.ActivityInstanceManager.Update(kit.useSQL(), nextActivityInstance);
+                                base.IActivityInstanceManager.Update(kit.useSQL(), nextActivityInstance);
                                 base.FireActivityReady(kit, nextActivityInstance, runner);
 
                                 //更新主节点执行人员列表
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
                                     base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
                                     Sail.JsonSerializer);
-                                base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
+                                base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                 canContinueForwardCurrentNode = false;
                                 base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.ForwardToNextSequenceTask;
                             }
                             else if (base.LinkContext.FromActivityInstance.CompleteOrder == maxOrder)
                             {
-                                var passed = base.ActivityInstanceManager.GetMiApprovalThresholdStatus(kit.useSQL(), base.LinkContext.FromActivityInstance, 
+                                var passed = base.IActivityInstanceManager.GetMiApprovalThresholdStatus(kit.useSQL(), base.LinkContext.FromActivityInstance, 
                                     mainActivityInstance);
                                 if (passed)
                                 {
                                     //完成最后一个会签任务，会签主节点状态由挂起设置为完成状态
                                     //完成最后一会签任务，并将会签主节点从挂起改为完成
                                     mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-                                    base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
+                                    base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                     //将未完成节点状态更新为取消
-                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
+                                    base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
                                 }
                                 else
                                 {
@@ -174,17 +174,17 @@ namespace sailflow.engine.Pattern
 
                             if ((base.LinkContext.FromActivityInstance.CompleteOrder * 0.01) / (maxOrder * 0.01) >= mainActivityInstance.CompleteOrder)
                             {
-                                var passed = base.ActivityInstanceManager.GetMiApprovalThresholdStatus(kit.useSQL(), base.LinkContext.FromActivityInstance,
+                                var passed = base.IActivityInstanceManager.GetMiApprovalThresholdStatus(kit.useSQL(), base.LinkContext.FromActivityInstance,
                                     mainActivityInstance);
                                 if (passed)
                                 {
                                     //完成最后一个会签任务，会签主节点状态由挂起设置为完成状态
                                     //完成最后一会签任务，并将会签主节点从挂起改为完成
                                     mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-                                    base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
+                                    base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                     //将未完成节点状态更新为取消
-                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
+                                    base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
                                 }
                                 else
                                 {
@@ -198,14 +198,14 @@ namespace sailflow.engine.Pattern
                                 //将下一任务设为就绪
                                 var nextActivityInstance = sqList[0];     //Always take the first suspended instance
                                 nextActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
-                                base.ActivityInstanceManager.Update(kit.useSQL(), nextActivityInstance);
+                                base.IActivityInstanceManager.Update(kit.useSQL(), nextActivityInstance);
                                 base.FireActivityReady(kit, nextActivityInstance, runner);
 
                                 //更新主节点执行人员列表
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
                                     base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
                                     Sail.JsonSerializer);
-                                base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
+                                base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                 canContinueForwardCurrentNode = false;
                                 base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.ForwardToNextSequenceTask;
@@ -215,7 +215,7 @@ namespace sailflow.engine.Pattern
                     else if (base.LinkContext.FromActivity.MultiSignDetail.MergeType == MergeTypeEnum.Parallel)   
                     {
                         //获取多实例节点列表
-                        var sqList = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithStateBatch(kit.useSQL(), mainActivityInstance.ProcessInstanceId, 
+                        var sqList = base.IActivityInstanceManager.GetActivityMulitipleInstanceWithStateBatch(kit.useSQL(), mainActivityInstance.ProcessInstanceId, 
                             mainActivityInstance.ActivityInstanceId, null);
                         var allCount = sqList.Where(x => x.ActivityState != (short)ActivityStateEnum.Withdrawed
                              && x.ActivityState != (short)ActivityStateEnum.Sendbacked).ToList().Count();
@@ -232,16 +232,16 @@ namespace sailflow.engine.Pattern
 
                             if ((completedCount * 0.01) / (allCount * 0.01) >= mainActivityInstance.CompleteOrder)
                             {
-                                var passed = base.ActivityInstanceManager.GetMiApprovalThresholdStatus(kit.useSQL(), base.LinkContext.FromActivityInstance,
+                                var passed = base.IActivityInstanceManager.GetMiApprovalThresholdStatus(kit.useSQL(), base.LinkContext.FromActivityInstance,
                                     mainActivityInstance);
                                 if (passed)
                                 {
                                     //如果超过约定的比例数，则执行下一步节点
                                     //超过约定通过比例则进入下一节点
                                     mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-                                    base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
+                                    base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
                                     //将未完成节点状态更新为取消
-                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
+                                    base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
                                 }
                                 else
                                 {
@@ -255,7 +255,7 @@ namespace sailflow.engine.Pattern
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
                                     base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
                                     Sail.JsonSerializer);
-                                base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
+                                base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                 canContinueForwardCurrentNode = false;
                                 base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.WaitingForCompletedMore;
@@ -275,23 +275,23 @@ namespace sailflow.engine.Pattern
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
                                     base.ActivityForwardContext.ActivityResource.AppRunner.NextActivityPerformers,
                                     Sail.JsonSerializer);
-                                base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
+                                base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                 canContinueForwardCurrentNode = false;
                                 base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.WaitingForCompletedMore;
                             }
                             else if (mainActivityInstance.CompleteOrder == completedCount)
                             {
-                                var passed = base.ActivityInstanceManager.GetMiApprovalThresholdStatus(kit.useSQL(), base.LinkContext.FromActivityInstance, 
+                                var passed = base.IActivityInstanceManager.GetMiApprovalThresholdStatus(kit.useSQL(), base.LinkContext.FromActivityInstance, 
                                     mainActivityInstance);
                                 if (passed)
                                 {
                                     //如果超过约定的比例数，则执行下一步节点
                                     //超过约定通过比例则进入下一节点
                                     mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-                                    base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
+                                    base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
                                     //将未完成节点状态更新为取消
-                                    base.ActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
+                                    base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
                                 }
                                 else
                                 {

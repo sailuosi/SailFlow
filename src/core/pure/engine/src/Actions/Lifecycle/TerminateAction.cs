@@ -27,7 +27,7 @@ namespace sailflow.engine.Actions.Lifecycle
         protected override bool TryLoadContext(out LifecycleActionContext ctx, WfExecutedResult result)
         {
             ctx = null!;
-            var pim = SailFactoryAccess.Managers(Sail).ProcessInstances;
+            var pim = Sail.ManagerFactory.ProcessInstances;
             ProcessInstanceEntity processInstance;
             if (!string.IsNullOrWhiteSpace(Context?.ProcessInstanceId))
                 processInstance = pim.GetById(Kit, Context.ProcessInstanceId);
@@ -62,7 +62,7 @@ namespace sailflow.engine.Actions.Lifecycle
         protected override void ExecuteCore(LifecycleActionContext ctx, WfExecutedResult result)
         {
             // PIM 内级联 Cancelled Notifier；命令级 OnProcessTerminated 仍由族基类 Hook
-            SailFactoryAccess.Managers(Sail).ProcessInstances.Terminate(Kit, ctx.ProcessInstance, Context);
+            Sail.ManagerFactory.ProcessInstances.Terminate(Kit, ctx.ProcessInstance, Context);
             result.Status = WfExecutedStatus.Success;
             result.Message = "Terminate succeeded.";
             result.ProcessInstanceIdStarted = ctx.ProcessInstanceId;

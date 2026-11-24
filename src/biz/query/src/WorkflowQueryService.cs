@@ -109,7 +109,7 @@ namespace sailflow.biz.query
 
         public bool SetTaskEMailSent(string taskId)
         {
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
@@ -161,13 +161,13 @@ namespace sailflow.biz.query
         public bool IsLastTask(string taskId)
         {
             var isLast = false;
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             var task = tm.GetTask(taskId);
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             var activityInstance = aim.GetById(task.ActivityInstanceId ?? throw new InvalidOperationException("Task ActivityInstanceId is required."));
 
             // 发起人直属 Task 挂在加签容器上
-            if (ActivityInstanceManager.IsSignForwardContainer(activityInstance))
+            if (IActivityInstanceManager.IsSignForwardContainer(activityInstance))
                 return IsLastTaskSignForwardSeat(aim, activityInstance, activityInstance);
 
             if (aim.IsMultipleInstanceChildren(activityInstance) == true)
@@ -177,7 +177,7 @@ namespace sailflow.biz.query
                     return false;
 
                 // 叶子挂在加签容器下
-                if (ActivityInstanceManager.IsSignForwardContainer(mainActivityInstance))
+                if (IActivityInstanceManager.IsSignForwardContainer(mainActivityInstance))
                     return IsLastTaskSignForwardSeat(aim, activityInstance, mainActivityInstance);
 
                 var complexType = EnumHelper.ParseEnum<ComplexTypeEnum>(mainActivityInstance.ComplexType.Value.ToString());
@@ -268,7 +268,7 @@ namespace sailflow.biz.query
         /// 加签席：先看容器内是否末席；末席再看外层是否仍 Waiting（外层 Waiting → 非 Last）。
         /// </summary>
         private bool IsLastTaskSignForwardSeat(
-            ActivityInstanceManager aim,
+            IActivityInstanceManager aim,
             ActivityInstanceEntity current,
             ActivityInstanceEntity container)
         {
@@ -606,7 +606,7 @@ namespace sailflow.biz.query
 
         public IList<NodeImage> GetActivityInstanceCompleted(string taskId)
         {
-            var tm = new TaskManager(Sail);
+            var tm = Sail.ManagerFactory.Tasks;
             var task = tm.GetTaskView(taskId);
             return GetActivityInstanceCompleted(task.BizPK, task.ProcessId);
         }
@@ -617,7 +617,7 @@ namespace sailflow.biz.query
         public IList<NodeImage> GetActivityInstanceCompleted(string bizPK, string processId)
         {
             IList<NodeImage> imageList = new List<NodeImage>();
-            var am = new ActivityInstanceManager(Sail);
+            var am = Sail.ManagerFactory.Activities;
             var list = am.GetActivityInstanceListCompleted(bizPK, processId);
 
             foreach (ActivityInstanceEntity a in list)
@@ -634,7 +634,7 @@ namespace sailflow.biz.query
         public IList<TransitionImage> GetTransitionInstanceList(TransitionInstanceQuery query)
         {
             IList<TransitionImage> imageList = new List<TransitionImage>();
-            var tm = new TransitionInstanceManager(Sail);
+            var tm = Sail.ManagerFactory.Transitions;
             var list = tm.GetTransitionInstanceList(query.BizPK, query.ProcessId, query.Version).ToList();
 
             foreach (TrackEntity t in list)
@@ -650,7 +650,7 @@ namespace sailflow.biz.query
 
         public IList<ActivityInstanceEntity> GetRunningActivityInstance(TaskQuery query)
         {
-            var aim = new ActivityInstanceManager(Sail);
+            var aim = Sail.ManagerFactory.Activities;
             return aim.GetRunningActivityInstanceList(query.BizPK, query.ProcessId, query.Version).ToList();
         }
 

@@ -216,7 +216,7 @@ namespace sailflow.engine.Pattern
                 // 加签容器直属 Task / 加签叶子办结
                 var fromAi = forwardContext.FromActivityInstance;
                 if (fromAi != null
-                    && (Manager.ActivityInstanceManager.IsSignForwardContainer(fromAi)
+                    && (IActivityInstanceManager.IsSignForwardContainer(fromAi)
                         || fromAi.MainActInstanceId != null))
                 {
                     return new NodeMediatorMultiSignForward(forwardContext, kit, _sail);

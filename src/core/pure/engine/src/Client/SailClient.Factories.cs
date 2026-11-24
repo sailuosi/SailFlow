@@ -10,8 +10,8 @@ namespace sailflow.engine.Client;
 /// </summary>
 public partial class SailClient
 {
-    /// <summary>引擎内部：ProcessInstanceManager（类型暂 internal）。</summary>
-    internal ProcessInstanceManager ProcessInstances => SailFactoryAccess.Managers(this).ProcessInstances;
+    /// <summary>引擎内部：经 <see cref="ManagerFactory"/> 取流程实例 Manager。</summary>
+    internal IProcessInstanceManager ProcessInstances => ManagerFactory.ProcessInstances;
 
     private IRuntimeFactory _runtimeFactory;
     private IMediatorFactory _mediatorFactory;
@@ -39,10 +39,11 @@ public partial class SailClient
         set => _processModelFactory = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    /// <summary>A · Manager 工厂（可覆写）；不在 Client 上挂齐 Activities/Tasks 属性。</summary>
+    /// <summary>A · Manager 工厂（须 <c>UseSailRuntimeDefaults</c> / <c>UseManagerFactory</c> 挂载）。</summary>
     public IManagerFactory ManagerFactory
     {
-        get => _managerFactory ??= new DefaultManagerFactory(this);
+        get => _managerFactory ?? throw new InvalidOperationException(
+            "SailClient.ManagerFactory not mounted. Call UseSailRuntimeDefaults / UseManagerFactory.");
         set => _managerFactory = value ?? throw new ArgumentNullException(nameof(value));
     }
 

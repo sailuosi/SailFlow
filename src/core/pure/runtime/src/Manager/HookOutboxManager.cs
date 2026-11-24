@@ -6,10 +6,12 @@ using sailflow.data;
 using sailflow.engine.Entity;
 using sailflow.engine.Client;
 using sailflow.engine.Hooks;
+using sailflow.engine.Manager;
+using sailflow.engine.Runtime;
 
-namespace sailflow.engine.Manager
+namespace sailflow.runtime.Manager
 {
-    public class HookOutboxManager
+    public class HookOutboxManager : IHookOutboxManager
     {
         public HookOutboxManager(SailClient client)
         {

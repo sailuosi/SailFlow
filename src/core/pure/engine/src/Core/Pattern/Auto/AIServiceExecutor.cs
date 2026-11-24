@@ -72,7 +72,7 @@ namespace sailflow.engine.Pattern
             {
                 var kit = eventService.GetKit();
                 var processInstanceId = eventService.GetProcessInstanceId();
-                var pvm = SailFactoryAccess.Managers(client).ProcessVariables;
+                var pvm = client.ManagerFactory.ProcessVariables;
 
                 var variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 

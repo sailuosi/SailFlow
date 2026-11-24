@@ -14,14 +14,17 @@ using sailflow.engine.HotShard;
 using sailflow.engine.Logging;
 using sailflow.engine.Xpdl;
 using sailflow.hub.Localize;
+using sailflow.engine.Manager;
+using sailflow.engine.NextStep;
+using sailflow.engine.Runtime;
 
-namespace sailflow.engine.Manager
+namespace sailflow.runtime.Manager
 {
     /// <summary>
     /// 流程运行变量（sf_proc_variable / 白名单热分表）。
     /// 终态：无事务从 Client 取 kit；有事务只用传入的同一个 kit。
     /// </summary>
-    internal class ProcessVariableManager
+    public class ProcessVariableManager : IProcessVariableManager
     {
         public ProcessVariableManager(SailClient client)
         {
@@ -39,10 +42,10 @@ namespace sailflow.engine.Manager
         ISailHotShardRouter Router => Sail.HotShard;
 
         /// <summary>同库同事务的新 kit，避免链式 select 状态互相污染。</summary>
-        internal ProcessVariableEntity GetVariableById(string processId, string variableId)
+        public ProcessVariableEntity GetVariableById(string processId, string variableId)
             => GetVariableById(Sail.UseRunSQL(), processId, variableId);
 
-        internal ProcessVariableEntity GetVariableById(SQLBuilder kit, string processId, string variableId)
+        public ProcessVariableEntity GetVariableById(SQLBuilder kit, string processId, string variableId)
         {
             //此处不做特殊判断，由Router保证返回的表有效！
             var table = Router.ResolveVariableTable(processId);
@@ -53,7 +56,7 @@ namespace sailflow.engine.Manager
         }
 
 
-        internal string GetVariable(
+        public string GetVariable(
             SQLBuilder kit,
             ProcessVariableScopeEnum variableType,
             string name,
@@ -71,7 +74,7 @@ namespace sailflow.engine.Manager
         }
 
 
-        internal string GetVariableByScopePriority(SQLBuilder kit, string name, EventContext eventContext)
+        public string GetVariableByScopePriority(SQLBuilder kit, string name, EventContext eventContext)
         {
             var activityVariableEntity = GetVariableByActivity(
                 kit, eventContext.ProcessInstanceId, eventContext.ActivityInstanceId, name);
@@ -82,7 +85,7 @@ namespace sailflow.engine.Manager
             return processVariableEntity?.Value ?? string.Empty;
         }
 
-        internal IDictionary<string, string> GetVariableByTask(
+        public IDictionary<string, string> GetVariableByTask(
             SQLBuilder kit,
             TaskViewEntity taskView,
             IDictionary<string, string> condition)
@@ -99,13 +102,13 @@ namespace sailflow.engine.Manager
             return condition;
         }
 
-        internal IList<ProcessVariableEntity> GetVariableList(string processInstanceId)
+        public IList<ProcessVariableEntity> GetVariableList(string processInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetVariableList(kit, processInstanceId);
         }
 
-        internal IList<ProcessVariableEntity> GetVariableList(SQLBuilder kit, string processInstanceId)
+        public IList<ProcessVariableEntity> GetVariableList(SQLBuilder kit, string processInstanceId)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
@@ -118,7 +121,7 @@ namespace sailflow.engine.Manager
             });
         }
 
-        internal IList<ProcessVariableEntity> GetVariableList(
+        public IList<ProcessVariableEntity> GetVariableList(
             SQLBuilder kit, string processInstanceId, string activityInstanceId)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
@@ -133,13 +136,13 @@ namespace sailflow.engine.Manager
             });
         }
 
-        internal ProcessVariableEntity GetVariableEntity(ProcessVariableQuery query)
+        public ProcessVariableEntity GetVariableEntity(ProcessVariableQuery query)
         {
             var kit = Sail.UseRunSQL();
             return GetVariableEntity(kit, query);
         }
 
-        internal ProcessVariableEntity GetVariableEntity(SQLBuilder kit, ProcessVariableQuery query)
+        public ProcessVariableEntity GetVariableEntity(SQLBuilder kit, ProcessVariableQuery query)
             => Query(kit, query);
 
 
@@ -153,7 +156,7 @@ namespace sailflow.engine.Manager
         }
 
 
-        internal ProcessVariableEntity GetVariableByProcess(SQLBuilder kit, string processInstanceId, string name)
+        public ProcessVariableEntity GetVariableByProcess(SQLBuilder kit, string processInstanceId, string name)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
             return QueryWithFallback(kit, processId, table =>
@@ -169,7 +172,7 @@ namespace sailflow.engine.Manager
         }
 
 
-        internal ProcessVariableEntity GetVariableByActivity(
+        public ProcessVariableEntity GetVariableByActivity(
             SQLBuilder kit, string processInstanceId, string activityInstanceId, string name)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
@@ -187,7 +190,7 @@ namespace sailflow.engine.Manager
         }
 
 
-        internal IList<ProcessVariableEntity> GetVariableListByActivity(
+        public IList<ProcessVariableEntity> GetVariableListByActivity(
             SQLBuilder kit,
             string processInstanceId,
             string activityInstanceId,
@@ -213,13 +216,13 @@ namespace sailflow.engine.Manager
         }
 
 
-        internal string SaveVariable(ProcessVariableEntity entity)
+        public string SaveVariable(ProcessVariableEntity entity)
         {
             var kit = Sail.UseRunSQL();
             return SaveVariable(kit, entity);
         }
 
-        internal string SaveVariable(SQLBuilder kit, ProcessVariableEntity entity)
+        public string SaveVariable(SQLBuilder kit, ProcessVariableEntity entity)
         {
             if (string.IsNullOrEmpty(entity.Name) || string.IsNullOrEmpty(entity.Value))
                 throw FailThrow(new WorkflowException(
@@ -267,13 +270,13 @@ namespace sailflow.engine.Manager
             return Insert(kit, entity);
         }
 
-        internal bool ValidateProcessVariable(string processInstanceId, string expression)
+        public bool ValidateProcessVariable(string processInstanceId, string expression)
         {
             var kit = Sail.UseRunSQL();
             return ValidateProcessVariable(kit, processInstanceId, expression);
         }
 
-        internal bool ValidateProcessVariable(SQLBuilder kit, string processInstanceId, string expression)
+        public bool ValidateProcessVariable(SQLBuilder kit, string processInstanceId, string expression)
         {
             var parsed = false;
             var keyValuePair = new Dictionary<string, string>();
@@ -288,13 +291,13 @@ namespace sailflow.engine.Manager
 
             if (keyValuePair.Count > 0)
             {
-                var pipeline = NextStep.NextStepConditionRequire.GetPipelineRequired(Sail);
-                parsed = pipeline.Evaluate(new NextStep.ConditionEvaluateContext
+                var pipeline = NextStepConditionRequire.GetPipelineRequired(Sail);
+                parsed = pipeline.Evaluate(new ConditionEvaluateContext
                 {
                     Sail = Sail,
                     Expression = expression,
                     Variables = keyValuePair,
-                    Phase = NextStep.NextStepRoutePhase.Send
+                    Phase = NextStepRoutePhase.Send
                 });
             }
             return parsed;
@@ -324,10 +327,10 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal void DeleteVariable(string processId, string variableId)
+        public void DeleteVariable(string processId, string variableId)
             => DeleteVariable(Sail.UseRunSQL(), processId, variableId);
 
-        internal void DeleteVariable(SQLBuilder kit, string processId, string variableId)
+        public void DeleteVariable(SQLBuilder kit, string processId, string variableId)
         {
             //由router保证表，异常，自然抛出，便于业务侧调试期间就发现问题
             var table = Router.ResolveVariableTable(processId);

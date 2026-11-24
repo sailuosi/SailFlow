@@ -16,15 +16,17 @@ using sailflow.engine.Result;
 using sailflow.engine.Client;
 using sailflow.engine.Logging;
 using sailflow.WebUtility;
+using sailflow.engine.Manager;
+using sailflow.engine.Runtime;
 
 
-namespace sailflow.engine.Manager
+namespace sailflow.runtime.Manager
 {
     /// <summary>
     /// Task manager: including tasks and task view objects
     /// 任务管理类：包括任务及任务视图对象
     /// </summary>
-    public class TaskManager
+    public class TaskManager : ITaskManager
     {
         public TaskManager(SailClient client)
         {
@@ -49,13 +51,13 @@ namespace sailflow.engine.Manager
             return Sail.UseRunSQL().findRowById<TaskViewEntity>(taskId);
         }
 
-        internal TaskViewEntity GetTaskView(SQLBuilder kit, string taskId)
+        public TaskViewEntity GetTaskView(SQLBuilder kit, string taskId)
             => kit.findRowById<TaskViewEntity>(taskId);
 
         /// <summary>
         /// 异步按任务 Id 取任务视图（Clip，可取消）。
         /// </summary>
-        internal async Task<TaskViewEntity> GetTaskViewAsync(
+        public async Task<TaskViewEntity> GetTaskViewAsync(
             SQLBuilder kit,
             string taskId,
             CancellationToken cancellationToken = default)
@@ -82,13 +84,13 @@ namespace sailflow.engine.Manager
         /// Obtain tasks based on process information
         /// 根据流程信息获取任务
         /// </summary>
-        internal List<TaskEntity> GetTaskListByActivity(string processInstanceId, string activityInstanceId)
+        public List<TaskEntity> GetTaskListByActivity(string processInstanceId, string activityInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetTaskListByActivity(kit, processInstanceId, activityInstanceId);
         }
 
-        internal List<TaskEntity> GetTaskListByActivity(SQLBuilder kit, string processInstanceId, string activityInstanceId)
+        public List<TaskEntity> GetTaskListByActivity(SQLBuilder kit, string processInstanceId, string activityInstanceId)
         {
             var clip = kit.useClip();
             clip.from<TaskEntity>(out var t)
@@ -98,7 +100,7 @@ namespace sailflow.engine.Manager
         }
 
         /// <summary>按多个活动实例 Id 拉取任务（Leave Seats 投影用）。</summary>
-        internal List<TaskEntity> GetTaskListByActivityIds(
+        public List<TaskEntity> GetTaskListByActivityIds(
             SQLBuilder kit,
             string processInstanceId,
             IEnumerable<string> activityInstanceIds)
@@ -121,13 +123,13 @@ namespace sailflow.engine.Manager
         /// Obtain tasks based on process information
         /// 根据流程信息获取任务
         /// </summary>
-        internal TaskEntity GetTaskByActivity(string processInstanceId, string activityInstanceId)
+        public TaskEntity GetTaskByActivity(string processInstanceId, string activityInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetTaskByActivity(kit, processInstanceId, activityInstanceId);
         }
 
-        internal TaskEntity GetTaskByActivity(SQLBuilder kit, string processInstanceId, string activityInstanceId)
+        public TaskEntity GetTaskByActivity(SQLBuilder kit, string processInstanceId, string activityInstanceId)
         {
             var list = GetTaskListByActivity(kit, processInstanceId, activityInstanceId);
             return list.Count > 0 ? list[0] : null;
@@ -137,13 +139,13 @@ namespace sailflow.engine.Manager
         /// Obtain tasks based on process information
         /// 根据流程信息获取任务
         /// </summary>
-        internal TaskViewEntity GetTaskViewByActivity(string processInstanceId, string activityInstanceId)
+        public TaskViewEntity GetTaskViewByActivity(string processInstanceId, string activityInstanceId)
         {
             var kit = Sail.UseRunSQL();
             return GetTaskViewByActivity(kit, processInstanceId, activityInstanceId);
         }
 
-        internal TaskViewEntity GetTaskViewByActivity(SQLBuilder kit, string processInstanceId, string activityInstanceId)
+        public TaskViewEntity GetTaskViewByActivity(SQLBuilder kit, string processInstanceId, string activityInstanceId)
         {
             var clip = kit.useClip();
             clip.from<TaskViewEntity>(out var t)
@@ -156,7 +158,7 @@ namespace sailflow.engine.Manager
         /// <summary>
         /// 异步按活动实例取任务视图（可取消）。
         /// </summary>
-        internal async Task<TaskViewEntity> GetTaskViewByActivityAsync(
+        public async Task<TaskViewEntity> GetTaskViewByActivityAsync(
             SQLBuilder kit,
             string processInstanceId,
             string activityInstanceId,
@@ -178,13 +180,13 @@ namespace sailflow.engine.Manager
         /// Get my task
         /// 获取我的任务
         /// </summary>
-        internal TaskViewEntity GetTaskOfMineByActivityInstance(string activityInstanceId, string userId)
+        public TaskViewEntity GetTaskOfMineByActivityInstance(string activityInstanceId, string userId)
         {
             var kit = Sail.UseRunSQL();
             return GetTaskOfMineByActivityInstance(kit, activityInstanceId, userId);
         }
 
-        internal TaskViewEntity GetTaskOfMineByActivityInstance(SQLBuilder kit,
+        public TaskViewEntity GetTaskOfMineByActivityInstance(SQLBuilder kit,
             string activityInstanceId,
             string userId)
         {
@@ -205,7 +207,7 @@ namespace sailflow.engine.Manager
         /// <summary>
         /// 异步获取当前用户在活动实例上的办理任务（可取消）。
         /// </summary>
-        internal async Task<TaskViewEntity> GetTaskOfMineByActivityInstanceAsync(
+        public async Task<TaskViewEntity> GetTaskOfMineByActivityInstanceAsync(
             SQLBuilder kit,
             string activityInstanceId,
             string userId,
@@ -247,13 +249,13 @@ namespace sailflow.engine.Manager
         /// Based on the application instance and process GUID, process the user Id to obtain the task list
         /// 根据应用实例、流程GUID，办理用户Id获取任务列表
         /// </summary>
-        internal TaskViewEntity GetTaskOfMine(string bizPK, string processId, string userId)
+        public TaskViewEntity GetTaskOfMine(string bizPK, string processId, string userId)
         {
             var kit = Sail.UseRunSQL();
             return GetTaskOfMine(kit, bizPK, processId, userId);
         }
 
-        internal TaskViewEntity GetTaskOfMine(SQLBuilder kit,
+        public TaskViewEntity GetTaskOfMine(SQLBuilder kit,
             string bizPK,
             string processId,
             string userId)
@@ -292,13 +294,13 @@ namespace sailflow.engine.Manager
         /// Get my taskview
         /// 获取任务视图
         /// </summary>
-        internal TaskViewEntity GetTaskOfMine(FlowCommandContext runner)
+        public TaskViewEntity GetTaskOfMine(FlowCommandContext runner)
         {
             var kit = Sail.UseRunSQL();
             return GetTaskOfMine(kit, runner);
         }
 
-        internal TaskViewEntity GetTaskOfMine(SQLBuilder kit, FlowCommandContext runner)
+        public TaskViewEntity GetTaskOfMine(SQLBuilder kit, FlowCommandContext runner)
         {
             if (runner.TaskId != null)
                 return GetTaskView(kit, runner.TaskId);
@@ -309,7 +311,7 @@ namespace sailflow.engine.Manager
         /// Determine whether the task belongs to a certain user
         /// 判断任务是否属于某个用户
         /// </summary>
-        internal bool IsMine(TaskViewEntity entity, string userId)
+        public bool IsMine(TaskViewEntity entity, string userId)
         {
             var isMine = false;
             if (entity.SignId == userId) isMine = true;
@@ -320,7 +322,7 @@ namespace sailflow.engine.Manager
         /// Determine if the task is in a running state
         /// 判断任务处于运行状态
         /// </summary>
-        internal Boolean CheckTaskStateInRunningState(TaskViewEntity task)
+        public Boolean CheckTaskStateInRunningState(TaskViewEntity task)
         {
             var isRunning = true;
             if (task.TaskState == (short)TaskStateEnum.Completed)
@@ -350,7 +352,7 @@ namespace sailflow.engine.Manager
 
         #endregion
 
-        #region TaskManager 任务数据基本操作
+        #region ITaskManager 任务数据基本操作
         private string Insert(SQLBuilder kit, TaskEntity entity)
         {
             string newTaskId = kit.useRepo<TaskEntity, string>().InsertReturnId(entity);
@@ -358,7 +360,7 @@ namespace sailflow.engine.Manager
             return newTaskId;
         }
 
-        internal void Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
+        public void Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
             PerformerList performers,
             FlowCommandContext runner)
         {
@@ -366,7 +368,7 @@ namespace sailflow.engine.Manager
                 Insert(kit, activityInstance, performer, runner);
         }
 
-        internal string Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
+        public string Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
             Performer performer,
             FlowCommandContext runner)
         {
@@ -449,7 +451,7 @@ namespace sailflow.engine.Manager
         /// Regenerate task (limited to co signing child nodes under multiple instances)
         /// 重新生成任务(只限于会签多实例下的子节点)
         /// </summary>
-        internal void Renew(SQLBuilder kit, ActivityInstanceEntity sourceActivityInstance,
+        public void Renew(SQLBuilder kit, ActivityInstanceEntity sourceActivityInstance,
             ActivityInstanceEntity newInstance,
             FlowCommandContext runner)
         {
@@ -517,14 +519,14 @@ namespace sailflow.engine.Manager
             Update(kit, task);
         }
 
-        internal void SetTaskType(SQLBuilder kit, string taskId, TaskTypeEnum taskType)
+        void ITaskManager.SetTaskType(SQLBuilder kit, string taskId, TaskTypeEnum taskType)
         {
             var task = GetTask(kit, taskId);
             task.TaskType = (short)taskType;
             Update(kit, task);
         }
 
-        internal void SetTaskRead(FlowCommandContext taskRunner)
+        public void SetTaskRead(FlowCommandContext taskRunner)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -557,7 +559,7 @@ namespace sailflow.engine.Manager
             Update(kit, task);
         }
 
-        internal void EndTaskState(SQLBuilder kit, string taskId,
+        public void EndTaskState(SQLBuilder kit, string taskId,
             TaskStateEnum taskState,
             FlowCommandContext runner,
             string endType = null)
@@ -567,7 +569,7 @@ namespace sailflow.engine.Manager
             Update(kit, task);
         }
 
-        internal static void ApplyTaskEnd(
+        public static void ApplyTaskEnd(
             TaskEntity task,
             TaskStateEnum taskState,
             FlowCommandContext runner,
@@ -601,7 +603,7 @@ namespace sailflow.engine.Manager
                 task.EndType = endType;
         }
 
-        internal void Complete(SQLBuilder kit, string taskId, FlowCommandContext runner)
+        public void Complete(SQLBuilder kit, string taskId, FlowCommandContext runner)
         {
             EndTaskState(kit, taskId, TaskStateEnum.Completed, runner, TaskEndTypes.SelfComplete);
             var task = GetTask(kit, taskId);
@@ -613,7 +615,7 @@ namespace sailflow.engine.Manager
         /// <summary>
         /// 关闭同活动打开待办中与 <paramref name="completed"/> 同代理根的其余人（代批旁关）。
         /// </summary>
-        internal void CloseProxyChainOpenTasks(
+        public void CloseProxyChainOpenTasks(
             SQLBuilder kit,
             TaskEntity completed,
             FlowCommandContext runner)
@@ -658,7 +660,7 @@ namespace sailflow.engine.Manager
         /// 若待办为委派受托任务（<see cref="TaskEntity.EntrustedTaskId"/> 非空）：办结受托待办并自动回转原责任人 Waiting，
         /// 返回 true（调用方<strong>不得</strong> Complete 活动实例 / ContinueForward）。否则返回 false，走正常办结。
         /// </summary>
-        internal bool TryCompleteAsDelegationReturn(SQLBuilder kit, string taskId, FlowCommandContext runner)
+        public bool TryCompleteAsDelegationReturn(SQLBuilder kit, string taskId, FlowCommandContext runner)
         {
             if (string.IsNullOrWhiteSpace(taskId))
                 return false;
@@ -676,7 +678,7 @@ namespace sailflow.engine.Manager
         }
 
         /// <summary>委派：关闭原人待办并为受托人建待办（挂 <c>EntrustedTaskId</c>）；不刷新 SignIds/Names（原人仍为责任锚点）。</summary>
-        internal WfDataManagedResult Delegate(
+        public WfDataManagedResult Delegate(
             SQLBuilder kit,
             string taskId,
             FlowCommandContext runner,
@@ -781,13 +783,13 @@ namespace sailflow.engine.Manager
             FireTaskLifecycle(kit, newTask, runner, TaskNotifyKind.Created);
         }
 
-        internal void Withdraw(SQLBuilder kit, string taskId, FlowCommandContext runner)
+        public void Withdraw(SQLBuilder kit, string taskId, FlowCommandContext runner)
         {
             EndTaskState(kit, taskId, TaskStateEnum.Withdrawed, runner, TaskEndTypes.Withdrawn);
             FireTaskLifecycle(kit, GetTask(kit, taskId), runner, TaskNotifyKind.Cancelled);
         }
 
-        internal void SendBack(SQLBuilder kit, string taskId, FlowCommandContext runner)
+        public void SendBack(SQLBuilder kit, string taskId, FlowCommandContext runner)
         {
             EndTaskState(kit, taskId, TaskStateEnum.SendBacked, runner, TaskEndTypes.SendBacked);
             FireTaskLifecycle(kit, GetTask(kit, taskId), runner, TaskNotifyKind.Cancelled);
@@ -805,7 +807,7 @@ namespace sailflow.engine.Manager
             Sail.CapabilityDispatcher.FireTaskLifecycle(kit, task, activityInstance, runner, kind);
         }
 
-        internal WfDataManagedResult Entrust(TaskEntrustedEntity entity, bool cancelOriginalTask = true)
+        public WfDataManagedResult Entrust(TaskEntrustedEntity entity, bool cancelOriginalTask = true)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -825,7 +827,7 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal WfDataManagedResult Entrust(SQLBuilder kit, TaskEntrustedEntity entity, bool cancelOriginalTask = true)
+        public WfDataManagedResult Entrust(SQLBuilder kit, TaskEntrustedEntity entity, bool cancelOriginalTask = true)
         {
             var am = Sail.ManagerFactory.Activities;
             var activityInstance = am.GetByTask(kit, entity.TaskId);
@@ -860,7 +862,7 @@ namespace sailflow.engine.Manager
         /// 转办：结束本人待办（Closed，不计入会签完成），在本活动实例为接收人建待办，并刷新 SignIds/Names。
         /// 不推进下一节点。与 <see cref="Entrust"/> 相近，但面向产品 Transfer 命令且强制换写活动办理人集合。
         /// </summary>
-        internal WfDataManagedResult Transfer(
+        public WfDataManagedResult Transfer(
             SQLBuilder kit,
             string taskId,
             FlowCommandContext runner,
@@ -943,7 +945,7 @@ namespace sailflow.engine.Manager
         /// 催办：对当前活动打开待办发 <see cref="TaskNotifyKind.Urged"/>，不改 TaskState。
         /// <paramref name="filterUserIds"/> 非空时只催这些人；为空则催全部打开待办。
         /// </summary>
-        internal WfDataManagedResult UrgeOpenTasks(
+        public WfDataManagedResult UrgeOpenTasks(
             SQLBuilder kit,
             string taskId,
             FlowCommandContext runner,
@@ -992,7 +994,7 @@ namespace sailflow.engine.Manager
         /// 改派：将当前活动未办待办差量对齐到新办理人集合（关旧 Cancelled / 建新 Created），刷新 SignIds/Names。
         /// 新集合至少一人；已在集合内且仍打开的待办保留。不推进下一节点。
         /// </summary>
-        internal WfDataManagedResult ChangeAssignees(
+        public WfDataManagedResult ChangeAssignees(
             SQLBuilder kit,
             string taskId,
             FlowCommandContext runner,
@@ -1063,7 +1065,7 @@ namespace sailflow.engine.Manager
         /// 加人：向当前扁节点（一 AI · 多 Task）追加普通办理人待办；已打开者跳过；不关任何人；不改 Leave / CompleteOrder；不推进。
         /// v1 拒绝 SignTogether / SignForward 及挂在其下的子 AI。
         /// </summary>
-        internal WfDataManagedResult AddAssignees(
+        public WfDataManagedResult AddAssignees(
             SQLBuilder kit,
             string taskId,
             FlowCommandContext runner,
@@ -1132,7 +1134,7 @@ namespace sailflow.engine.Manager
             if (activityInstance == null)
                 return WfDataManagedResult.Exception("AddAssignee flat guard: activity is null.");
 
-            if (ActivityInstanceManager.IsSignForwardContainer(activityInstance)
+            if (IActivityInstanceManager.IsSignForwardContainer(activityInstance)
                 || activityInstance.ComplexType == (short)ComplexTypeEnum.SignForward)
             {
                 return WfDataManagedResult.Exception(
@@ -1155,7 +1157,7 @@ namespace sailflow.engine.Manager
                 if (parent != null
                     && (parent.ComplexType == (short)ComplexTypeEnum.SignTogether
                         || parent.ComplexType == (short)ComplexTypeEnum.SignForward
-                        || ActivityInstanceManager.IsSignForwardContainer(parent)))
+                        || IActivityInstanceManager.IsSignForwardContainer(parent)))
                 {
                     return WfDataManagedResult.Exception(
                         "AddAssignee requires flat node (child under SignTogether/SignForward).");
@@ -1169,7 +1171,7 @@ namespace sailflow.engine.Manager
         /// 减签：取消指定办理人在本活动上的未办待办（Closed + Cancelled 通知），并刷新 SignIds/Names。
         /// 至少保留一名打开待办；不推进下一节点。
         /// </summary>
-        internal WfDataManagedResult RemoveAssignees(
+        public WfDataManagedResult RemoveAssignees(
             SQLBuilder kit,
             string taskId,
             FlowCommandContext runner,
@@ -1227,7 +1229,7 @@ namespace sailflow.engine.Manager
         }
 
         /// <summary>用 Waiting/Reading 的<strong>常规办理人</strong>待办重建活动 SignIds/Names（排除沟通参与者）。</summary>
-        internal void RefreshActivitySignFromOpenTasks(
+        public void RefreshActivitySignFromOpenTasks(
             SQLBuilder kit,
             ActivityInstanceEntity activityInstance)
         {
@@ -1251,7 +1253,7 @@ namespace sailflow.engine.Manager
         }
 
         /// <summary>打开中的常规办理人待办（Waiting/Reading 且非参与者）。</summary>
-        internal List<TaskEntity> GetOpenApproverTasks(
+        public List<TaskEntity> GetOpenApproverTasks(
             SQLBuilder kit,
             string processInstanceId,
             string activityInstanceId) =>
@@ -1293,7 +1295,7 @@ namespace sailflow.engine.Manager
         /// 沟通：在当前活动为选中人建参与者待办（role=1，ConsultSrcTaskId=源 Task）。
         /// 同轮同人已有打开参与者待办则跳过（幂等）。不刷新 SignIds/Names。
         /// </summary>
-        internal WfDataManagedResult Consult(
+        public WfDataManagedResult Consult(
             SQLBuilder kit,
             string srcTaskId,
             FlowCommandContext runner,
@@ -1381,7 +1383,7 @@ namespace sailflow.engine.Manager
         }
 
         /// <summary>阅办：仅参与者办结自己的待办（Completed）。</summary>
-        internal WfDataManagedResult Acknowledge(
+        public WfDataManagedResult Acknowledge(
             SQLBuilder kit,
             string taskId,
             FlowCommandContext runner)
@@ -1403,7 +1405,7 @@ namespace sailflow.engine.Manager
         }
 
         /// <summary>收回沟通：取消源 Task 下仍打开的参与者待办。</summary>
-        internal WfDataManagedResult RecallConsult(
+        public WfDataManagedResult RecallConsult(
             SQLBuilder kit,
             string srcTaskId,
             FlowCommandContext runner)
@@ -1435,7 +1437,7 @@ namespace sailflow.engine.Manager
         }
 
         /// <summary>节点离开时：取消同活动上未关闭的沟通参与者待办（避免孤儿阅办）。</summary>
-        internal void CancelOpenParticipantsOnActivity(
+        public void CancelOpenParticipantsOnActivity(
             SQLBuilder kit,
             ActivityInstanceEntity activityInstance,
             FlowCommandContext runner)
@@ -1465,7 +1467,7 @@ namespace sailflow.engine.Manager
         /// 节点离开 / 会签阈值已达：关闭同活动剩余打开办理人待办。
         /// 同代理链优先 <see cref="TaskEndTypes.ProxyTaken"/>，否则 <see cref="TaskEndTypes.RaceTaken"/>。
         /// </summary>
-        internal void CloseOpenApproverTasksOnActivity(
+        public void CloseOpenApproverTasksOnActivity(
             SQLBuilder kit,
             ActivityInstanceEntity activityInstance,
             FlowCommandContext runner,
@@ -1512,7 +1514,7 @@ namespace sailflow.engine.Manager
         /// <summary>
         /// 会签未完成子节点取消时：按子 AI 关掉打开办理人待办（默认 RaceTaken）。
         /// </summary>
-        internal void CloseOpenApproverTasksOnActivityIds(
+        public void CloseOpenApproverTasksOnActivityIds(
             SQLBuilder kit,
             string processInstanceId,
             IEnumerable<string> activityInstanceIds,
@@ -1549,7 +1551,7 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal void CancelEntrustedTask(string taskId)
+        public void CancelEntrustedTask(string taskId)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -1567,7 +1569,7 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal void CancelEntrustedTask(SQLBuilder kit, string taskId)
+        public void CancelEntrustedTask(SQLBuilder kit, string taskId)
         {
             var clip = kit.useClip();
             clip.from<TaskEntity>(out var t)
@@ -1610,7 +1612,7 @@ namespace sailflow.engine.Manager
             FireTaskLifecycle(kit, newTask, null, TaskNotifyKind.Created);
         }
 
-        internal Boolean Replace(string activityInstanceId, List<TaskReplacedEntity> replaced, FlowCommandContext runner)
+        public Boolean Replace(string activityInstanceId, List<TaskReplacedEntity> replaced, FlowCommandContext runner)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -1629,7 +1631,7 @@ namespace sailflow.engine.Manager
             }
         }
 
-        internal void Replace(SQLBuilder kit, string activityInstanceId, List<TaskReplacedEntity> replaced, FlowCommandContext runner)
+        public void Replace(SQLBuilder kit, string activityInstanceId, List<TaskReplacedEntity> replaced, FlowCommandContext runner)
         {
             CancelTask(kit, activityInstanceId);
             var aim = Sail.ManagerFactory.Activities;
@@ -1676,13 +1678,13 @@ namespace sailflow.engine.Manager
                 .doUpdate();
         }
 
-        internal bool Delete(string taskId)
+        public bool Delete(string taskId)
         {
             var kit = Sail.UseRunSQL();
             return Delete(kit, taskId);
         }
 
-        internal bool Delete(SQLBuilder kit, string taskId)
+        public bool Delete(SQLBuilder kit, string taskId)
         {
             kit.useRepo<TaskEntity, string>().DeleteById(taskId);
             return true;

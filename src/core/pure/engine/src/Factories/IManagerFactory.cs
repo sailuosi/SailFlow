@@ -1,30 +1,42 @@
-using sailflow.engine.Client;
 using sailflow.engine.Manager;
+using sailflow.engine.Runtime;
 
 namespace sailflow.engine.Factories;
 
 /// <summary>
-/// A · Manager 工厂槽：每 <see cref="SailClient"/> 一套；懒持有 Manager；D3 起唯一 <c>new Manager</c> 入口。
+/// A · Manager 工厂槽：每 <see cref="Client.SailClient"/> 一套；懒持有 Manager；唯一 <c>new Manager</c> 入口在默认实现（sailflow.runtime）。
 /// </summary>
 public interface IManagerFactory
 {
-    ActivityInstanceManager Activities { get; }
+    IActivityInstanceManager Activities { get; }
 
-    TaskManager Tasks { get; }
+    ITaskManager Tasks { get; }
 
-    ProcessManager Processes { get; }
+    IProcessManager Processes { get; }
 
-    TransitionInstanceManager Transitions { get; }
+    IProcessInstanceManager ProcessInstances { get; }
 
-    VariableManager Variables { get; }
+    IProcessVariableManager ProcessVariables { get; }
 
-    HookOutboxManager HookOutbox { get; }
+    IProcessVariableResolver ProcessVariableResolver { get; }
 
-    RuleSetManager RuleSets { get; }
+    ITransitionInstanceManager Transitions { get; }
 
-    RuleSetExecutionManager RuleSetExecutions { get; }
+    IVariableManager Variables { get; }
 
-    JobInfoManager JobInfos { get; }
+    IHookOutboxManager HookOutbox { get; }
 
-    LogManager Logs { get; }
+    IRuleSetManager RuleSets { get; }
+
+    IRuleSetExecutionManager RuleSetExecutions { get; }
+
+    IJobInfoManager JobInfos { get; }
+
+    ILogManager Logs { get; }
+
+    IPreviousStepChecker PreviousSteps { get; }
+
+    INextStepParser NextSteps { get; }
+
+    ISignForwardStepMaker SignForwardSteps { get; }
 }

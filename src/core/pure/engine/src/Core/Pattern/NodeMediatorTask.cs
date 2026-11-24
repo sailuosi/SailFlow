@@ -64,11 +64,11 @@ namespace sailflow.engine.Pattern
 
             if (taskId != null)
             {
-                if (base.TaskManager.TryCompleteAsDelegationReturn(
+                if (base.ITaskManager.TryCompleteAsDelegationReturn(
                         kit.useSQL(), taskId, activityResource.AppRunner))
                     return false;
 
-                base.TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
+                base.ITaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
             }
 
             var from = base.LinkContext.FromActivityInstance;
@@ -76,9 +76,9 @@ namespace sailflow.engine.Pattern
                 return false;
 
             // 多席 / 有 Leave / 有直属加签子：走 TryCanLeave，勿盲 Complete
-            var children = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(
+            var children = base.IActivityInstanceManager.GetValidActivityInstanceListOfMI(
                 kit.useSQL(), from.ActivityInstanceId, from.ProcessInstanceId);
-            var directTasks = base.TaskManager.GetTaskListByActivity(
+            var directTasks = base.ITaskManager.GetTaskListByActivity(
                 kit.useSQL(), from.ProcessInstanceId, from.ActivityInstanceId);
             var approverTasks = directTasks
                 .Where(t => t != null && !AssigneeRoleHelper.IsParticipant(t.AssigneeRole))
@@ -89,8 +89,8 @@ namespace sailflow.engine.Pattern
 
             if (needsLeave)
             {
-                base.ActivityInstanceManager.SetApprovalStatus(kit.useSQL(), from.ActivityInstanceId);
-                var passed = base.ActivityInstanceManager.EvaluateLeaveOnActivity(
+                base.IActivityInstanceManager.SetApprovalStatus(kit.useSQL(), from.ActivityInstanceId);
+                var passed = base.IActivityInstanceManager.EvaluateLeaveOnActivity(
                     kit.useSQL(), from, from);
 
                 if (passed == NodePassedTypeEnum.NeedToBeMoreApproved
@@ -153,9 +153,9 @@ namespace sailflow.engine.Pattern
                     entity.UnitName = plist[i].UnitName;
                     entity.ActivityState = (short)ActivityStateEnum.Ready;
 
-                    entity.ActivityInstanceId = base.ActivityInstanceManager.Insert(kit.useSQL(), entity);
+                    entity.ActivityInstanceId = base.IActivityInstanceManager.Insert(kit.useSQL(), entity);
 
-                    base.TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
+                    base.ITaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
 
                     InsertTransitionInstance(processInstance,
                         transitionId,
@@ -176,7 +176,7 @@ namespace sailflow.engine.Pattern
                 toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
                 toActivityInstance = GenerateActivitySignInfo(toActivityInstance, activityResource);
 
-                base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
+                base.IActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
                 base.CreateNewTask(toActivityInstance, activityResource, kit);
                 InsertTransitionInstance(processInstance,
@@ -212,7 +212,7 @@ namespace sailflow.engine.Pattern
         {
             if (fromActivityInstance.BackSrcActInstanceId != null)
             {
-                var backSrcActivityInstance = base.ActivityInstanceManager.GetById(kit.useSQL(), fromActivityInstance.BackSrcActInstanceId);
+                var backSrcActivityInstance = base.IActivityInstanceManager.GetById(kit.useSQL(), fromActivityInstance.BackSrcActInstanceId);
                 toActivityInstance.BackSrcActInstanceId = backSrcActivityInstance.BackSrcActInstanceId;
                 toActivityInstance.BackOrgActInstanceId = backSrcActivityInstance.BackOrgActInstanceId;
             }

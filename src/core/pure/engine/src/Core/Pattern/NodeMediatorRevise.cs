@@ -77,7 +77,7 @@ namespace sailflow.engine.Pattern
                                 if (gatewayNode.GatewayDetail.DirectionType == GatewayDirectionEnum.AndSplitMI)
                                 {
                                     //复制并行多实例分支
-                                    var gatewayActivityInstance = base.ActivityInstanceManager.GetActivityInstanceLatest(Kit.useSQL(), 
+                                    var gatewayActivityInstance = base.IActivityInstanceManager.GetActivityInstanceLatest(Kit.useSQL(), 
                                         backSrcActivityInstance.ProcessInstanceId, gatewayNode.ActivityId);
                                     CloneChildNodeOfAndSplitMI(performerList, transition.TransitionId, gatewayActivityInstance, backSrcActivityInstance, base.Kit);
                                 }
@@ -126,18 +126,18 @@ namespace sailflow.engine.Pattern
 
             if (taskId != null)
             {
-                if (base.TaskManager.TryCompleteAsDelegationReturn(
+                if (base.ITaskManager.TryCompleteAsDelegationReturn(
                         kit.useSQL(), taskId, activityResource.AppRunner))
                     return false;
 
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
-                base.TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
+                base.ITaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
 
                 //设置活动节点的状态为完成状态
                 //将活动节点状态设为完成
-                var activityInstanceId = base.ActivityInstanceManager.GetByTask(taskId).ActivityInstanceId;
-                base.ActivityInstanceManager.Complete(kit.useSQL(), activityInstanceId, activityResource.AppRunner);
+                var activityInstanceId = base.IActivityInstanceManager.GetByTask(taskId).ActivityInstanceId;
+                base.IActivityInstanceManager.Complete(kit.useSQL(), activityInstanceId, activityResource.AppRunner);
             }
             return canContinueForwardCurrentNode;
         }
@@ -152,7 +152,7 @@ namespace sailflow.engine.Pattern
             ActivityInstanceEntity mainActivityInstance, 
             SQLBuilder kit)
         {
-            var childNodeListOfMI = base.ActivityInstanceManager.GetValidActivityInstanceListOfMI(kit.useSQL(), mainActivityInstance.ActivityInstanceId, mainActivityInstance.ProcessInstanceId);
+            var childNodeListOfMI = base.IActivityInstanceManager.GetValidActivityInstanceListOfMI(kit.useSQL(), mainActivityInstance.ActivityInstanceId, mainActivityInstance.ProcessInstanceId);
 
             ActivityInstanceEntity entity = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)
@@ -167,7 +167,7 @@ namespace sailflow.engine.Pattern
                 }
 
                 //基于主节点复制子节点数据
-                entity = ActivityInstanceManager.CreateActivityInstanceObject(mainActivityInstance);
+                entity = IActivityInstanceManager.CreateActivityInstanceObject(mainActivityInstance);
                 entity.SignIds = userId;
                 entity.SignNames = userName;
                 entity.MainActInstanceId = mainActivityInstance.ActivityInstanceId;
@@ -189,9 +189,9 @@ namespace sailflow.engine.Pattern
                     entity.ActivityState = (short)ActivityStateEnum.Suspended;
                 }
 
-                entity.ActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), entity);
+                entity.ActivityInstanceId = IActivityInstanceManager.Insert(kit.useSQL(), entity);
 
-                base.TaskManager.Insert(kit.useSQL(), entity, plist[i], base.ActivityForwardContext.ActivityResource.AppRunner);
+                base.ITaskManager.Insert(kit.useSQL(), entity, plist[i], base.ActivityForwardContext.ActivityResource.AppRunner);
             }
         }
 
@@ -220,7 +220,7 @@ namespace sailflow.engine.Pattern
             ActivityInstanceEntity toActivityInstance, 
             SQLBuilder kit)
         {
-            var childNodeListOfAndSplitMI = base.ActivityInstanceManager.GetValidSplitedActivityInstanceList(kit.useSQL(), gatewayActivityInstance.ProcessInstanceId, gatewayActivityInstance.ActivityInstanceId);
+            var childNodeListOfAndSplitMI = base.IActivityInstanceManager.GetValidSplitedActivityInstanceList(kit.useSQL(), gatewayActivityInstance.ProcessInstanceId, gatewayActivityInstance.ActivityInstanceId);
 
             ActivityInstanceEntity newChildInstance = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)
@@ -234,11 +234,11 @@ namespace sailflow.engine.Pattern
                     continue;
                 }
 
-                newChildInstance = ActivityInstanceManager.CreateActivityInstanceObject(toActivityInstance);
+                newChildInstance = IActivityInstanceManager.CreateActivityInstanceObject(toActivityInstance);
                 newChildInstance.SignIds = userId;
                 newChildInstance.SignNames = userName;
 
-                newChildInstance.ActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), newChildInstance);
+                newChildInstance.ActivityInstanceId = IActivityInstanceManager.Insert(kit.useSQL(), newChildInstance);
 
                 base.InsertTransitionInstance(base.ActivityForwardContext.ProcessInstance,
                     transitionId,
@@ -249,7 +249,7 @@ namespace sailflow.engine.Pattern
                     base.ActivityForwardContext.ActivityResource.AppRunner,
                     kit);
 
-                base.TaskManager.Insert(kit.useSQL(), newChildInstance, plist[i], base.ActivityForwardContext.ActivityResource.AppRunner);
+                base.ITaskManager.Insert(kit.useSQL(), newChildInstance, plist[i], base.ActivityForwardContext.ActivityResource.AppRunner);
             }
         }
     }

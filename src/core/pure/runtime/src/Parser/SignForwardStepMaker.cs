@@ -10,16 +10,17 @@ using sailflow.engine.Xpdl;
 using sailflow.engine.Entity;
 using sailflow.engine.Manager;
 using System.Reflection;
+using sailflow.engine.Runtime;
 
 using sailflow.engine.Client;
 using sailflow.engine.Core;
-namespace sailflow.engine.Runtime
+namespace sailflow.runtime.Parser
 {
     /// <summary>
     /// Sign Forward Step Maker
     /// 加签步骤生成器
     /// </summary>
-    internal class SignForwardStepMaker
+    public class SignForwardStepMaker : ISignForwardStepMaker
     {
         public SignForwardStepMaker(SailClient client)
         {
@@ -34,7 +35,7 @@ namespace sailflow.engine.Runtime
         /// </summary>
         /// <param name="runner"></param>
         /// <returns></returns>
-        internal SignForwardStepInfo GetSignForwardStepInfo(FlowCommandContext runner)
+        public SignForwardStepInfo GetSignForwardStepInfo(FlowCommandContext runner)
         {
             var signForwardStepInfo = new SignForwardStepInfo();
             var signResult = GetSignForwardRoleUserTree(runner);
@@ -48,7 +49,7 @@ namespace sailflow.engine.Runtime
         /// </summary>
         /// <param name="runner"></param>
         /// <returns></returns>
-        internal NextActivityListViewResult GetSignForwardRoleUserTree(FlowCommandContext runner)
+        public NextActivityListViewResult GetSignForwardRoleUserTree(FlowCommandContext runner)
         {
             var nextTreeResult = new NextActivityListViewResult();
 

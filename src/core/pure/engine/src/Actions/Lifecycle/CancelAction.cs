@@ -35,7 +35,7 @@ namespace sailflow.engine.Actions.Lifecycle
                 return false;
             }
 
-            var pim = SailFactoryAccess.Managers(Sail).ProcessInstances;
+            var pim = Sail.ManagerFactory.ProcessInstances;
             var processInstance = pim.GetProcessInstanceLatest(Kit, Context.BizPK, Context.ProcessId, Context.Version);
             if (processInstance == null || string.IsNullOrWhiteSpace(processInstance.ProcessInstanceId))
             {
@@ -57,7 +57,7 @@ namespace sailflow.engine.Actions.Lifecycle
 
         protected override void ExecuteCore(LifecycleActionContext ctx, WfExecutedResult result)
         {
-            SailFactoryAccess.Managers(Sail).ProcessInstances.Cancel(Kit, Context);
+            Sail.ManagerFactory.ProcessInstances.Cancel(Kit, Context);
             result.Status = WfExecutedStatus.Success;
             result.Message = "Cancel succeeded.";
             result.ProcessInstanceIdStarted = ctx.ProcessInstanceId;

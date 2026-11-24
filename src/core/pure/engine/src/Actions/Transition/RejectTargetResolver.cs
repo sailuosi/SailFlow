@@ -88,7 +88,7 @@ internal static class RejectTargetResolver
             return Fail(RejectReasonCodes.RejectTargetMissing, "Reject Previous: running node not found.");
         }
 
-        var npc = SailFactoryAccess.Managers(sail).PreviousSteps;
+        var npc = sail.ManagerFactory.PreviousSteps;
         bool hasGatewayNode;
         var previousList = npc.GetPreviousActivityInstanceList(runningNode, true, out hasGatewayNode);
         var previous = (previousList != null && previousList.Count > 0) ? previousList[0] : null;

@@ -114,9 +114,9 @@ namespace sailflow.engine.Pattern
             var toActivityInstance = CreateActivityInstanceObject(toActivity,
                 processInstance, activityResource.AppRunner);
 
-            ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
+            IActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
-            ActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance.ActivityInstanceId, activityResource.AppRunner);
+            IActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance.ActivityInstanceId, activityResource.AppRunner);
 
             base.InsertTransitionInstance(processInstance,
                 transitionId,

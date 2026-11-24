@@ -44,7 +44,7 @@ namespace sailflow.engine.Pattern
         }
 
         /// <summary>A · 经 ManagerFactory；不缓存字段。</summary>
-        internal ActivityInstanceManager ActivityInstanceManager => Sail.ManagerFactory.Activities;
+        internal IActivityInstanceManager IActivityInstanceManager => Sail.ManagerFactory.Activities;
         
         protected SailClient Sail { get; }
 
@@ -84,7 +84,7 @@ namespace sailflow.engine.Pattern
         internal virtual void InsertActivityInstance(ActivityInstanceEntity activityInstance,
             SQLBuilder kit)
         {
-            ActivityInstanceManager.Insert(kit.useSQL(), activityInstance);
+            IActivityInstanceManager.Insert(kit.useSQL(), activityInstance);
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace sailflow.engine.Pattern
             FlowCommandContext runner,
             SQLBuilder kit)
         {
-            ActivityInstanceManager.Complete(kit.useSQL(), ActivityInstanceId, runner);
+            IActivityInstanceManager.Complete(kit.useSQL(), ActivityInstanceId, runner);
         }
     }
 }

@@ -35,7 +35,7 @@ namespace sailflow.engine.Actions.Lifecycle
                 return false;
             }
 
-            var pim = SailFactoryAccess.Managers(Sail).ProcessInstances;
+            var pim = Sail.ManagerFactory.ProcessInstances;
             var processInstance = pim.GetProcessInstanceLatest(Kit, Context.BizPK, Context.ProcessId, Context.Version);
             // Discard 旧语义：无行也可 doUpdate；Gate/Hook 尽量带真实 PI，否则用 Runner 占位
             ctx = new LifecycleActionContext
@@ -52,7 +52,7 @@ namespace sailflow.engine.Actions.Lifecycle
 
         protected override void ExecuteCore(LifecycleActionContext ctx, WfExecutedResult result)
         {
-            SailFactoryAccess.Managers(Sail).ProcessInstances.Discard(Kit, Context);
+            Sail.ManagerFactory.ProcessInstances.Discard(Kit, Context);
             result.Status = WfExecutedStatus.Success;
             result.Message = "Discard succeeded.";
             result.ProcessInstanceIdStarted = ctx.ProcessInstance?.ProcessInstanceId;

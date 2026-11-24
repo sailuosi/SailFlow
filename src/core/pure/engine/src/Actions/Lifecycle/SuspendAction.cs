@@ -47,7 +47,7 @@ namespace sailflow.engine.Actions.Lifecycle
                 return false;
             }
 
-            var pim = SailFactoryAccess.Managers(Sail).ProcessInstances;
+            var pim = Sail.ManagerFactory.ProcessInstances;
             var processInstance = pim.GetById(Kit, task.ProcessInstanceId);
             ActivityInstanceEntity activityInstance = null;
             if (!string.IsNullOrWhiteSpace(task.ActivityInstanceId))
@@ -65,7 +65,7 @@ namespace sailflow.engine.Actions.Lifecycle
 
         protected override void ExecuteCore(LifecycleActionContext ctx, WfExecutedResult result)
         {
-            SailFactoryAccess.Managers(Sail).ProcessInstances.Suspend(Kit, ctx.ProcessInstanceId, Context);
+            Sail.ManagerFactory.ProcessInstances.Suspend(Kit, ctx.ProcessInstanceId, Context);
             result.Status = WfExecutedStatus.Success;
             result.Message = "Suspend succeeded.";
             result.ProcessInstanceIdStarted = ctx.ProcessInstanceId;

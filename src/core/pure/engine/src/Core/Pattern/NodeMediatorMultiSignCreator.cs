@@ -52,7 +52,7 @@ namespace sailflow.engine.Pattern
                     toActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
                     toActivityInstance = GenerateActivitySignInfo(toActivityInstance, activityResource);
 
-                    base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
+                    base.IActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
                     base.CreateNewTask(toActivityInstance, activityResource, kit);
 

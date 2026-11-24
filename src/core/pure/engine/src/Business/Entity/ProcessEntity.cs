@@ -58,7 +58,7 @@ namespace sailflow.engine.Entity
 
         /// <summary>
         /// 应用/业务分类标签（列 <c>p_app_type</c>）。
-        /// 可用于按类型检索流程定义（如 <c>ProcessManager.GetSingleByAppType</c>），非 BPMN 节点类型。
+        /// 可用于按类型检索流程定义（如 <c>IProcessManager.GetSingleByAppType</c>），非 BPMN 节点类型。
         /// </summary>
         [SooColumn(Name = "p_app_type", Length = 64)]
         public string AppType { get; set; }

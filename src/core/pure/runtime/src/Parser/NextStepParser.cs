@@ -9,12 +9,13 @@ using sailflow.engine.Xpdl;
 using sailflow.engine.Entity;
 using sailflow.engine.Manager;
 using sailflow.WebUtility;
+using sailflow.engine.Runtime;
 
 using sailflow.engine.Client;
 using sailflow.engine.Core;
 using sailflow.engine.Factories;
 
-namespace sailflow.engine.Runtime
+namespace sailflow.runtime.Parser
 {
     /// <summary>
     /// Next Step Parser
@@ -24,7 +25,7 @@ namespace sailflow.engine.Runtime
     /// 负责合并运行时条件、流程变量及资源服务 (IResourceService) 提供的执行人信息，
     /// 将“结构层”的下一步节点树转换为可直接被 WorkflowService / UI 使用的 NextStepInfo / NodeView 列表。
     /// </summary>
-    internal class NextStepParser
+    public class NextStepParser : INextStepParser
     {
         public NextStepParser(SailClient client)
         {
@@ -41,7 +42,7 @@ namespace sailflow.engine.Runtime
         /// <param name="runner"></param>
         /// <param name="condition"></param>
         /// <returns></returns>
-        internal NextStepInfo GetNextStepInfo(IResourceService resourceService,
+        public NextStepInfo GetNextStepInfo(IResourceService resourceService,
             FlowCommandContext runner, 
             IDictionary<string, string> condition = null)
         {
@@ -138,7 +139,7 @@ namespace sailflow.engine.Runtime
         /// <param name="runner"></param>
         /// <param name="condition"></param>
         /// <returns></returns>
-        internal NextActivityListViewResult GetNextActivityRoleUserTree(IResourceService resourceService, 
+        public NextActivityListViewResult GetNextActivityRoleUserTree(IResourceService resourceService, 
             FlowCommandContext context,
             IDictionary<string, string> condition)
         {
@@ -215,7 +216,7 @@ namespace sailflow.engine.Runtime
 
                     //读取流程变量表，合并条件参数
                     //Read the process variable table and merge condition parameters
-                    var processVariableManager = SailFactoryAccess.Managers(Sail).ProcessVariables;
+                    var processVariableManager = Sail.ManagerFactory.ProcessVariables;
                     condition = processVariableManager.GetVariableByTask(kit, taskView, condition);
                     if (condition != null)
                         context.Conditions = condition;

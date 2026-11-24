@@ -40,7 +40,7 @@ namespace sailflow.engine.Pattern
             SQLBuilder kit)
         {
             //检查是否已有运行中的合并节点实例
-            ActivityInstanceEntity joinNode = base.ActivityInstanceManager.GetActivityRunning(kit.useSQL(), processInstance.ProcessInstanceId, base.GatewayActivity.ActivityId);
+            ActivityInstanceEntity joinNode = base.IActivityInstanceManager.GetActivityRunning(kit.useSQL(), processInstance.ProcessInstanceId, base.GatewayActivity.ActivityId);
 
             int tokensRequired = 0;
             int tokensHad = 0;
@@ -79,7 +79,7 @@ namespace sailflow.engine.Pattern
                 tokensHad = base.GatewayActivityInstance.TokensHad.Value;
 
                 //累加已到达令牌数
-                base.ActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.ActivityInstanceId, runner);
+                base.IActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.ActivityInstanceId, runner);
                 base.InsertTransitionInstance(processInstance,
                     transitionId,
                     fromActivityInstance,

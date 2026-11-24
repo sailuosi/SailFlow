@@ -641,7 +641,7 @@ namespace sailflow.engine.Xpdl
         ///    计算“纯结构层”的下一步节点树；
         /// 2) 然后再结合 ActivityResource + 表达式，对结果树做二次过滤；
         /// 3) 该方法主要作为引擎内部使用接口（如特殊测试或扩展场景），
-        ///    常规业务/界面层应通过 WorkflowService.GetNextStepInfo / NextStepParser 统一获取下一步信息。
+        ///    常规业务/界面层应通过 WorkflowService.GetNextStepInfo / INextStepParser 统一获取下一步信息。
         /// </summary>
         public NextActivityMatchedResult GetNextActivityTreeListRuntime(string currentActivityId,
             string activityInstanceId,

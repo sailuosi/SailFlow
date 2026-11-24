@@ -28,7 +28,7 @@ public sealed class HookOutboxAutoApproveAnchorStore : IAutoApproveAnchorStore
             if (ownKit)
                 kit.beginTransaction();
 
-            var mgr = new HookOutboxManager(sail);
+            var mgr = sail.ManagerFactory.HookOutbox;
             var now = DateTime.UtcNow;
             foreach (var a in anchors)
             {

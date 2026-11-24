@@ -65,18 +65,18 @@ namespace sailflow.engine.Runtime
             {
                 // R4：办理人拒绝写进结果供 API 读 ReasonCode，不再向外抛（事务由上层按 Status 决定是否 commit）
                 WfExecutedResult.ApplyAssigneeException(ax);
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, CmdContext, ax);
+                ILogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, CmdContext, ax);
             }
             catch (WfRuntimeException rx)
             {
                 WfExecutedResult.Status = WfExecutedStatus.Exception;
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, CmdContext, rx);
+                ILogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, CmdContext, rx);
                 throw;
             }
             catch (System.Exception e)
             {
                 WfExecutedResult.Status = WfExecutedStatus.Failed;
-                LogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, CmdContext, e);
+                ILogManager.RecordLog(Sail, WfDefine.WF_PROCESS_RUN_ERROR, LogEventType.Error, LogPriority.High, CmdContext, e);
                 throw;
             }
             finally

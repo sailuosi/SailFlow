@@ -4,13 +4,15 @@ using mooSQL.data;
 using sailflow.data;
 using sailflow.engine.Entity;
 using sailflow.engine.Client;
+using sailflow.engine.Manager;
+using sailflow.engine.Runtime;
 
-namespace sailflow.engine.Manager
+namespace sailflow.runtime.Manager
 {
     /// <summary>
     /// 作业数据。终态：Client/kit，无 Session/SailDbAccess。
     /// </summary>
-    public class JobInfoManager
+    public class JobInfoManager : IJobInfoManager
     {
         public JobInfoManager(SailClient client)
         {

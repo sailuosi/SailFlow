@@ -39,7 +39,7 @@ namespace sailflow.engine.Actions.Lifecycle
                 return false;
             }
 
-            var processInstance = SailFactoryAccess.Managers(Sail).ProcessInstances.GetById(Kit, _processInstanceId);
+            var processInstance = Sail.ManagerFactory.ProcessInstances.GetById(Kit, _processInstanceId);
             if (processInstance == null)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -60,7 +60,7 @@ namespace sailflow.engine.Actions.Lifecycle
 
         protected override void ExecuteCore(LifecycleActionContext ctx, WfExecutedResult result)
         {
-            SailFactoryAccess.Managers(Sail).ProcessInstances.Resume(Kit, ctx.ProcessInstanceId, Context);
+            Sail.ManagerFactory.ProcessInstances.Resume(Kit, ctx.ProcessInstanceId, Context);
             result.Status = WfExecutedStatus.Success;
             result.Message = "Resume succeeded.";
             result.ProcessInstanceIdStarted = ctx.ProcessInstanceId;

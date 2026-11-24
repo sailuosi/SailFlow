@@ -42,10 +42,10 @@ public sealed class DefaultProcessModelFactory : IProcessModelFactory
         return null;
     }
 
-    internal NextActivityScheduleBase CreateActivityScheduleGateway(
+    NextActivityScheduleBase IProcessModelFactory.CreateActivityScheduleGateway(
         IProcessModel processModel,
         GatewaySplitJoinTypeEnum splitJoinType,
-        string activityInstanceId = null)
+        string activityInstanceId)
     {
         if (splitJoinType == GatewaySplitJoinTypeEnum.Split)
             return new NextActivityScheduleSplit(processModel, activityInstanceId, _sail);

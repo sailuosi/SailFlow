@@ -42,7 +42,7 @@ namespace sailflow.engine.Pattern
             var processInstanceId = eventService.GetProcessInstanceId();
             var kit = eventService.GetKit();
             var processInstance = client.ProcessInstances.GetById(kit, processInstanceId);
-            var pvm = SailFactoryAccess.Managers(client).ProcessVariables;
+            var pvm = client.ManagerFactory.ProcessVariables;
 
             foreach (var item in result.OutputVariables)
             {
@@ -93,7 +93,7 @@ namespace sailflow.engine.Pattern
             var kit = eventService.GetKit();
             if (kit == null || activityInstance == null || currentActivity == null)
                 return dict;
-            var pvm = SailFactoryAccess.Managers(client).ProcessVariables;
+            var pvm = client.ManagerFactory.ProcessVariables;
             var processInstanceId = eventService.GetProcessInstanceId();
             var activityInstanceId = activityInstance.ActivityInstanceId;
             var processScope = ProcessVariableScopeEnum.Process.ToString();
@@ -187,7 +187,7 @@ namespace sailflow.engine.Pattern
             ActivityInstanceEntity currentInstance,
             string sourceActivityId,
             SQLBuilder kit,
-            ActivityInstanceManager aim)
+            IActivityInstanceManager aim)
         {
             var prev = aim.GetPreviousActivityInstanceSimple(kit.useSQL(), currentInstance, sourceActivityId);
             if (prev != null) return prev;

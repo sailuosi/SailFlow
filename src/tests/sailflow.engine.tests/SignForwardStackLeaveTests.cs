@@ -205,12 +205,12 @@ public class SignForwardStackLeaveTests
     [Fact]
     public void IsSignForwardContainer_RequiresLeaveOnComplexType()
     {
-        Assert.False(ActivityInstanceManager.IsSignForwardContainer(new ActivityInstanceEntity
+        Assert.False(IActivityInstanceManager.IsSignForwardContainer(new ActivityInstanceEntity
         {
             ComplexType = (short)ComplexTypeEnum.SignForward,
             LeaveJudgeType = null
         }));
-        Assert.True(ActivityInstanceManager.IsSignForwardContainer(new ActivityInstanceEntity
+        Assert.True(IActivityInstanceManager.IsSignForwardContainer(new ActivityInstanceEntity
         {
             ComplexType = (short)ComplexTypeEnum.SignForward,
             LeaveJudgeType = "Collaborate"

@@ -25,7 +25,7 @@ namespace sailflow.engine.Actions.Assignee
 
         protected override EventFireTypeEnum SuccessEvent => EventFireTypeEnum.OnAssigneeAdded;
 
-        /// <summary><see cref="Manager.TaskManager.AddAssignees"/> 内已 FireTaskLifecycle(Created)。</summary>
+        /// <summary><see cref="Manager.ITaskManager.AddAssignees"/> 内已 FireTaskLifecycle(Created)。</summary>
         protected override bool FireTaskLifecycleAfterCore => false;
 
         protected override string ErrorLogName => "WF_PROCESS_ADD_ASSIGNEE_ERROR";

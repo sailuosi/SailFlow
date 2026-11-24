@@ -68,13 +68,13 @@ namespace sailflow.engine.Pattern
         }
 
         /// <summary>A · 经 ManagerFactory；不缓存字段。</summary>
-        internal ActivityInstanceManager ActivityInstanceManager => Sail.ManagerFactory.Activities;
+        internal IActivityInstanceManager IActivityInstanceManager => Sail.ManagerFactory.Activities;
 
         /// <summary>A · 经 ManagerFactory；不缓存字段。</summary>
-        internal TaskManager TaskManager => Sail.ManagerFactory.Tasks;
+        internal ITaskManager ITaskManager => Sail.ManagerFactory.Tasks;
 
         /// <summary>A · 经 ManagerFactory；不缓存字段。</summary>
-        internal ProcessInstanceManager ProcessInstanceManager => Sail.ProcessInstances;
+        internal IProcessInstanceManager IProcessInstanceManager => Sail.ProcessInstances;
 
         private WfNodeMediatedResult _wfNodeMediatedResult;
         internal WfNodeMediatedResult WfNodeMediatedResult
@@ -411,7 +411,7 @@ namespace sailflow.engine.Pattern
                     {
                         mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                             WfNodeMediatedFeedback.UnknownNodeTypeToWatch));
-                        LogManager.RecordLog(Sail, "NodeMediator.UnknownType.Exception",
+                        ILogManager.RecordLog(Sail, "NodeMediator.UnknownType.Exception",
                             LogEventType.Exception,
                             LogPriority.Normal,
                             null,
@@ -493,7 +493,7 @@ namespace sailflow.engine.Pattern
                 {
                     mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                         WfNodeMediatedFeedback.OrJoinOneBranchHasBeenFinishedWaittingOthers));
-                    LogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
+                    ILogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
                         LogEventType.Exception,
                         LogPriority.Normal,
                         null,
@@ -509,7 +509,7 @@ namespace sailflow.engine.Pattern
                 {
                     mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                         WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
-                    LogManager.RecordLog(Sail, "NodeMediator.ContinueForwardCurrentNodeRecurisivly.IsWaintingOneOfJoin.Exception",
+                    ILogManager.RecordLog(Sail, "NodeMediator.ContinueForwardCurrentNodeRecurisivly.IsWaintingOneOfJoin.Exception",
                         LogEventType.Exception,
                         LogPriority.Normal,
                         null,
@@ -520,7 +520,7 @@ namespace sailflow.engine.Pattern
                 {
                     mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                         WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
-                    LogManager.RecordLog(Sail, "NodeMediator.ContinueForwardCurrentNodeRecurisivly.IsWaintingOneOfJoin.OtherUnknownReason.Exception",
+                    ILogManager.RecordLog(Sail, "NodeMediator.ContinueForwardCurrentNodeRecurisivly.IsWaintingOneOfJoin.OtherUnknownReason.Exception",
                         LogEventType.Exception,
                         LogPriority.Normal,
                         null,
@@ -578,7 +578,7 @@ namespace sailflow.engine.Pattern
             {
                 mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                     WfNodeMediatedFeedback.IntermediateEventFailed));
-                LogManager.RecordLog(Sail, "IntermediateNodeExecuteException",
+                ILogManager.RecordLog(Sail, "IntermediateNodeExecuteException",
                     LogEventType.Exception,
                     LogPriority.Normal,
                     null,
@@ -620,7 +620,7 @@ namespace sailflow.engine.Pattern
                 {
                     mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                         WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
-                    LogManager.RecordLog(Sail, "NodeMediator.TaskNode.NeedOtherGatewayBranchesToJoin.Exception",
+                    ILogManager.RecordLog(Sail, "NodeMediator.TaskNode.NeedOtherGatewayBranchesToJoin.Exception",
                         LogEventType.Exception,
                         LogPriority.Normal,
                         null,
@@ -631,7 +631,7 @@ namespace sailflow.engine.Pattern
                 {
                     mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                         WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
-                    LogManager.RecordLog(Sail, "NodeMediator.TaskNode.NeedOtherGatewayBranchesToJoin.OtherUnkownReaseon.Exception",
+                    ILogManager.RecordLog(Sail, "NodeMediator.TaskNode.NeedOtherGatewayBranchesToJoin.OtherUnkownReaseon.Exception",
                         LogEventType.Exception,
                         LogPriority.Normal,
                         null,
@@ -677,7 +677,7 @@ namespace sailflow.engine.Pattern
                 var outputVariableNameList = ActivityForwardContext.ProcessModel.GetActivityOutputVarialbeNameList(comp.Activity);
 
                 var kit = Kit.useSQL();
-                var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
+                var pvm = Sail.ManagerFactory.ProcessVariables;
                 var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.ProcessInstanceId, currentActivityInstance.ActivityInstanceId,
                     outputVariableNameList);
 
@@ -714,7 +714,7 @@ namespace sailflow.engine.Pattern
             {
                 mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                     WfNodeMediatedFeedback.IntermediateEventFailed));
-                LogManager.RecordLog(Sail, "AIServiceNodeExecuteException",
+                ILogManager.RecordLog(Sail, "AIServiceNodeExecuteException",
                     LogEventType.Exception,
                     LogPriority.Normal,
                     null,
@@ -758,7 +758,7 @@ namespace sailflow.engine.Pattern
                 var outputVariableNameList = ActivityForwardContext.ProcessModel.GetActivityOutputVarialbeNameList(comp.Activity);
 
                 var kit = Kit.useSQL();
-                var pvm = SailFactoryAccess.Managers(Sail).ProcessVariables;
+                var pvm = Sail.ManagerFactory.ProcessVariables;
                 var currentActivityVariableList = pvm.GetVariableListByActivity(kit, ActivityForwardContext.ProcessInstance.ProcessInstanceId, currentActivityInstance.ActivityInstanceId,
                     outputVariableNameList);
                 var newConditionKeyValuePair = MergeActivityConditions(activityResource, currentActivityVariableList);
@@ -795,7 +795,7 @@ namespace sailflow.engine.Pattern
             {
                 mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                     WfNodeMediatedFeedback.IntermediateEventFailed));
-                LogManager.RecordLog(Sail, "ServiceNodeExecuteException",
+                ILogManager.RecordLog(Sail, "ServiceNodeExecuteException",
                     LogEventType.Exception,
                     LogPriority.Normal,
                     null,
@@ -847,7 +847,7 @@ namespace sailflow.engine.Pattern
             else
             {
                 mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(WfNodeMediatedFeedback.IntermediateEventFailed));
-                LogManager.RecordLog(Sail, "ScriptNodeExecuteException",
+                ILogManager.RecordLog(Sail, "ScriptNodeExecuteException",
                     LogEventType.Exception,
                     LogPriority.Normal,
                     null,
@@ -886,7 +886,7 @@ namespace sailflow.engine.Pattern
                 {
                     mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                         WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
-                    LogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
+                    ILogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
                         LogEventType.Exception,
                         LogPriority.Normal,
                         null,
@@ -897,7 +897,7 @@ namespace sailflow.engine.Pattern
                 {
                     mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                         WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
-                    LogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
+                    ILogManager.RecordLog(Sail, "ContinueForwardCurrentNodeRecurisivlyExeception",
                         LogEventType.Exception,
                         LogPriority.Normal,
                         null,
@@ -960,7 +960,7 @@ namespace sailflow.engine.Pattern
                 {
                     mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                         WfNodeMediatedFeedback.NeedOtherGatewayBranchesToJoin));
-                    LogManager.RecordLog(Sail, "NodeMediator.EndNode.NeedOtherGatewayBranchesToJoin.Exception",
+                    ILogManager.RecordLog(Sail, "NodeMediator.EndNode.NeedOtherGatewayBranchesToJoin.Exception",
                         LogEventType.Exception,
                         LogPriority.Normal,
                         null,
@@ -971,7 +971,7 @@ namespace sailflow.engine.Pattern
                 {
                     mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                         WfNodeMediatedFeedback.OtherUnknownReasonToDebug));
-                    LogManager.RecordLog(Sail, "NodeMediator.EndNode.NeedOtherGatewayBranchesToJoin.OtherUnkownReaseon.Exception",
+                    ILogManager.RecordLog(Sail, "NodeMediator.EndNode.NeedOtherGatewayBranchesToJoin.OtherUnkownReaseon.Exception",
                         LogEventType.Exception,
                         LogPriority.Normal,
                         null,
@@ -989,7 +989,7 @@ namespace sailflow.engine.Pattern
         {
             mediatorResult.Add(WfNodeMediatedResult.CreateNodeMediatedResultWithException(
                 WfNodeMediatedFeedback.UnknownNodeTypeToWatch));
-            LogManager.RecordLog(Sail, "NodeMediator.UnkonwNodeType.Exception",
+            ILogManager.RecordLog(Sail, "NodeMediator.UnkonwNodeType.Exception",
                 LogEventType.Exception,
                 LogPriority.Normal,
                 null,
@@ -1059,7 +1059,7 @@ namespace sailflow.engine.Pattern
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("nodemediator.createnewtask.warn"));
             }
 
-            TaskManager.Insert(kit.useSQL(), toActivityInstance, performers, activityResource.AppRunner);
+            ITaskManager.Insert(kit.useSQL(), toActivityInstance, performers, activityResource.AppRunner);
         }
 
         /// <summary>
@@ -1069,7 +1069,7 @@ namespace sailflow.engine.Pattern
             ProcessInstanceEntity processInstance,
             FlowCommandContext runner)
         {
-            ActivityInstanceEntity entity = ActivityInstanceManager.CreateActivityInstanceObject(processInstance.BizChannel,
+            ActivityInstanceEntity entity = IActivityInstanceManager.CreateActivityInstanceObject(processInstance.BizChannel,
                 processInstance.BizPK,
                 processInstance.BizCode,
                 processInstance.ProcessId,
@@ -1086,7 +1086,7 @@ namespace sailflow.engine.Pattern
         protected virtual string InsertActivityInstance(ActivityInstanceEntity activityInstance,
             SQLBuilder kit)
         {
-            return ActivityInstanceManager.Insert(kit.useSQL(), activityInstance);
+            return IActivityInstanceManager.Insert(kit.useSQL(), activityInstance);
         }
 
         /// <summary>
@@ -1097,19 +1097,19 @@ namespace sailflow.engine.Pattern
             SQLBuilder kit)
         {
             var sql = kit.useSQL();
-            var ai = ActivityInstanceManager.GetById(sql, ActivityInstanceId);
+            var ai = IActivityInstanceManager.GetById(sql, ActivityInstanceId);
             if (ai != null)
             {
                 // 抢办/或签旁人：关剩余办理人（同链 ProxyTaken，否则 RaceTaken）
-                TaskManager.CloseOpenApproverTasksOnActivity(
+                ITaskManager.CloseOpenApproverTasksOnActivity(
                     sql, ai, runner,
                     preferredEndType: TaskEndTypes.RaceTaken,
                     completedSignId: runner?.UserId);
-                TaskManager.CancelOpenParticipantsOnActivity(sql, ai, runner);
+                ITaskManager.CancelOpenParticipantsOnActivity(sql, ai, runner);
                 // 淹没未完成加签子树（席位级 SignForward 容器及后代）
-                ActivityInstanceManager.CancelSignForwardSubtreeUnder(sql, ai.ActivityInstanceId, runner);
+                IActivityInstanceManager.CancelSignForwardSubtreeUnder(sql, ai.ActivityInstanceId, runner);
             }
-            ActivityInstanceManager.Complete(sql, ActivityInstanceId, runner);
+            IActivityInstanceManager.Complete(sql, ActivityInstanceId, runner);
         }
 
         /// <summary>
@@ -1163,7 +1163,7 @@ namespace sailflow.engine.Pattern
             toActivityInstance.SignIds = PerformerBuilder.GenerateActivitySignIds(plist);
             toActivityInstance.SignNames = PerformerBuilder.GenerateActivitySignNames(plist);
 
-            ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
+            IActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
             InsertTransitionInstance(processInstance,
                 transitionId,
                 fromActivityInstance,
@@ -1199,7 +1199,7 @@ namespace sailflow.engine.Pattern
             for (short i = 0; i < roots.Count; i++)
             {
                 var root = roots[i];
-                entity = ActivityInstanceManager.CreateActivityInstanceObject(toActivityInstance);
+                entity = IActivityInstanceManager.CreateActivityInstanceObject(toActivityInstance);
                 entity.SignIds = root.UserId;
                 entity.SignNames = root.UserName;
                 entity.GroupId = root.GroupId;
@@ -1220,8 +1220,8 @@ namespace sailflow.engine.Pattern
                 if ((i > 0) && (toActivity.MultiSignDetail.MergeType == MergeTypeEnum.Sequence))
                     entity.ActivityState = (short)ActivityStateEnum.Suspended;
 
-                entity.ActivityInstanceId = ActivityInstanceManager.Insert(kit.useSQL(), entity);
-                TaskManager.Insert(kit.useSQL(), entity, root, activityResource.AppRunner);
+                entity.ActivityInstanceId = IActivityInstanceManager.Insert(kit.useSQL(), entity);
+                ITaskManager.Insert(kit.useSQL(), entity, root, activityResource.AppRunner);
                 FireActivityLifecycle(kit, processInstance, entity, activityResource.AppRunner,
                     EventFireTypeEnum.OnActivityCreated);
 
@@ -1229,7 +1229,7 @@ namespace sailflow.engine.Pattern
                 {
                     if (!string.Equals(proxy.ProxySignId, root.UserId, StringComparison.OrdinalIgnoreCase))
                         continue;
-                    TaskManager.Insert(kit.useSQL(), entity, proxy, activityResource.AppRunner);
+                    ITaskManager.Insert(kit.useSQL(), entity, proxy, activityResource.AppRunner);
                 }
             }
         }
@@ -1268,7 +1268,7 @@ namespace sailflow.engine.Pattern
             if (runner == null || activityInstance?.ProcessInstanceId == null)
                 return;
 
-            var processInstance = ProcessInstanceManager.GetById(kit, activityInstance.ProcessInstanceId);
+            var processInstance = IProcessInstanceManager.GetById(kit, activityInstance.ProcessInstanceId);
             FireActivityLifecycle(kit, processInstance, activityInstance, runner, EventFireTypeEnum.OnActivityReady);
         }
 
@@ -1281,7 +1281,7 @@ namespace sailflow.engine.Pattern
             string backOrgActivityInstanceId,
             FlowCommandContext runner)
         {
-            ActivityInstanceEntity entity = ActivityInstanceManager.CreateBackwardActivityInstanceObject(
+            ActivityInstanceEntity entity = IActivityInstanceManager.CreateBackwardActivityInstanceObject(
                 processInstance.BizChannel,
                 processInstance.BizPK,
                 processInstance.BizCode,

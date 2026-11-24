@@ -65,9 +65,9 @@ namespace sailflow.engine.Pattern
         {
             var fromActivityInstance = CreateActivityInstanceObject(LinkContext.FromActivity, processInstance, activityResource.AppRunner);
 
-            ActivityInstanceManager.Insert(kit.useSQL(), fromActivityInstance);
+            IActivityInstanceManager.Insert(kit.useSQL(), fromActivityInstance);
 
-            ActivityInstanceManager.Complete(kit.useSQL(), fromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
+            IActivityInstanceManager.Complete(kit.useSQL(), fromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
 
             fromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             LinkContext.FromActivityInstance = fromActivityInstance;

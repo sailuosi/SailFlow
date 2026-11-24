@@ -11,14 +11,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using sailflow.engine.Manager;
+using sailflow.engine.Runtime;
 
-namespace sailflow.engine.Manager
+namespace sailflow.runtime.Manager
 {
     /// <summary>
     /// Process Manager
     /// 流程定义管理类
     /// </summary>
-    public class ProcessManager
+    public class ProcessManager : IProcessManager
     {
         public ProcessManager(SailClient client)
         {
@@ -196,7 +198,7 @@ namespace sailflow.engine.Manager
         /// Obtain process records according to version
         /// 按照版本获取流程记录
         /// </summary>
-        internal ProcessEntity GetByVersionInternal(SQLBuilder kit,
+        public ProcessEntity GetByVersionInternal(SQLBuilder kit,
             string processId,
             string version)
         {
@@ -377,7 +379,7 @@ namespace sailflow.engine.Manager
         /// Update process version Status=0,1,2
         /// 更新流程版本
         /// </summary>
-        internal void UpdateUsingState(string processId,
+        public void UpdateUsingState(string processId,
             string version,
             byte usingState)
         {
@@ -556,7 +558,7 @@ namespace sailflow.engine.Manager
         /// Process XML file operation
         /// 流程定义的创建方法
         /// </summary>
-        internal string CreateProcess(ProcessEntity entity)
+        public string CreateProcess(ProcessEntity entity)
         {
             string processId = null;
 
@@ -592,7 +594,7 @@ namespace sailflow.engine.Manager
         /// Create process by xml content
         /// 根据XML创建新流程
         /// </summary>
-        internal ProcessFileEntity CreateProcessByXML(string xmlContent)
+        public ProcessFileEntity CreateProcessByXML(string xmlContent)
         {
             var processFileEntity = new ProcessFileEntity();
 
@@ -666,7 +668,7 @@ namespace sailflow.engine.Manager
         /// Save process file
         /// 保存XML文件
         /// </summary>
-        internal void SaveProcessFile(ProcessFileEntity entity)
+        public void SaveProcessFile(ProcessFileEntity entity)
         {
             var xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(entity.XmlContent);
@@ -690,7 +692,7 @@ namespace sailflow.engine.Manager
         /// Save process file single
         /// 保存XML文件
         /// </summary>
-        internal void SaveProcessFileSingle(ProcessFileEntity entity)
+        public void SaveProcessFileSingle(ProcessFileEntity entity)
         {
             //检查流程名称是否为空
             //Check if the process name is empty
@@ -746,7 +748,7 @@ namespace sailflow.engine.Manager
                 }
                 catch (System.Exception ex)
                 {
-                    LogManager.RecordLog(Sail, WfDefine.WF_XPDL_ERROR, LogEventType.Error, LogPriority.High, null, ex);
+                    ILogManager.RecordLog(Sail, WfDefine.WF_XPDL_ERROR, LogEventType.Error, LogPriority.High, null, ex);
                     throw;
                 }
             }
@@ -756,7 +758,7 @@ namespace sailflow.engine.Manager
         /// Save process file with pool
         /// 保存XML文件
         /// </summary>
-        internal void SaveProcessFileWithPool(ProcessFileEntity entity,
+        public void SaveProcessFileWithPool(ProcessFileEntity entity,
             XmlDocument xmlDoc,
             XmlNode xmlNodeCollaboration)
         {
@@ -918,7 +920,7 @@ namespace sailflow.engine.Manager
        /// Set process timer 
        /// 更新流程定时器信息
        /// </summary>
-        internal void SetProcessTimerType(string processId, string version)
+        public void SetProcessTimerType(string processId, string version)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -994,7 +996,7 @@ namespace sailflow.engine.Manager
         /// Import XML document to generate process records
         /// 导入XML文档生成流程记录
         /// </summary>
-        internal void ImportProcess(string xmlContent)
+        public void ImportProcess(string xmlContent)
         {
             var xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(xmlContent);
@@ -1080,7 +1082,7 @@ namespace sailflow.engine.Manager
         /// Read the content of the process XML file
         /// 读取流程XML文件内容
         /// </summary>
-        internal ProcessFileEntity GetProcessFile(string processId, string version, IXPDLStorage extStorage = null)
+        public ProcessFileEntity GetProcessFile(string processId, string version, IXPDLStorage extStorage = null)
         {
             var processEntity = GetByVersion(processId, version);
             var processFileEntity = FillProcessFileEntity(processEntity);
@@ -1090,7 +1092,7 @@ namespace sailflow.engine.Manager
         /// <summary>
         /// 同事务读取流程 XML；流转钩子须用此重载，禁止另开连接。
         /// </summary>
-        internal ProcessFileEntity GetProcessFile(SQLBuilder kit, string processId, string version, IXPDLStorage extStorage = null)
+        public ProcessFileEntity GetProcessFile(SQLBuilder kit, string processId, string version, IXPDLStorage extStorage = null)
         {
             var processEntity = GetByVersion(kit, processId, version);
             var processFileEntity = FillProcessFileEntity(processEntity, extStorage);
@@ -1101,7 +1103,7 @@ namespace sailflow.engine.Manager
         /// Obtain process file entity based on Id
         /// 根据ID获取流程文件实体
         /// </summary>
-        internal ProcessFileEntity GetProcessFileById(string id, IXPDLStorage extStorage = null)
+        public ProcessFileEntity GetProcessFileById(string id, IXPDLStorage extStorage = null)
         {
             var processEntity = GetById(id);
             var processFileEntity = FillProcessFileEntity(processEntity, extStorage);
@@ -1145,7 +1147,7 @@ namespace sailflow.engine.Manager
         /// Read xml content
         /// 读取Xml文档
         /// </summary>
-        internal XmlDocument GetProcessXmlDocument(string processId, string version, IXPDLStorage extStorage = null)
+        public XmlDocument GetProcessXmlDocument(string processId, string version, IXPDLStorage extStorage = null)
         {
             var processEntity = GetByVersion(processId, version);
 

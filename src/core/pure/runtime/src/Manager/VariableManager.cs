@@ -5,14 +5,16 @@ using mooSQL.data;
 using sailflow.data;
 using sailflow.engine.Entity;
 using sailflow.engine.Client;
+using sailflow.engine.Manager;
+using sailflow.engine.Runtime;
 
-namespace sailflow.engine.Manager
+namespace sailflow.runtime.Manager
 {
     /// <summary>
     /// 流程变量定义管理类（sf_variable）。
     /// 终态：无事务从 Client 取 kit；有事务只用传入的同一个 kit。
     /// </summary>
-    public class VariableManager
+    public class VariableManager : IVariableManager
     {
         public VariableManager(SailClient client)
         {

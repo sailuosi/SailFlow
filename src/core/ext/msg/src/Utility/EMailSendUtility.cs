@@ -65,7 +65,7 @@ namespace sailflow.msg
                 if (e.Error != null && !string.IsNullOrEmpty(e.Error.Message))
                 {
                     var callbackMailMessage = e.UserState as MailMessage;
-                    LogManager.RecordLog(Sail, TaskEmailSendError, LogEventType.Error,
+                    ILogManager.RecordLog(Sail, TaskEmailSendError, LogEventType.Error,
                         LogPriority.Normal, callbackMailMessage, e.Error);
                 }
                 callbackClient.Dispose();

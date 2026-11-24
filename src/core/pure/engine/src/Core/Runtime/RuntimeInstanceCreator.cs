@@ -218,7 +218,7 @@ namespace sailflow.engine.Runtime
 
             //检查节点上的输出变量定义，并把必填的输出变量，加入到Condition对象里面去
             //Check the output variable definition on the node and add the required output variable to the Condition object
-            var pvr = SailFactoryAccess.Managers(_sail).ProcessVariableResolver;
+            var pvr = _sail.ManagerFactory.ProcessVariableResolver;
             var isVariableRequiredChecked = pvr.CheckVariableRequired(kit, taskView, currentNode, runner.Conditions);
             if (isVariableRequiredChecked == false)
             {
@@ -295,7 +295,7 @@ namespace sailflow.engine.Runtime
             var processModel = _sail.ProcessModelFactory.CreateByTask(kit.useSQL(), taskView);
 
             var currentNode = processModel.GetActivity(taskView.ActivityId);
-            var pvr = SailFactoryAccess.Managers(_sail).ProcessVariableResolver;
+            var pvr = _sail.ManagerFactory.ProcessVariableResolver;
             var isVariableRequiredChecked = pvr.CheckVariableRequired(kit, taskView, currentNode, runner.Conditions);
             if (isVariableRequiredChecked == false)
             {
@@ -538,7 +538,7 @@ namespace sailflow.engine.Runtime
             var lastTaskTransitionInstance = tim.GetLastTaskTransition(runner.BizChannel,
                 runner.BizPK, runner.ProcessId);
 
-            var npc = SailFactoryAccess.Managers(_sail).PreviousSteps;
+            var npc = _sail.ManagerFactory.PreviousSteps;
             var previousActivityInstanceList = npc.GetPreviousActivityInstanceList(runningNode, true,
                 out hasGatewayNode).ToList();
             var previousActivityInstance = (previousActivityInstanceList.Count > 0) ? previousActivityInstanceList[0] : null;
@@ -734,7 +734,7 @@ namespace sailflow.engine.Runtime
             var hasGatewayPassed = false;
             var processInstance = _sail.ProcessInstances.GetById(runningNode.ProcessInstanceId);
             var processModel = _sail.ProcessModelFactory.CreateByProcessInstance( processInstance);
-            var previousStepChecker = SailFactoryAccess.Managers(_sail).PreviousSteps;
+            var previousStepChecker = _sail.ManagerFactory.PreviousSteps;
             var previousActivityList = previousStepChecker.GetPreviousActivityList(runningNode, processModel, out hasGatewayPassed);
 
             //判断退回是否有效
@@ -968,7 +968,7 @@ namespace sailflow.engine.Runtime
             var hasGatewayPassed = false;
             var processInstance = _sail.ProcessInstances.GetById(runningNode.ProcessInstanceId);
             
-            var previousStepChecker = SailFactoryAccess.Managers(_sail).PreviousSteps;
+            var previousStepChecker = _sail.ManagerFactory.PreviousSteps;
             var processModel = _sail.ProcessModelFactory.CreateByTask( taskToDo);
             var previousActivityList = previousStepChecker.GetPreviousActivityList(runningNode, processModel, out hasGatewayPassed);
 
@@ -1194,7 +1194,7 @@ namespace sailflow.engine.Runtime
             var endActivityInstance = aim.GetById(endTransitionInstance.ToActInstanceId);
 
             bool hasGatewayNode = false;
-            var npc = SailFactoryAccess.Managers(_sail).PreviousSteps;
+            var npc = _sail.ManagerFactory.PreviousSteps;
             var lastTaskActivityInstance = npc.GetPreviousActivityInstanceList(endActivityInstance, false,
                 out hasGatewayNode).ToList()[0];
             var lastTaskActivity = processModel.GetActivity(lastTaskActivityInstance.ActivityId);

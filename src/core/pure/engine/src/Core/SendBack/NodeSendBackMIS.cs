@@ -35,7 +35,7 @@ namespace sailflow.engine.Runtime
             var runningNode = base.SendBackOperation.BackwardFromActivityInstance;
             //创建撤销到上一步的节点记录
             //Create a node record to undo to the previous step
-            var psc = SailFactoryAccess.Managers(Sail).PreviousSteps;
+            var psc = Sail.ManagerFactory.PreviousSteps;
             var previousAdjacentBrotherNode = psc.GetPreviousOfMultipleInstanceNode(
                 runningNode.MainActInstanceId,
                 runningNode.ActivityInstanceId,
@@ -50,7 +50,7 @@ namespace sailflow.engine.Runtime
 
             //创建新的一条待办状态的记录，用于下次执行
             //Create a new record of pending status for the next execution
-            var newSuspendNode = base.ActivityInstanceManager.CreateActivityInstanceObject(runningNode);
+            var newSuspendNode = base.IActivityInstanceManager.CreateActivityInstanceObject(runningNode);
             newSuspendNode.ActivityState = (short)ActivityStateEnum.Suspended;
             newSuspendNode.MainActInstanceId = runningNode.MainActInstanceId;
             newSuspendNode.CompleteOrder = runningNode.CompleteOrder;
@@ -59,11 +59,11 @@ namespace sailflow.engine.Runtime
             newSuspendNode.SignIds = runningNode.SignIds;
             newSuspendNode.SignNames = runningNode.SignNames;
 
-            base.ActivityInstanceManager.Insert(Kit.useSQL(), newSuspendNode);
+            base.IActivityInstanceManager.Insert(Kit.useSQL(), newSuspendNode);
 
             //同时为此活动实例，创建新的任务
             //At the same time, create a new task for this activity instance
-            base.TaskManager.Renew(Kit.useSQL(), runningNode, newSuspendNode, base.SendBackOperation.ActivityResource.AppRunner);
+            base.ITaskManager.Renew(Kit.useSQL(), runningNode, newSuspendNode, base.SendBackOperation.ActivityResource.AppRunner);
         }
 
         /// <summary>
@@ -93,9 +93,9 @@ namespace sailflow.engine.Runtime
             rollbackPreviousActivityInstance.SignIds = base.SendBackOperation.BackwardToTaskPerformer.UserId;      
             rollbackPreviousActivityInstance.SignNames = base.SendBackOperation.BackwardToTaskPerformer.UserName;
 
-            base.ActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
+            base.IActivityInstanceManager.Insert(kit.useSQL(), rollbackPreviousActivityInstance);
 
-            base.TaskManager.Insert(Kit.useSQL(), rollbackPreviousActivityInstance, base.SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
+            base.ITaskManager.Insert(Kit.useSQL(), rollbackPreviousActivityInstance, base.SendBackOperation.BackwardToTaskPerformer, activityResource.AppRunner);
         }
     }
 }

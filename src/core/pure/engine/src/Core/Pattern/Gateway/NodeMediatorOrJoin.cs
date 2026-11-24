@@ -33,9 +33,9 @@ namespace sailflow.engine.Pattern
             int splitCount = 0;
             int joinCount = 0;
             Activity splitActivity = this.ProcessModel.GetBackwardGatewayActivity(gatewayActivity, ref joinCount, ref splitCount);
-            ActivityInstanceEntity splitActivityInstance = base.ActivityInstanceManager.GetActivityInstanceLatest(kit.useSQL(), processInstanceId, splitActivity.ActivityId);
+            ActivityInstanceEntity splitActivityInstance = base.IActivityInstanceManager.GetActivityInstanceLatest(kit.useSQL(), processInstanceId, splitActivity.ActivityId);
 
-            return base.ActivityInstanceManager.GetGatewayInstanceCountByTransition(kit.useSQL(), splitActivity.ActivityId, splitActivityInstance.ActivityInstanceId, processInstanceId);
+            return base.IActivityInstanceManager.GetGatewayInstanceCountByTransition(kit.useSQL(), splitActivity.ActivityId, splitActivityInstance.ActivityInstanceId, processInstanceId);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace sailflow.engine.Pattern
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Unknown);
 
             //检查是否已有运行中的合并节点实例
-            ActivityInstanceEntity joinNode = base.ActivityInstanceManager.GetActivityRunning(kit.useSQL(), processInstance.ProcessInstanceId, base.GatewayActivity.ActivityId);
+            ActivityInstanceEntity joinNode = base.IActivityInstanceManager.GetActivityRunning(kit.useSQL(), processInstance.ProcessInstanceId, base.GatewayActivity.ActivityId);
 
             if (joinNode == null)
             {
@@ -86,7 +86,7 @@ namespace sailflow.engine.Pattern
                 base.GatewayActivityInstance = joinNode;
 
                 //增加令牌计数
-                base.ActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.ActivityInstanceId, runner);
+                base.IActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.ActivityInstanceId, runner);
                 base.InsertTransitionInstance(processInstance,
                     transitionId,
                     fromActivityInstance,

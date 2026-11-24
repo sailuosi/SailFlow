@@ -41,7 +41,7 @@ public sealed class AutoApproveAnchorWorker
         cancellationToken.ThrowIfCancellationRequested();
         var batch = limit ?? Options.BatchSize;
         IList<HookOutboxEntity> claimed;
-        var om = new HookOutboxManager(Sail);
+        var om = Sail.ManagerFactory.HookOutbox;
 
         using (var claimKit = Sail.UseRunSQL())
         {
@@ -95,7 +95,7 @@ public sealed class AutoApproveAnchorWorker
 
     void ProcessOne(HookOutboxEntity row, CancellationToken ct)
     {
-        var om = new HookOutboxManager(Sail);
+        var om = Sail.ManagerFactory.HookOutbox;
         var anchor = Deserialize(row);
         if (anchor == null || string.IsNullOrWhiteSpace(anchor.ProcessInstanceId) || string.IsNullOrWhiteSpace(anchor.ActivityId))
         {
@@ -261,7 +261,7 @@ public sealed class AutoApproveAnchorWorker
         }
     }
 
-    void TerminalSkip(HookOutboxManager om, HookOutboxEntity row, string note)
+    void TerminalSkip(IHookOutboxManager om, HookOutboxEntity row, string note)
     {
         using var kit = Sail.UseRunSQL();
         kit.beginTransaction();
@@ -269,7 +269,7 @@ public sealed class AutoApproveAnchorWorker
         kit.commit();
     }
 
-    void MarkDone(HookOutboxManager om, HookOutboxEntity row, bool alreadyDone)
+    void MarkDone(IHookOutboxManager om, HookOutboxEntity row, bool alreadyDone)
     {
         using var kit = Sail.UseRunSQL();
         kit.beginTransaction();

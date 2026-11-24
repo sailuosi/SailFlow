@@ -91,12 +91,12 @@ namespace sailflow.engine.Pattern
             {
                 //完成本任务，返回任务已经转移到下一个会签任务，不继续执行其它节点
                 //完成本任务后转入下一会签任务，不再继续执行其它节点
-                base.TaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
+                base.ITaskManager.Complete(kit.useSQL(), taskId, activityResource.AppRunner);
             }
 
             //设置活动节点的状态为完成状态
             //将活动节点状态设为完成
-            base.ActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
+            base.IActivityInstanceManager.Complete(kit.useSQL(), base.LinkContext.FromActivityInstance.ActivityInstanceId, activityResource.AppRunner);
             base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 
             //先判断是否是多实例类型的任务
@@ -107,11 +107,11 @@ namespace sailflow.engine.Pattern
                 //取出主节点信息
                 //获取主节点信息
                 var mainNodeIndex = base.LinkContext.FromActivityInstance.MainActInstanceId;
-                var mainActivityInstance = base.ActivityInstanceManager.GetById(mainNodeIndex);
+                var mainActivityInstance = base.IActivityInstanceManager.GetById(mainNodeIndex);
 
                 //取出多实例节点列表
                 //获取多实例节点列表
-                var sqList = base.ActivityInstanceManager.GetActivityMulitipleInstanceWithState(
+                var sqList = base.IActivityInstanceManager.GetActivityMulitipleInstanceWithState(
                     kit.useSQL(),mainNodeIndex,base.LinkContext.FromActivityInstance.ProcessInstanceId,(short)ActivityStateEnum.Suspended).ToList<ActivityInstanceEntity>();
 
                 if (base.LinkContext.FromActivity.MultiSignDetail.MergeType == MergeTypeEnum.Sequence)
@@ -127,11 +127,11 @@ namespace sailflow.engine.Pattern
                         var currentNodeIndex = (short)base.LinkContext.FromActivityInstance.CompleteOrder.Value;
                         var nextActivityInstance = sqList[currentNodeIndex];
                         nextActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
-                        base.ActivityInstanceManager.Update(kit.useSQL(), nextActivityInstance);
+                        base.IActivityInstanceManager.Update(kit.useSQL(), nextActivityInstance);
 
                         //设置下一个任务对应的子流程进入运行状态
                         //将下一任务对应子流程设为运行
-                        base.ProcessInstanceManager.RecallSubProcess(Kit.useSQL(),
+                        base.IProcessInstanceManager.RecallSubProcess(Kit.useSQL(),
                             nextActivityInstance.ActivityInstanceId,
                             activityResource.AppRunner);
 
@@ -143,7 +143,7 @@ namespace sailflow.engine.Pattern
                         //完成最后一个会签任务，会签主节点状态由挂起设置为准备状态
                         //完成最后一会签任务，并将会签主节点从挂起改为就绪
                         mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-                        base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
+                        base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
                         //将执行权责交由会签主节点
                         //将执行权移交会签主节点
                         base.LinkContext.FromActivityInstance = mainActivityInstance;
@@ -161,7 +161,7 @@ namespace sailflow.engine.Pattern
                         //如果超过约定的比例数，则执行下一步节点
                         //超过约定通过比例则进入下一节点
                         mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-                        base.ActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
+                        base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
                         //将执行权责交由会签主节点
                         //将执行权移交会签主节点
                         base.LinkContext.FromActivityInstance = mainActivityInstance;
@@ -247,13 +247,13 @@ namespace sailflow.engine.Pattern
                 //并行容器中的子流程节点，每个办理人发起一个子流程
                 toActivityInstance.SignIds = performer.UserId;
                 toActivityInstance.SignNames = performer.UserName;
-                base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
-                this.TaskManager.Insert(kit.useSQL(), toActivityInstance, performer, activityResource.AppRunner);
+                base.IActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
+                this.ITaskManager.Insert(kit.useSQL(), toActivityInstance, performer, activityResource.AppRunner);
             }
             else
             {
                 toActivityInstance = GenerateActivitySignInfo(toActivityInstance, activityResource);
-                base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
+                base.IActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
                 base.CreateNewTask(toActivityInstance, activityResource, kit);
             }
 
@@ -345,7 +345,7 @@ namespace sailflow.engine.Pattern
                     "SignTogether requires performers. ReasonCode=" + AssigneeReasonCodes.AssigneeEmpty);
             }
 
-            base.ActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
+            base.IActivityInstanceManager.Insert(kit.useSQL(), toActivityInstance);
 
             InsertTransitionInstance(processInstance,
                 transitionId,
@@ -360,7 +360,7 @@ namespace sailflow.engine.Pattern
             ActivityInstanceEntity entity = new ActivityInstanceEntity();
             for (short i = 0; i < plist.Count; i++)
             {
-                entity = base.ActivityInstanceManager.CreateActivityInstanceObject(toActivityInstance);
+                entity = base.IActivityInstanceManager.CreateActivityInstanceObject(toActivityInstance);
                 entity.SignIds = plist[i].UserId;
                 entity.SignNames = plist[i].UserName;
                 entity.GroupId = plist[i].GroupId;
@@ -379,9 +379,9 @@ namespace sailflow.engine.Pattern
                     entity.ActivityState = (short)ActivityStateEnum.Suspended;
                 }
 
-                entity.ActivityInstanceId = base.ActivityInstanceManager.Insert(kit.useSQL(), entity);
+                entity.ActivityInstanceId = base.IActivityInstanceManager.Insert(kit.useSQL(), entity);
 
-                base.TaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
+                base.ITaskManager.Insert(kit.useSQL(), entity, plist[i], activityResource.AppRunner);
 
                 //启动子流程：必须复用父事务 kit，禁止另开连接
                 var subKit = kit.useSQL();
@@ -409,7 +409,7 @@ namespace sailflow.engine.Pattern
                 //串行会签时仅第一个子流程运行，其余子流程挂起
                 if ((i > 0) && (toActivity.MultiSignDetail.MergeType == MergeTypeEnum.Sequence))
                 {
-                    base.ProcessInstanceManager.Suspend(subKit,
+                    base.IProcessInstanceManager.Suspend(subKit,
                         startedResult.ProcessInstanceIdStarted, subRunner);
                 }
             }

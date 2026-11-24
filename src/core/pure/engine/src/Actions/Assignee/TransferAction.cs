@@ -22,7 +22,7 @@ namespace sailflow.engine.Actions.Assignee
 
         protected override EventFireTypeEnum SuccessEvent => EventFireTypeEnum.OnProcessTransferred;
 
-        /// <summary><see cref="Manager.TaskManager.Transfer"/> 内已 FireTaskLifecycle(Entrusted/Created)。</summary>
+        /// <summary><see cref="Manager.ITaskManager.Transfer"/> 内已 FireTaskLifecycle(Entrusted/Created)。</summary>
         protected override bool FireTaskLifecycleAfterCore => false;
 
         protected override string ErrorLogName => "WF_PROCESS_TRANSFER_ERROR";

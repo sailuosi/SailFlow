@@ -1,4 +1,5 @@
 using mooSQL.data;
+using sailflow.engine.Common;
 using sailflow.engine.Entity;
 using sailflow.engine.Manager;
 using sailflow.engine.Xpdl;
@@ -35,4 +36,10 @@ public interface IProcessModelFactory
     void ClearAllCache();
 
     void Invalidate(string processId, string version);
+
+    /// <summary>引擎内部：网关下一步调度。</summary>
+    internal NextActivityScheduleBase CreateActivityScheduleGateway(
+        IProcessModel processModel,
+        GatewaySplitJoinTypeEnum splitJoinType,
+        string activityInstanceId = null);
 }
