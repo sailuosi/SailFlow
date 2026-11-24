@@ -9,7 +9,7 @@ using sailflow.result;
 namespace sailflow.lanes
 {
     /// <summary>收回沟通：取消源 Task 下仍打开的参与者待办。</summary>
-    public sealed class RecallConsultAction : AssigneeActionBase
+    public sealed class RecallConsultAction : AssigneeLaneBase
     {
         public RecallConsultAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

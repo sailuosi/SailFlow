@@ -12,7 +12,7 @@ namespace sailflow.lanes
     /// 加人：向当前扁节点追加普通办理人待办，不推进下一节点、不压加签栈。
     /// 目标人取自 <c>NextActivityPerformers</c>（增量）；定位活动靠 <c>TaskId</c>。
     /// </summary>
-    public sealed class AddAssigneeAction : AssigneeActionBase
+    public sealed class AddAssigneeAction : AssigneeLaneBase
     {
         PerformerList _targets;
 

@@ -9,7 +9,7 @@ using sailflow.result;
 namespace sailflow.lanes
 {
     /// <summary>阅办：参与者办结自己的沟通待办。</summary>
-    public sealed class AcknowledgeAction : AssigneeActionBase
+    public sealed class AcknowledgeAction : AssigneeLaneBase
     {
         public AcknowledgeAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

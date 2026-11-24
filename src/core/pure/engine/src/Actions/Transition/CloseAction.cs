@@ -10,7 +10,7 @@ using sailflow.result;
 namespace sailflow.lanes
 {
     /// <summary>关闭：填 End 办理人 → CreateRuntimeInstanceClose → Execute。</summary>
-    public sealed class CloseAction : TransitionActionBase
+    public sealed class CloseAction : TransitionLaneBase
     {
         public CloseAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

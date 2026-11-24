@@ -12,9 +12,9 @@ namespace sailflow.lanes
     /// 动作骨架共同父类：横切工具箱（Gate/Hook/诊断能力），不排统一时序。
     /// 事务与实例锁由 <see cref="Service.WorkflowService"/> 外壳独占。
     /// </summary>
-    public abstract class FlowActionBase
+    public abstract class FlowLaneBase
     {
-        protected FlowActionBase(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+        protected FlowLaneBase(SailClient sail, SQLBuilder kit, FlowCommandContext context)
         {
             Sail = sail ?? throw new System.ArgumentNullException(nameof(sail));
             Kit = kit ?? throw new System.ArgumentNullException(nameof(kit));

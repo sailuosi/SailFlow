@@ -12,7 +12,7 @@ namespace sailflow.lanes
     /// 改派：用 <c>NextActivityPerformers</c> 作为新办理人全集，差量关旧/建新；不推进下一节点。
     /// 定位活动靠 <c>TaskId</c>。
     /// </summary>
-    public sealed class ChangeAssigneeAction : AssigneeActionBase
+    public sealed class ChangeAssigneeAction : AssigneeLaneBase
     {
         PerformerList _targets;
 

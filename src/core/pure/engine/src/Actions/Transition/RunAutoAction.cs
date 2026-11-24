@@ -13,7 +13,7 @@ namespace sailflow.lanes
     /// 自动推进：CreateRuntimeInstanceRunAuto →（无 Gate）→ Execute → OnProcessContinued。
     /// 保留旧语义：不走 Gate；Operation 仍为 <see cref="FlowOperation.Run"/>。
     /// </summary>
-    public sealed class RunAutoAction : TransitionActionBase
+    public sealed class RunAutoAction : TransitionLaneBase
     {
         public RunAutoAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

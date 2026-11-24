@@ -9,7 +9,7 @@ using sailflow.result;
 
 namespace sailflow.lanes
 {
-    public sealed class SignForwardAction : TransitionActionBase
+    public sealed class SignForwardAction : TransitionLaneBase
     {
         public SignForwardAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

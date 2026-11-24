@@ -244,7 +244,7 @@ namespace sailflow.service
         public WfExecutedResult RunProcessAuto(FlowCommandContext runner)
             => RunAction(runner, (kit, r) => new RunAutoAction(Sail, kit, r).Execute());
 
-        /// <summary>RunAuto async：Factory 预载后走 <see cref="TransitionActionBase.ExecuteWithRuntime"/>（仍 SkipGate）。</summary>
+        /// <summary>RunAuto async：Factory 预载后走 <see cref="TransitionLaneBase.ExecuteWithRuntime"/>（仍 SkipGate）。</summary>
         public async Task<WfExecutedResult> RunProcessAutoAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -413,7 +413,7 @@ namespace sailflow.service
         #region Process Transfer
         /// <summary>
         /// 转办：结束本人待办 + 本节点交给他人，不推进下一节点。
-        /// A1：横切由 <see cref="TransferAction"/> / <see cref="AssigneeActionBase"/> 固化；本方法只包事务与锁。
+        /// A1：横切由 <see cref="TransferAction"/> / <see cref="AssigneeLaneBase"/> 固化；本方法只包事务与锁。
         /// </summary>
         public WfExecutedResult TransferProcess(FlowCommandContext runner)
             => RunAction(runner, (kit, r) => new TransferAction(Sail, kit, r).Execute());

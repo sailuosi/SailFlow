@@ -10,7 +10,7 @@ using sailflow.result;
 namespace sailflow.lanes
 {
     /// <summary>退回：CreateRuntimeInstanceSendBack → Execute；族群固化 Gate/成功 Hook。</summary>
-    public sealed class SendBackAction : TransitionActionBase
+    public sealed class SendBackAction : TransitionLaneBase
     {
         public SendBackAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

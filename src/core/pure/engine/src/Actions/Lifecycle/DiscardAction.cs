@@ -10,7 +10,7 @@ using sailflow.result;
 namespace sailflow.lanes
 {
     /// <summary>作废流程实例（按 BizPK+ProcessId+Version 批量更新，同旧 PIM.Discard）。</summary>
-    public sealed class DiscardAction : LifecycleActionBase
+    public sealed class DiscardAction : LifecycleLaneBase
     {
         public DiscardAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

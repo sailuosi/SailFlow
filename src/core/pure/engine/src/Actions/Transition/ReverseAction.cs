@@ -9,7 +9,7 @@ using sailflow.result;
 
 namespace sailflow.lanes
 {
-    public sealed class ReverseAction : TransitionActionBase
+    public sealed class ReverseAction : TransitionLaneBase
     {
         public ReverseAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

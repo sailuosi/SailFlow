@@ -10,7 +10,7 @@ using sailflow.result;
 namespace sailflow.lanes
 {
     /// <summary>同意/推进：CreateRuntimeInstanceAppRunning(kit) → Gate → Execute → OnProcessContinued。</summary>
-    public sealed class RunAction : TransitionActionBase
+    public sealed class RunAction : TransitionLaneBase
     {
         public RunAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

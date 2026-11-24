@@ -10,7 +10,7 @@ using sailflow.result;
 namespace sailflow.lanes
 {
     /// <summary>恢复已挂起的流程实例（由 ProcessInstanceId 定位）。</summary>
-    public sealed class ResumeAction : LifecycleActionBase
+    public sealed class ResumeAction : LifecycleLaneBase
     {
         readonly string _processInstanceId;
 

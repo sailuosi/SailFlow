@@ -17,7 +17,7 @@ namespace sailflow.lanes
     /// <item>Previous / Starter / Specified → 自动解析落点与历史办理人 → CreateRuntimeInstanceReject</item>
     /// </list>
     /// </summary>
-    public sealed class RejectAction : TransitionActionBase
+    public sealed class RejectAction : TransitionLaneBase
     {
         public RejectAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

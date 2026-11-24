@@ -13,7 +13,7 @@ namespace sailflow.lanes
     /// 催办：对当前节点未办待办发 <see cref="TaskNotifyKind.Urged"/>，不改状态、不推进。
     /// <c>TaskId</c> 定位活动；可选 <c>NextActivityPerformers</c> 限定催办对象（空=全部打开待办）。
     /// </summary>
-    public sealed class UrgeAction : AssigneeActionBase
+    public sealed class UrgeAction : AssigneeLaneBase
     {
         HashSet<string> _filterUserIds;
 

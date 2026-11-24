@@ -11,7 +11,7 @@ namespace sailflow.lanes
     /// <summary>
     /// 沟通：为选中人建参与者待办（role=1），锁定发起人审批直至全员阅办或收回。
     /// </summary>
-    public sealed class ConsultAction : AssigneeActionBase
+    public sealed class ConsultAction : AssigneeLaneBase
     {
         PerformerList _targets;
 

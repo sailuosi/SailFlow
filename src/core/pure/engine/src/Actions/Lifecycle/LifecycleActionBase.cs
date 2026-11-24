@@ -12,9 +12,9 @@ namespace sailflow.lanes
     /// <summary>
     /// 流程实例状态变化族：固化 Gate → Core → 成功 Hook；默认不 FireTaskLifecycle。
     /// </summary>
-    public abstract class LifecycleActionBase : FlowActionBase
+    public abstract class LifecycleLaneBase : FlowLaneBase
     {
-        protected LifecycleActionBase(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
+        protected LifecycleLaneBase(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)
         {
         }

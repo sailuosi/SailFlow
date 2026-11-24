@@ -13,9 +13,9 @@ namespace sailflow.lanes
     /// 待办人/办理人变化族：固化 Gate → Core → 成功 Hook（→ 可选 TaskLifecycle）时序。
     /// 动词子类只实现 <see cref="ExecuteCore"/> 与身份属性。
     /// </summary>
-    public abstract class AssigneeActionBase : FlowActionBase
+    public abstract class AssigneeLaneBase : FlowLaneBase
     {
-        protected AssigneeActionBase(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
+        protected AssigneeLaneBase(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)
         {
         }

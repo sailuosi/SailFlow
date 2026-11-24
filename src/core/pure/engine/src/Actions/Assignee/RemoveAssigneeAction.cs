@@ -12,7 +12,7 @@ namespace sailflow.lanes
     /// 减签：从当前多人节点移除指定未办办理人，不推进下一节点。
     /// 目标人取自 <c>NextActivityPerformers</c>（任意键下的 Performer）；定位活动靠 <c>TaskId</c>。
     /// </summary>
-    public sealed class RemoveAssigneeAction : AssigneeActionBase
+    public sealed class RemoveAssigneeAction : AssigneeLaneBase
     {
         PerformerList _targets;
 

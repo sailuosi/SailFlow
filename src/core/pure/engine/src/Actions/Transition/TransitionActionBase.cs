@@ -15,9 +15,9 @@ namespace sailflow.lanes
     /// 流转族：固化 Gate → Runtime.Execute(Core) → 成功 Hook。
     /// Service 级 AfterSuccess 由本族拥有；路径内 TaskNotifier（Mediator/ITaskManager）不在此重复。
     /// </summary>
-    public abstract class TransitionActionBase : FlowActionBase
+    public abstract class TransitionLaneBase : FlowLaneBase
     {
-        protected TransitionActionBase(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
+        protected TransitionLaneBase(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)
         {
         }

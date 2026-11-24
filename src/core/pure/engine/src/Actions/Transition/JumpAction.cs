@@ -10,7 +10,7 @@ using sailflow.result;
 namespace sailflow.lanes
 {
     /// <summary>跳转：按 JumpOption 填办理人 → CreateRuntimeInstanceJump → Execute。</summary>
-    public sealed class JumpAction : TransitionActionBase
+    public sealed class JumpAction : TransitionLaneBase
     {
         readonly JumpOptionEnum _jumpOption;
 

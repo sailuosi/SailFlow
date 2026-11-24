@@ -12,7 +12,7 @@ namespace sailflow.lanes
     /// 委派：本人待办交给一人代办（挂 EntrustedTaskId）；受托人办结后自动回转原人，不推进节点。
     /// 目标取自 <c>NextActivityPerformers</c>（取首个有效用户）；≠ <see cref="TransferAction"/>。
     /// </summary>
-    public sealed class DelegateAction : AssigneeActionBase
+    public sealed class DelegateAction : AssigneeLaneBase
     {
         PerformerList _targets;
 

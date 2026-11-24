@@ -10,7 +10,7 @@ using sailflow.result;
 namespace sailflow.lanes
 {
     /// <summary>撤回：CreateRuntimeInstanceWithdraw → Execute；族群固化 Gate/成功 Hook。</summary>
-    public sealed class WithdrawAction : TransitionActionBase
+    public sealed class WithdrawAction : TransitionLaneBase
     {
         public WithdrawAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

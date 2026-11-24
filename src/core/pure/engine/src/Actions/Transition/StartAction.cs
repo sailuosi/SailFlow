@@ -13,7 +13,7 @@ namespace sailflow.lanes
     /// 启动：CreateRuntimeInstanceStartup → Gate（可补 Start 活动码）→ Execute → OnProcessStarted。
     /// Gate 时尚未落库 PI，Hook 用 <see cref="WfExecutedResult.ProcessInstanceIdStarted"/>。
     /// </summary>
-    public sealed class StartAction : TransitionActionBase
+    public sealed class StartAction : TransitionLaneBase
     {
         public StartAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

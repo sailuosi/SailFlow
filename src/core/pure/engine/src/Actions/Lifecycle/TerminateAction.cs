@@ -11,7 +11,7 @@ using sailflow.result;
 namespace sailflow.lanes
 {
     /// <summary>终止流程实例（ProcessInstanceId 或 BizPK+ProcessId+Version；级联收口待办）。</summary>
-    public sealed class TerminateAction : LifecycleActionBase
+    public sealed class TerminateAction : LifecycleLaneBase
     {
         public TerminateAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

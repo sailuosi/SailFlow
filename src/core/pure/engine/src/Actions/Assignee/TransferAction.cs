@@ -9,9 +9,9 @@ using sailflow.result;
 namespace sailflow.lanes
 {
     /// <summary>
-    /// 转办：本节点交人、不推进下一节点。族群时序由 <see cref="AssigneeActionBase"/> 固化。
+    /// 转办：本节点交人、不推进下一节点。族群时序由 <see cref="AssigneeLaneBase"/> 固化。
     /// </summary>
-    public sealed class TransferAction : AssigneeActionBase
+    public sealed class TransferAction : AssigneeLaneBase
     {
         public TransferAction(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
             : base(sail, kit, runner)

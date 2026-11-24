@@ -11,7 +11,7 @@ using sailflow.result;
 namespace sailflow.lanes
 {
     /// <summary>挂起运行中的流程实例（由待办 TaskId 定位实例）。</summary>
-    public sealed class SuspendAction : LifecycleActionBase
+    public sealed class SuspendAction : LifecycleLaneBase
     {
         readonly string _taskId;
 
