@@ -2,8 +2,7 @@ using sailflow.engine.Xpdl;
 using sailflow.data;
 
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// Link Context
     /// 节点连接线上下文

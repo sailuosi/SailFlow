@@ -6,9 +6,8 @@ using sailflow.engine.Event;
 using sailflow.engine.Xpdl;
 
 using sailflow.engine.Client;
-using sailflow.engine.Core;
-namespace sailflow.engine.Pattern
-{
+using sailflow.run;
+namespace sailflow.run{
     /// <summary>
     /// 业务规则任务执行器
     /// </summary>

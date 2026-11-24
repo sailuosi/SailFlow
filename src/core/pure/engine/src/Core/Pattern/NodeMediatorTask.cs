@@ -7,12 +7,11 @@ using sailflow.engine.Event;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Assignee;
 using sailflow.engine.Client;
-using sailflow.engine.Core;
+using sailflow.run;
 using sailflow.engine.Hooks;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// 任务节点执行器（扁平席位；含外层 Leave + 加签子树淹没）。
     /// </summary>

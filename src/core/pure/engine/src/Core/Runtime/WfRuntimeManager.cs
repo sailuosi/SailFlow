@@ -3,13 +3,11 @@ using sailflow.data;
 using mooSQL.data;
 using sailflow.engine.Common;
 using sailflow.engine.Result;
-using sailflow.engine.Runtime;
+using sailflow.run;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Client;
-using sailflow.engine.Core;
 
-namespace sailflow.engine.Runtime
-{
+namespace sailflow.run{
     /// <summary>
     /// B · 命令执行编排袋（L-Cmd）。由 RuntimeFactory 按次 Create；字段遵守专题 B.0。
     /// 持本命令导航态 + 对 A（<see cref="Sail"/>）的只读引用；用毕即弃。

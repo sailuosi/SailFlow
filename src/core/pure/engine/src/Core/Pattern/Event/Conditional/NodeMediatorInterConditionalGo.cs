@@ -6,16 +6,14 @@ using sailflow.engine.Common;
 using sailflow.data;
 using mooSQL.data;
 using sailflow.hub.Localize;
-using sailflow.engine.Runtime;
+using sailflow.run;
 using sailflow.engine.Xpdl;
 using System.Threading.Tasks;
 
 using sailflow.engine.Client;
-using sailflow.engine.Core;
 using sailflow.engine.Factories;
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// 中间事件节点处理类
     /// </summary>

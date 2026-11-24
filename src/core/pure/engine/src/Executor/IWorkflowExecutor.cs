@@ -4,8 +4,7 @@ using sailflow.engine.Common;
 using sailflow.engine.Result;
 using sailflow.engine.Xpdl;
 
-namespace sailflow.engine.Executor
-{
+namespace sailflow.run{
     /// <summary>
     /// H · 无状态自动编排执行器：不持 Runner / 建造态；入口只吃参数。
     /// 链式建造见 <c>SailClient.CreateAutoRunBuilder</c>。

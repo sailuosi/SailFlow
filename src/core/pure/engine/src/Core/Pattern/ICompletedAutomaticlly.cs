@@ -6,10 +6,9 @@ using sailflow.engine.Common;
 using sailflow.data;
 using mooSQL.data;
 using sailflow.engine.Xpdl;
-using sailflow.engine.Core;
+using sailflow.run;
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// Complete Automatically
     /// </summary>

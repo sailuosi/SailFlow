@@ -5,8 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace sailflow.engine.Executor
-{
+namespace sailflow.run{
     /// <summary>
     /// Runs the workflow graph: traverses activities, handles gateways, delegates single-activity execution.
     /// 工作流图执行器：遍历活动节点、处理网关、委托单节点执行。

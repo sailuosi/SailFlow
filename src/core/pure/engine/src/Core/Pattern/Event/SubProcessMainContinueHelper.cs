@@ -4,12 +4,11 @@ using mooSQL.data;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.data;
-using sailflow.engine.Runtime;
+using sailflow.run;
 using sailflow.engine.Xpdl;
 using sailflow.hub.Resource;
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// 子流程结束后续推主流程时的下一跳办理人预填与完成态校验（四处 End / SubProcess 中介共用）。
     /// </summary>

@@ -9,14 +9,12 @@ using sailflow.engine.Xpdl;
 using sailflow.engine.Assignee;
 using sailflow.engine.Client;
 using sailflow.engine.Result;
-using sailflow.engine.Runtime;
+using sailflow.run;
 using sailflow.engine.Event;
-using sailflow.engine.Core;
 using sailflow.engine.Hooks;
 
 using sailflow.engine.Factories;
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// B · 节点执行编排袋（L-Cmd）。由 MediatorFactory 按次 Create；字段遵守专题 B.0。
     /// 对 A 仅只读引用（<see cref="Sail"/> / ManagerFactory）；不在袋内缓存 Manager 实例字段。

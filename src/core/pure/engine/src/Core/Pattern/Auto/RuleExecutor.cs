@@ -6,16 +6,14 @@ using sailflow.data;
 using mooSQL.data;
 using sailflow.engine.Common;
 using sailflow.engine.Event;
-using sailflow.engine.Executor;
+using sailflow.run;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Client;
 using sailflow.WebUtility;
-using sailflow.engine.Core;
 
 using sailflow.engine.Factories;
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     internal static class RuleExecutor
     {
         internal static void ExecuteRule(SailClient client,

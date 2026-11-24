@@ -7,9 +7,8 @@ using sailflow.engine.Xpdl;
 
 
 using sailflow.engine.Client;
-using sailflow.engine.Core;
-namespace sailflow.engine.Pattern
-{
+using sailflow.run;
+namespace sailflow.run{
     /// <summary>
     /// 任务节点执行器
     /// </summary>

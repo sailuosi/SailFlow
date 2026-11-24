@@ -6,9 +6,8 @@ using sailflow.engine.Xpdl;
 using sailflow.engine.Common;
 
 using sailflow.engine.Client;
-using sailflow.engine.Core;
-namespace sailflow.engine.Pattern
-{
+using sailflow.run;
+namespace sailflow.run{
     /// <summary>
     /// 多实例节点场景的创建器
     /// </summary>

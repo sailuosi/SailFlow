@@ -3,12 +3,10 @@ using sailflow.data;
 using mooSQL.data;
 using sailflow.engine.Common;
 using sailflow.engine.Result;
-using sailflow.engine.Pattern;
-using sailflow.engine.Core;
+using sailflow.run;
 
 using sailflow.engine.Factories;
-namespace sailflow.engine.Runtime
-{
+namespace sailflow.run{
     /// <summary>
     /// Workflow Runtimer Manager Close
     /// 流程运行时关闭

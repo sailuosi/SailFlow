@@ -7,10 +7,9 @@ using mooSQL.data;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Result;
 using sailflow.engine.Client;
-using sailflow.engine.Core;
+using sailflow.run;
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// 加签办结：容器内 TryCanLeave；Waiting 唤醒下一子；Passed 塌缩并折合一票上浮，仅节点 Passed 才 ContinueForward。
     /// </summary>

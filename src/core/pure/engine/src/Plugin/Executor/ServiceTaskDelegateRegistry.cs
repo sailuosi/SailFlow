@@ -2,8 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using sailflow.engine.Event;
 
-namespace sailflow.engine.Executor
-{
+namespace sailflow.run{
     /// <summary>
     /// Registry for ServiceTask LocalMethod binding (BPMN2 ##DelegateExpression semantic).
     /// 服务任务本地方法注册表，用于将 ServiceTask 节点绑定到本地方法。

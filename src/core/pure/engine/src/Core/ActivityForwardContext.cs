@@ -5,8 +5,7 @@ using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.engine.Xpdl;
 
-namespace sailflow.engine.Core
-{
+namespace sailflow.run{
     /// <summary>
     /// Activity node execution context object
     /// </summary>

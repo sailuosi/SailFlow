@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using sailflow.engine.Core;
+using sailflow.run;
 
-namespace sailflow.engine.Runtime
-{
+namespace sailflow.run{
     /// <summary>
     /// Workflow Runtime Exception
     /// 流程运行时异常类

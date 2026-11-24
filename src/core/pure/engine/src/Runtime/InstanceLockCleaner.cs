@@ -2,8 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace sailflow.engine.Runtime
-{
+namespace sailflow.run{
     /// <summary>
     /// 用 <see cref="Timer"/> 周期调用 <see cref="InstanceExecutionLock.CleanupIdle"/>（防重入）。
     /// 进程级单例；未 <see cref="Start"/> 则不清理（与历史「只增不减」兼容）。

@@ -4,8 +4,7 @@ using sailflow.engine.Common;
 using sailflow.data;
 using sailflow.engine.Xpdl;
 
-namespace sailflow.engine.Pattern;
-
+namespace sailflow.run;
 /// <summary>
 /// B · 节点 Mediator 执行表面（工厂 Create 产物）。
 /// </summary>

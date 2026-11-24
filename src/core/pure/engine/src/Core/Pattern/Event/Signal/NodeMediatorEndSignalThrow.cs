@@ -9,9 +9,8 @@ using sailflow.engine.Message;
 
 
 using sailflow.engine.Client;
-using sailflow.engine.Core;
-namespace sailflow.engine.Pattern
-{
+using sailflow.run;
+namespace sailflow.run{
     /// <summary>
     /// 结束节点处理类
     /// </summary>

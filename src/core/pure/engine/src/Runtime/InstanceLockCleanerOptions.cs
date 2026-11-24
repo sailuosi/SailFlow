@@ -1,7 +1,6 @@
 using System;
 
-namespace sailflow.engine.Runtime
-{
+namespace sailflow.run{
     /// <summary><see cref="InstanceExecutionLock"/> 空闲销户定时选项。</summary>
     public sealed class InstanceLockCleanerOptions
     {

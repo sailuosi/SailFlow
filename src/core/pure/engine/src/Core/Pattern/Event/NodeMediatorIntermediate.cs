@@ -10,9 +10,8 @@ using sailflow.engine.Xpdl;
 using sailflow.engine.Event;
 
 using sailflow.engine.Client;
-using sailflow.engine.Core;
-namespace sailflow.engine.Pattern
-{
+using sailflow.run;
+namespace sailflow.run{
     /// <summary>
     /// 中间节点执行器
     /// </summary>

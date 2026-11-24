@@ -8,16 +8,13 @@ using sailflow.hub.Localize;
 using sailflow.hub.Resource;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Event;
-using sailflow.engine.Runtime;
+using sailflow.run;
 using sailflow.engine.Result;
-using sailflow.engine.Runtime;
 
 using sailflow.engine.Client;
 using sailflow.engine.Hooks;
-using sailflow.engine.Core;
 using sailflow.engine.Factories;
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// 结束节点处理类
     /// </summary>

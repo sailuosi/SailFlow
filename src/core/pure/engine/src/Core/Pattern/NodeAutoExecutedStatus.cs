@@ -1,8 +1,7 @@
 
 
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// Node Auto Executed Status
     /// 网关执行结果状态类

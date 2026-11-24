@@ -1,7 +1,6 @@
 
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// Node Auto Executed Result
     /// 节点自动执行结果类

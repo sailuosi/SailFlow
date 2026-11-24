@@ -6,8 +6,7 @@ using sailflow.data;
 using sailflow.engine.Result;
 using sailflow.engine.Xpdl;
 
-namespace sailflow.engine.Executor
-{
+namespace sailflow.run{
     /// <summary>
     /// H · 无状态自动编排执行器：图遍历委托 <see cref="WorkflowNodeRunner"/>，节点执行委托 <see cref="WorkflowActivityExecutor"/>。
     /// 不持 Runner / ProcessModel / 变量袋；建造见 <c>Sail.CreateAutoRunBuilder</c>。

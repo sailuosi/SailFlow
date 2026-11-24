@@ -1,8 +1,7 @@
 using sailflow.engine.Result;
 using sailflow.engine.Xpdl;
 
-namespace sailflow.engine.Executor
-{
+namespace sailflow.run{
     /// <summary>
     /// Executes a single workflow activity (services, AI, script, end).
     /// 执行单个工作流活动节点（服务、AI、脚本、结束）。

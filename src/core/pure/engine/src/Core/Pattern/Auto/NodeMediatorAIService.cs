@@ -8,9 +8,8 @@ using System.Text;
 
 
 using sailflow.engine.Client;
-using sailflow.engine.Core;
-namespace sailflow.engine.Pattern
-{
+using sailflow.run;
+namespace sailflow.run{
     /// <summary>
     /// 服务节点执行器
     /// </summary>

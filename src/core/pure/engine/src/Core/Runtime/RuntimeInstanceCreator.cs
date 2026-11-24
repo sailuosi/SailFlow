@@ -10,13 +10,11 @@ using sailflow.engine.Common;
 using sailflow.engine.Factories;
 using sailflow.engine.Result;
 using sailflow.engine.Xpdl;
-using sailflow.engine.Pattern;
+using sailflow.run;
 using sailflow.WebUtility;
 using sailflow.engine.Client;
-using sailflow.engine.Core;
 
-namespace sailflow.engine.Runtime
-{
+namespace sailflow.run{
     /// <summary>
     /// Runtime 实例创建（A 协作者，挂 <see cref="Factories.DefaultRuntimeFactory"/>；非 static 表面）。
     /// </summary>

@@ -6,8 +6,7 @@ using sailflow.engine.Event;
 using System;
 using System.Collections.Generic;
 
-namespace sailflow.engine.Executor
-{
+namespace sailflow.run{
     /// <summary>
     /// IEventService adapter for auto-run: variable resolution from AutoExecutionContext.Variables only.
     /// 自动执行时的事件服务适配器：仅从 AutoExecutionContext.Variables 解析变量。

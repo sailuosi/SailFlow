@@ -1,8 +1,7 @@
 using sailflow.engine.Assignee;
-using sailflow.engine.Core;
+using sailflow.run;
 
-namespace sailflow.engine.Runtime
-{
+namespace sailflow.run{
     /// <summary>R2/R4：办理人管道拒绝推进（缺配置 / 空办理人等）。</summary>
     public class WfAssigneeException : WfRuntimeException
     {

@@ -8,10 +8,9 @@ using mooSQL.data;
 using sailflow.hub.Localize;
 using sailflow.engine.Common;
 using sailflow.engine.Xpdl;
-using sailflow.engine.Core;
+using sailflow.run;
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// EOrJoin 节点处理类
     /// </summary>

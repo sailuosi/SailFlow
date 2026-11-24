@@ -7,10 +7,9 @@ using sailflow.data;
 using mooSQL.data;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Client;
-using sailflow.engine.Core;
+using sailflow.run;
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// B · 网关节点执行编排袋（L-Cmd）。对 A Managers 只读转发，不缓存字段。
     /// </summary>

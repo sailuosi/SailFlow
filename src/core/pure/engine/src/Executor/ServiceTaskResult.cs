@@ -1,7 +1,6 @@
 using System;
 
-namespace sailflow.engine.Executor
-{
+namespace sailflow.run{
     /// <summary>
     /// Result wrapper for Func delegate: lets the delegate explicitly specify
     /// the output variable name instead of using the engine default.

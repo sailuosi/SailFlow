@@ -7,13 +7,11 @@ using sailflow.data;
 using mooSQL.data;
 using sailflow.hub.Localize;
 using sailflow.engine.Xpdl;
-using sailflow.engine.Runtime;
+using sailflow.run;
 using sailflow.engine.Message;
 
 using sailflow.engine.Client;
-using sailflow.engine.Core;
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// 中间事件节点处理类
     /// </summary>

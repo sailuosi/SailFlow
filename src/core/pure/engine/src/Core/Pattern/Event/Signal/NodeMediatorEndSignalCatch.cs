@@ -3,9 +3,8 @@ using sailflow.data;
 using mooSQL.data;
 
 using sailflow.engine.Client;
-using sailflow.engine.Core;
-namespace sailflow.engine.Pattern
-{
+using sailflow.run;
+namespace sailflow.run{
     /// <summary>
     /// 信号结束节点的Catch类
     /// </summary>

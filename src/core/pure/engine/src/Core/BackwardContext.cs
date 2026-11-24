@@ -4,8 +4,7 @@ using sailflow.data;
 using sailflow.engine.Xpdl;
 
 
-namespace sailflow.engine.Core
-{
+namespace sailflow.run{
     /// <summary>
     /// Context object during process backward processing
     /// 流程回退处理时的上下文对象

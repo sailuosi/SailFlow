@@ -3,10 +3,9 @@ using sailflow.engine.Common;
 using sailflow.data;
 using mooSQL.data;
 using sailflow.engine.Client;
-using sailflow.engine.Core;
+using sailflow.run;
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// 退回处理时的节点调节器（Reject / Reverse）。
     /// 会签/多实例 SendBack 已迁至 <c>NodeSendBack*</c>，勿在此恢复 MI 创建方法。

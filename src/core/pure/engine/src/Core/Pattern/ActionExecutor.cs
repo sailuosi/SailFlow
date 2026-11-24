@@ -2,10 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Event;
-using sailflow.engine.Core;
+using sailflow.run;
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// Action Executor — 按 <see cref="sailflow.engine.Actions.ActionMethodRegistry"/> 分发。
     /// </summary>

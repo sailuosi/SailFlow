@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Event;
-using sailflow.engine.Core;
+using sailflow.run;
 
-namespace sailflow.engine.Pattern
-{
+namespace sailflow.run{
     /// <summary>
     /// Script Executor — 按 <see cref="sailflow.engine.Actions.ScriptMethodRegistry"/> 分发。
     /// </summary>

@@ -4,8 +4,7 @@ using sailflow.engine.Xpdl;
 using System.Collections.Generic;
 
 
-namespace sailflow.engine.Executor
-{
+namespace sailflow.run{
     /// <summary>
     /// Execution context for auto (non-persistent) workflow run.
     /// 自动执行（非持久化）工作流的执行上下文。

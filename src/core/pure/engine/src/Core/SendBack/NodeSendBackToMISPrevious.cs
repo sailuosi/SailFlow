@@ -8,10 +8,9 @@ using sailflow.data;
 using mooSQL.data;
 using sailflow.engine.Common;
 using sailflow.engine.Xpdl;
-using sailflow.engine.Core;
+using sailflow.run;
 
-namespace sailflow.engine.Runtime
-{
+namespace sailflow.run{
     /// <summary>
     /// Sign together type sendback processor
     /// The revocation operation of the last multi instance node with multiple signatures
