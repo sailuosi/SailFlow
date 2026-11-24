@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using sailflow.engine.Client;
-using sailflow.engine.NextStep;
+using sailflow.nextStep;
 
 namespace sailflow.engine.Hosting;
 

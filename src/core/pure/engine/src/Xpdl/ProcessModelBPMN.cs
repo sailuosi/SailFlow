@@ -8,6 +8,7 @@ using sailflow.hub.Localize;
 using sailflow.hub.Resource;
 using sailflow.WebUtility;
 using sailflow.engine.Client;
+using sailflow.nextStep;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -590,12 +591,12 @@ namespace sailflow.engine.Xpdl
                     }
                 }
 
-                var filtered = NextStep.NextStepRouteRuntime.ApplyFilter(
+                var filtered = NextStepRouteRuntime.ApplyFilter(
                     Sail, nextStepResult, currentActivity, ProcessEntity,
-                    NextStep.NextStepRoutePhase.Preview, conditions,
+                    NextStepRoutePhase.Preview, conditions,
                     context: context,
                     activityInstanceId: activityInstanceId);
-                NextStep.NextStepRouteRuntime.AnnotateNodeViews(treeNodeList, filtered);
+                NextStepRouteRuntime.AnnotateNodeViews(treeNodeList, filtered);
             }
             nextTreeResult.StepList = treeNodeList;
             return nextTreeResult;
@@ -676,11 +677,11 @@ namespace sailflow.engine.Xpdl
 
             // Client 级 Filter（与预览同源）；AndSplit 守卫后裁 Disabled
             var currentActivity = GetActivity(currentActivityId);
-            var filtered = NextStep.NextStepRouteRuntime.ApplyFilter(
+            var filtered = NextStepRouteRuntime.ApplyFilter(
                 Sail, result, currentActivity, ProcessEntity,
-                NextStep.NextStepRoutePhase.Send, conditionKeyValuePair,
+                NextStepRoutePhase.Send, conditionKeyValuePair,
                 context: activityResource?.AppRunner, activityInstanceId);
-            NextStep.NextStepRouteRuntime.PruneDisabledFromTree(result.Root, filtered);
+            NextStepRouteRuntime.PruneDisabledFromTree(result.Root, filtered);
 
             //下一步节点列表封装
             //Next step: Node List Encapsulation
@@ -1107,8 +1108,8 @@ namespace sailflow.engine.Xpdl
         private bool ParseCondition(Transition transition, IDictionary<string, string> conditionKeyValuePair)
         {
             var expression = transition.Condition.ConditionText;
-            var pipeline = NextStep.NextStepConditionRequire.GetPipelineRequired(Sail);
-            return pipeline.Evaluate(new NextStep.ConditionEvaluateContext
+            var pipeline = NextStepConditionRequire.GetPipelineRequired(Sail);
+            return pipeline.Evaluate(new ConditionEvaluateContext
             {
                 Sail = Sail,
                 Expression = expression,
@@ -1116,7 +1117,7 @@ namespace sailflow.engine.Xpdl
                 ProcessId = ProcessEntity?.ProcessId,
                 ProcessCode = ProcessEntity?.ProcessCode,
                 TransitionId = transition?.TransitionId,
-                Phase = NextStep.NextStepRoutePhase.Send
+                Phase = NextStepRoutePhase.Send
             });
         }
 

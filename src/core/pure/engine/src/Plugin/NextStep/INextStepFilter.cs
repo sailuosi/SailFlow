@@ -1,5 +1,4 @@
-namespace sailflow.engine.NextStep;
-
+namespace sailflow.nextStep;
 /// <summary>演算后候选处置。</summary>
 public interface INextStepFilter
 {

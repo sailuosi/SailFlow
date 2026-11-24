@@ -1,5 +1,4 @@
-namespace sailflow.engine.NextStep;
-
+namespace sailflow.nextStep;
 public enum NextStepRoutePhase
 {
     Preview = 0,

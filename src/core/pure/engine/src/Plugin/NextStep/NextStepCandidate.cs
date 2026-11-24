@@ -1,7 +1,6 @@
 using sailflow.engine.Xpdl;
 
-namespace sailflow.engine.NextStep;
-
+namespace sailflow.nextStep;
 /// <summary>结构演算后的候选节点（可标注）。</summary>
 public sealed class NextStepCandidate
 {

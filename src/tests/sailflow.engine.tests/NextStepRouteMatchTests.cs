@@ -1,4 +1,4 @@
-using sailflow.engine.NextStep;
+using sailflow.nextStep;
 using Xunit;
 
 namespace sailflow.engine.tests;

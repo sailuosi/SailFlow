@@ -1,5 +1,4 @@
-namespace sailflow.engine.NextStep;
-
+namespace sailflow.nextStep;
 /// <summary>演算前准备：写条件袋（Client 级 IfCondition）。</summary>
 public interface INextStepPrepare
 {

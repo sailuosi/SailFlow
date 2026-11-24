@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace sailflow.engine.NextStep;
-
+namespace sailflow.nextStep;
 /// <summary>下一跳节点计算管道实现。</summary>
 public sealed class NextStepRoutePipeline : INextStepRoutePipeline
 {

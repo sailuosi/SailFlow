@@ -36,9 +36,9 @@ namespace sailflow.run{
                 var expression = ActivityForwardContext.CurrentActivity.TriggerDetail.Expression;
                 var dvKeyValuePair = ActivityForwardContext.ActivityResource.AppRunner.Conditions;
 
-                var pipeline = sailflow.engine.NextStep.NextStepConditionRequire.GetPipelineRequired(Sail);
+                var pipeline = sailflow.nextStep.NextStepConditionRequire.GetPipelineRequired(Sail);
                 var pe = ActivityForwardContext.ProcessModel?.ProcessEntity;
-                var result = pipeline.Evaluate(new sailflow.engine.NextStep.ConditionEvaluateContext
+                var result = pipeline.Evaluate(new sailflow.nextStep.ConditionEvaluateContext
                 {
                     Sail = Sail,
                     Expression = expression,
@@ -47,7 +47,7 @@ namespace sailflow.run{
                     ProcessCode = pe?.ProcessCode,
                     CurrentActivityId = ActivityForwardContext.CurrentActivity?.ActivityId,
                     CurrentActivityCode = ActivityForwardContext.CurrentActivity?.ActivityCode,
-                    Phase = sailflow.engine.NextStep.NextStepRoutePhase.Send
+                    Phase = sailflow.nextStep.NextStepRoutePhase.Send
                 });
 
                 if (result == true)

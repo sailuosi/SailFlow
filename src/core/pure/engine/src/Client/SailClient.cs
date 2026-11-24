@@ -9,7 +9,7 @@ using sailflow.engine.Hosting;
 using sailflow.hooks;
 using sailflow.engine.Ids;
 using sailflow.engine.Logging;
-using sailflow.engine.NextStep;
+using sailflow.nextStep;
 using sailflow.engine.Rules;
 using sailflow.hub.Essential;
 using sailflow.hub.Localize;

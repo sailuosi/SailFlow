@@ -4,7 +4,7 @@ using System.Linq;
 using mooSQL.data;
 using sailflow.engine.Actions;
 using sailflow.assignee;
-using sailflow.engine.NextStep;
+using sailflow.nextStep;
 using sailflow.engine.Rules;
 using sailflow.hub.Essential;
 using sailflow.hub.Localize;

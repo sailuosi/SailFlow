@@ -6,8 +6,7 @@ using sailflow.engine.Common;
 using sailflow.data;
 using sailflow.engine.Xpdl;
 
-namespace sailflow.engine.NextStep;
-
+namespace sailflow.nextStep;
 /// <summary>下一跳管道运行时入口（Prepare / Filter）。</summary>
 public static class NextStepRouteRuntime
 {

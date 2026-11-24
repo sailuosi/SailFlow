@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using sailflow.engine.Factories;
-using sailflow.engine.NextStep;
+using sailflow.nextStep;
 
 namespace sailflow.engine.Xpdl
 {

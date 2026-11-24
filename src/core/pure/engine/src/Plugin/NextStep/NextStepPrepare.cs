@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 
-namespace sailflow.engine.NextStep;
-
+namespace sailflow.nextStep;
 /// <summary>推荐基类：冲刷静态袋 + Contribute。</summary>
 public abstract class NextStepPrepare : INextStepPrepare
 {

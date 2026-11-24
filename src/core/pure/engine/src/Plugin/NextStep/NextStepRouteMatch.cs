@@ -2,8 +2,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace sailflow.engine.NextStep;
-
+namespace sailflow.nextStep;
 internal static class NextStepRouteMatch
 {
     internal static bool Matches(

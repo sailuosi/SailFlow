@@ -1,10 +1,9 @@
 using System.Diagnostics;
 
-namespace sailflow.engine.NextStep;
-
+namespace sailflow.nextStep;
 internal static class NextStepRouteDiagnostics
 {
-    const string Prefix = "[sailflow.engine.NextStep] ";
+    const string Prefix = "[sailflow.nextStep] ";
 
     internal static void OptionsSkip(string kind, string impl, string processCode, string activityCode) =>
         Trace.TraceInformation(

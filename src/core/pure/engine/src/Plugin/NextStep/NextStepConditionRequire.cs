@@ -1,8 +1,7 @@
 using System;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.NextStep;
-
+namespace sailflow.nextStep;
 /// <summary>条件求值前置：无管道 / 无 Evaluator 时快速失败，迫使业务侧显式配置。</summary>
 public static class NextStepConditionRequire
 {

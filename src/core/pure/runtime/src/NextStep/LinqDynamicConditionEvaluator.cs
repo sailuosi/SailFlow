@@ -1,5 +1,5 @@
 using System;
-using sailflow.engine.NextStep;
+using sailflow.nextStep;
 using sailflow.engine.Xpdl;
 
 namespace sailflow.runtime.NextStep;

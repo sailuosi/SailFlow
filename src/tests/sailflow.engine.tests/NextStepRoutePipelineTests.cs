@@ -1,6 +1,6 @@
 using sailflow.engine.Client;
 using sailflow.engine.Common;
-using sailflow.engine.NextStep;
+using sailflow.nextStep;
 using sailflow.engine.Xpdl;
 using Xunit;
 

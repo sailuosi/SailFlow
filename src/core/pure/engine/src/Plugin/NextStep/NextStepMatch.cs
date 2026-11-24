@@ -1,5 +1,4 @@
-namespace sailflow.engine.NextStep;
-
+namespace sailflow.nextStep;
 /// <summary>下一跳管道 Match 模式（对齐 Gate/Hook Whitelist|All）。</summary>
 public enum NextStepMatch
 {

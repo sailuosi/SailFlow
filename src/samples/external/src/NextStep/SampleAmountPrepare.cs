@@ -1,4 +1,4 @@
-using sailflow.engine.NextStep;
+using sailflow.nextStep;
 
 namespace sailflow.external.NextStep;
 

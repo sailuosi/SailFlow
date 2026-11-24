@@ -3,7 +3,7 @@ using System.Linq;
 using sailflow.engine.Client;
 using sailflow.engine.Factories;
 using sailflow.engine.Hosting;
-using sailflow.engine.NextStep;
+using sailflow.nextStep;
 using sailflow.runtime.Actions;
 using sailflow.runtime.Factories;
 using sailflow.runtime.NextStep;

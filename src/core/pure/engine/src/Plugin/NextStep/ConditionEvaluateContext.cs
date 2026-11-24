@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.NextStep;
-
+namespace sailflow.nextStep;
 /// <summary>条件表达式求值上下文。</summary>
 public sealed class ConditionEvaluateContext
 {

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 
-namespace sailflow.engine.NextStep;
-
+namespace sailflow.nextStep;
 /// <summary>下一跳节点计算管道：Prepare → Evaluator → Filter。</summary>
 public interface INextStepRoutePipeline
 {
