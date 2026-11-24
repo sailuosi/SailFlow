@@ -1,4 +1,4 @@
-﻿# 审计：sailflow 相对常见 OA 引擎流程能力对照
+# 审计：sailflow 相对常见 OA 引擎流程能力对照
 
 > 状态：**只读审计结论**（2026-11-14；**2026-11-15 对照代码复核**；**同日二次抽检维持**）  
 > 用途：记录相对常见钉钉式 / 中国式 OA 工作流引擎的流程能力对齐快照；**不直接当实施清单**。  
@@ -128,9 +128,9 @@
 
 | 原标记（11-14） | 复核后 | 证据要点 |
 |-----------------|--------|----------|
-| 变更处理人 ❌ | **🟡** | `ChangeAssigneeProcess` + `ChangeAssigneeAction`；Host 无 API/码表 |
-| 减签 ❌ | **🟡** | `RemoveAssigneeProcess` + `RemoveAssigneeAction`；Host 办理条待产品 |
-| 委托 🟡「Entrust 痕迹」 | **🟡**（措辞更新） | 一等 `DelegateProcess`/`DelegateAction`；遗留 `EntrustTask` 并存；Host 暂缓 |
+| 变更处理人 ❌ | **🟡** | `ChangeAssigneeProcess` + `ChangeAssigneeLane`；Host 无 API/码表 |
+| 减签 ❌ | **🟡** | `RemoveAssigneeProcess` + `RemoveAssigneeLane`；Host 办理条待产品 |
+| 委托 🟡「Entrust 痕迹」 | **🟡**（措辞更新） | 一等 `DelegateProcess`/`DelegateLane`；遗留 `EntrustTask` 并存；Host 暂缓 |
 | 加急 ❌ | **拆行** | 加急（优先级）仍 ❌；催办 `UrgeProcess` 另列 🟡 |
 | 转办 / 终止作废 / 挂起 / 修订反转 | 维持 | 与码表 `defaultEnable`、todo 联调状态一致 |
 | 包容网关 / 加批 / 真并行会签 / 抄送侧路 / 归档分表 | 维持 | 与 XPDL/Mediator、`ProcessArchiveService`、基线债表一致 |

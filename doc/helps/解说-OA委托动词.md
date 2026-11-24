@@ -1,4 +1,4 @@
-﻿# OA 委托动词解说（Sailflow）
+# OA 委托动词解说（Sailflow）
 
 > 状态：**产品语义解说**（2026-11-16）  
 > 用途：把「委托」一族（转办 / 委派 / 委托代批）说清楚——场景、原人去留、办完是否推进、与引擎/Host 落点。  
@@ -63,7 +63,7 @@
 | 码表 / 命令 | `Transfer` → `TransferProcess` |
 | Host 入口 | `ButtonsOperation` → `TransferOperationHandler` |
 | 引擎 API | `IWorkflowService.TransferProcess[Async]` |
-| 动作骨架 | Assignee 族 · `TransferAction` |
+| 动作骨架 | Assignee 族 · `TransferLane` |
 | 写库 | `TaskManager.Transfer`（原 Closed + 同 Activity 新待办；刷新 SignIds/Names） |
 | 通知 | `FireTaskLifecycle(Entrusted)` + 目标 `Created` |
 | 现状 | **码表已开** |
@@ -100,7 +100,7 @@
 | 码表 / 命令 | `Delegate` → `DelegateProcess`（默认 enable=false） |
 | Host 入口 | `ButtonsOperation` → `DelegateOperationHandler` |
 | 引擎 API | `IWorkflowService.DelegateProcess[Async]` |
-| 动作骨架 | Assignee 族 · `DelegateAction` |
+| 动作骨架 | Assignee 族 · `DelegateLane` |
 | Gate | `FlowOperation.Delegate` |
 | 写库 · 发起 | `TaskManager.Delegate` |
 | 写库 · 办结回转 | `TaskManager.TryCompleteAsDelegationReturn`（Mediator 办结路径挂接） |
@@ -153,7 +153,7 @@
 | 原人 | 关闭待办 | **保留**待办 |
 | 对方 | 替换式代办（原关新开） | **追加**参与者 |
 | 办完 | **还回**原人，不推进 | **推进**（谁办记谁） |
-| 落点 | `DelegateAction` / TaskManager | Assignee **Filter** + Host 配置 CRUD |
+| 落点 | `DelegateLane` / TaskManager | Assignee **Filter** + Host 配置 CRUD |
 
 ### Leave 注意（落地前必拍板）
 

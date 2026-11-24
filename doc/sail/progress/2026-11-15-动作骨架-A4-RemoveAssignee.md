@@ -1,4 +1,4 @@
-﻿# 进度 · 动作骨架 A4（Assignee / RemoveAssignee）
+# 进度 · 动作骨架 A4（Assignee / RemoveAssignee）
 
 > 日期：2026-11-15  
 > 设计：[专题-流转动作骨架.md](../theme/专题-流转动作骨架.md)  
@@ -11,7 +11,7 @@
 | `FlowOperation.RemoveAssignee` | `HookEnums.cs` |
 | `OnAssigneeRemoving` / `OnAssigneeRemoved` | `EventFireTypeEnum` |
 | `TaskManager.RemoveAssignees` | Closed 待移除未办待办 + `Cancelled` Notifier；刷新 SignIds/Names；禁减至 0 |
-| `RemoveAssigneeAction` | Assignee 族；`FireTaskLifecycleAfterCore=false` |
+| `RemoveAssigneeLane` | Assignee 族；`FireTaskLifecycleAfterCore=false` |
 | Service / IF / RunBuilder | `RemoveAssigneeProcess*` / `RemoveAssignee()` |
 
 ## 调用约定
@@ -26,7 +26,7 @@
 |----|------|
 | `FlowOperation.ChangeAssignee` | + `OnAssigneeChanged` |
 | `TaskManager.ChangeAssignees` | 差量：不在新集合 → Closed+Cancelled；缺开待办 → Insert+Created；刷新 SignIds/Names |
-| `ChangeAssigneeAction` / Service / RunBuilder | 同减签约定：`TaskId` 定位；`NextActivityPerformers` = **新全集** |
+| `ChangeAssigneeLane` / Service / RunBuilder | 同减签约定：`TaskId` 定位；`NextActivityPerformers` = **新全集** |
 
 ## 续：Urge（同日）
 
@@ -34,7 +34,7 @@
 |----|------|
 | `TaskNotifyKind.Urged` + `OnTaskUrged` / `OnProcessUrged` | Dispatcher 对 Urged 走独立事件（不再误映射 Completed） |
 | `TaskManager.UrgeOpenTasks` | 不改 TaskState；可选 userId 过滤 |
-| `UrgeAction` / `UrgeProcess*` | Assignee 族；空 Performers=催本活动全部打开待办 |
+| `UrgeLane` / `UrgeProcess*` | Assignee 族；空 Performers=催本活动全部打开待办 |
 
 ## 续：Delegate（同日，办完自动回转）
 
@@ -44,7 +44,7 @@
 | `TaskManager.Delegate` | 关原人 + 建受托待办（`EntrustedTaskId`）；不刷新 SignIds/Names |
 | `TryCompleteAsDelegationReturn` | 受托人 Complete → 回转原人 Waiting；Mediator **不**完结 AI / 不 ContinueForward |
 | 挂点 | `NodeMediatorTask` / MultiSignTogether / MultiSignForward / Revise |
-| `DelegateAction` / `DelegateProcess*` | Assignee 族 |
+| `DelegateLane` / `DelegateProcess*` | Assignee 族 |
 
 ## 续：AddAssignee（2026-11-22）
 
@@ -52,7 +52,7 @@
 |----|------|
 | `FlowOperation.AddAssignee` | + `OnAssigneeAdding` / `OnAssigneeAdded` |
 | `TaskManager.AddAssignees` | 扁节点守卫（拒 SignTogether/SignForward）；缺人 Insert+Created；已打开跳过；无人新建失败；刷新 SignIds/Names |
-| `AddAssigneeAction` / Service / RunBuilder | `TaskId` 定位；`NextActivityPerformers`=**增量**待追加人 |
+| `AddAssigneeLane` / Service / RunBuilder | `TaskId` 定位；`NextActivityPerformers`=**增量**待追加人 |
 | Host | 码表默认关；`AddAssigneeOperationHandler`；REST；办理条独立按钮；加签对话框「普通加人」→ `AddAssignee`（非 `SignForwardTypeEnum`） |
 | 非目标 | SignTogether / Sequence MI 建新席；加批 `SignAddNode`；不进 Transition |
 

@@ -1,4 +1,4 @@
-﻿# 开发手册 · OA 命令执行链路（类 / 方法级）
+# 开发手册 · OA 命令执行链路（类 / 方法级）
 
 > 状态：**现行实现对齐说明**（2026-11-06；**D3 + D4-a/b**）  
 > 用途：从宿主调度入口追到 DB 读写，固化主要办理动词的**类·方法**链路，方便排障与改命令。  
@@ -139,11 +139,11 @@ WfRuntimeManagerRun.ExecuteInstanceImp
 
 ### 5.1 StartProcess（发起）
 
-Transition 族 `StartAction`（A3 续）。
+Transition 族 `StartLane`（A3 续）。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `StartProcess` → `RunAction` → `StartAction.Execute`；`Start(kit,…)` 同 |
+| API | `StartProcess` → `RunAction` → `StartLane.Execute`；`Start(kit,…)` 同 |
 | 族群时序 | Load Runtime → Gate（补 Start 活动码）→ Execute → `OnProcessStarted`（PI 取 `ProcessInstanceIdStarted`） |
 | Factory | `CreateRuntimeInstanceStartup` |
 | Factory 读库 | `ProcessInstanceManager.GetProcessInstanceCurrent`（查重 Running）· `client.ProcessModelFactory.CreateByProcess` |
@@ -154,7 +154,7 @@ Transition 族 `StartAction`（A3 续）。
 | Start 写库 | `ProcessInstanceManager.Insert` · `ActivityInstanceManager.Insert` + `Complete`（开始节点自动完）· `ContinueForwardCurrentNode` → 首任务 AI/Task/Transition |
 | Hook | `OnProcessStarted` |
 
-`StartProcessByMessage`：`BindMessageStartup`（`GetByMessage` 填定义 + 系统用户）→ 同一 `StartAction`。
+`StartProcessByMessage`：`BindMessageStartup`（`GetByMessage` 填定义 + 系统用户）→ 同一 `StartLane`。
 
 ### 5.2 RunProcess（Approve / 通过）
 
@@ -170,17 +170,17 @@ Transition 族 `RunAction`（A3 续）。
 | Runtime | `WfRuntimeManagerRun.ExecuteInstanceImp` → §4 深链；含代码说明见 **§6** |
 | Hook | `OnProcessContinued`；若实例 Completed 另 `OnProcessCompleted` |
 
-`RunProcessAuto`：Transition 族 `RunAutoAction`（`SkipGate=true`；仍 `FlowOperation.Run` + `OnProcessContinued`）；Async 走 Factory 预载 + `ExecuteWithRuntime`。
+`RunProcessAuto`：Transition 族 `RunAutoLane`（`SkipGate=true`；仍 `FlowOperation.Run` + `OnProcessContinued`）；Async 走 Factory 预载 + `ExecuteWithRuntime`。
 
 ### 5.3 SendBackProcess（退回）
 
-A3 起走 Transition 动作骨架（`SendBackAction`）。
+A3 起走 Transition 动作骨架（`SendBackLane`）。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `SendBackProcess` → `RunAction` → `SendBackAction.Execute`（`SendBack(kit,…)` 同） |
+| API | `SendBackProcess` → `RunAction` → `SendBackLane.Execute`（`SendBack(kit,…)` 同） |
 | 族群时序 | `TransitionActionBase`：Load Runtime → Gate → `Runtime.Execute` → `OnProcessSendBacked` |
-| Factory | `CreateRuntimeInstanceSendBack`（在 `SendBackAction.TryLoadContext`） |
+| Factory | `CreateRuntimeInstanceSendBack`（在 `SendBackLane.TryLoadContext`） |
 | Factory 读库 | `ActivityInstanceManager.GetRunningNode` · `IsMineTask` · `ProcessInstanceManager.GetById` · `client.ProcessModelFactory.CreateByProcessInstance` · `PreviousStepChecker.GetPreviousActivityList` |
 | Gate | `FlowOperation.SendBack` |
 | Runtime | `WfRuntimeManagerSendBack.ExecuteInstanceImp` |
@@ -191,11 +191,11 @@ A3 起走 Transition 动作骨架（`SendBackAction`）。
 
 ### 5.4 WithdrawProcess（撤回）
 
-与 SendBack 同属 Transition 族（`WithdrawAction`）。
+与 SendBack 同属 Transition 族（`WithdrawLane`）。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `WithdrawProcess` → `RunAction` → `WithdrawAction.Execute` |
+| API | `WithdrawProcess` → `RunAction` → `WithdrawLane.Execute` |
 | 族群时序 | 同 SendBack：Load → Gate → Execute → `OnProcessWithdrawn` |
 | Factory | `CreateRuntimeInstanceWithdraw`（**产出仍是** `WfRuntimeManagerSendBack`） |
 | Factory 读库 | `TaskManager.GetTaskView`（已办）· `IsMine` · `TransitionInstanceManager.GetTargetActivityInstanceList` · 会签批次 · `PreviousStepChecker.GetPreviousActivityList` |
@@ -206,17 +206,17 @@ A3 起走 Transition 动作骨架（`SendBackAction`）。
 
 ### 5.5 RejectProcess（驳回）
 
-Transition 族 `RejectAction`：按控制袋 `RejectMode` 分发（默认 `Previous`）。
+Transition 族 `RejectLane`：按控制袋 `RejectMode` 分发（默认 `Previous`）。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `RejectProcess` → `RunAction` → `RejectAction.Execute` |
+| API | `RejectProcess` → `RunAction` → `RejectLane.Execute` |
 | 控制袋 | `ControlParameterSheet.RejectMode` · `RejectReturnActivityId`（仅 Specified） |
 | 解析 | `RejectTargetResolver` → 唯一 `activityId` + 历史 `PerformerList`，**覆盖**客户端 `NextActivityPerformers` |
-| Terminate | 委托 `TerminateAction`；成功事件 **OnProcessTerminated**；`ReasonCode=RejectModeTerminate`，Message 带 `RejectMode=Terminate` |
+| Terminate | 委托 `TerminateLane`；成功事件 **OnProcessTerminated**；`ReasonCode=RejectModeTerminate`，Message 带 `RejectMode=Terminate` |
 | 回跳三态 | Previous / Starter / Specified → Factory `CreateRuntimeInstanceReject` |
 | Factory 读库 | `GetRunningNode` · `GetActivityInstanceLatest`（目标）· `ProcessInstanceManager.GetById` · `PreviousStepChecker`（Previous）· 首活动/指定活动办结人 |
-| Gate | `FlowOperation.Reject`（Terminate 路径与 `TerminateAction` Gate 约定对齐，避免双套横切漏挂） |
+| Gate | `FlowOperation.Reject`（Terminate 路径与 `TerminateLane` Gate 约定对齐，避免双套横切漏挂） |
 | Runtime | `WfRuntimeManagerReject.ExecuteInstanceImp`（回跳） |
 | 写库 | `TaskManager.Complete` · 兄弟 `Cancel` · `NodeMediatorBackward` · `ActivityInstanceManager.SendBack`（回跳写库复用，**无** BackSrc/Resend 语义） |
 | Hook | 回跳：`OnProcessRejected`；Terminate 模式：Terminate 成功事件 |
@@ -235,11 +235,11 @@ Host：`RejectOperationHandler` 读 NodePolicy → `SailRejectModeMapper.ApplyTo
 
 ### 5.6 ResendProcess（返送退回人）
 
-Transition 族 `ResendAction`。
+Transition 族 `ResendLane`。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `ResendProcess` → `RunAction` → `ResendAction.Execute` |
+| API | `ResendProcess` → `RunAction` → `ResendLane.Execute` |
 | Factory | `CreateRuntimeInstanceResend` |
 | Factory 读库 | `TaskManager.GetTaskView` · `ActivityInstanceManager.GetById`（当前 + `BackSrcActivityInstanceId`）· `client.ProcessModelFactory.CreateByTask` |
 | Gate | `FlowOperation.Resend` |
@@ -249,11 +249,11 @@ Transition 族 `ResendAction`。
 
 ### 5.7 ReviseProcess（修订）
 
-Transition 族 `ReviseAction`（Factory 已 `Success` 则直接返回，不跑 Gate/Execute）。
+Transition 族 `ReviseLane`（Factory 已 `Success` 则直接返回，不跑 Gate/Execute）。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `ReviseProcess` → `RunAction` → `ReviseAction.Execute` |
+| API | `ReviseProcess` → `RunAction` → `ReviseLane.Execute` |
 | Factory | `CreateRuntimeInstanceRevise`（TaskView + Running AI + NextPerformers） |
 | Runtime | `WfRuntimeManagerRevise.ExecuteInstanceImp` |
 | Mediator | **固定** `new NodeMediatorRevise(...).ExecuteWorkItem`（不经 Factory 选型） |
@@ -261,11 +261,11 @@ Transition 族 `ReviseAction`（Factory 已 `Success` 则直接返回，不跑 G
 
 ### 5.8 ReverseProcess（反转 / 已完成返签）
 
-Transition 族 `ReverseAction`。
+Transition 族 `ReverseLane`。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `ReverseProcess` → `RunAction` → `ReverseAction.Execute` |
+| API | `ReverseProcess` → `RunAction` → `ReverseLane.Execute` |
 | Factory | `CreateRuntimeInstanceReverse` |
 | Factory 读库 | `ProcessInstanceManager.GetProcessInstanceLatest`（须 Completed）· `TransitionInstanceManager.GetEndTransition` · `ActivityInstanceManager.GetById` · `PreviousStepChecker.GetPreviousActivityInstanceList` |
 | Gate | `FlowOperation.Reverse` |
@@ -275,11 +275,11 @@ Transition 族 `ReverseAction`。
 
 ### 5.9 JumpProcess（跳转）
 
-Transition 族 `JumpAction`（`TransitionNextPerformers.Fill(jumpOption)`）。
+Transition 族 `JumpLane`（`TransitionNextPerformers.Fill(jumpOption)`）。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `JumpProcess` → `RunAction` → `JumpAction.Execute` |
+| API | `JumpProcess` → `RunAction` → `JumpLane.Execute` |
 | Factory | `CreateRuntimeInstanceJump`（`NextActivityPerformers` 只能一步） |
 | Factory 读库 | `GetRunningNode` · `client.ProcessModelFactory.CreateByTask` |
 | Gate | `FlowOperation.Jump` |
@@ -289,11 +289,11 @@ Transition 族 `JumpAction`（`TransitionNextPerformers.Fill(jumpOption)`）。
 
 ### 5.10 CloseProcess（关闭）
 
-Transition 族 `CloseAction`（`Fill(End)`）。
+Transition 族 `CloseLane`（`Fill(End)`）。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `CloseProcess` → `RunAction` → `CloseAction.Execute` |
+| API | `CloseProcess` → `RunAction` → `CloseLane.Execute` |
 | Factory | `CreateRuntimeInstanceClose`（目标多为 End 活动） |
 | Runtime | `WfRuntimeManagerClose.ExecuteInstanceImp` |
 | 写库 / Mediator | 同 Jump：Complete 当前 → Jumpforward 上下文 → Mediator（常到 End）→ `ExecuteWorkItem` |
@@ -301,12 +301,12 @@ Transition 族 `CloseAction`（`Fill(End)`）。
 
 ### 5.11 SignForwardProcess（加签）
 
-Transition 族 `SignForwardAction`。产品细表：[OA/专题-改签.md](../OA/专题-改签.md)。  
+Transition 族 `SignForwardLane`。产品细表：[OA/专题-改签.md](../OA/专题-改签.md)。  
 席位级子堆栈（**引擎已改**）：[theme/专题-节点实例临时子规则.md](../theme/专题-节点实例临时子规则.md)。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `SignForwardProcess` → `RunAction` → `SignForwardAction.Execute` |
+| API | `SignForwardProcess` → `RunAction` → `SignForwardLane.Execute` |
 | Factory | `CreateRuntimeInstanceSignForward` |
 | Factory 读库 | `GetRunningNode` + `TaskManager.IsMine(taskView)`（办理权以 Task 为准）· `client.ProcessModelFactory.CreateByTask` |
 | Gate | `FlowOperation.SignForward` |
@@ -321,9 +321,9 @@ Transition 族 `SignForwardAction`。产品细表：[OA/专题-改签.md](../OA/
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `TransferProcess` → `RunAction`（事务+锁）→ `TransferAction.Execute` |
+| API | `TransferProcess` → `RunAction`（事务+锁）→ `TransferLane.Execute` |
 | 族群时序 | `AssigneeActionBase`：Load → `TryGate` → `ExecuteCore` → `OnProcessTransferred` |
-| 读库 | `TaskManager.GetTaskView` · `ActivityInstanceManager.GetById`（在 `TransferAction.TryLoadContext`） |
+| 读库 | `TaskManager.GetTaskView` · `ActivityInstanceManager.GetById`（在 `TransferLane.TryLoadContext`） |
 | Gate | `FlowOperation.Transfer` |
 | 写库 | `TaskManager.Transfer`：原待办 `Closed` + `Update`；目标 `Insert` 同 Activity 新待办；`RefreshActivitySignFromOpenTasks`；`CapabilityDispatcher.FireTaskLifecycle(Entrusted)`（仍在 Manager 内；族内不重复） |
 | Hook | `OnProcessTransferred`（族群 `OnFireFlowHook`） |
@@ -331,11 +331,11 @@ Transition 族 `SignForwardAction`。产品细表：[OA/专题-改签.md](../OA/
 
 ### 5.12b RemoveAssigneeProcess（减签，不推进）
 
-Assignee 族 `RemoveAssigneeAction`（A4；**Host 办理条已接线**：码表 + Handler + RemovableAssignees）。产品细表：[OA/专题-改签.md](../OA/专题-改签.md)。
+Assignee 族 `RemoveAssigneeLane`（A4；**Host 办理条已接线**：码表 + Handler + RemovableAssignees）。产品细表：[OA/专题-改签.md](../OA/专题-改签.md)。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `RemoveAssigneeProcess` → `RunAction` → `RemoveAssigneeAction.Execute` |
+| API | `RemoveAssigneeProcess` → `RunAction` → `RemoveAssigneeLane.Execute` |
 | 定位 | `TaskId` → 活动；`NextActivityPerformers` = 待移除人 |
 | Gate | `FlowOperation.RemoveAssignee` |
 | 写库 | `TaskManager.RemoveAssignees`：匹配未办待办 → `Closed` + `Cancelled`；刷新 SignIds/Names；禁减至 0 |
@@ -344,11 +344,11 @@ Assignee 族 `RemoveAssigneeAction`（A4；**Host 办理条已接线**：码表 
 
 ### 5.12c ChangeAssigneeProcess（改派，不推进）
 
-Assignee 族 `ChangeAssigneeAction`（A4 续）。
+Assignee 族 `ChangeAssigneeLane`（A4 续）。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `ChangeAssigneeProcess` → `RunAction` → `ChangeAssigneeAction.Execute` |
+| API | `ChangeAssigneeProcess` → `RunAction` → `ChangeAssigneeLane.Execute` |
 | 定位 | `TaskId` → 活动；`NextActivityPerformers` = **新办理人全集** |
 | Gate | `FlowOperation.ChangeAssignee` |
 | 写库 | `TaskManager.ChangeAssignees`：不在新集合 → Closed+Cancelled；缺开待办 → Insert+Created；刷新 SignIds/Names |
@@ -356,11 +356,11 @@ Assignee 族 `ChangeAssigneeAction`（A4 续）。
 
 ### 5.12d UrgeProcess（催办，不推进）
 
-Assignee 族 `UrgeAction`（A4 续）。**不改** TaskState。
+Assignee 族 `UrgeLane`（A4 续）。**不改** TaskState。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `UrgeProcess` → `RunAction` → `UrgeAction.Execute` |
+| API | `UrgeProcess` → `RunAction` → `UrgeLane.Execute` |
 | 定位 | `TaskId` → 活动；可选 `NextActivityPerformers` 限定对象（空=全部打开待办） |
 | Gate | `FlowOperation.Urge` |
 | 通知 | `TaskManager.UrgeOpenTasks` → 逐条 `FireTaskLifecycle(Urged)` → `OnTaskUrged` + Notifier |
@@ -369,11 +369,11 @@ Assignee 族 `UrgeAction`（A4 续）。**不改** TaskState。
 
 ### 5.12e DelegateProcess（委派，办完自动回转）
 
-Assignee 族 `DelegateAction`。**拍板：** 受托人办结必须回转原人；否则用 Transfer。**Host 已接线**（码表默认关 + `DelegateOperationHandler` + 办理条）。
+Assignee 族 `DelegateLane`。**拍板：** 受托人办结必须回转原人；否则用 Transfer。**Host 已接线**（码表默认关 + `DelegateOperationHandler` + 办理条）。
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `DelegateProcess` → `RunAction` → `DelegateAction.Execute` |
+| API | `DelegateProcess` → `RunAction` → `DelegateLane.Execute` |
 | Host | `ButtonsOperation` → `DelegateOperationHandler`；直调 `POST …/DelegateProcess` |
 | 发起 | `TaskManager.Delegate`：原人 Closed + `Entrusted`；受托人新建（`EntrustedTaskId`=原 TaskId） |
 | 办结 | 受托人 `Approve/Run` → `TryCompleteAsDelegationReturn`：受托 Completed + 原人重建 Waiting；**不**完结 AI、**不** ContinueForward |
@@ -386,9 +386,9 @@ Assignee 族三动词。字段：`tk_assignee_role`（0/null 常规，1 参与�
 
 | 步骤 | 类·方法 |
 |------|---------|
-| 沟通 API | `ConsultProcess` → `ConsultAction` → `TaskManager.Consult` |
-| 阅办 API | `AcknowledgeProcess` → `AcknowledgeAction` → `TaskManager.Acknowledge` |
-| 收回 API | `RecallConsultProcess` → `RecallConsultAction` → `TaskManager.RecallConsult` |
+| 沟通 API | `ConsultProcess` → `ConsultLane` → `TaskManager.Consult` |
+| 阅办 API | `AcknowledgeProcess` → `AcknowledgeLane` → `TaskManager.Acknowledge` |
+| 收回 API | `RecallConsultProcess` → `RecallConsultLane` → `TaskManager.RecallConsult` |
 | 硬锁 | `ConsultPendingGuard`：源 Task 有打开参与者时拦截 Run/Reject/SendBack/SignForward/Transfer/Delegate/… |
 | SignIds/Names | `RefreshActivitySignFromOpenTasks` **排除**参与者 |
 | 节点离开 | `CompleteActivityInstance` → `CancelOpenParticipantsOnActivity` |
@@ -401,7 +401,7 @@ Assignee 族三动词。字段：`tk_assignee_role`（0/null 常规，1 参与�
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `SuspendProcess(runner)` / `ResumeProcess(runner)` → `RunAction` → `SuspendAction` / `ResumeAction` |
+| API | `SuspendProcess(runner)` / `ResumeProcess(runner)` → `RunAction` → `SuspendLane` / `ResumeLane` |
 | 定位 | Suspend：`TaskId`；Resume：`ProcessInstanceId` |
 | Gate | `FlowOperation.Suspend` / `Resume` |
 | 写库 | `ProcessInstanceManager.Suspend/Resume(kit, …)` |
@@ -414,7 +414,7 @@ Assignee 族三动词。字段：`tk_assignee_role`（0/null 常规，1 参与�
 
 | 步骤 | 类·方法 |
 |------|---------|
-| API | `*Process` → `RunAction` → `TerminateAction` / `DiscardAction` / `CancelAction` |
+| API | `*Process` → `RunAction` → `TerminateLane` / `DiscardLane` / `CancelLane` |
 | 定位 | Cancel/Discard：`BizPK+ProcessId(+Version)`；Terminate：`ProcessInstanceId` 或同上 |
 | Gate | `FlowOperation.Terminate` / `Discard` / `Cancel` |
 | 写库 | `ProcessInstanceManager.*(kit, …)`；Terminate 级联收口活动/待办 + 逐条 `FireTaskLifecycle(Cancelled)` |
@@ -631,16 +631,16 @@ FlowCapabilityPipeline.AfterSuccess(/* OnActivityCreated */);
 | Start | `CreateRuntimeInstanceStartup` | `WfRuntimeManagerStartup` | `NodeMediatorStart` + Continue |
 | Run / Approve | `CreateRuntimeInstanceAppRunning` | `WfRuntimeManagerRun` | `NodeMediatorTask` 等 |
 | RunAuto | `CreateRuntimeInstanceRunAuto` | `WfRuntimeManagerRun` | 同上 |
-| SendBack | `CreateRuntimeInstanceSendBack` | `SendBackAction` / `WfRuntimeManagerSendBack` | `NodeSendBack*` |
-| Withdraw | `CreateRuntimeInstanceWithdraw` | `WithdrawAction` / **同** `WfRuntimeManagerSendBack` | `NodeSendBack`*（Withdrawed） |
-| Reject | `CreateRuntimeInstanceReject` | `RejectAction` / `WfRuntimeManagerReject` | `NodeMediatorBackward` |
+| SendBack | `CreateRuntimeInstanceSendBack` | `SendBackLane` / `WfRuntimeManagerSendBack` | `NodeSendBack*` |
+| Withdraw | `CreateRuntimeInstanceWithdraw` | `WithdrawLane` / **同** `WfRuntimeManagerSendBack` | `NodeSendBack`*（Withdrawed） |
+| Reject | `CreateRuntimeInstanceReject` | `RejectLane` / `WfRuntimeManagerReject` | `NodeMediatorBackward` |
 | Resend | `CreateRuntimeInstanceResend` | `WfRuntimeManagerResend` | `NodeMediator*`（指向 BackSrc） |
 | Revise | `CreateRuntimeInstanceRevise` | `WfRuntimeManagerRevise` | `NodeMediatorRevise` |
 | Reverse | `CreateRuntimeInstanceReverse` | `WfRuntimeManagerReverse` | `NodeMediatorBackward` |
-| Jump | `CreateRuntimeInstanceJump` | `JumpAction` / `WfRuntimeManagerJump` | `NodeMediator*`（跳转目标） |
-| Close | `CreateRuntimeInstanceClose` | `CloseAction` / `WfRuntimeManagerClose` | 常 `NodeMediatorEnd` |
+| Jump | `CreateRuntimeInstanceJump` | `JumpLane` / `WfRuntimeManagerJump` | `NodeMediator*`（跳转目标） |
+| Close | `CreateRuntimeInstanceClose` | `CloseLane` / `WfRuntimeManagerClose` | 常 `NodeMediatorEnd` |
 | SignForward | `CreateRuntimeInstanceSignForward` | `WfRuntimeManagerSignForward` | 加签 Mediator |
-| Transfer | （无 Runtime） | `TransferAction` / `AssigneeActionBase` | `TaskManager.Transfer` |
+| Transfer | （无 Runtime） | `TransferLane` / `AssigneeActionBase` | `TaskManager.Transfer` |
 
 ---
 
