@@ -12,7 +12,7 @@ public interface ISailEventHub
 }
 
 /// <summary>默认空实现：记录调试输出，不抛异常。</summary>
-public sealed class SailEventHubStub : ISailEventHub
+public class SailEventHubStub : ISailEventHub
 {
     private readonly SailClient _client;
 
