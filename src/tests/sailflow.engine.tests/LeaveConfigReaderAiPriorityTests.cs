@@ -1,7 +1,7 @@
 using sailflow.assignee;
 using sailflow.assignee.Adapt;
 using sailflow.engine.Assignee;
-using sailflow.engine.Entity;
+using sailflow.data;
 using Xunit;
 
 namespace sailflow.engine.tests;

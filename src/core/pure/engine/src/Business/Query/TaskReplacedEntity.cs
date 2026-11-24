@@ -1,4 +1,4 @@
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 任务取代入参（非落库）。

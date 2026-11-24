@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using sailflow.AI.Abstractions;
 using sailflow.engine.Client;
+using sailflow.data;
 
 namespace sailflow.AI.Implementation
 {

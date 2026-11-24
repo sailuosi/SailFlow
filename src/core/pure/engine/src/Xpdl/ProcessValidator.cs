@@ -6,7 +6,7 @@ using sailflow.engine.Common;
 using sailflow.engine.Xpdl;
 using System.Xml;
 using sailflow.engine.Utility;
-using sailflow.engine.Entity;
+using sailflow.data;
 using sailflow.engine.Xpdl;
 
 namespace sailflow.engine.Xpdl

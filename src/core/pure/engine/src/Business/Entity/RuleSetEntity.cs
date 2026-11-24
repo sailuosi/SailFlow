@@ -2,7 +2,7 @@ using System;
 using sailflow.engine.Common;
 using mooSQL.data;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 规则集定义实体（表 <c>sf_rule_set</c>）。

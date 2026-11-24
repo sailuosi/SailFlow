@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 using sailflow.data;
 using sailflow.engine.Client;
 
-namespace sailflow.hub.Form
+namespace sailflow.data
 {
     /// <summary>表单。终态：SailSqlAccess / kit。</summary>
     internal class FormManager

@@ -4,8 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using mooSQL.data;
-using sailflow.engine.Entity;
-using sailflow.engine.Manager;
+using sailflow.data;
 using sailflow.engine.Client;
 
 namespace sailflow.engine.Hooks

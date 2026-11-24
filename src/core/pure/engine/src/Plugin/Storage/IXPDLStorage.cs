@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using sailflow.engine.Entity;
 
-namespace sailflow.engine.Manager
+namespace sailflow.data
 {
     /// <summary>
     /// Process definition database storage interface

@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// Hook / Notifier 异步 Outbox（表 <c>sf_hook_outbox</c>；Phase 1 同库落表）。

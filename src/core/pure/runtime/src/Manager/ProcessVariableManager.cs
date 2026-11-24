@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using mooSQL.data;
 using sailflow.data;
-using sailflow.engine.Entity;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.engine.Event;
@@ -14,11 +13,10 @@ using sailflow.engine.HotShard;
 using sailflow.engine.Logging;
 using sailflow.engine.Xpdl;
 using sailflow.hub.Localize;
-using sailflow.engine.Manager;
 using sailflow.engine.NextStep;
 using sailflow.engine.Runtime;
 
-namespace sailflow.runtime.Manager
+namespace sailflow.data
 {
     /// <summary>
     /// 流程运行变量（sf_proc_variable / 白名单热分表）。

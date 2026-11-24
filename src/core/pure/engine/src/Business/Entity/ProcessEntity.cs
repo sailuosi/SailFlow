@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using mooSQL.data;
 
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 流程定义实体（表 <c>sf_process</c>）。

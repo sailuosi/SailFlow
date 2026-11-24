@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using mooSQL.data;
 using sailflow.AI.Configuration;
 using sailflow.AI.Entity;
-using sailflow.AI.Manager;
 using sailflow.data;
 
 namespace sailflow.AI.Service

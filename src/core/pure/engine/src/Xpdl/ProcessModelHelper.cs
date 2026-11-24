@@ -5,7 +5,7 @@ using System.Text;
 using System.Xml;
 using System.Linq;
 using sailflow.engine.Common;
-using sailflow.engine.Entity;
+using sailflow.data;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Utility;
 

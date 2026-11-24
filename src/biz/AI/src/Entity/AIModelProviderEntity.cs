@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace sailflow.AI.Entity
+namespace sailflow.data
 {
     [SooTable(Name = "sf_model_provider", Caption = "AI 模型提供方", Type = DBTableType.Table)]
     public class AiModelProviderEntity

@@ -1,6 +1,5 @@
 using sailflow.data;
 using mooSQL.data;
-using sailflow.engine.Manager;
 using sailflow.engine.Result;
 using sailflow.engine.Pattern;
 using sailflow.engine.Core;

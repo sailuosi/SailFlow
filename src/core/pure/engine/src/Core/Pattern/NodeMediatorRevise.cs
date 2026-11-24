@@ -4,8 +4,7 @@ using mooSQL.data;
 
 using sailflow.engine.Common;
 using sailflow.engine.Xpdl;
-using sailflow.engine.Entity;
-using sailflow.engine.Manager;
+using sailflow.data;
 using sailflow.engine.Client;
 using sailflow.engine.Core;
 namespace sailflow.engine.Pattern

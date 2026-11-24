@@ -3,7 +3,7 @@ using mooSQL.data;
 using mooSQL.data.model;
 using sailflow.engine.Common;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 任务明细读模型（Select + SooJoin，用法同普通实体）。

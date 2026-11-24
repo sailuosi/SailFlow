@@ -1,4 +1,4 @@
-using sailflow.engine.Entity;
+using sailflow.data;
 
 namespace sailflow.biz.query
 {

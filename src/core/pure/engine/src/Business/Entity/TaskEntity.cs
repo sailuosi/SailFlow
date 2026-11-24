@@ -5,7 +5,7 @@ using System.Text;
 using sailflow.engine.Common;
 using mooSQL.data;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 任务/待办实体（表 <c>sf_task</c>）。

@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
 using sailflow.data;
-using sailflow.engine.Entity;
 using sailflow.engine.Client;
 using sailflow.engine.Hooks;
-using sailflow.engine.Manager;
 using sailflow.engine.Runtime;
 
-namespace sailflow.runtime.Manager
+namespace sailflow.data
 {
     public class HookOutboxManager : IHookOutboxManager
     {

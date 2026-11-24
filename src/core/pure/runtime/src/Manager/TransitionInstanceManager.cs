@@ -5,14 +5,12 @@ using mooSQL.data;
 using sailflow.data;
 using sailflow.hub.Localize;
 using sailflow.engine.Common;
-using sailflow.engine.Entity;
 using sailflow.engine.Client;
 using sailflow.engine.HotShard;
 using sailflow.engine.Logging;
-using sailflow.engine.Manager;
 using sailflow.engine.Runtime;
 
-namespace sailflow.runtime.Manager
+namespace sailflow.data
 {
     /// <summary>
     /// 节点转移轨迹（<see cref="TrackEntity"/> / <c>sf_track</c> / 白名单热分表）。

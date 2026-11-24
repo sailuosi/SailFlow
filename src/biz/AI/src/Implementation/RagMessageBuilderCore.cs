@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using sailflow.AI.Configuration;
 using sailflow.AI.Entity;
 using sailflow.AI.Service;
+using sailflow.data;
 
 namespace sailflow.AI.Implementation
 {

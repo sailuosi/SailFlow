@@ -5,7 +5,7 @@ using System.Text;
 using sailflow.engine.Common;
 using mooSQL.data;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 流程变量运行时实体（表 <c>sf_proc_variable</c>）。

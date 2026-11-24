@@ -7,16 +7,14 @@ using System.Threading.Tasks;
 using mooSQL.data;
 using sailflow.data;
 using sailflow.engine.Assignee;
-using sailflow.engine.Entity;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.engine.Logging;
 using sailflow.engine.Runtime;
 using sailflow.engine.Xpdl;
 using sailflow.hub.Localize;
-using sailflow.engine.Manager;
 
-namespace sailflow.runtime.Manager
+namespace sailflow.data
 {
     /// <summary>
     /// Activity Instance Manager

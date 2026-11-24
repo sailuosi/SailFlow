@@ -3,7 +3,7 @@ using mooSQL.data;
 using mooSQL.data.context;
 using mooSQL.data.Mapping;
 using mooSQL.data.model;
-using sailflow.engine.Entity;
+using sailflow.data;
 using Xunit;
 
 namespace sailflow.engine.tests

@@ -1,5 +1,5 @@
 using sailflow.engine.Assignee;
-using sailflow.engine.Entity;
+using sailflow.data;
 
 namespace sailflow.assignee.Builtin;
 

@@ -10,8 +10,6 @@ using sailflow.engine.Common;
 using sailflow.engine.Factories;
 using sailflow.engine.Result;
 using sailflow.engine.Xpdl;
-using sailflow.engine.Entity;
-using sailflow.engine.Manager;
 using sailflow.engine.Pattern;
 using sailflow.WebUtility;
 using sailflow.engine.Client;

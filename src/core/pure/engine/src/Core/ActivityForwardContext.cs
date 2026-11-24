@@ -1,8 +1,6 @@
 using System;
 using sailflow.data;
 using mooSQL.data;
-using sailflow.engine.Entity;
-using sailflow.engine.Manager;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.engine.Xpdl;

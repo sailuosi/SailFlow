@@ -5,7 +5,7 @@ using System.Text;
 using sailflow.engine.Common;
 using mooSQL.data;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 流程文件/模型投影实体（映射同表 <c>sf_process</c>）。

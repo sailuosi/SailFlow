@@ -7,8 +7,6 @@ using System.Diagnostics;
 using sailflow.data;
 using mooSQL.data;
 using sailflow.engine.Common;
-using sailflow.engine.Entity;
-using sailflow.engine.Manager;
 using sailflow.engine.Message;
 
 using sailflow.engine.Client;

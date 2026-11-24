@@ -6,8 +6,6 @@ using sailflow.data;
 using mooSQL.data;
 using sailflow.engine.Common;
 using sailflow.engine.Xpdl;
-using sailflow.engine.Entity;
-using sailflow.engine.Manager;
 using sailflow.engine.Assignee;
 using sailflow.engine.Client;
 using sailflow.engine.Result;

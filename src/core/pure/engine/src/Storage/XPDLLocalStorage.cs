@@ -1,8 +1,7 @@
 using System;
 using System.IO;
 using System.Xml;
-using sailflow.engine.Entity;
-using sailflow.engine.Manager;
+using sailflow.data;
 
 namespace sailflow.engine.Storage
 {

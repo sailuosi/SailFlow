@@ -5,7 +5,6 @@ using sailflow.data;
 using mooSQL.data;
 using sailflow.hub.Localize;
 using sailflow.engine.Xpdl;
-using sailflow.engine.Manager;
 using sailflow.engine.Client;
 using sailflow.engine.Core;
 

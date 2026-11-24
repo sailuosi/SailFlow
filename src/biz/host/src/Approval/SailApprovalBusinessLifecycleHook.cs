@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using mooSQL.data;
 using sailflow.engine.Common;
-using sailflow.engine.Entity;
+using sailflow.data;
 using sailflow.engine.Hooks;
 
 namespace sailflow.biz.Approval;

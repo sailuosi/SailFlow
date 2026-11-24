@@ -1,13 +1,12 @@
 using System;
 using System.Threading;
-using sailflow.engine.Entity;
+using sailflow.data;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.engine.Logging;
-using sailflow.engine.Manager;
 using sailflow.engine.Runtime;
 
-namespace sailflow.runtime.Manager
+namespace sailflow.data
 {
     /// <summary>
     /// 引擎日志门面：组装 <see cref="LogEntity"/> 后交给 <see cref="IEngineLogSink"/>（默认写表）。

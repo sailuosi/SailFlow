@@ -2,7 +2,7 @@ using System;
 using mooSQL.data;
 using sailflow.data.Lifecycle;
 using sailflow.engine.Client;
-using sailflow.engine.Entity;
+using sailflow.data;
 using sailflow.engine.HotShard;
 
 namespace sailflow.data.HotShard

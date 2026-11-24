@@ -1,6 +1,5 @@
 using System;
 using sailflow.data;
-using sailflow.engine.Entity;
 using sailflow.engine.Client;
 
 namespace sailflow.data.Lifecycle

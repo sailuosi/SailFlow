@@ -3,10 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
-using sailflow.data;
 using sailflow.AI.Entity;
 
-namespace sailflow.AI.Manager
+namespace sailflow.data
 {
     /// <summary>
     /// AI 模型提供方管理类

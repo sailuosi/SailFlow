@@ -1,5 +1,6 @@
 using sailflow.AI.Entity;
 using System.Collections.Generic;
+using sailflow.data;
 
 namespace sailflow.AI.Service
 {

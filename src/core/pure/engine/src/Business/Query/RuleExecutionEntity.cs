@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 规则执行请求（非落库）。

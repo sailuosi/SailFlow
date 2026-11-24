@@ -1,7 +1,7 @@
 using mooSQL.data;
 using Newtonsoft.Json;
 
-namespace sailflow.AI.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 知识库文档（Supabase / mooSQL）。表 <c>sf_document</c>，字段前缀 <c>kd_</c>。

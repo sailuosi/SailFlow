@@ -1,5 +1,5 @@
 using sailflow.engine.Xpdl;
-using sailflow.engine.Entity;
+using sailflow.data;
 
 
 namespace sailflow.engine.Pattern

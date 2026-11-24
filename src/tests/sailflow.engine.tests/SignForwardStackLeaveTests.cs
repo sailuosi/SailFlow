@@ -1,8 +1,7 @@
 using sailflow.assignee.Builtin;
 using sailflow.engine.Assignee;
 using sailflow.engine.Common;
-using sailflow.engine.Entity;
-using sailflow.engine.Manager;
+using sailflow.data;
 using sailflow.engine.Xpdl;
 using Xunit;
 

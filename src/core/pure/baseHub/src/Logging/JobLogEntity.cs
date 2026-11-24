@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace sailflow.hub.Logging
+namespace sailflow.data
 {
     /// <summary>
     /// Job Log Entity

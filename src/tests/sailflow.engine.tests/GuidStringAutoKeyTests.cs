@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using mooSQL.data;
-using sailflow.engine.Entity;
+using sailflow.data;
 using sailflow.engine.Ids;
 using Xunit;
 

@@ -1,12 +1,11 @@
 using sailflow.engine.Client;
 using mooSQL.data;
-using sailflow.data;
 using sailflow.AI.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace sailflow.AI.Manager
+namespace sailflow.data
 {
     /// <summary>
     /// AI 节点配置管理类

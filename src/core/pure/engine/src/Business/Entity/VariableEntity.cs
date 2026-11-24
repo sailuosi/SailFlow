@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 流程变量定义实体（表 <c>sf_variable</c>）。

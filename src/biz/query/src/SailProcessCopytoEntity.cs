@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace sailflow.biz.query
+namespace sailflow.data
 {
     /// <summary>流程抄送（产品表，非引擎表）。抄送语义用 copyto，禁止裸 copy（易误解为复制）。</summary>
     [SooTable(Name = "sf_proc_copyto", Caption = "流程抄送", Type = DBTableType.Table)]

@@ -3,7 +3,7 @@ using mooSQL.data;
 using sailflow.data;
 using sailflow.engine.Client;
 
-namespace sailflow.hub.Form
+namespace sailflow.data
 {
     /// <summary>字段权限。终态：SailSqlAccess / kit。</summary>
     internal class FieldManager

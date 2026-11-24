@@ -12,7 +12,6 @@ using sailflow.hub.Form;
 using sailflow.hub.Resource;
 using sailflow.engine.Utility;
 using sailflow.engine.Common;
-using sailflow.engine.Entity;
 using sailflow.engine.Xpdl;
 
 namespace sailflow.engine.Xpdl

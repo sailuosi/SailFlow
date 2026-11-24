@@ -1,6 +1,5 @@
 using sailflow.data;
 using mooSQL.data;
-using sailflow.engine.Entity;
 using sailflow.engine.Common;
 using sailflow.engine.Event;
 using sailflow.engine.Xpdl;

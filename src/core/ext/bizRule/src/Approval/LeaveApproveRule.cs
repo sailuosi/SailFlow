@@ -1,5 +1,5 @@
 using NRules.Fluent.Dsl;
-using sailflow.engine.Entity;
+using sailflow.data;
 using System.Globalization;
 
 namespace sailflow.hub.BusinessRule

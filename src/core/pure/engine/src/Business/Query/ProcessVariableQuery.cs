@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using sailflow.engine.Common;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 流程变量查询条件（非落库）。

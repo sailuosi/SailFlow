@@ -1,7 +1,7 @@
 using System;
 using mooSQL.data;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 作业/定时任务定义信息（表 <c>sf_job_detail</c>，人工定名）。

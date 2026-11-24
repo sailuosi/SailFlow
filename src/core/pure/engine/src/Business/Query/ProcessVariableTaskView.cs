@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using sailflow.engine.Common;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 任务视角下的流程变量投影（非落库视图 DTO）。

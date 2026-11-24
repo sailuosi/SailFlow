@@ -5,7 +5,6 @@ using mooSQL.data;
 using sailflow.engine.Common;
 using sailflow.engine.Event;
 using sailflow.engine.Xpdl;
-using sailflow.engine.Entity;
 using sailflow.engine.Assignee;
 using sailflow.engine.Client;
 using sailflow.engine.Core;

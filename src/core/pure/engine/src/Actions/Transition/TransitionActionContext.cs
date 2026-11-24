@@ -1,4 +1,4 @@
-using sailflow.engine.Entity;
+using sailflow.data;
 using sailflow.engine.Runtime;
 
 namespace sailflow.engine.Actions.Transition

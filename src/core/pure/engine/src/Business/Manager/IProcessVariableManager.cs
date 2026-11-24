@@ -11,7 +11,6 @@ using sailflow.hub.Resource;
 using sailflow.engine.Assignee;
 using sailflow.engine.Common;
 using sailflow.engine.Hooks;
-using sailflow.engine.Entity;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Result;
 using sailflow.engine.Client;
@@ -19,11 +18,10 @@ using sailflow.engine.Event;
 using sailflow.engine.Logging;
 using sailflow.engine.Runtime;
 using sailflow.engine.Core;
-using sailflow.engine.Manager;
 using sailflow.engine.Factories;
 using sailflow.WebUtility;
 
-namespace sailflow.engine.Manager;
+namespace sailflow.data;
 
 /// <summary>契约 · ProcessVariableManager（实现位于 sailflow.runtime）。</summary>
 public interface IProcessVariableManager

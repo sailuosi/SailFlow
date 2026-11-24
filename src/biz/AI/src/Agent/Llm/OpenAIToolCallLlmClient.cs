@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using sailflow.AI.Agent;
 using sailflow.AI.Entity;
+using sailflow.data;
 
 namespace sailflow.AI.Agent
 {

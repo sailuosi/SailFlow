@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
 using sailflow.data;
-using sailflow.engine.Entity;
 using sailflow.engine.Client;
-using sailflow.engine.Manager;
 using sailflow.engine.Runtime;
 
-namespace sailflow.runtime.Manager
+namespace sailflow.data
 {
     /// <summary>
     /// Rule set manager (sf_rule_set)。终态：Client / kit，无 Session、conn、trans。

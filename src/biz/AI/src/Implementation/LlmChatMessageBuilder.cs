@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using sailflow.AI.Abstractions;
 using sailflow.AI.Configuration;
 using sailflow.AI.Entity;
-using sailflow.AI.Manager;
 using sailflow.AI.Service;
 using sailflow.engine.Client;
+using sailflow.data;
 
 namespace sailflow.AI.Implementation
 {

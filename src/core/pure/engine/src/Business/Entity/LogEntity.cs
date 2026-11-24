@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using mooSQL.data;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 引擎运行日志实体（表 <c>sf_log</c>）。

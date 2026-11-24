@@ -1,6 +1,6 @@
 using sailflow.engine.Common;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 流程定义查询条件（非落库），继承分页基类。

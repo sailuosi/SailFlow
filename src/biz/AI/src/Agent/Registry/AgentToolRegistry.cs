@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using sailflow.AI.Agent;
+using sailflow.data;
 
 namespace sailflow.AI.Agent
 {

@@ -1,4 +1,4 @@
-using sailflow.engine.Entity;
+using sailflow.data;
 using sailflow.engine.Common;
 
 namespace sailflow.engine.Xpdl

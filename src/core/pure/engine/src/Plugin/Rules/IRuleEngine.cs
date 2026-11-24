@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using sailflow.engine.Entity;
+using sailflow.data;
 
 namespace sailflow.engine.Rules
 {

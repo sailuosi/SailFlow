@@ -10,17 +10,15 @@ using sailflow.data;
 using sailflow.hub.Localize;
 using sailflow.engine.Common;
 using sailflow.engine.Hooks;
-using sailflow.engine.Entity;
 using sailflow.engine.Xpdl;
 using sailflow.engine.Result;
 using sailflow.engine.Client;
 using sailflow.engine.Logging;
 using sailflow.WebUtility;
-using sailflow.engine.Manager;
 using sailflow.engine.Runtime;
 
 
-namespace sailflow.runtime.Manager
+namespace sailflow.data
 {
     /// <summary>
     /// Task manager: including tasks and task view objects

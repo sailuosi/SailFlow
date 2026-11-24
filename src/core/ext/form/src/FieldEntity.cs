@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace sailflow.hub.Form
+namespace sailflow.data
 {
     /// <summary>
     /// Field Entity

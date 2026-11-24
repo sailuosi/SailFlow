@@ -1,7 +1,7 @@
 using sailflow.AI.Entity;
-using sailflow.AI.Manager;
 using sailflow.AI.Configuration;
 using System.Collections.Generic;
+using sailflow.data;
 
 namespace sailflow.AI.Service
 {

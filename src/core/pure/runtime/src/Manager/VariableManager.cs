@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using mooSQL.data;
 using sailflow.data;
-using sailflow.engine.Entity;
 using sailflow.engine.Client;
-using sailflow.engine.Manager;
 using sailflow.engine.Runtime;
 
-namespace sailflow.runtime.Manager
+namespace sailflow.data
 {
     /// <summary>
     /// 流程变量定义管理类（sf_variable）。

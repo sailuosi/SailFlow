@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using mooSQL.data;
 using sailflow.data;
-using sailflow.engine.Entity;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.engine.Event;
@@ -16,10 +15,9 @@ using sailflow.engine.Xpdl;
 using sailflow.hub.Localize;
 using sailflow.hub.Resource;
 using sailflow.WebUtility;
-using sailflow.engine.Manager;
 using sailflow.engine.Runtime;
 
-namespace sailflow.runtime.Manager
+namespace sailflow.data
 {
     /// <summary>
     /// 流程实例（sf_proc_instance）。

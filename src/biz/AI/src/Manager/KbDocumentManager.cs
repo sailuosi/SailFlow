@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace sailflow.AI.Manager
+namespace sailflow.data
 {
     /// <summary>
     /// 知识库文档管理（Supabase REST，表 <c>sf_document</c> / 列 <c>kd_*</c>）。

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using mooSQL.data;
 
-namespace sailflow.engine.Entity
+namespace sailflow.data
 {
     /// <summary>
     /// 活动实例实体（表 <c>sf_act_instance</c>）。

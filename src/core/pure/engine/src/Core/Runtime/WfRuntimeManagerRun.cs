@@ -4,8 +4,6 @@ using sailflow.engine.Common;
 using sailflow.engine.Pattern;
 using sailflow.engine.Result;
 using sailflow.engine.Event;
-using sailflow.engine.Entity;
-using sailflow.engine.Manager;
 using sailflow.engine.Core;
 using sailflow.engine.Hooks;
 
