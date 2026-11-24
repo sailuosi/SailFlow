@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using sailflow.AI.Abstractions;
+using sailflow.AI;
 using sailflow.AI.Entity;
 using sailflow.AI.Service;
 using sailflow.utils;

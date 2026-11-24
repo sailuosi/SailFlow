@@ -1,6 +1,6 @@
 using System;
 
-namespace sailflow.AI.Abstractions
+namespace sailflow.AI
 {
     /// <summary>
     /// Host-side registration point for <see cref="IAiNodeExecutor"/>.

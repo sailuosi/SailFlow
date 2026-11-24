@@ -1,6 +1,6 @@
 using System;
 using mooSQL.data;
-using sailflow.AI.Abstractions;
+using sailflow.AI;
 using sailflow.hosting;
 using sailflow.data;
 

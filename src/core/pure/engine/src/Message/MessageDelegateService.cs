@@ -6,7 +6,7 @@ using sailflow.result;
 using sailflow.service;
 using sailflow.data;
 using sailflow.xml;
-using sailflow.hub.Essential;
+using sailflow.signal;
 
 using sailflow.hosting;
 namespace sailflow.signal

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace sailflow.hub.Essential
+namespace sailflow.signal
 {
     /// <summary>
     /// Message Consumed Result

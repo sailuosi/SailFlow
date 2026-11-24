@@ -1,5 +1,5 @@
 using System;
-using sailflow.hub.Essential;
+using sailflow.signal;
 using sailflow.hosting;
 
 namespace sailflow.hosting;

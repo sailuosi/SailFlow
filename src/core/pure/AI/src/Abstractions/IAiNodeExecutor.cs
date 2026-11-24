@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace sailflow.AI.Abstractions
+namespace sailflow.AI
 {
     /// <summary>
     /// Contract for executing an AI workflow node.

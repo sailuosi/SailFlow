@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using mooSQL.data;
-using sailflow.hub.Essential;
+using sailflow.signal;
 using sailflow.hub.Logging;
 
-namespace sailflow.hub.Essential
+namespace sailflow.signal
 {
     public class SignalMediator
     {

@@ -1,4 +1,4 @@
-using sailflow.AI.Abstractions;
+using sailflow.AI;
 
 namespace sailflow.xml
 {

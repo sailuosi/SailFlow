@@ -4,7 +4,7 @@ using System.Text;
 using mooSQL.data;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using sailflow.hub.Essential;
+using sailflow.signal;
 
 namespace sailflow.msg
 {

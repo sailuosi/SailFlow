@@ -8,7 +8,7 @@ using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using sailflow.AI.Abstractions;
+using sailflow.AI;
 using sailflow.hosting;
 using sailflow.data;
 

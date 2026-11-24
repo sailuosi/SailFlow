@@ -1,4 +1,4 @@
-using sailflow.AI.Abstractions;
+using sailflow.AI;
 using sailflow.data;
 using sailflow.hosting;
 using sailflow.utils;
