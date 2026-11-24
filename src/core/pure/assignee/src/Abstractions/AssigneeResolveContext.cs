@@ -1,4 +1,4 @@
-using sailflow.engine.Assignee;
+using sailflow.assignee;
 using sailflow.engine.Common;
 
 namespace sailflow.assignee;

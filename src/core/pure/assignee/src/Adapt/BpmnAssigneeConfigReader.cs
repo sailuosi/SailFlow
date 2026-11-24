@@ -1,5 +1,5 @@
 using sailflow.data;
-using sailflow.engine.Assignee;
+using sailflow.assignee;
 using sailflow.engine.Client;
 using sailflow.engine.Xpdl;
 using mooSQL.data;

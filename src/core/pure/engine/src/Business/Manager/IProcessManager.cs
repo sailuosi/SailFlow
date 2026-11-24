@@ -9,7 +9,7 @@ using mooSQL.data;
 using sailflow.data;
 using sailflow.hub.Localize;
 using sailflow.hub.Resource;
-using sailflow.engine.Assignee;
+using sailflow.assignee;
 using sailflow.engine.Common;
 using sailflow.hooks;
 using sailflow.engine.Xpdl;

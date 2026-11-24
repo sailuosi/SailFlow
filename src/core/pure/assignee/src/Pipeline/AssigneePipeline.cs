@@ -2,7 +2,7 @@ using System.Diagnostics;
 using sailflow.assignee.Adapt;
 using sailflow.assignee.Builtin;
 using sailflow.assignee.Job;
-using sailflow.engine.Assignee;
+using sailflow.assignee;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 using sailflow.run;

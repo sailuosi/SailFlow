@@ -1,4 +1,4 @@
-namespace sailflow.engine.Assignee
+namespace sailflow.assignee
 {
     /// <summary>
     /// 时刻 B 只读席位快照（窄投影）。Leave / EffectiveWeight 只读本类型，不塞整颗 TaskEntity。

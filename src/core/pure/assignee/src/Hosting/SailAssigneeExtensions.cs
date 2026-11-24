@@ -1,6 +1,6 @@
 using sailflow.assignee.Adapt;
 using sailflow.assignee.Builtin;
-using sailflow.engine.Assignee;
+using sailflow.assignee;
 using sailflow.engine.Client;
 using sailflow.engine.Hosting;
 using sailflow.engine.Common;

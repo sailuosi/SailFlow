@@ -3,7 +3,7 @@ using sailflow.data;
 using sailflow.engine.Common;
 using mooSQL.data;
 
-namespace sailflow.engine.Assignee
+namespace sailflow.assignee
 {
     /// <summary>时刻 B：流出判定调用入参（engine 不解析 Type）。</summary>
     public class LeaveInvokeRequest

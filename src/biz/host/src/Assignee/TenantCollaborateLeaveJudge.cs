@@ -1,6 +1,5 @@
 using sailflow.assignee;
 using sailflow.assignee.Builtin;
-using sailflow.engine.Assignee;
 
 namespace sailflow.biz.Assignee;
 

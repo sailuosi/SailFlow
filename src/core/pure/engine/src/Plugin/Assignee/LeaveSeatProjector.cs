@@ -4,7 +4,7 @@ using sailflow.engine.Common;
 using sailflow.data;
 using sailflow.engine.Xpdl;
 
-namespace sailflow.engine.Assignee
+namespace sailflow.assignee
 {
     /// <summary>将 Task / 子 AI 投影为 <see cref="LeaveSeatSnapshot"/>（只读窄字段）。</summary>
     public static class LeaveSeatProjector

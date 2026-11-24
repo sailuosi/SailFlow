@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using mooSQL.data;
 using sailflow.engine.Actions;
-using sailflow.engine.Assignee;
+using sailflow.assignee;
 using sailflow.engine.Hosting;
 using sailflow.hooks;
 using sailflow.engine.Ids;

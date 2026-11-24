@@ -1,4 +1,4 @@
-using sailflow.engine.Assignee;
+using sailflow.assignee;
 using sailflow.data;
 using sailflow.engine.Common;
 using sailflow.engine.Xpdl;
@@ -27,7 +27,7 @@ public static class MiPassRateHelper
 
         var seatList = seats != null && seats.Count > 0
             ? seats.ToList()
-            : sailflow.engine.Assignee.LeaveSeatProjector.FromChildActivities(
+            : sailflow.assignee.LeaveSeatProjector.FromChildActivities(
                 children ?? Array.Empty<ActivityInstanceEntity>());
 
         if (seatList.Count == 0)
@@ -53,7 +53,7 @@ public static class MiPassRateHelper
 
     /// <summary>抢办：任一有效同意即 Passed。</summary>
     public static LeaveJudgeResult EvaluateRace(IList<ActivityInstanceEntity> children)
-        => EvaluateRace(sailflow.engine.Assignee.LeaveSeatProjector.FromChildActivities(
+        => EvaluateRace(sailflow.assignee.LeaveSeatProjector.FromChildActivities(
             children ?? Array.Empty<ActivityInstanceEntity>()));
 
     public static LeaveJudgeResult EvaluateRace(IList<LeaveSeatSnapshot>? seats)

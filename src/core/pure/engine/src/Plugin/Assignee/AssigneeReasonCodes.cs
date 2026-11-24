@@ -1,4 +1,4 @@
-namespace sailflow.engine.Assignee
+namespace sailflow.assignee
 {
     /// <summary>R4：办理人管道可识别拒绝码（写入 <c>WfExecutedResult.ReasonCode</c>）。</summary>
     public static class AssigneeReasonCodes

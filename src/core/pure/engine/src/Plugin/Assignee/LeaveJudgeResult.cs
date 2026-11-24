@@ -1,4 +1,4 @@
-namespace sailflow.engine.Assignee
+namespace sailflow.assignee
 {
     /// <summary>流出判定结果。Decision 使用 <see cref="LeaveDecisions"/> 字符串常量。</summary>
     public class LeaveJudgeResult

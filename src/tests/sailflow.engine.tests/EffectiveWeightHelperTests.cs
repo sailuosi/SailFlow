@@ -1,5 +1,5 @@
 using sailflow.assignee.Builtin;
-using sailflow.engine.Assignee;
+using sailflow.assignee;
 using Xunit;
 
 namespace sailflow.engine.tests;
