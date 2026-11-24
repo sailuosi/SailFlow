@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using sailflow.engine.Hooks;
+using sailflow.hooks;
 using sailflow.engine.Client;
 
 namespace sailflow.engine.Hosting;

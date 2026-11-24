@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>
     /// Client 级 Gate / Hook / Notifier 注册表；同名后注册覆盖并 Warning。

@@ -1,4 +1,4 @@
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>待办推送开/关消息意图（渠道模板辅助）。</summary>
     public enum TaskNotifyMessageIntent

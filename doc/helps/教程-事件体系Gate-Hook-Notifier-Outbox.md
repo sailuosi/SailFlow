@@ -1,6 +1,6 @@
 # SailFlow 事件体系完整使用教程（Gate / Hook / Notifier / Outbox）
 
-> 状态：对照 **Phase 1–3b 已落地代码**（`sailflow.engine.Hooks` + `sailflow.msg`）整理的使用教程，非设计草案。  
+> 状态：对照 **Phase 1–3b 已落地代码**（`sailflow.hooks` + `sailflow.msg`）整理的使用教程，非设计草案。  
 > 设计全文：[特性设计-回调与事件.md](../sail/特性设计-回调与事件.md) · 能力基线：[特性说明-引擎能力基线.md](../sail/特性说明-引擎能力基线.md)  
 > 产品专题（待办推送）：[OA/专题-待办推送.md](../sail/OA/专题-待办推送.md)  
 > 源码主目录：`src/core/pure/engine/src/Plugin/Hooks/` · Outbox 表实体：`HookOutboxEntity`（`sf_hook_outbox`）
@@ -62,7 +62,7 @@ Gate（推进落库前，可 Reject）
 using sailflow.engine.Client;
 using sailflow.events;
 using sailflow.engine.Hosting;
-using sailflow.engine.Hooks;
+using sailflow.hooks;
 using sailflow.msg.Hosting;
 
 var client = SailClient.CreateBuilder(configuration)

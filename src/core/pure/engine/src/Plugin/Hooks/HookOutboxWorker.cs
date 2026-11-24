@@ -7,7 +7,7 @@ using mooSQL.data;
 using sailflow.data;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>Outbox 消费：认领与逐条短事务隔离（Phase 2）。</summary>
     public sealed class HookOutboxWorker

@@ -1,4 +1,4 @@
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>插件 Name / Title 日志展示。</summary>
     public static class CapabilityPluginNames

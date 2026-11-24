@@ -1,4 +1,4 @@
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>待办通知生命周期种类。</summary>
     public enum TaskNotifyKind

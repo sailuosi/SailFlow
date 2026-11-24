@@ -6,7 +6,7 @@ using mooSQL.data;
 using sailflow.engine.Actions;
 using sailflow.engine.Assignee;
 using sailflow.engine.Hosting;
-using sailflow.engine.Hooks;
+using sailflow.hooks;
 using sailflow.engine.Ids;
 using sailflow.engine.Logging;
 using sailflow.engine.NextStep;
@@ -196,11 +196,11 @@ public partial class SailClient
     /// <summary>Outbox Worker / drain 运行参数（<see cref="Hosting.SailHookOutboxDrainExtensions.UseHookOutboxDrain"/> 可覆盖）。</summary>
     public HookOutboxOptions HookOutboxOptions { get; set; } = new();
 
-    private Hooks.NotifierThrottleHub _notifierThrottleHub;
+    private NotifierThrottleHub _notifierThrottleHub;
 
-    /// <summary>Notifier Outbox 消费侧 <see cref="Hooks.NotifyThrottleOptions"/> 枢纽（按 handler 名分车道）。</summary>
-    public Hooks.NotifierThrottleHub NotifierThrottleHub =>
-        _notifierThrottleHub ??= new Hooks.NotifierThrottleHub();
+    /// <summary>Notifier Outbox 消费侧 <see cref="NotifyThrottleOptions"/> 枢纽（按 handler 名分车道）。</summary>
+    public NotifierThrottleHub NotifierThrottleHub =>
+        _notifierThrottleHub ??= new NotifierThrottleHub();
 
     /// <summary>
     /// Build 时登记的已装能力快照（UseXxx / ProvideFeature）。宿主探针可读；手动 new 的 Client 为空。
@@ -259,7 +259,7 @@ public partial class SailClient
         return this;
     }
 
-    /// <summary><see cref="Hooks.HookOutboxDrainLoop.StartBackground"/> 返回的 CTS（<c>autoStart</c> 或宿主手动启动时赋值）。</summary>
+    /// <summary><see cref="HookOutboxDrainLoop.StartBackground"/> 返回的 CTS（<c>autoStart</c> 或宿主手动启动时赋值）。</summary>
     public CancellationTokenSource HookOutboxDrainCts { get; set; }
 
     /// <summary>R10：Assignee 自动审批锚点 drain CTS（UseAssign.UseAutoApproveJob AutoStart）。</summary>

@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>
     /// Client 级 Notifier 限流枢纽：按 handler 名一车道（Channel + MaxDegree workers）。

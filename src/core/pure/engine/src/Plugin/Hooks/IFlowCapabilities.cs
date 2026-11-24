@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using sailflow.events;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>发送前闸门：仅 Sync；用结果拒绝，不抛业务校验异常。</summary>
     public interface IFlowGate

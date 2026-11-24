@@ -1,4 +1,4 @@
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>Gate / Hook / Outbox / Notifier 轻量计数（best-effort，不影响主路径）。</summary>
     public interface IFlowCapabilityMetrics

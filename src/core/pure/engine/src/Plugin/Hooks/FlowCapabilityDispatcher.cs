@@ -12,7 +12,7 @@ using sailflow.events;
 using sailflow.engine.Logging;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>Gate / Hook / Notifier 分发与 Outbox 写入。</summary>
     public sealed class FlowCapabilityDispatcher

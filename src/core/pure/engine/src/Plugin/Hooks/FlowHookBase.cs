@@ -1,4 +1,4 @@
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>
     /// Sync/Async 钩子基类。默认软超时 30s；子类可改 <see cref="TimeoutMs"/>。

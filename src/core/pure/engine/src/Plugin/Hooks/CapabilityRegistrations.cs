@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using sailflow.events;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     public sealed class GateRegistration
     {

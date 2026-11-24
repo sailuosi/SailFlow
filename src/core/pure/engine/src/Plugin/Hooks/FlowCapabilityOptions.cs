@@ -1,4 +1,4 @@
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>Gate / Hook 运行时行为（Client 级）。</summary>
     public sealed class FlowCapabilityOptions

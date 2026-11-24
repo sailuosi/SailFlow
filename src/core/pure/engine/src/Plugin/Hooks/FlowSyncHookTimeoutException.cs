@@ -1,7 +1,7 @@
 using System;
 using sailflow.events;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>
     /// Sync Hook 软超时：<c>Handle</c> 返回后耗时超过钩子 <c>TimeoutMs</c>（或全局回退）。

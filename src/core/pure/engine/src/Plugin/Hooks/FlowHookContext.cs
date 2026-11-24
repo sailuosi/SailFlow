@@ -4,7 +4,7 @@ using mooSQL.data;
 using sailflow.events;
 using sailflow.engine.Result;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>Gate / Hook 统一上下文（Gate 默认只读）。</summary>
     public sealed class FlowHookContext

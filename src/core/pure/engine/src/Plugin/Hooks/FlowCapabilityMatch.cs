@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     internal static class FlowCapabilityMatch
     {

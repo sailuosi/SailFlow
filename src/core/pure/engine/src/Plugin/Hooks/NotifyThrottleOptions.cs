@@ -1,6 +1,6 @@
 using System;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>
     /// Notifier Outbox 消费侧进程内限流（Drain 认领之后、真正 <c>NotifyAsync</c> 之前）。

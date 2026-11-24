@@ -1,6 +1,6 @@
 using sailflow.events;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>Gate / Hook / Notifier 注册过滤与模式选项。</summary>
     public sealed class HookRegistrationOptions

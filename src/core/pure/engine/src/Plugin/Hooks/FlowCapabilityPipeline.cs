@@ -5,7 +5,7 @@ using sailflow.engine.Client;
 using sailflow.engine.Result;
 using sailflow.events;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>Gate / 成功 Hook 的公共编排（避免 WorkflowService 重复）。</summary>
     public static class FlowCapabilityPipeline

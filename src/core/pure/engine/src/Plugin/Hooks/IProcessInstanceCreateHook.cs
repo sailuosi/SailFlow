@@ -3,7 +3,7 @@ using mooSQL.data;
 using sailflow.engine.Common;
 using sailflow.data;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>
     /// 流程实例创建钩子：对象已由引擎拼装，尚未 Insert。

@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hooks
+namespace sailflow.hooks
 {
     /// <summary>Outbox 后台 drain 循环（宿主自行 StartBackground / RunAsync，无 MS Hosting 硬依赖）。</summary>
     public static class HookOutboxDrainLoop
