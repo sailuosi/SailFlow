@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using sailflow.engine.Client;
-using sailflow.engine.Event;
+using sailflow.events;
 using sailflow.engine.Hooks;
 using sailflow.engine.Logging;
 using Xunit;

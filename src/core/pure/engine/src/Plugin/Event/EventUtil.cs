@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace sailflow.engine.Event
+namespace sailflow.events
 {
     /// <summary>
     /// Event Utility — 参数拼装（Action / Script / Service / 扩展 handler 共用）。

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace sailflow.engine.Event
+namespace sailflow.events
 {
     /// <summary>
     /// External event interaction trigger type

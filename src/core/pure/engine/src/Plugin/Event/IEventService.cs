@@ -8,7 +8,7 @@ using sailflow.data;
 using sailflow.engine.Client;
 using sailflow.engine.Common;
 
-namespace sailflow.engine.Event
+namespace sailflow.events
 {
     /// <summary>
     /// Event Service Interface

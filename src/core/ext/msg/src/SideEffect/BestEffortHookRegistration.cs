@@ -1,5 +1,5 @@
 using System;
-using sailflow.engine.Event;
+using sailflow.events;
 using sailflow.engine.Hooks;
 
 namespace sailflow.msg.SideEffect

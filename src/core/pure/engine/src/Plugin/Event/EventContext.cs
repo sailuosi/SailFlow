@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using sailflow.engine.Common;
 
-namespace sailflow.engine.Event
+namespace sailflow.events
 {
     /// <summary>
     /// Event execution context

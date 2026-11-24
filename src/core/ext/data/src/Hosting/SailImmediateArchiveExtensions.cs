@@ -2,7 +2,7 @@ using System;
 using sailflow.data.Lifecycle;
 using sailflow.engine.Client;
 using sailflow.engine.Hosting;
-using sailflow.engine.Event;
+using sailflow.events;
 using sailflow.engine.Hooks;
 
 namespace sailflow.data.Hosting

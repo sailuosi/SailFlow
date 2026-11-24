@@ -1,4 +1,4 @@
-using sailflow.engine.Event;
+using sailflow.events;
 using sailflow.engine.Xpdl;
 
 namespace sailflow.engine.Actions

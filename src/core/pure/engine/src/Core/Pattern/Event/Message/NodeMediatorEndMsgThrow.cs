@@ -9,7 +9,7 @@ using sailflow.hub.Resource;
 using sailflow.engine.Xpdl;
 using sailflow.run;
 using sailflow.engine.Result;
-using sailflow.engine.Event;
+using sailflow.events;
 using sailflow.engine.Message;
 
 using sailflow.engine.Client;

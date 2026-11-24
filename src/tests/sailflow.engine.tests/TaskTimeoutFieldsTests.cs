@@ -1,5 +1,5 @@
 using sailflow.data;
-using sailflow.engine.Event;
+using sailflow.events;
 using Xunit;
 
 namespace sailflow.engine.tests;

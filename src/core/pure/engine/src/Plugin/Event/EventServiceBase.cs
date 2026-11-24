@@ -6,7 +6,7 @@ using sailflow.engine.Client;
 
 using sailflow.engine.Factories;
 
-namespace sailflow.engine.Event
+namespace sailflow.events
 {
     /// <summary>
     /// Event Service Base

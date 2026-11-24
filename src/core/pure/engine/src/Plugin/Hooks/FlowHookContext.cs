@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 using mooSQL.data;
-using sailflow.engine.Event;
+using sailflow.events;
 using sailflow.engine.Result;
 
 namespace sailflow.engine.Hooks
