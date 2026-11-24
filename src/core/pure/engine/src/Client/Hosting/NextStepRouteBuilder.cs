@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using sailflow.engine.Client;
 using sailflow.nextStep;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// <c>UseNextStepRoute</c> 子 Builder：IfCondition* / AddConditionEvaluator / AddFilter。
 /// </summary>

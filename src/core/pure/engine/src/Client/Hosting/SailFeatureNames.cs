@@ -1,5 +1,4 @@
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// 已约定的能力名（<see cref="SailFeatureDescriptor.Name"/> / <see cref="SailFeatureDescriptor.DependsOn"/>）。
 /// 新增 UseXxx 时优先复用常量，避免拼写漂移。

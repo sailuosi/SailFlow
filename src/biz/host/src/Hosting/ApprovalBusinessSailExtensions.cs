@@ -4,7 +4,7 @@ using System.Linq;
 using sailflow.biz.Approval;
 using sailflow.engine.Client;
 using sailflow.events;
-using sailflow.engine.Hosting;
+using sailflow.hosting;
 using sailflow.hooks;
 
 namespace sailflow.biz.Hosting;

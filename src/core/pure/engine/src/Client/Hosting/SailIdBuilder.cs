@@ -1,7 +1,7 @@
 using System;
 using sailflow.engine.Ids;
 
-namespace sailflow.engine.Hosting
+namespace sailflow.hosting
 {
     /// <summary>配置 <see cref="ISailIdSource"/> / <see cref="ISailBpmnIdCodec"/>（Builder 期）。内置 Guid 实现见 runtime <c>UseGuidString</c>。</summary>
     public sealed class SailIdBuilder

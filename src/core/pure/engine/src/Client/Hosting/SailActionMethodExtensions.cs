@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using sailflow.lanes;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// Action / Script / Service 方法处理器注册。
 /// </summary>

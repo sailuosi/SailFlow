@@ -2,8 +2,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// Sail 能力注册集合（类比 IServiceCollection）。
 /// 扩展方法应对本接口编程，勿依赖具体 <see cref="SailCollection"/>。

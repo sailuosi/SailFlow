@@ -5,7 +5,7 @@ using System.Threading;
 using mooSQL.data;
 using sailflow.lanes;
 using sailflow.assignee;
-using sailflow.engine.Hosting;
+using sailflow.hosting;
 using sailflow.hooks;
 using sailflow.engine.Ids;
 using sailflow.log;
@@ -193,7 +193,7 @@ public partial class SailClient
         return this;
     }
 
-    /// <summary>Outbox Worker / drain 运行参数（<see cref="Hosting.SailHookOutboxDrainExtensions.UseHookOutboxDrain"/> 可覆盖）。</summary>
+    /// <summary>Outbox Worker / drain 运行参数（<see cref="SailHookOutboxDrainExtensions.UseHookOutboxDrain"/> 可覆盖）。</summary>
     public HookOutboxOptions HookOutboxOptions { get; set; } = new();
 
     private NotifierThrottleHub _notifierThrottleHub;

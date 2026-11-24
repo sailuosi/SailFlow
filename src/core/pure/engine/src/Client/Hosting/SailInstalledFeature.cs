@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>Build 完成后挂在 <see cref="SailClient"/> 上的已装能力快照。</summary>
 public sealed class SailInstalledFeature
 {

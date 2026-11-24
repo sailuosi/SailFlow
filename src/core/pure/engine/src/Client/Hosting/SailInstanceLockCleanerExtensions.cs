@@ -2,8 +2,7 @@ using System;
 using sailflow.engine.Client;
 using sailflow.run;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// 可选：定时清理 <see cref="InstanceExecutionLock"/> 空闲条目（Timer，默认不启用）。
 /// </summary>

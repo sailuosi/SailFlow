@@ -2,7 +2,7 @@ using sailflow.assignee;
 using sailflow.assignee.Hosting;
 using sailflow.biz.Assignee;
 using sailflow.engine.Client;
-using sailflow.engine.Hosting;
+using sailflow.hosting;
 using sailflow.utils;
 
 namespace sailflow.biz.Hosting;

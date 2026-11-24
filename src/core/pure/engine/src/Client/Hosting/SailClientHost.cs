@@ -1,8 +1,7 @@
 using System;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// 懒构建入口：首次 GetOrCreate 时执行 builder 工厂。
 /// 仅缓存实例，不写进程静态 Access。

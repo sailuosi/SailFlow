@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using sailflow.engine.Client;
 using sailflow.factory;
-using sailflow.engine.Hosting;
+using sailflow.hosting;
 using sailflow.nextStep;
 using sailflow.runtime.Actions;
 using sailflow.runtime.NextStep;

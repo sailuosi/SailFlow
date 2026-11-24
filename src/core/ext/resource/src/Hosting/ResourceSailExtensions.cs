@@ -1,5 +1,5 @@
 using System;
-using sailflow.engine.Hosting;
+using sailflow.hosting;
 using sailflow.hub.Resource;
 
 namespace sailflow.hub.Hosting

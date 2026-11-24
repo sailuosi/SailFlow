@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using sailflow.engine.Client;
-using sailflow.engine.Hosting;
+using sailflow.hosting;
 using AppSettingsManager = System.Configuration.ConfigurationManager;
 
 namespace sailflow.biz.Hosting;

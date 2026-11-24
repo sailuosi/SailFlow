@@ -1,8 +1,7 @@
 using System;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// 引擎配置形状注册（类比 mooSQL <c>useDataBase(List&lt;DBPosition&gt;)</c>：只登记形状，不解析来源）。
 /// </summary>

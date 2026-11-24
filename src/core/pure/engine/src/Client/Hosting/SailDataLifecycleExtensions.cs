@@ -1,8 +1,7 @@
 using System;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// 冷热归档 / 日志分表等生命周期 Options 注册（类比 <see cref="SailConfigExtensions"/>）。
 /// 不解析配置文件；宿主可 <c>configuration.GetSection("Sail:DataLifecycle").Bind(opts)</c> 后传入。

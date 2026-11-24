@@ -1,5 +1,4 @@
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 public static class SailBuilderKeys
 {
     public static readonly object DbFactory = new();

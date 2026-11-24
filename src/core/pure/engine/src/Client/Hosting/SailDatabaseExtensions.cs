@@ -2,8 +2,7 @@ using System;
 using mooSQL.data;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 public static class SailDatabaseExtensions
 {
     public static ISailCollection UseDatabase(this ISailCollection services, SailDBFactory dbFactory)

@@ -1,8 +1,7 @@
 using System;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// JSON 序列化（<see cref="IJsonSerializer"/>）注册。
 /// </summary>

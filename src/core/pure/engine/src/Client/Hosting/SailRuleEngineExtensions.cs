@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using sailflow.engine.Rules;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// 规则引擎注册（引擎只规定契约，实现由业务侧提供）。
 /// </summary>

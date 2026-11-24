@@ -1,4 +1,4 @@
-using sailflow.engine.Hosting;
+using sailflow.hosting;
 using Xunit;
 
 namespace sailflow.engine.tests;

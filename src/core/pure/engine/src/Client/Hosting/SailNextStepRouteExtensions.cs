@@ -4,8 +4,7 @@ using System.Linq;
 using sailflow.engine.Client;
 using sailflow.nextStep;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>下一跳节点计算管道：<c>UseNextStepRoute</c> 唯一门面。</summary>
 public static class SailNextStepRouteExtensions
 {

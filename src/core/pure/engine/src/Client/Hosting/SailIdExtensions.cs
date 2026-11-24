@@ -2,7 +2,7 @@ using System;
 using sailflow.engine.Client;
 using sailflow.engine.Ids;
 
-namespace sailflow.engine.Hosting
+namespace sailflow.hosting
 {
     /// <summary>
     /// 发号源 / BPMN codec 装配；Apply 时双注册 moo AutoKey。

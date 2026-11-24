@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// Build 前校验 <see cref="SailFeatureDescriptor.DependsOn"/>：依赖名须已作为某 Feature 的 <see cref="SailFeatureDescriptor.Name"/> 注册（跨 Phase）。
 /// </summary>

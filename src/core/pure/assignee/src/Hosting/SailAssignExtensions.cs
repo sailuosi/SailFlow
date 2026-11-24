@@ -2,7 +2,7 @@ using sailflow.assignee.Adapt;
 using sailflow.assignee.Builtin;
 using sailflow.assignee;
 using sailflow.engine.Client;
-using sailflow.engine.Hosting;
+using sailflow.hosting;
 
 namespace sailflow.assignee.Hosting;
 

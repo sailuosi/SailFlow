@@ -2,8 +2,7 @@ using System;
 using mooSQL.data;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// 缓存注册（对齐 mooSQL <c>useCache(ISooCache)</c>）。
 /// </summary>

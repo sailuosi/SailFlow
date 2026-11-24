@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 public enum SailFeaturePhase
 {
     /// <summary>注册服务/Locator（Build 前写入集合）。</summary>

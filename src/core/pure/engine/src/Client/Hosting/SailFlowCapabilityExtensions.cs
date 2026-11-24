@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 using sailflow.hooks;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// Gate / Hook / Notifier 三轨注册扩展。
 /// </summary>

@@ -2,8 +2,7 @@ using System;
 using sailflow.engine.Client;
 using sailflow.factory;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// Builder：覆写四引擎工厂（与 AddGate 同构，单一门面路径）。
 /// 委托在 <see cref="SailClientBuilder.Build"/> 之后调用，以便注入本 Client。

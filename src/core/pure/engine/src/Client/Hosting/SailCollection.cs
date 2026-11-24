@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 public sealed class SailCollection : List<SailFeatureDescriptor>, ISailCollection
 {
     public IDictionary<object, object?> Properties { get; } =

@@ -2,8 +2,7 @@ using System;
 using sailflow.hub.Essential;
 using sailflow.engine.Client;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// 消息队列（IMessageQueueService）注册。
 /// </summary>

@@ -11,8 +11,7 @@ using sailflow.hub.Localize;
 using sailflow.engine.Client;
 using sailflow.log;
 
-namespace sailflow.engine.Hosting;
-
+namespace sailflow.hosting;
 /// <summary>
 /// Fluent builder for <see cref="SailClient"/> (类比 WebApplicationBuilder)。
 /// </summary>
