@@ -6,8 +6,7 @@ using sailflow.run;
 using sailflow.events;
 using sailflow.xml;
 
-namespace sailflow.engine.Factories;
-
+namespace sailflow.factory;
 /// <summary>
 /// A · 默认 Mediator 工厂：Create Mediator；并入原 NodeSendBack / EventService。
 /// </summary>

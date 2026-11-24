@@ -7,7 +7,7 @@ using sailflow.data;
 using mooSQL.data;
 using sailflow.hub.Localize;
 using sailflow.utils;
-using sailflow.engine.Factories;
+using sailflow.factory;
 using sailflow.engine.Result;
 using sailflow.xml;
 using sailflow.run;
@@ -15,7 +15,7 @@ using sailflow.engine.Client;
 
 namespace sailflow.run{
     /// <summary>
-    /// Runtime 实例创建（A 协作者，挂 <see cref="Factories.DefaultRuntimeFactory"/>；非 static 表面）。
+    /// Runtime 实例创建（A 协作者，挂 <see cref="DefaultRuntimeFactory"/>；非 static 表面）。
     /// </summary>
     internal sealed class RuntimeInstanceCreator
     {

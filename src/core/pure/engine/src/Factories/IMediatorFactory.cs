@@ -3,8 +3,7 @@ using sailflow.run;
 using sailflow.events;
 using sailflow.xml;
 
-namespace sailflow.engine.Factories;
-
+namespace sailflow.factory;
 /// <summary>
 /// A · Mediator 工厂槽（可覆写）。Create* 返回公开 Mediator / Event / SendBack 表面。
 /// </summary>

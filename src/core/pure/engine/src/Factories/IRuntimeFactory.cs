@@ -8,8 +8,7 @@ using sailflow.run;
 using sailflow.engine.Result;
 using sailflow.xml;
 
-namespace sailflow.engine.Factories;
-
+namespace sailflow.factory;
 /// <summary>
 /// A · Runtime 工厂槽（可覆写）。Create* 返回 <see cref="IWfRuntime"/> / <see cref="ActivityResource"/>。
 /// </summary>

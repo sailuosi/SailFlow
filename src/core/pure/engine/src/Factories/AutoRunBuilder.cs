@@ -8,8 +8,7 @@ using sailflow.run;
 using sailflow.engine.Result;
 using sailflow.xml;
 
-namespace sailflow.engine.Factories;
-
+namespace sailflow.factory;
 /// <summary>
 /// B · 自动编排建造会话（每次 <c>CreateAutoRunBuilder</c> new）。建成后交给无状态 <see cref="WorkflowExecutor"/>。
 /// </summary>

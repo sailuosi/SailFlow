@@ -8,8 +8,7 @@ using sailflow.data;
 using sailflow.engine.Result;
 using sailflow.engine.Service;
 
-namespace sailflow.engine.Factories;
-
+namespace sailflow.factory;
 /// <summary>
 /// B · 办理链式建造会话。由 <see cref="SailClient.CreateRunBuilder"/> 每次 <c>new</c>；
 /// <see cref="Build"/> 产出入参袋 <see cref="FlowCommandContext"/>；执行编排袋由 Runtime/Mediator 工厂另建。

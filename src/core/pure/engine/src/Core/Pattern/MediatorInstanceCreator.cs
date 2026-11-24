@@ -10,7 +10,7 @@ using sailflow.run;
 
 namespace sailflow.run{
     /// <summary>
-    /// Mediator 实例创建（A 协作者，挂 <see cref="Factories.DefaultMediatorFactory"/>；非 static 表面）。
+    /// Mediator 实例创建（A 协作者，挂 <see cref="DefaultMediatorFactory"/>；非 static 表面）。
     /// </summary>
     internal sealed class MediatorInstanceCreator
     {

@@ -8,8 +8,7 @@ using sailflow.data;
 using sailflow.engine.Storage;
 using sailflow.xml;
 
-namespace sailflow.engine.Factories;
-
+namespace sailflow.factory;
 /// <summary>
 /// A · 默认 ProcessModel 工厂：缓存挂本实例；并入原 XPDLStorage / NextActivitySchedule。
 /// </summary>

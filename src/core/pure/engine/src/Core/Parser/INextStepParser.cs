@@ -16,7 +16,7 @@ using sailflow.engine.Result;
 using sailflow.engine.Client;
 using sailflow.log;
 using sailflow.run;
-using sailflow.engine.Factories;
+using sailflow.factory;
 
 namespace sailflow.run;
 /// <summary>契约 · NextStepParser（实现位于 sailflow.runtime）。</summary>

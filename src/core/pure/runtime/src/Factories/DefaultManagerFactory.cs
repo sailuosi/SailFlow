@@ -1,12 +1,11 @@
 using System;
 using sailflow.engine.Client;
-using sailflow.engine.Factories;
+using sailflow.factory;
 using sailflow.data;
 using sailflow.run;
 using sailflow.runtime.Parser;
 
-namespace sailflow.runtime.Factories;
-
+namespace sailflow.factory;
 /// <summary>
 /// A · 默认 Manager 工厂：按 Client 懒创建；不持 Runner/kit；并入 Parser/Checker。
 /// </summary>

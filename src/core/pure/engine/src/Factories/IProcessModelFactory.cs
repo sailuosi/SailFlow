@@ -3,8 +3,7 @@ using sailflow.utils;
 using sailflow.data;
 using sailflow.xml;
 
-namespace sailflow.engine.Factories;
-
+namespace sailflow.factory;
 /// <summary>
 /// A · ProcessModel 工厂槽：每 Client 一套；缓存属本实例。
 /// 在途 B 沿用创建时模型引用；失效只影响之后的 Create。

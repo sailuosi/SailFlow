@@ -1,8 +1,7 @@
 using sailflow.data;
 using sailflow.run;
 
-namespace sailflow.engine.Factories;
-
+namespace sailflow.factory;
 /// <summary>
 /// A · Manager 工厂槽：每 <see cref="Client.SailClient"/> 一套；懒持有 Manager；唯一 <c>new Manager</c> 入口在默认实现（sailflow.runtime）。
 /// </summary>

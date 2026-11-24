@@ -2,7 +2,7 @@ using System;
 using sailflow.hub.Resource;
 using sailflow.hub.Form;
 using sailflow.engine.Client;
-using sailflow.engine.Factories;
+using sailflow.factory;
 
 namespace sailflow.engine.Service
 {

@@ -10,8 +10,7 @@ using sailflow.run;
 using sailflow.engine.Result;
 using sailflow.xml;
 
-namespace sailflow.engine.Factories;
-
+namespace sailflow.factory;
 /// <summary>
 /// A · 默认 Runtime 工厂：Create Runtime 实例；并入原 <c>ActivityResourceFactory</c>。
 /// </summary>
