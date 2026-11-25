@@ -1,0 +1,14 @@
+<Project>
+  <!-- Keep repo-root VersionPrefix / PackageOutputPath / icons. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- Multiple packable csproj share this folder; isolate assets/obj or nuspec deps go empty. -->
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <!-- Prevent EnableDefaultItems from compiling sibling projects' generated AssemblyInfo.cs -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildThisFileDirectory)obj\**;$(MSBuildThisFileDirectory)bin\**</DefaultItemExcludes>
+    <!-- BaseOutputPath would otherwise redirect nupkg away from repo release/ -->
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\release\</PackageOutputPath>
+  </PropertyGroup>
+</Project>

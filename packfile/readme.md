@@ -57,13 +57,15 @@ Host → sailflow.biz → sailflow.ext → sailflow.pure → mooSQL.Ext
 
 在仓库根目录：
 
-须按依赖顺序打包（`nuget.config` 已把 `./release` 配为本地源，供后续包还原）：
+跨层用可发包 `ProjectReference`（ext→pure、biz→ext），pack 时自动写成包依赖；不必先有同版本 nupkg。`pack/Directory.Build.props` 为各 Pack 工程隔离 `obj/bin`，避免同目录多 csproj 共用 `project.assets.json` 导致 nuspec 依赖丢失。
 
 ```bash
 dotnet pack pack/sailflow.pure.Pack.csproj -c Release
 dotnet pack pack/sailflow.ext.Pack.csproj -c Release
 dotnet pack pack/sailflow.biz.Pack.csproj -c Release
 ```
+
+`nuget.config` 中的 `./release` 仍可用于本地验包/推送前自测。
 
 输出目录：仓库根 `release/`。
 

@@ -13,9 +13,13 @@
     <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
-  <!-- Cross-layer + leaf third-party deps (PrivateAssets=all ProjectRefs do not flow PackageReferences) -->
+  <!-- Cross-layer: packable ProjectReference → NuGet package dependency (like mooSQL.Ext → Pure) -->
   <ItemGroup>
-    <PackageReference Include="sailflow.ext" Version="$(VersionPrefix)" />
+    <ProjectReference Include="sailflow.ext.Pack.csproj" />
+  </ItemGroup>
+
+  <!-- Leaf third-party deps (PrivateAssets=all ProjectRefs do not flow PackageReferences) -->
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="itext" Version="9.8.0" />
     <PackageReference Include="itext.bouncy-castle-adapter" Version="9.8.0" />

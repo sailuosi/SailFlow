@@ -13,9 +13,13 @@
     <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
-  <!-- Cross-layer + leaf third-party deps (PrivateAssets=all ProjectRefs do not flow PackageReferences) -->
+  <!-- Cross-layer: packable ProjectReference → NuGet package dependency (like mooSQL.Ext → Pure) -->
   <ItemGroup>
-    <PackageReference Include="sailflow.pure" Version="$(VersionPrefix)" />
+    <ProjectReference Include="sailflow.pure.Pack.csproj" />
+  </ItemGroup>
+
+  <!-- Leaf third-party deps (PrivateAssets=all ProjectRefs do not flow PackageReferences) -->
+  <ItemGroup>
     <PackageReference Include="IronPython" Version="3.4.1" />
     <PackageReference Include="RabbitMQ.Client" Version="7.2.2" />
     <PackageReference Include="NRules" Version="1.0.4" />
