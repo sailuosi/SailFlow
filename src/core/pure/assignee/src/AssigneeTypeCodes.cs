@@ -51,10 +51,10 @@ public static class AssigneeResolveTypeCodes
     public const string ProcessRelative = "ProcessRelative";
     public const string RoleGroup = "RoleGroup";
 
-    /// <summary>旧模式码；新图用 selectModel=Preselect + allowPreselectFrom 含 Start。</summary>
+    /// <summary>旧模式码（不进 RegisterBuiltins）；新图用 selectModel=Preselect + allowPreselectFrom 含 Start。</summary>
     public const string StarterPick = "StarterPick";
 
-    /// <summary>旧模式码；新图用 selectModel=Pick。</summary>
+    /// <summary>旧模式码（不进 RegisterBuiltins）；新图用 selectModel=Pick；入参见 PickInputPerformers。</summary>
     public const string ApproverPick = "ApproverPick";
 
     public const string Fallback = "Fallback";

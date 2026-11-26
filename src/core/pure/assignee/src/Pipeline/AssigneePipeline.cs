@@ -120,7 +120,7 @@ public class AssigneePipeline : IAssigneePipeline
         if (string.Equals(selectModel, AssigneeSelectModelCodes.Pick, StringComparison.OrdinalIgnoreCase))
         {
             // 发送人自选：优先当次入参；persistPick 且入参空 → LoadPicked；默认不落库
-            resolved = new ApproverPickAssigneeResolver().Resolve(resolveCtx) ?? new PerformerList();
+            resolved = PickInputPerformers.FromRequest(resolveCtx) ?? new PerformerList();
             source = PerformerSources.Specific;
             if (resolved.Count == 0 && AssigneeSelectConstraints.IsPersistPick(config))
             {
@@ -163,7 +163,7 @@ public class AssigneePipeline : IAssigneePipeline
                 // A3：空仓默认 Reject；显式 preselectFallback=Input 才回落入参
                 if (AssigneeSelectConstraints.IsPreselectFallbackInput(config))
                 {
-                    resolved = new ApproverPickAssigneeResolver().Resolve(resolveCtx) ?? new PerformerList();
+                    resolved = PickInputPerformers.FromRequest(resolveCtx) ?? new PerformerList();
                     source = PerformerSources.Specific;
                 }
                 else

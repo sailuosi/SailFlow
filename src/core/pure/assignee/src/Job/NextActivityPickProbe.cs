@@ -58,15 +58,6 @@ public static class NextActivityPickProbe
                     return true;
                 }
 
-                // 旧图残留模式码（无 selectModel 时）；新图发布已拦
-                var t = node.AssigneeResolveType?.Trim();
-                if (string.Equals(t, AssigneeResolveTypeCodes.ApproverPick, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(t, AssigneeResolveTypeCodes.StarterPick, StringComparison.OrdinalIgnoreCase))
-                {
-                    reason = "next Resolve is " + t;
-                    return true;
-                }
-
                 if (node.ActivityType == ActivityTypeEnum.MultiSignNode)
                 {
                     reason = "next is MultiSign (SignTogether needs real performers)";
