@@ -7,7 +7,7 @@ using sailflow.hosting;
 using sailflow.hooks;
 using sailflow.run;
 using sailflow.storage;
-using sailflow.runtime.storage;
+using sailflow.data.Storage;
 
 namespace sailflow.data
 {

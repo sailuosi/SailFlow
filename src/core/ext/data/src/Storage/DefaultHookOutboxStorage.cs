@@ -6,7 +6,7 @@ using sailflow.data;
 using sailflow.hooks;
 using sailflow.storage;
 
-namespace sailflow.runtime.storage;
+namespace sailflow.data.Storage;
 
 /// <summary>默认 <see cref="IHookOutboxStorage"/>。</summary>
 public class DefaultHookOutboxStorage : IHookOutboxStorage

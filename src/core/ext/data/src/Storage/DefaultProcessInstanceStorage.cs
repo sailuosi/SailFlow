@@ -8,7 +8,7 @@ using sailflow.data;
 using sailflow.storage;
 using sailflow.utils;
 
-namespace sailflow.runtime.storage;
+namespace sailflow.data.Storage;
 
 /// <summary>
 /// 默认 <see cref="IProcessInstanceStorage"/>：kit 首参；状态热点列更新。

@@ -2,7 +2,7 @@ using System;
 using sailflow.hosting;
 using sailflow.storage;
 
-namespace sailflow.runtime.storage;
+namespace sailflow.data.Storage;
 
 /// <summary>IStorage 注册（仿 DI；唯一槽后覆盖）。</summary>
 public static class SailStorageExtensions

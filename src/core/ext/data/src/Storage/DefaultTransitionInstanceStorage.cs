@@ -6,7 +6,7 @@ using sailflow.data;
 using sailflow.storage;
 using sailflow.utils;
 
-namespace sailflow.runtime.storage;
+namespace sailflow.data.Storage;
 
 /// <summary>默认 <see cref="ITransitionInstanceStorage"/>。</summary>
 public class DefaultTransitionInstanceStorage : ITransitionInstanceStorage

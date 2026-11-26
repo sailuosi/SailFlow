@@ -7,7 +7,7 @@
     <PackageId>sailflow.data</PackageId>
     <RootNamespace>sailflow.data</RootNamespace>
     <AssemblyName>sailflow.data</AssemblyName>
-    <Description>Sailflow data lifecycle: hot/cold archive, cold store, table log sink, data-management hooks.</Description>
+    <Description>Sailflow data: default IStorage implementations, hot/cold archive, cold store, table log sink, data-management hooks.</Description>
     <LangVersion>14.0</LangVersion>
   </PropertyGroup>
 

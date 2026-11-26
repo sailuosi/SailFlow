@@ -1,18 +1,21 @@
 using System;
 using sailflow.data.HotShard;
+using sailflow.data.Storage;
 using sailflow.hosting;
 
 namespace sailflow.data.Hosting
 {
     /// <summary>
-    /// 注册 sailflow.data：日志 Sink + 可选热表白名单分表。归档 API / 立刻归档 Hook 为独立扩展。
+    /// 注册 sailflow.data：默认 IStorage + 日志 Sink + 可选热表白名单分表。归档 API / 立刻归档 Hook 为独立扩展。
     /// </summary>
     public static class SailDataExtensions
     {
-        /// <summary>挂载数据管理能力（PostBuild：日志 Sink + HotShard）。</summary>
+        /// <summary>挂载数据管理能力（ConfigureClient：默认 Storage；PostBuild：日志 Sink + HotShard）。</summary>
         public static SailClientBuilder UseSailData(this SailClientBuilder builder)
         {
             ArgumentNullException.ThrowIfNull(builder);
+
+            builder.Services.UseDefaultStorages();
 
             builder.Services.AddFeature(new SailFeatureDescriptor
             {
@@ -26,10 +29,11 @@ namespace sailflow.data.Hosting
             return builder;
         }
 
-        /// <summary>已构建 Client 上挂默认日志 Sink 与白名单热分表。</summary>
+        /// <summary>已构建 Client 上挂默认 Storage、日志 Sink 与白名单热分表。</summary>
         public static SailClient UseSailData(this SailClient client)
         {
             ArgumentNullException.ThrowIfNull(client);
+            client.UseDefaultStorages();
             return Apply(client);
         }
 

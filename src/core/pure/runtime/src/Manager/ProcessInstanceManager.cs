@@ -16,7 +16,7 @@ using sailflow.hub.Localize;
 using sailflow.hub.Resource;
 using sailflow.run;
 using sailflow.storage;
-using sailflow.runtime.storage;
+using sailflow.data.Storage;
 
 namespace sailflow.data
 {
