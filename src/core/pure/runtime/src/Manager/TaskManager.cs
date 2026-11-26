@@ -15,6 +15,8 @@ using sailflow.result;
 using sailflow.hosting;
 using sailflow.log;
 using sailflow.run;
+using sailflow.storage;
+using sailflow.runtime.storage;
 
 
 namespace sailflow.data
@@ -31,6 +33,16 @@ namespace sailflow.data
         }
 
         protected SailClient Sail { get; }
+
+        protected ITaskStorage Storage
+        {
+            get
+            {
+                if (Sail.Storages.TryGet<ITaskStorage>(out var s) && s != null)
+                    return s;
+                return new DefaultTaskStorage();
+            }
+        }
 
         Exception FailThrow(Exception ex, string op, string detail = null)
         {
@@ -72,10 +84,13 @@ namespace sailflow.data
         /// 获取任务
         /// </summary>
         public TaskEntity GetTask(string taskId)
-            => Sail.UseRunSQL().findRowById<TaskEntity>(taskId);
+        {
+            var kit = Sail.UseRunSQL();
+            return GetTask(kit, taskId);
+        }
 
         public TaskEntity GetTask(SQLBuilder kit, string taskId)
-            => kit.findRowById<TaskEntity>(taskId);
+            => Storage.GetById(kit, taskId);
 
         /// <summary>
         /// Obtain tasks based on process information
@@ -553,7 +568,7 @@ namespace sailflow.data
             task.UpdatedUserId = userId;
             task.UpdatedUserName = userName;
             task.UpdatedDateTime = DateTime.UtcNow;
-            Update(kit, task);
+            Storage.UpdateState(kit, task.TaskId, (short)taskState, userId, userName);
         }
 
         public void EndTaskState(SQLBuilder kit, string taskId,
@@ -563,7 +578,15 @@ namespace sailflow.data
         {
             var task = GetTask(kit, taskId);
             ApplyTaskEnd(task, taskState, runner, endType);
-            Update(kit, task);
+            Storage.EndState(
+                kit,
+                taskId,
+                (short)task.TaskState.GetValueOrDefault((short)taskState),
+                task.CompletedAt ?? DateTime.UtcNow,
+                task.EndedUserId,
+                task.EndedUserName,
+                task.EndType,
+                task.Msg);
         }
 
         public static void ApplyTaskEnd(

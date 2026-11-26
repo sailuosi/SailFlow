@@ -13,6 +13,8 @@ using sailflow.log;
 using sailflow.run;
 using sailflow.xml;
 using sailflow.hub.Localize;
+using sailflow.storage;
+using sailflow.runtime.storage;
 
 namespace sailflow.data
 {
@@ -29,6 +31,16 @@ namespace sailflow.data
 
         protected SailClient Sail { get; }
 
+        protected IActivityInstanceStorage Storage
+        {
+            get
+            {
+                if (Sail.Storages.TryGet<IActivityInstanceStorage>(out var s) && s != null)
+                    return s;
+                return new DefaultActivityInstanceStorage();
+            }
+        }
+
         Exception FailThrow(Exception ex, string op, string detail = null)
         {
             SailFailLog.Exception(Sail, SailLogCategories.Engine, "ActivityInstance." + op, ex, detail);
@@ -44,7 +56,8 @@ namespace sailflow.data
         {
             try
             {
-                return Sail.UseRunSQL().findRowById<ActivityInstanceEntity>(activityInstanceId);
+                var kit = Sail.UseRunSQL();
+                return GetById(kit, activityInstanceId);
             }
             catch (System.Exception e)
             {
@@ -54,7 +67,7 @@ namespace sailflow.data
         }
 
         public ActivityInstanceEntity GetById(SQLBuilder kit, string activityInstanceId)
-            => kit.findRowById<ActivityInstanceEntity>(activityInstanceId);
+            => Storage.GetById(kit, activityInstanceId);
 
         /// <summary>
         /// 异步按 Id 取活动实例（Clip take(1)，可取消）。与同步 Repo.GetById 双轨。
@@ -1029,7 +1042,12 @@ namespace sailflow.data
             activityInstance.UpdatedUserId = runner.UserId;
             activityInstance.UpdatedUserName = runner.UserName;
             activityInstance.UpdatedDateTime = System.DateTime.UtcNow;
-            Update(kit, activityInstance);
+            Storage.UpdateState(
+                kit,
+                activityInstanceId,
+                (short)activityState,
+                runner.UserId,
+                runner.UserName);
         }
 
         /// <summary>
@@ -1061,12 +1079,18 @@ namespace sailflow.data
             FlowCommandContext runner)
         {
             var activityInstance = GetById(kit, activityInstanceId);
+            var endedAt = System.DateTime.UtcNow;
             activityInstance.ActivityState = (short)activityState;
             activityInstance.EndedUserId = runner.UserId;
             activityInstance.EndedUserName = runner.UserName;
-            activityInstance.EndedDateTime = System.DateTime.UtcNow;
-
-            Update(kit, activityInstance);
+            activityInstance.EndedDateTime = endedAt;
+            Storage.EndState(
+                kit,
+                activityInstanceId,
+                (short)activityState,
+                endedAt,
+                runner.UserId,
+                runner.UserName);
         }
 
         /// <summary>
@@ -1082,12 +1106,18 @@ namespace sailflow.data
         public void Complete(SQLBuilder kit, ActivityInstanceEntity activityInstance,
             FlowCommandContext runner)
         {
+            var endedAt = System.DateTime.UtcNow;
             activityInstance.ActivityState = (short)ActivityStateEnum.Completed;
             activityInstance.EndedUserId = runner.UserId;
             activityInstance.EndedUserName = runner.UserName;
-            activityInstance.EndedDateTime = System.DateTime.UtcNow;
-
-            Update(kit, activityInstance);
+            activityInstance.EndedDateTime = endedAt;
+            Storage.EndState(
+                kit,
+                activityInstance.ActivityInstanceId,
+                (short)ActivityStateEnum.Completed,
+                endedAt,
+                runner.UserId,
+                runner.UserName);
         }
 
         /// <summary>
@@ -1188,20 +1218,7 @@ namespace sailflow.data
         public void Cancel(SQLBuilder kit, string activityInstanceId,
             FlowCommandContext runner)
         {
-            var clip = kit.useClip();
-            clip.setTable<ActivityInstanceEntity>(out var ai)
-                .set(() => ai.ActivityState, (short)ActivityStateEnum.Cancelled)
-                .set(() => ai.UpdatedUserId, runner.UserId)
-                .set(() => ai.UpdatedUserName, runner.UserName)
-                .set(() => ai.UpdatedDateTime, System.DateTime.UtcNow)
-                .where(() => ai.ActivityInstanceId, activityInstanceId)
-                .whereIn(() => ai.ActivityState, new short?[]
-                {
-                    (short)ActivityStateEnum.Ready,
-                    (short)ActivityStateEnum.Running,
-                    (short)ActivityStateEnum.Suspended
-                })
-                .doUpdate();
+            Storage.CancelOpen(kit, activityInstanceId, runner.UserId, runner.UserName);
         }
 
         /// <summary>
@@ -1286,20 +1303,18 @@ namespace sailflow.data
             foreach (var child in openChildren)
                 CancelUnCompletedMultipleInstanceRecursive(kit, child.ActivityInstanceId, runner, depth + 1);
 
-            var clip = kit.useClip();
-            clip.setTable<ActivityInstanceEntity>(out var ai)
-                .set(() => ai.ActivityState, (short)ActivityStateEnum.Cancelled)
-                .set(() => ai.UpdatedUserId, runner.UserId)
-                .set(() => ai.UpdatedUserName, runner.UserName)
-                .set(() => ai.UpdatedDateTime, System.DateTime.UtcNow)
-                .where(() => ai.MainActInstanceId, mainActivityInstanceId)
-                .whereIn(() => ai.ActivityState, new short?[]
+            Storage.UpdateChildrenState(
+                kit,
+                mainActivityInstanceId,
+                (short)ActivityStateEnum.Cancelled,
+                new short[]
                 {
                     (short)ActivityStateEnum.Ready,
                     (short)ActivityStateEnum.Running,
                     (short)ActivityStateEnum.Suspended
-                })
-                .doUpdate();
+                },
+                runner.UserId,
+                runner.UserName);
 
             if (!string.IsNullOrWhiteSpace(processInstanceId) && openChildren.Count > 0)
             {
@@ -1328,19 +1343,17 @@ namespace sailflow.data
         /// </summary>
         private void WithdrawMultipleInstance(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner)
         {
-            var clip = kit.useClip();
-            clip.setTable<ActivityInstanceEntity>(out var ai)
-                .set(() => ai.ActivityState, (short)ActivityStateEnum.Withdrawed)
-                .set(() => ai.UpdatedUserId, runner.UserId)
-                .set(() => ai.UpdatedUserName, runner.UserName)
-                .set(() => ai.UpdatedDateTime, System.DateTime.UtcNow)
-                .where(() => ai.MainActInstanceId, mainActivityInstanceId)
-                .whereIn(() => ai.ActivityState, new short?[]
+            Storage.UpdateChildrenState(
+                kit,
+                mainActivityInstanceId,
+                (short)ActivityStateEnum.Withdrawed,
+                new short[]
                 {
                     (short)ActivityStateEnum.Ready,
                     (short)ActivityStateEnum.Suspended
-                })
-                .doUpdate();
+                },
+                runner.UserId,
+                runner.UserName);
         }
 
         /// <summary>

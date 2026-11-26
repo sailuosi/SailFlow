@@ -9,12 +9,15 @@ public static class SailStorageExtensions
 {
     public const string FeatureName = "UseDefaultStorages";
 
-    /// <summary>挂默认流程实例 Storage（可被后注册覆盖）。</summary>
+    /// <summary>挂默认 PI / Task / ActivityInstance Storage（可被后注册覆盖）。</summary>
     public static SailClient UseDefaultStorages(this SailClient client)
     {
         if (client == null)
             throw new ArgumentNullException(nameof(client));
-        return client.useStorage<IProcessInstanceStorage>(new DefaultProcessInstanceStorage());
+        client.useStorage<IProcessInstanceStorage>(new DefaultProcessInstanceStorage());
+        client.useStorage<ITaskStorage>(new DefaultTaskStorage());
+        client.useStorage<IActivityInstanceStorage>(new DefaultActivityInstanceStorage());
+        return client;
     }
 
     public static SailClient useStorage<TStorage>(this SailClient client, TStorage storage)
