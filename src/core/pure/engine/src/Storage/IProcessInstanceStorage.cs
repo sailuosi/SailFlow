@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using mooSQL.data;
 using sailflow.data;
 
@@ -11,6 +12,12 @@ namespace sailflow.storage
     public interface IProcessInstanceStorage
     {
         ProcessInstanceEntity GetById(SQLBuilder kit, string processInstanceId);
+
+        string Insert(SQLBuilder kit, ProcessInstanceEntity entity);
+
+        void Update(SQLBuilder kit, ProcessInstanceEntity entity);
+
+        void DeleteById(SQLBuilder kit, string processInstanceId);
 
         /// <summary>
         /// 仅更新状态及相关审计列；返回影响行数。
@@ -25,5 +32,19 @@ namespace sailflow.storage
             DateTime? endedDateTime = null,
             string endedUserId = null,
             string endedUserName = null);
+
+        /// <summary>按 BizPK+ProcessId+Version 批量 Discard（含 RecordStatusInvalid）。</summary>
+        int DiscardByVersion(
+            SQLBuilder kit,
+            string bizPK,
+            string processId,
+            string version,
+            string updatedUserId,
+            string updatedUserName);
+
+        /// <summary>召回子流程：按 InvokedActInstanceId + Suspended 查最新一条。</summary>
+        IList<ProcessInstanceEntity> ListSuspendedByInvokedActivity(
+            SQLBuilder kit,
+            string invokedActivityInstanceId);
     }
 }

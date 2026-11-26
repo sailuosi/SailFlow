@@ -366,11 +366,7 @@ namespace sailflow.data
 
         #region ITaskManager 任务数据基本操作
         private string Insert(SQLBuilder kit, TaskEntity entity)
-        {
-            string newTaskId = kit.useRepo<TaskEntity, string>().InsertReturnId(entity);
-            entity.TaskId = newTaskId;
-            return newTaskId;
-        }
+            => Storage.Insert(kit, entity);
 
         public void Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
             PerformerList performers,
@@ -1689,14 +1685,7 @@ namespace sailflow.data
         }
 
         private void CancelTask(SQLBuilder kit, string activityInstanceId)
-        {
-            var clip = kit.useClip();
-            clip.setTable<TaskEntity>(out var t)
-                .set(() => t.TaskState, (short)48)
-                .set(() => t.RecordStatusInvalid, (byte)1)
-                .where(() => t.ActivityInstanceId, activityInstanceId)
-                .doUpdate();
-        }
+            => Storage.CancelByActivityInstance(kit, activityInstanceId);
 
         public bool Delete(string taskId)
         {
@@ -1706,7 +1695,7 @@ namespace sailflow.data
 
         public bool Delete(SQLBuilder kit, string taskId)
         {
-            kit.useRepo<TaskEntity, string>().DeleteById(taskId);
+            Storage.DeleteById(kit, taskId);
             return true;
         }
         #endregion

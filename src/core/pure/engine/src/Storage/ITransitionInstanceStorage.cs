@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using mooSQL.data;
 using sailflow.data;
 
@@ -11,5 +12,32 @@ namespace sailflow.storage
     {
         /// <summary>插入轨迹行；<paramref name="physicalTable"/> 非空时写入热分表。</summary>
         string Insert(SQLBuilder kit, TrackEntity entity, string physicalTable = null);
+
+        void DeleteByProcessInstance(SQLBuilder kit, string physicalTable, string processInstanceId);
+
+        IList<TrackEntity> ListWorkItemByBiz(
+            SQLBuilder kit,
+            string physicalTable,
+            string bizPK,
+            string processId);
+
+        IList<TrackEntity> ListByBizAndToActType(
+            SQLBuilder kit,
+            string physicalTable,
+            string bizPK,
+            string processId,
+            short toActivityType);
+
+        IList<TrackEntity> ListByProcessInstance(
+            SQLBuilder kit,
+            string physicalTable,
+            string bizPK,
+            string processId,
+            string processInstanceId);
+
+        IList<TrackEntity> ListByFromActivityInstance(
+            SQLBuilder kit,
+            string physicalTable,
+            string fromActivityInstanceId);
     }
 }

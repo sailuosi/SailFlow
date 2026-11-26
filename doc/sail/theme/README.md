@@ -17,6 +17,6 @@
 | [专题-钩子治理与同事务可观测.md](./专题-钩子治理与同事务可观测.md) | **P0+P1 已落地**：Log 契约、Sync/CreateHook 软超时、Notifier/Outbox 日志、宿主改基类；P2 可选 |
 | [专题-Bug治理-Sync钩子同事务自锁.md](./专题-Bug治理-Sync钩子同事务自锁.md) | **案例库**：第二连接自锁指纹 / 1121 三案 / 评审检查单 |
 | [专题-对象解析器.md](./专题-对象解析器.md) | **本切片已完成**（A0–A6 / B0–B3）；附录[范围注册清单](./专题-对象解析器-范围注册清单.md) |
-| [专题-IStorage.md](./专题-IStorage.md) | **实施中**：S0–S4 已落地（PI/Task/AI/Transition/HookOutbox + 预选/Picked）；下一批 Variable/Definition |
+| [专题-IStorage.md](./专题-IStorage.md) | **实施中**：写路径已收口（含 Transition/Outbox/Variable 删）；PI/Task/AI 列表查询面待下沉 |
 
 分析归档仍放在 [../done/](../done/)（如寿命专题动机/纪要）。

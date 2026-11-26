@@ -1,6 +1,6 @@
 # 专题 · IStorage（数据库连接器）
 
-> 状态：**实施中**（S0–S4 决议已拍；S4 试点 Transition + HookOutbox 已落地）  
+> 状态：**实施中**（S0–S4 决议已拍并落实写路径；PI/Task/AI 列表查询面仍有残余 useClip）  
 
 
 
@@ -130,7 +130,8 @@ S0  ✅ 注册槽约定 + kit 首参 + 覆盖日志（SailStorageRegistry / useS
 S1  ✅ ProcessInstanceManager：GetById + Complete/Suspend/Resume/Reverse/RecallSubProcess → Storage.UpdateState
 S2  ✅ Task/ActivityInstance Storage + Manager 热点（Set/End/Cancel/Children）
 S3  ✅ 预选 / Picked 表 Storage（分表）+ Mode Store 适配；宿主建表/挂载
-S4  ✅ 聚合根评估决议 + Transition / HookOutbox 试点下沉
+S4  ✅ 聚合根评估决议 + Transition / HookOutbox / Variable(删) 下沉
+S4+ ✅ 写路径收口：PI/Task/AI Insert·Update·Delete·热点写；Outbox 全查询；Transition 查询面
 ```
 
 **S0–S4 锚点：**
@@ -138,9 +139,10 @@ S4  ✅ 聚合根评估决议 + Transition / HookOutbox 试点下沉
 | 材料 | 路径 |
 |------|------|
 | 注册槽 | `engine/src/Storage/SailStorageRegistry.cs` · `SailClient.Storages` |
-| PI / Task / AI | `I*Storage` · `Default*Storage` · Manager 热点 |
-| Transition | `ITransitionInstanceStorage` · `DefaultTransitionInstanceStorage` · `TransitionInstanceManager.Insert` |
-| HookOutbox | `IHookOutboxStorage` · `DefaultHookOutboxStorage` · CAS Claim / Reset / Update / Delete |
+| PI / Task / AI | `I*Storage` · `Default*Storage` · 写路径 + 状态热点（列表查询面仍部分在 Manager） |
+| Transition | `ITransitionInstanceStorage` · Insert/Delete/查询；Router 回落留 Manager |
+| HookOutbox | `IHookOutboxStorage` · CAS + Pending/Dead/Purge/Bind 查询全下沉 |
+| Variable | `IProcessVariableStorage` · `DeleteByProcessInstance`（分表名入参） |
 | 项集投影 | `AssigneeItemRow` |
 | Preselect Storage | `IPreselectAssigneeStorage` · 宿主 `SleveenPreselectAssigneeStorage` → `sf_preselect_assignee` |
 | Picked Storage | `IPickedAssigneeStorage` · 宿主 `SleveenPickedAssigneeStorage` → `sf_picked_assignee` |
@@ -162,7 +164,7 @@ S4  ✅ 聚合根评估决议 + Transition / HookOutbox 试点下沉
 | 5 | Outbox 业务边界 | Attempt 递增、退避、Skip 原因截断留 **Manager**；Storage 只提供 `Insert` / `Update` / `GetById` / `Cas*` / `DeleteById`。 |
 | 6 | 热分表 | Router 解析物理表名留 **Manager**；Storage `Insert(..., physicalTable)` 只负责写指定表。 |
 
-**下一批（可选，非阻塞）：** ProcessVariable · Definition 包读写再评估 · Transition 查询面下沉 · Outbox `GetPending` clip 查询下沉。
+**下一批（可选，非阻塞）：** ProcessVariable 读写面补齐 · Definition 包读写再评估 · PI/Task/AI **列表查询** clip 下沉（写路径已收口）。
 
 ---
 
@@ -170,8 +172,8 @@ S4  ✅ 聚合根评估决议 + Transition / HookOutbox 试点下沉
 
 | 材料 | 路径 |
 |------|------|
-| Manager + useRepo | `src/core/pure/runtime/src/Manager/*Manager.cs`（热点已逐步迁出） |
+| Manager 残余 | PI/Task/AI **列表查询**仍有 `useClip`；写路径已迁 Storage |
 | 寿命 A/B | [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) |
 | UseXxx / ISailCollection | [业务管道特性设计.md](../业务管道特性设计.md) |
 | 预选 Store 雏形 | assignee Preselect / 宿主 `IPreselectAssigneeStore` |
-| **S0–S4 Storage** | PI/Task/AI/Transition/HookOutbox + Preselect/Picked · `UseDefaultStorages` / 宿主挂载 |
+| **S0–S4 Storage** | PI/Task/AI/Transition/HookOutbox/Variable + Preselect/Picked · `UseDefaultStorages` / 宿主挂载 |

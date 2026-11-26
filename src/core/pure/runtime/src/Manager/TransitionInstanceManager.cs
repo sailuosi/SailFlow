@@ -122,25 +122,9 @@ namespace sailflow.data
         public IEnumerable<TrackEntity> GetWorkItemTransitonInstance(
             SQLBuilder kit, string bizPK, string processId)
         {
-            return QueryWithFallback(kit, processId, table =>
-            {
-                var clip = kit.useClip();
-                clip.from<TrackEntity>(table, out var t)
-                    .InnerJoin<ActivityInstanceEntity>(out var a).on(() => t.ToActInstanceId == a.ActivityInstanceId)
-                    .where(() => t.BizPK, bizPK)
-                    .where(() => t.ProcessId, processId)
-                    .sinkOR()
-                    .whereIn(() => t.ToActType, new short?[]
-                    {
-                        (short)ActivityTypeEnum.TaskNode,
-                        (short)ActivityTypeEnum.SubProcessNode,
-                        (short)ActivityTypeEnum.MultiSignNode
-                    })
-                    .where(() => a.WorkItemType, (short)1)
-                    .rise()
-                    .orderByDesc(() => t.CreatedDateTime);
-                return clip.select(t).queryList().ToList();
-            });
+            return QueryWithFallback(kit, processId,
+                table => Storage.ListWorkItemByBiz(kit, table, bizPK, processId)?.ToList()
+                         ?? new List<TrackEntity>());
         }
 
         public IEnumerable<TrackEntity> GetTransitonInstance(
@@ -153,16 +137,10 @@ namespace sailflow.data
         public IEnumerable<TrackEntity> GetTransitonInstance(
             SQLBuilder kit, string bizPK, string processId, ActivityTypeEnum toActivityType)
         {
-            return QueryWithFallback(kit, processId, table =>
-            {
-                var clip = kit.useClip();
-                clip.from<TrackEntity>(table, out var t)
-                    .where(() => t.BizPK, bizPK)
-                    .where(() => t.ProcessId, processId)
-                    .where(() => t.ToActType, (short)toActivityType)
-                    .orderByDesc(() => t.CreatedDateTime);
-                return clip.select(t).queryList().ToList();
-            });
+            return QueryWithFallback(kit, processId,
+                table => Storage.ListByBizAndToActType(
+                             kit, table, bizPK, processId, (short)toActivityType)?.ToList()
+                         ?? new List<TrackEntity>());
         }
 
         public IEnumerable<TrackEntity> GetTransitionInstanceList(
@@ -186,16 +164,10 @@ namespace sailflow.data
         public IEnumerable<TrackEntity> GetTransitionInstanceListByProcessInstance(
             SQLBuilder kit, string bizPK, string processId, string processInstanceId)
         {
-            return QueryWithFallback(kit, processId, table =>
-            {
-                var clip = kit.useClip();
-                clip.from<TrackEntity>(table, out var t)
-                    .where(() => t.BizPK, bizPK)
-                    .where(() => t.ProcessId, processId)
-                    .where(() => t.ProcessInstanceId, processInstanceId)
-                    .orderByDesc(() => t.CreatedDateTime);
-                return clip.select(t).queryList().ToList();
-            });
+            return QueryWithFallback(kit, processId,
+                table => Storage.ListByProcessInstance(
+                             kit, table, bizPK, processId, processInstanceId)?.ToList()
+                         ?? new List<TrackEntity>());
         }
 
         public IList<ActivityInstanceEntity> GetTargetActivityInstanceList(string fromActivityInstanceId)
@@ -214,13 +186,9 @@ namespace sailflow.data
         private IList<dynamic> GetTargetActivityInstanceIDs(SQLBuilder kit, string fromActivityInstanceId)
         {
             var processId = ResolveProcessIdFromActivity(kit, fromActivityInstanceId);
-            var transitions = QueryWithFallback(kit, processId, table =>
-            {
-                var clip = kit.useClip();
-                clip.from<TrackEntity>(table, out var t)
-                    .where(() => t.FromActInstanceId, fromActivityInstanceId);
-                return clip.select(t).queryList().ToList();
-            });
+            var transitions = QueryWithFallback(kit, processId,
+                table => Storage.ListByFromActivityInstance(kit, table, fromActivityInstanceId)?.ToList()
+                         ?? new List<TrackEntity>());
 
             var targetIDs = new List<dynamic>();
             foreach (var trans in transitions)
@@ -235,18 +203,9 @@ namespace sailflow.data
 
         private string ResolveProcessIdFromActivity(SQLBuilder kit, string activityInstanceId)
         {
-            try
-            {
-                var ai = kit.useClip().from<ActivityInstanceEntity>(out var a)
-                    .where(()=>a.ActivityInstanceId,activityInstanceId)
-                    .select(()=>a.ProcessId)
-                    .queryUnique();
-                return ai;
-            }
-            catch
-            {
-                return null;
-            }
+            if (Sail.Storages.TryGet<IActivityInstanceStorage>(out var aiStorage) && aiStorage != null)
+                return aiStorage.GetProcessId(kit, activityInstanceId);
+            return new DefaultActivityInstanceStorage().GetProcessId(kit, activityInstanceId);
         }
 
         /// <summary>

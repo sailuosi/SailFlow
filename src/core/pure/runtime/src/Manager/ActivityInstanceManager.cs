@@ -999,17 +999,7 @@ namespace sailflow.data
 
                 var prev = activityInstance.TokensHad;
                 var next = (prev ?? 0) + 1;
-                var clip = kit.useClip();
-                clip.setTable<ActivityInstanceEntity>(out var ai)
-                    .set(() => ai.TokensHad, next)
-                    .set(() => ai.UpdatedDateTime, DateTime.UtcNow)
-                    .where(() => ai.ActivityInstanceId, activityInstanceId);
-                if (prev == null)
-                    clip.where(() => ai.TokensHad == null);
-                else
-                    clip.where(() => ai.TokensHad, prev);
-
-                if (clip.doUpdate() > 0)
+                if (Storage.CasIncreaseTokensHad(kit, activityInstanceId, prev, next) > 0)
                     return;
             }
 
@@ -1158,18 +1148,7 @@ namespace sailflow.data
             IList<Activity> taskActivityList)
         {
             var idsin = taskActivityList.Select(a => a.ActivityId).ToList();
-            var clip = kit.useClip();
-            clip.setTable<ActivityInstanceEntity>(out var ai)
-                .set(() => ai.CanNotRenewInstance, (byte)1)
-                .where(() => ai.ProcessInstanceId, processInstanceId)
-                .whereIn(() => ai.ActivityState, new short?[]
-                {
-                    (short)ActivityStateEnum.Ready,
-                    (short)ActivityStateEnum.Running,
-                    (short)ActivityStateEnum.Suspended
-                })
-                .whereIn(() => ai.ActivityId, idsin)
-                .doUpdate();
+            Storage.SetBlockedCanNotRenew(kit, processInstanceId, idsin);
         }
         #endregion
 
@@ -1192,10 +1171,7 @@ namespace sailflow.data
                 entity.ActivityName = "GATEWAY";
             }
 
-            string newId = kit.useRepo<ActivityInstanceEntity, string>().InsertReturnId(entity);
-            entity.ActivityInstanceId = newId;
-
-            return newId;
+            return Storage.Insert(kit, entity);
         }
 
         /// <summary>
@@ -1209,7 +1185,7 @@ namespace sailflow.data
         }
 
         public void Update(SQLBuilder kit, ActivityInstanceEntity entity)
-            => kit.useRepo<ActivityInstanceEntity>().Update(entity);
+            => Storage.Update(kit, entity);
 
         /// <summary>
         /// Cancel activity instance
@@ -1385,7 +1361,7 @@ namespace sailflow.data
         }
 
         public void Delete(SQLBuilder kit, string activityInstanceId)
-            => kit.useRepo<ActivityInstanceEntity, string>().DeleteById(activityInstanceId);
+            => Storage.DeleteById(kit, activityInstanceId);
         #endregion
 
         #region Activity Instance Approval Status 活动实例审批状态

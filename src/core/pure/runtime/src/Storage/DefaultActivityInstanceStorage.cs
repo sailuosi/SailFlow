@@ -27,6 +27,47 @@ public class DefaultActivityInstanceStorage : IActivityInstanceStorage
         return kit.findRowById<ActivityInstanceEntity>(activityInstanceId.Trim());
     }
 
+    public virtual string Insert(SQLBuilder kit, ActivityInstanceEntity entity)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        if (entity == null)
+            throw new ArgumentNullException(nameof(entity));
+        var newId = kit.useRepo<ActivityInstanceEntity, string>().InsertReturnId(entity);
+        entity.ActivityInstanceId = newId;
+        return newId;
+    }
+
+    public virtual void Update(SQLBuilder kit, ActivityInstanceEntity entity)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        if (entity == null)
+            throw new ArgumentNullException(nameof(entity));
+        kit.useRepo<ActivityInstanceEntity>().Update(entity);
+    }
+
+    public virtual void DeleteById(SQLBuilder kit, string activityInstanceId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        if (string.IsNullOrWhiteSpace(activityInstanceId))
+            return;
+        kit.useRepo<ActivityInstanceEntity, string>().DeleteById(activityInstanceId.Trim());
+    }
+
+    public virtual void DeleteByProcessInstance(SQLBuilder kit, string processInstanceId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        if (string.IsNullOrWhiteSpace(processInstanceId))
+            return;
+        var clip = kit.useClip();
+        clip.setTable<ActivityInstanceEntity>(out var ai)
+            .where(() => ai.ProcessInstanceId, processInstanceId.Trim())
+            .doDelete();
+    }
+
     public virtual int UpdateState(
         SQLBuilder kit,
         string activityInstanceId,
@@ -144,5 +185,93 @@ public class DefaultActivityInstanceStorage : IActivityInstanceStorage
             clip.set(() => ai.UpdatedUserName, updatedUserName);
 
         return clip.doUpdate();
+    }
+
+    public virtual int CasIncreaseTokensHad(
+        SQLBuilder kit,
+        string activityInstanceId,
+        int? previousTokensHad,
+        int nextTokensHad)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        if (string.IsNullOrWhiteSpace(activityInstanceId))
+            return 0;
+
+        var clip = kit.useClip();
+        clip.setTable<ActivityInstanceEntity>(out var ai)
+            .set(() => ai.TokensHad, nextTokensHad)
+            .set(() => ai.UpdatedDateTime, DateTime.UtcNow)
+            .where(() => ai.ActivityInstanceId, activityInstanceId.Trim());
+        if (previousTokensHad == null)
+            clip.where(() => ai.TokensHad == null);
+        else
+            clip.where(() => ai.TokensHad, previousTokensHad);
+        return clip.doUpdate();
+    }
+
+    public virtual int SetBlockedCanNotRenew(
+        SQLBuilder kit,
+        string processInstanceId,
+        IReadOnlyList<string> activityIds)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        if (string.IsNullOrWhiteSpace(processInstanceId) || activityIds == null || activityIds.Count == 0)
+            return 0;
+
+        var clip = kit.useClip();
+        clip.setTable<ActivityInstanceEntity>(out var ai)
+            .set(() => ai.CanNotRenewInstance, (byte)1)
+            .where(() => ai.ProcessInstanceId, processInstanceId.Trim())
+            .whereIn(() => ai.ActivityState, DefaultOpenStates.Cast<short?>().ToArray())
+            .whereIn(() => ai.ActivityId, activityIds.ToList());
+        return clip.doUpdate();
+    }
+
+    public virtual int TerminateOpenByProcessInstance(
+        SQLBuilder kit,
+        string processInstanceId,
+        DateTime endedDateTime,
+        string endedUserId = null,
+        string endedUserName = null)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        if (string.IsNullOrWhiteSpace(processInstanceId))
+            return 0;
+
+        var clip = kit.useClip();
+        clip.setTable<ActivityInstanceEntity>(out var ai)
+            .set(() => ai.ActivityState, (short)ActivityStateEnum.Terminated)
+            .set(() => ai.EndedDateTime, endedDateTime)
+            .where(() => ai.ProcessInstanceId, processInstanceId.Trim())
+            .whereIn(() => ai.ActivityState, DefaultOpenStates.Cast<short?>().ToArray());
+
+        if (!string.IsNullOrWhiteSpace(endedUserId))
+            clip.set(() => ai.EndedUserId, endedUserId);
+        if (!string.IsNullOrWhiteSpace(endedUserName))
+            clip.set(() => ai.EndedUserName, endedUserName);
+
+        return clip.doUpdate();
+    }
+
+    public virtual string GetProcessId(SQLBuilder kit, string activityInstanceId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        if (string.IsNullOrWhiteSpace(activityInstanceId))
+            return null;
+        try
+        {
+            return kit.useClip().from<ActivityInstanceEntity>(out var a)
+                .where(() => a.ActivityInstanceId, activityInstanceId.Trim())
+                .select(() => a.ProcessId)
+                .queryUnique();
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

@@ -46,21 +46,7 @@ namespace sailflow.data
         /// 为空时取 Hook/Notify 等，<b>排除</b> <see cref="HookOutboxKinds.AssigneeAutoApprove"/>（由 Assignee Job 单独认领）。
         /// </param>
         public IList<HookOutboxEntity> GetPending(SQLBuilder kit, int limit, string kind)
-        {
-            var now = DateTime.UtcNow;
-            var take = Math.Max(1, limit);
-            var clip = kit.useClip();
-            clip.from<HookOutboxEntity>(out var o)
-                .where(() => o.Status, HookOutboxStatus.Pending)
-                .where(() => o.NextRetryAt == null || o.NextRetryAt <= now);
-            if (!string.IsNullOrEmpty(kind))
-                clip.where(() => o.Kind, kind);
-            else
-                clip.where(() => o.Kind != HookOutboxKinds.AssigneeAutoApprove);
-            clip.orderBy(() => o.CreatedAt);
-            return clip.select(o).take(take).queryList()?.ToList()
-                   ?? new List<HookOutboxEntity>();
-        }
+            => Storage.ListPendingDue(kit, Math.Max(1, limit), DateTime.UtcNow, kind);
 
         /// <summary>CAS Pending→Processing，返回成功认领的行（due 且未死信）。</summary>
         public IList<HookOutboxEntity> TryClaimPending(
@@ -108,15 +94,9 @@ namespace sailflow.data
         public int ReclaimStaleProcessing(SQLBuilder kit, DateTime staleBeforeUtc, DateTime? nowUtc = null)
         {
             var now = nowUtc ?? DateTime.UtcNow;
-            var clip = kit.useClip();
-            clip.from<HookOutboxEntity>(out var o)
-                .where(() => o.Status, HookOutboxStatus.Processing)
-                .where(() =>
-                (o.LeasedUntil != null && o.LeasedUntil < now)
-                || (o.LeasedUntil == null && o.UpdatedAt != null && o.UpdatedAt < staleBeforeUtc))
-                .orderBy(() => o.CreatedAt);
             // 单次回收上限，避免极端积压时一次事务过大
-            var rows = clip.select(o).take(200).queryList() ?? new List<HookOutboxEntity>();
+            var rows = Storage.ListStaleProcessing(kit, now, staleBeforeUtc, 200)
+                       ?? new List<HookOutboxEntity>();
             var reclaimed = 0;
 
             foreach (var row in rows)
@@ -178,14 +158,8 @@ namespace sailflow.data
             if (string.IsNullOrWhiteSpace(processInstanceId) || string.IsNullOrWhiteSpace(activityInstanceId) || string.IsNullOrWhiteSpace(activityId))
                 return 0;
 
-            var clip = kit.useClip();
-            clip.from<HookOutboxEntity>(out var o)
-                .where(() => o.Kind, HookOutboxKinds.AssigneeAutoApprove)
-                .where(() => o.ProcessInstanceId, processInstanceId)
-                .where(() => o.Status, HookOutboxStatus.Pending)
-                .where(() => o.ActivityInstanceId == null)
-                .orderBy(() => o.CreatedAt);
-            var candidates = clip.select(o).take(50).queryList() ?? new List<HookOutboxEntity>();
+            var candidates = Storage.ListUnboundAssigneeAutoApprove(kit, processInstanceId, 50)
+                             ?? new List<HookOutboxEntity>();
             var n = 0;
             foreach (var row in candidates)
             {
@@ -246,15 +220,7 @@ namespace sailflow.data
         }
 
         public IList<HookOutboxEntity> QueryByStatus(SQLBuilder kit, string status, int limit = 100)
-        {
-            var take = Math.Max(1, limit);
-            var clip = kit.useClip();
-            clip.from<HookOutboxEntity>(out var o)
-                .where(() => o.Status, status)
-                .orderBy(() => o.CreatedAt);
-            return clip.select(o).take(take).queryList()?.ToList()
-                   ?? new List<HookOutboxEntity>();
-        }
+            => Storage.ListByStatus(kit, status, Math.Max(1, limit));
 
         public IList<HookOutboxEntity> QueryDead(SQLBuilder kit, int limit = 100) =>
             QueryDead(kit, limit, processCode: null, handlerName: null);
@@ -264,27 +230,10 @@ namespace sailflow.data
             int limit,
             string processCode,
             string handlerName)
-        {
-            var take = Math.Max(1, limit);
-            var clip = kit.useClip();
-            clip.from<HookOutboxEntity>(out var o)
-                .where(() => o.Status, HookOutboxStatus.Dead);
-            if (!string.IsNullOrEmpty(processCode))
-                clip.where(() => o.ProcessCode, processCode);
-            if (!string.IsNullOrEmpty(handlerName))
-                clip.where(() => o.HandlerName, handlerName);
-            clip.orderBy(() => o.CreatedAt);
-            return clip.select(o).take(take).queryList()?.ToList()
-                   ?? new List<HookOutboxEntity>();
-        }
+            => Storage.ListDead(kit, Math.Max(1, limit), processCode, handlerName);
 
         public int CountByStatus(SQLBuilder kit, string status)
-        {
-            var clip = kit.useClip();
-            clip.from<HookOutboxEntity>(out var o)
-                .where(() => o.Status, status);
-            return clip.select(o).count();
-        }
+            => Storage.CountByStatus(kit, status);
 
         public int ResetDeadBatch(SQLBuilder kit, IEnumerable<string> ids)
         {
@@ -362,15 +311,7 @@ namespace sailflow.data
             if (limit <= 0)
                 return 0;
 
-            var clip = kit.useClip();
-            clip.from<HookOutboxEntity>(out var o)
-                .where(() => o.Status, status);
-            // UpdatedAt 优先；空则用 CreatedAt
-            clip.where(() =>
-                (o.UpdatedAt != null && o.UpdatedAt < olderThanUtc)
-                || (o.UpdatedAt == null && o.CreatedAt != null && o.CreatedAt < olderThanUtc))
-                .orderBy(() => o.CreatedAt);
-            var candidates = clip.select(o).take(limit).queryList()
+            var candidates = Storage.ListTerminalOlderThan(kit, status, olderThanUtc, limit)
                              ?? new List<HookOutboxEntity>();
 
             var n = 0;

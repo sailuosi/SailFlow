@@ -227,11 +227,7 @@ namespace sailflow.data
         }
 
         public string Insert(SQLBuilder kit, ProcessInstanceEntity entity)
-        {
-            var newId = kit.useRepo<ProcessInstanceEntity, string>().InsertReturnId(entity);
-            entity.ProcessInstanceId = newId;
-            return newId;
-        }
+            => Storage.Insert(kit, entity);
 
         public void Update(ProcessInstanceEntity entity)
         {
@@ -240,7 +236,47 @@ namespace sailflow.data
         }
 
         public void Update(SQLBuilder kit, ProcessInstanceEntity entity)
-            => kit.useRepo<ProcessInstanceEntity>().Update(entity);
+            => Storage.Update(kit, entity);
+
+        protected ITaskStorage TaskStorage
+        {
+            get
+            {
+                if (Sail.Storages.TryGet<ITaskStorage>(out var s) && s != null)
+                    return s;
+                return new DefaultTaskStorage();
+            }
+        }
+
+        protected IActivityInstanceStorage ActivityStorage
+        {
+            get
+            {
+                if (Sail.Storages.TryGet<IActivityInstanceStorage>(out var s) && s != null)
+                    return s;
+                return new DefaultActivityInstanceStorage();
+            }
+        }
+
+        protected ITransitionInstanceStorage TransitionStorage
+        {
+            get
+            {
+                if (Sail.Storages.TryGet<ITransitionInstanceStorage>(out var s) && s != null)
+                    return s;
+                return new DefaultTransitionInstanceStorage();
+            }
+        }
+
+        protected IProcessVariableStorage VariableStorage
+        {
+            get
+            {
+                if (Sail.Storages.TryGet<IProcessVariableStorage>(out var s) && s != null)
+                    return s;
+                return new DefaultProcessVariableStorage();
+            }
+        }
 
         public ProcessInstanceEntity CreateNewProcessInstanceObject(
             FlowCommandContext runner,
@@ -529,12 +565,7 @@ namespace sailflow.data
 
         public void RecallSubProcess(SQLBuilder kit, string invokedActivityInstanceId, FlowCommandContext runner)
         {
-            var clip = kit.useClip();
-            clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.InvokedActInstanceId, invokedActivityInstanceId)
-                .where(() => pi.ProcessState, (short)ProcessStateEnum.Suspended)
-                .orderByDesc(() => pi.CreatedDateTime);
-            var list = clip.select(pi).queryList().ToList();
+            var list = Storage.ListSuspendedByInvokedActivity(kit, invokedActivityInstanceId);
 
             if (list != null && list.Count == 1)
             {
@@ -639,17 +670,13 @@ namespace sailflow.data
 
         public void Discard(SQLBuilder kit, FlowCommandContext runner)
         {
-            var clip = kit.useClip();
-            clip.setTable<ProcessInstanceEntity>(out var pi)
-                .set(() => pi.ProcessState, (short)ProcessStateEnum.Discarded)
-                .set(() => pi.RecordStatusInvalid, (byte)1)
-                .set(() => pi.UpdatedDateTime, DateTime.UtcNow)
-                .set(() => pi.UpdatedUserId, runner.UserId)
-                .set(() => pi.UpdatedUserName, runner.UserName)
-                .where(() => pi.BizPK, runner.BizPK)
-                .where(() => pi.ProcessId, runner.ProcessId)
-                .where(() => pi.Version, runner.Version)
-                .doUpdate();
+            Storage.DiscardByVersion(
+                kit,
+                runner.BizPK,
+                runner.ProcessId,
+                runner.Version,
+                runner.UserId,
+                runner.UserName);
         }
 
         public bool Terminate(FlowCommandContext runner)
@@ -697,47 +724,16 @@ namespace sailflow.data
                 Update(kit, entity);
 
                 // 级联收口未完结活动与待办，避免实例已终止但待办仍可办
-                var aiClip = kit.useClip();
-                aiClip.setTable<ActivityInstanceEntity>(out var ai)
-                    .set(() => ai.ActivityState, (short)ActivityStateEnum.Terminated)
-                    .set(() => ai.EndedDateTime, DateTime.UtcNow)
-                    .set(() => ai.EndedUserId, userId)
-                    .set(() => ai.EndedUserName, userName)
-                    .where(() => ai.ProcessInstanceId, entity.ProcessInstanceId)
-                    .whereIn(() => ai.ActivityState, new short?[]
-                    {
-                        (short)ActivityStateEnum.Ready,
-                        (short)ActivityStateEnum.Running,
-                        (short)ActivityStateEnum.Suspended
-                    })
-                    .doUpdate();
+                var endedAt = DateTime.UtcNow;
+                ActivityStorage.TerminateOpenByProcessInstance(
+                    kit, entity.ProcessInstanceId, endedAt, userId, userName);
 
                 // 先读出待取消待办，批量 update 后再发 Cancelled（与 Withdraw/SendBack 同旁路）
-                var openTaskClip = kit.useClip();
-                openTaskClip.from<TaskEntity>(out var ot)
-                    .where(() => ot.ProcessInstanceId, entity.ProcessInstanceId)
-                    .whereIn(() => ot.TaskState, new short?[]
-                    {
-                        (short)TaskStateEnum.Waiting,
-                        (short)TaskStateEnum.Reading
-                    });
-                var openTasks = openTaskClip.select(ot).queryList()?.ToList()
+                var openTasks = TaskStorage.ListOpenByProcessInstance(kit, entity.ProcessInstanceId)
                     ?? new List<TaskEntity>();
 
-                var taskClip = kit.useClip();
-                taskClip.setTable<TaskEntity>(out var t)
-                    .set(() => t.TaskState, (short)TaskStateEnum.Canceled)
-                    .set(() => t.RecordStatusInvalid, (byte)1)
-                    .set(() => t.CompletedAt, DateTime.UtcNow)
-                    .set(() => t.EndedUserId, userId)
-                    .set(() => t.EndedUserName, userName)
-                    .where(() => t.ProcessInstanceId, entity.ProcessInstanceId)
-                    .whereIn(() => t.TaskState, new short?[]
-                    {
-                        (short)TaskStateEnum.Waiting,
-                        (short)TaskStateEnum.Reading
-                    })
-                    .doUpdate();
+                TaskStorage.CancelOpenByProcessInstance(
+                    kit, entity.ProcessInstanceId, endedAt, userId, userName);
 
                 foreach (var task in openTasks)
                 {
@@ -801,60 +797,26 @@ namespace sailflow.data
             var entity = GetById(kit, processInstanceId);
             if (entity.ProcessState == (int)ProcessStateEnum.Canceled || isForced)
             {
-                var clip = kit.useClip();
-                clip.setTable<TaskEntity>(out var t)
-                    .where(() => t.ProcessInstanceId, processInstanceId)
-                    .doDelete();
+                TaskStorage.DeleteByProcessInstance(kit, processInstanceId);
 
-                DeleteTransitionsByProcessInstance(kit, Sail.HotShard.ResolveTransitionTable(entity.ProcessId), processInstanceId);
+                TransitionStorage.DeleteByProcessInstance(
+                    kit, Sail.HotShard.ResolveTransitionTable(entity.ProcessId), processInstanceId);
                 if (Sail.HotShard.IsSharded(entity.ProcessId))
-                    DeleteTransitionsByProcessInstance(kit, Sail.HotShard.DefaultTransitionTable, processInstanceId);
+                    TransitionStorage.DeleteByProcessInstance(
+                        kit, Sail.HotShard.DefaultTransitionTable, processInstanceId);
 
-                clip = kit.useClip();
-                clip.setTable<ActivityInstanceEntity>(out var ai)
-                    .where(() => ai.ProcessInstanceId, processInstanceId)
-                    .doDelete();
+                ActivityStorage.DeleteByProcessInstance(kit, processInstanceId);
 
-                DeleteVariablesByProcessInstance(kit, Sail.HotShard.ResolveVariableTable(entity.ProcessId), processInstanceId);
+                VariableStorage.DeleteByProcessInstance(
+                    kit, Sail.HotShard.ResolveVariableTable(entity.ProcessId), processInstanceId);
                 if (Sail.HotShard.IsSharded(entity.ProcessId))
-                    DeleteVariablesByProcessInstance(kit, Sail.HotShard.DefaultVariableTable, processInstanceId);
+                    VariableStorage.DeleteByProcessInstance(
+                        kit, Sail.HotShard.DefaultVariableTable, processInstanceId);
 
-                kit.useRepo<ProcessInstanceEntity, string>().DeleteById(processInstanceId);
+                Storage.DeleteById(kit, processInstanceId);
                 return true;
             }
             throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.delete.error")), "Delete");
-        }
-
-        static void DeleteTransitionsByProcessInstance(SQLBuilder kit, string physicalTable, string processInstanceId)
-        {
-            try
-            {
-                var clip = kit.useClip();
-                clip.setTable<TrackEntity>(out var t)
-                    .useSQL(b => b.setTable(physicalTable))
-                    .where(() => t.ProcessInstanceId, processInstanceId)
-                    .doDelete();
-            }
-            catch
-            {
-                // 分表未创建时忽略
-            }
-        }
-
-        static void DeleteVariablesByProcessInstance(SQLBuilder kit, string physicalTable, string processInstanceId)
-        {
-            try
-            {
-                var clip = kit.useClip();
-                clip.setTable<ProcessVariableEntity>(out var v)
-                    .useSQL(b => b.setTable(physicalTable))
-                    .where(() => v.ProcessInstanceId, processInstanceId)
-                    .doDelete();
-            }
-            catch
-            {
-                // 分表未创建时忽略
-            }
         }
 
         public bool Delete(string processId, string version)
