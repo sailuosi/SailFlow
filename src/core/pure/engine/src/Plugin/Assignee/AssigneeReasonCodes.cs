@@ -15,6 +15,15 @@ namespace sailflow.assignee
         /// <summary>Mode=Preselect 但未挂 IPreselectAssigneeStore（硬失败）。</summary>
         public const string PreselectStoreMissing = "PreselectStoreMissing";
 
+        /// <summary>选人人数低于 minSelect。</summary>
+        public const string SelectCountBelowMin = "SelectCountBelowMin";
+
+        /// <summary>选人人数高于 maxSelect。</summary>
+        public const string SelectCountAboveMax = "SelectCountAboveMax";
+
+        /// <summary>预选写入方不在目标节点 allowPreselectFrom 内。</summary>
+        public const string PreselectWriterNotAllowed = "PreselectWriterNotAllowed";
+
         /// <summary>Resolve Type 已配置但算人为空（且无显式 Fallback / NodePolicy 换人失败）。</summary>
         public const string AssigneeEmpty = "AssigneeEmpty";
 

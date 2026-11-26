@@ -78,6 +78,21 @@ public class AssigneePipeline : IAssigneePipeline
         if (config == null)
             return false;
 
+        return TryResolveByConfig(config, request, out performers);
+    }
+
+    /// <summary>
+    /// 按显式 ConfigPair（含 selectModel）取人；发送与转办/加签等动词共用。
+    /// </summary>
+    public virtual bool TryResolveByConfig(
+        ConfigPair config,
+        AssigneeInvokeRequest request,
+        out PerformerList performers)
+    {
+        performers = new PerformerList();
+        if (config == null || request == null || string.IsNullOrEmpty(request.ActivityId))
+            return false;
+
         if (!AssigneeSelectModelCodes.TryNormalize(config.SelectModel, out var selectModel))
         {
             throw new WfAssigneeException(
@@ -101,6 +116,7 @@ public class AssigneePipeline : IAssigneePipeline
         {
             // 发送人自选：只吃当次入参；Scope 仅供选人器，管道不展开
             resolved = new ApproverPickAssigneeResolver().Resolve(resolveCtx) ?? new PerformerList();
+            AssigneeSelectConstraints.EnsureSelectCount(config, resolved.Count, "Pick");
             source = PerformerSources.Specific;
         }
         else if (string.Equals(selectModel, AssigneeSelectModelCodes.Preselect, StringComparison.OrdinalIgnoreCase))
@@ -125,6 +141,9 @@ public class AssigneePipeline : IAssigneePipeline
             }
 
             resolved = preResolver.Resolve(resolveCtx) ?? new PerformerList();
+            // 人数越界应在 Store 写入期拦；Load 非空时再兜底一次
+            if (resolved.Count > 0)
+                AssigneeSelectConstraints.EnsureSelectCount(config, resolved.Count, "Preselect.Load");
             source = PerformerSources.Resolver;
         }
         else
