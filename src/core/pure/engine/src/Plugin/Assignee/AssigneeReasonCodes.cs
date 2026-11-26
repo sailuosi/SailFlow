@@ -15,6 +15,9 @@ namespace sailflow.assignee
         /// <summary>Mode=Preselect 但未挂 IPreselectAssigneeStore（硬失败）。</summary>
         public const string PreselectStoreMissing = "PreselectStoreMissing";
 
+        /// <summary>Mode=Preselect Load 为空且未开 preselectFallback=Input（默认 Reject）。</summary>
+        public const string PreselectEmpty = "PreselectEmpty";
+
         /// <summary>选人人数低于 minSelect。</summary>
         public const string SelectCountBelowMin = "SelectCountBelowMin";
 

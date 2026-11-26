@@ -140,6 +140,18 @@ public static class SailAssigneeExtensions
         return client.useAssigneeResolver(new PreselectAssigneeResolver(store));
     }
 
+    /// <summary>
+    /// 挂接 Pick 自选落库仓（<see cref="IPickedAssigneeStore"/>）。
+    /// 未调用时管道用 <see cref="NoopPickedAssigneeStore"/>（不落库）；须节点 Params <c>persistPick=true</c> 才 Load/Store。
+    /// </summary>
+    public static SailClient UsePickedAssignees(this SailClient client, IPickedAssigneeStore store)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(store);
+        EnsurePipeline(client).PickedStore = store;
+        return client;
+    }
+
     /// <summary>注册业务回调（BusinessCallback.Params.callback）。</summary>
     public static SailClient useAssigneeBusinessCallback(
         this SailClient client,

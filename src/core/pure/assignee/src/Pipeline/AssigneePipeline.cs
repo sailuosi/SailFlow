@@ -33,6 +33,11 @@ public class AssigneePipeline : IAssigneePipeline
 
     public IAutoApproveAnchorStore? AnchorStore { get; set; }
 
+    /// <summary>
+    /// Pick+persistPick 落库仓；未挂时用 <see cref="NoopPickedAssigneeStore"/>（不落库）。
+    /// </summary>
+    public IPickedAssigneeStore? PickedStore { get; set; }
+
     public AssigneeCapabilityRegistry Registry { get; }
 
     /// <summary>业务回调（BusinessCallback Type）；宿主/biz 可往里 Register。</summary>
@@ -114,10 +119,20 @@ public class AssigneePipeline : IAssigneePipeline
 
         if (string.Equals(selectModel, AssigneeSelectModelCodes.Pick, StringComparison.OrdinalIgnoreCase))
         {
-            // 发送人自选：只吃当次入参；Scope 仅供选人器，管道不展开
+            // 发送人自选：优先当次入参；persistPick 且入参空 → LoadPicked；默认不落库
             resolved = new ApproverPickAssigneeResolver().Resolve(resolveCtx) ?? new PerformerList();
-            AssigneeSelectConstraints.EnsureSelectCount(config, resolved.Count, "Pick");
             source = PerformerSources.Specific;
+            if (resolved.Count == 0 && AssigneeSelectConstraints.IsPersistPick(config))
+            {
+                var picked = LoadPickedOrEmpty(request);
+                if (picked.Count > 0)
+                {
+                    resolved = picked;
+                    source = PerformerSources.Resolver;
+                }
+            }
+
+            AssigneeSelectConstraints.EnsureSelectCount(config, resolved.Count, "Pick");
         }
         else if (string.Equals(selectModel, AssigneeSelectModelCodes.Preselect, StringComparison.OrdinalIgnoreCase))
         {
@@ -141,10 +156,28 @@ public class AssigneePipeline : IAssigneePipeline
             }
 
             resolved = preResolver.Resolve(resolveCtx) ?? new PerformerList();
-            // 人数越界应在 Store 写入期拦；Load 非空时再兜底一次
+            source = PerformerSources.Resolver;
+
+            if (resolved.Count == 0)
+            {
+                // A3：空仓默认 Reject；显式 preselectFallback=Input 才回落入参
+                if (AssigneeSelectConstraints.IsPreselectFallbackInput(config))
+                {
+                    resolved = new ApproverPickAssigneeResolver().Resolve(resolveCtx) ?? new PerformerList();
+                    source = PerformerSources.Specific;
+                }
+                else
+                {
+                    throw new WfAssigneeException(
+                        AssigneeReasonCodes.PreselectEmpty,
+                        "selectModel=Preselect Load empty; set params.preselectFallback=Input to use request performers. ReasonCode="
+                        + AssigneeReasonCodes.PreselectEmpty);
+                }
+            }
+
+            // 人数越界应在 Store 写入期拦；Load / 回落入参后再兜底
             if (resolved.Count > 0)
                 AssigneeSelectConstraints.EnsureSelectCount(config, resolved.Count, "Preselect.Load");
-            source = PerformerSources.Resolver;
         }
         else
         {
@@ -530,6 +563,44 @@ public class AssigneePipeline : IAssigneePipeline
             Trace.TraceWarning("[Assignee] AnchorStore.Enqueue failed: {0}", ex.Message);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Pick+persistPick 写入路径：校验人数后 <see cref="IPickedAssigneeStore.StorePicked"/>。
+    /// Fixed / 未开 persist → false；默认 Noop 不落库但仍返回 true（契约可调用）。
+    /// </summary>
+    public virtual bool TryStorePicked(
+        ConfigPair config,
+        AssigneeInvokeRequest request,
+        PerformerList performers)
+    {
+        if (config == null || request == null)
+            return false;
+        if (!AssigneeSelectConstraints.IsPersistPick(config))
+            return false;
+
+        var list = performers ?? new PerformerList();
+        AssigneeSelectConstraints.EnsureSelectCount(config, list.Count, "StorePicked");
+
+        var pi = request.ProcessInstanceId?.Trim();
+        var activityId = request.ActivityId?.Trim();
+        if (string.IsNullOrEmpty(pi) || string.IsNullOrEmpty(activityId))
+            return false;
+
+        var store = PickedStore ?? NoopPickedAssigneeStore.Instance;
+        store.StorePicked(pi, activityId, list);
+        return true;
+    }
+
+    PerformerList LoadPickedOrEmpty(AssigneeInvokeRequest request)
+    {
+        var pi = request.ProcessInstanceId?.Trim();
+        var activityId = request.ActivityId?.Trim();
+        if (string.IsNullOrEmpty(pi) || string.IsNullOrEmpty(activityId))
+            return new PerformerList();
+
+        var store = PickedStore ?? NoopPickedAssigneeStore.Instance;
+        return store.LoadPicked(pi, activityId) ?? new PerformerList();
     }
 
     /// <summary>

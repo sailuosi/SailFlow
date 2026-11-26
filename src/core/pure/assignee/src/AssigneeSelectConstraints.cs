@@ -13,8 +13,38 @@ public static class AssigneeSelectConstraints
     public const string KeyMinSelect = "minSelect";
     public const string KeyMaxSelect = "maxSelect";
 
+    /// <summary>Preselect 空仓回落：Reject（默认）| Input。</summary>
+    public const string KeyPreselectFallback = "preselectFallback";
+
+    public const string PreselectFallbackReject = "Reject";
+    public const string PreselectFallbackInput = "Input";
+
+    /// <summary>Pick 是否落库（LoadPicked/StorePicked）；默认 false。</summary>
+    public const string KeyPersistPick = "persistPick";
+
     /// <summary>Pick/Preselect 默认下限；Fixed 不适用。</summary>
     public const int DefaultMinSelect = 1;
+
+    /// <summary>
+    /// Preselect Load 为空时行为。未配 / 非法 → <see cref="PreselectFallbackReject"/>。
+    /// </summary>
+    public static string GetPreselectFallback(ConfigPair? config)
+    {
+        var raw = ConfigPairParams.GetString(config, KeyPreselectFallback)?.Trim();
+        if (string.Equals(raw, PreselectFallbackInput, StringComparison.OrdinalIgnoreCase))
+            return PreselectFallbackInput;
+        return PreselectFallbackReject;
+    }
+
+    public static bool IsPreselectFallbackInput(ConfigPair? config) =>
+        string.Equals(
+            GetPreselectFallback(config),
+            PreselectFallbackInput,
+            StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Pick 持久化开关；默认关（不落库）。</summary>
+    public static bool IsPersistPick(ConfigPair? config) =>
+        ConfigPairParams.GetBool(config, KeyPersistPick, false);
 
     public static int GetMinSelect(ConfigPair? config)
     {
