@@ -15,6 +15,8 @@ using sailflow.xml;
 using sailflow.hub.Localize;
 using sailflow.hub.Resource;
 using sailflow.run;
+using sailflow.storage;
+using sailflow.runtime.storage;
 
 namespace sailflow.data
 {
@@ -30,6 +32,19 @@ namespace sailflow.data
         }
 
         protected SailClient Sail { get; }
+
+        /// <summary>
+        /// 纯库层；未注册时回落默认实现（S0/S1）。
+        /// </summary>
+        protected IProcessInstanceStorage Storage
+        {
+            get
+            {
+                if (Sail.Storages.TryGet<IProcessInstanceStorage>(out var s) && s != null)
+                    return s;
+                return new DefaultProcessInstanceStorage();
+            }
+        }
 
         /// <summary>业务硬失败：写 <see cref="SailFailLog"/> 后原样抛出。</summary>
         Exception FailThrow(Exception ex, string op, string detail = null)
@@ -49,10 +64,13 @@ namespace sailflow.data
             => GetProcessInstanceCurrent(kit, bizPK, processId, version);
 
         public ProcessInstanceEntity GetById(string processInstanceId)
-            => Sail.UseRunSQL().findRowById<ProcessInstanceEntity>(processInstanceId);
+        {
+            var kit = Sail.UseRunSQL();
+            return GetById(kit, processInstanceId);
+        }
 
         public ProcessInstanceEntity GetById(SQLBuilder kit, string processInstanceId)
-            => kit.findRowById<ProcessInstanceEntity>(processInstanceId);
+            => Storage.GetById(kit, processInstanceId);
 
         /// <summary>
         /// 异步按 Id 取流程实例（Clip take(1)，可取消）。
@@ -425,11 +443,23 @@ namespace sailflow.data
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), processInstance.ProcessState.ToString());
             if ((processState | ProcessStateEnum.Running) == ProcessStateEnum.Running)
             {
+                var endedAt = DateTime.UtcNow;
+                Storage.UpdateState(
+                    kit,
+                    processInstanceId,
+                    (short)ProcessStateEnum.Completed,
+                    updatedUserId: runner.UserId,
+                    updatedUserName: runner.UserName,
+                    endedDateTime: endedAt,
+                    endedUserId: runner.UserId,
+                    endedUserName: runner.UserName);
                 processInstance.ProcessState = (short)ProcessStateEnum.Completed;
-                processInstance.EndedDateTime = DateTime.UtcNow;
+                processInstance.EndedDateTime = endedAt;
                 processInstance.EndedUserId = runner.UserId;
                 processInstance.EndedUserName = runner.UserName;
-                Update(kit, processInstance);
+                processInstance.UpdatedDateTime = endedAt;
+                processInstance.UpdatedUserId = runner.UserId;
+                processInstance.UpdatedUserName = runner.UserName;
             }
             else
             {
@@ -450,11 +480,16 @@ namespace sailflow.data
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), bEntity.ProcessState.ToString());
             if ((processState | ProcessStateEnum.Running) == ProcessStateEnum.Running)
             {
+                Storage.UpdateState(
+                    kit,
+                    processInstanceId,
+                    (short)ProcessStateEnum.Suspended,
+                    runner.UserId,
+                    runner.UserName);
                 bEntity.ProcessState = (short)ProcessStateEnum.Suspended;
                 bEntity.UpdatedDateTime = DateTime.UtcNow;
                 bEntity.UpdatedUserId = runner.UserId;
                 bEntity.UpdatedUserName = runner.UserName;
-                Update(kit, bEntity);
             }
             else
             {
@@ -474,11 +509,16 @@ namespace sailflow.data
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), bEntity.ProcessState.ToString());
             if ((processState | ProcessStateEnum.Suspended) == ProcessStateEnum.Suspended)
             {
+                Storage.UpdateState(
+                    kit,
+                    processInstanceId,
+                    (short)ProcessStateEnum.Running,
+                    runner.UserId,
+                    runner.UserName);
                 bEntity.ProcessState = (short)ProcessStateEnum.Running;
                 bEntity.UpdatedDateTime = DateTime.UtcNow;
                 bEntity.UpdatedUserId = runner.UserId;
                 bEntity.UpdatedUserName = runner.UserName;
-                Update(kit, bEntity);
             }
             else
             {
@@ -499,11 +539,16 @@ namespace sailflow.data
             if (list != null && list.Count == 1)
             {
                 var bEntity = list[0];
+                Storage.UpdateState(
+                    kit,
+                    bEntity.ProcessInstanceId,
+                    (short)ProcessStateEnum.Running,
+                    runner.UserId,
+                    runner.UserName);
                 bEntity.ProcessState = (short)ProcessStateEnum.Running;
                 bEntity.UpdatedDateTime = DateTime.UtcNow;
                 bEntity.UpdatedUserId = runner.UserId;
                 bEntity.UpdatedUserName = runner.UserName;
-                Update(kit, bEntity);
             }
             else
             {
@@ -517,11 +562,16 @@ namespace sailflow.data
             var bEntity = GetById(kit, processInstanceId);
             if (bEntity.ProcessState == (short)ProcessStateEnum.Completed)
             {
+                Storage.UpdateState(
+                    kit,
+                    processInstanceId,
+                    (short)ProcessStateEnum.Running,
+                    currentUser.UserId,
+                    currentUser.UserName);
                 bEntity.ProcessState = (short)ProcessStateEnum.Running;
                 bEntity.UpdatedUserId = currentUser.UserId;
                 bEntity.UpdatedUserName = currentUser.UserName;
                 bEntity.UpdatedDateTime = DateTime.UtcNow;
-                Update(kit, bEntity);
             }
             else
             {

@@ -1,6 +1,7 @@
 # 专题 · IStorage（数据库连接器）
 
-> 状态：**实施中**（S0 已落地：`SailStorageRegistry` + `IProcessInstanceStorage` + `UseDefaultStorages`；S1 Manager 改走接口待续）  
+> 状态：**实施中**（S0/S1 已落地：PI Storage + Manager Complete/Suspend/Resume/Reverse/RecallSubProcess 改走 `UpdateState`；S2 待续）  
+
 
 > 用途：流程定义 / 实例套表的**纯库交互层**——无状态、`kit` 首参、热点专属 API、唯一注册可覆盖；为实施提供可执行契约。  
 > 讨论溯源：[讨论-办理人操作模式与人员范围正交.md](../talk/讨论-办理人操作模式与人员范围正交.md)（§6、§8 已定寿命）  
@@ -124,20 +125,21 @@ public interface IProcessInstanceStorage // 可继承或独立于 IStorage<>
 
 ```text
 S0  ✅ 注册槽约定 + kit 首参 + 覆盖日志（SailStorageRegistry / useStorage / UseDefaultStorages）
-S1  试点：一处 ProcessInstanceManager 改走 IProcessInstanceStorage.UpdateState
+S1  ✅ ProcessInstanceManager：GetById + Complete/Suspend/Resume/Reverse/RecallSubProcess → Storage.UpdateState
 S2  Task / ActivityInstance 热点方法下沉
 S3  预选 / Picked 表 Storage 供对象解析器 ext 默认实现复用（**分表**；见下）
 S4  再评估是否按聚合根铺开更多表
 ```
 
-**S0 锚点：**
+**S0/S1 锚点：**
 
 | 材料 | 路径 |
 |------|------|
 | 注册槽 | `engine/src/Storage/SailStorageRegistry.cs` · `SailClient.Storages` |
-| 试点接口 | `engine/src/Storage/IProcessInstanceStorage.cs` |
+| 试点接口 | `engine/src/Storage/IProcessInstanceStorage.cs`（`UpdateState` 含可选 Ended*） |
 | 默认实现 | `runtime/src/Storage/DefaultProcessInstanceStorage.cs` |
 | 挂载 | `runtime/src/Storage/SailStorageExtensions.cs`（随 `UseSailRuntimeDefaults`） |
+| Manager 试点 | `runtime/.../ProcessInstanceManager.cs` → `Storage.UpdateState` |
 
 **办理人项集表（与对象解析器对齐，已定）：** Preselect 仓与 Picked 仓**不同表**；数据量大，Storage 实现须**考虑分表**（如按 `ProcessInstanceId` 或时间）。Pick 默认不落库，Picked 表可后置。
 

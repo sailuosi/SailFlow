@@ -12,7 +12,8 @@ public class DefaultProcessInstanceStorage : IProcessInstanceStorage
 {
     public virtual ProcessInstanceEntity GetById(SQLBuilder kit, string processInstanceId)
     {
-        ArgumentNullException.ThrowIfNull(kit);
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
         if (string.IsNullOrWhiteSpace(processInstanceId))
             return null!;
         return kit.findRowById<ProcessInstanceEntity>(processInstanceId.Trim());
@@ -23,9 +24,13 @@ public class DefaultProcessInstanceStorage : IProcessInstanceStorage
         string processInstanceId,
         short newState,
         string updatedUserId = null,
-        string updatedUserName = null)
+        string updatedUserName = null,
+        DateTime? endedDateTime = null,
+        string endedUserId = null,
+        string endedUserName = null)
     {
-        ArgumentNullException.ThrowIfNull(kit);
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
         if (string.IsNullOrWhiteSpace(processInstanceId))
             return 0;
 
@@ -39,6 +44,15 @@ public class DefaultProcessInstanceStorage : IProcessInstanceStorage
             clip.set(() => pi.UpdatedUserId, updatedUserId);
         if (!string.IsNullOrWhiteSpace(updatedUserName))
             clip.set(() => pi.UpdatedUserName, updatedUserName);
+
+        if (endedDateTime != null)
+        {
+            clip.set(() => pi.EndedDateTime, endedDateTime.Value);
+            if (!string.IsNullOrWhiteSpace(endedUserId))
+                clip.set(() => pi.EndedUserId, endedUserId);
+            if (!string.IsNullOrWhiteSpace(endedUserName))
+                clip.set(() => pi.EndedUserName, endedUserName);
+        }
 
         return clip.doUpdate();
     }
