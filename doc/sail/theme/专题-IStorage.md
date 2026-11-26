@@ -1,6 +1,6 @@
 # 专题 · IStorage（数据库连接器）
 
-> 状态：**实施中**（S0–S4 决议已拍并落实写路径；PI/Task/AI 列表查询面仍有残余 useClip）  
+> 状态：**实施中**（S0–S4 已拍；运行时套表 Manager 写/查已收口；Variable 读写面与 Definition 待评）  
 
 
 
@@ -131,7 +131,7 @@ S1  ✅ ProcessInstanceManager：GetById + Complete/Suspend/Resume/Reverse/Recal
 S2  ✅ Task/ActivityInstance Storage + Manager 热点（Set/End/Cancel/Children）
 S3  ✅ 预选 / Picked 表 Storage（分表）+ Mode Store 适配；宿主建表/挂载
 S4  ✅ 聚合根评估决议 + Transition / HookOutbox / Variable(删) 下沉
-S4+ ✅ 写路径收口：PI/Task/AI Insert·Update·Delete·热点写；Outbox 全查询；Transition 查询面
+S4+ ✅ 写路径收口 + PI/Task/AI/Transition/Outbox 查询面收口（五 Manager 无 useClip/useRepo）
 ```
 
 **S0–S4 锚点：**
@@ -139,10 +139,10 @@ S4+ ✅ 写路径收口：PI/Task/AI Insert·Update·Delete·热点写；Outbox 
 | 材料 | 路径 |
 |------|------|
 | 注册槽 | `engine/src/Storage/SailStorageRegistry.cs` · `SailClient.Storages` |
-| PI / Task / AI | `I*Storage` · `Default*Storage` · 写路径 + 状态热点（列表查询面仍部分在 Manager） |
+| PI / Task / AI | `I*Storage` · `Default*Storage` · 写 + 列表/视图查询全下沉 |
 | Transition | `ITransitionInstanceStorage` · Insert/Delete/查询；Router 回落留 Manager |
 | HookOutbox | `IHookOutboxStorage` · CAS + Pending/Dead/Purge/Bind 查询全下沉 |
-| Variable | `IProcessVariableStorage` · `DeleteByProcessInstance`（分表名入参） |
+| Variable | `IProcessVariableStorage` · `DeleteByProcessInstance`（分表名入参；读写面待补） |
 | 项集投影 | `AssigneeItemRow` |
 | Preselect Storage | `IPreselectAssigneeStorage` · 宿主 `SleveenPreselectAssigneeStorage` → `sf_preselect_assignee` |
 | Picked Storage | `IPickedAssigneeStorage` · 宿主 `SleveenPickedAssigneeStorage` → `sf_picked_assignee` |
@@ -164,7 +164,7 @@ S4+ ✅ 写路径收口：PI/Task/AI Insert·Update·Delete·热点写；Outbox 
 | 5 | Outbox 业务边界 | Attempt 递增、退避、Skip 原因截断留 **Manager**；Storage 只提供 `Insert` / `Update` / `GetById` / `Cas*` / `DeleteById`。 |
 | 6 | 热分表 | Router 解析物理表名留 **Manager**；Storage `Insert(..., physicalTable)` 只负责写指定表。 |
 
-**下一批（可选，非阻塞）：** ProcessVariable 读写面补齐 · Definition 包读写再评估 · PI/Task/AI **列表查询** clip 下沉（写路径已收口）。
+**下一批（可选，非阻塞）：** ProcessVariable 读写面补齐 · Definition / XPDL 再评估 · 其它 Manager（非五套表）逐步迁出。
 
 ---
 
@@ -172,7 +172,7 @@ S4+ ✅ 写路径收口：PI/Task/AI Insert·Update·Delete·热点写；Outbox 
 
 | 材料 | 路径 |
 |------|------|
-| Manager 残余 | PI/Task/AI **列表查询**仍有 `useClip`；写路径已迁 Storage |
+| 五套表 Manager | PI/Task/AI/Transition/HookOutbox：**无** `useClip`/`useRepo`（经 Storage） |
 | 寿命 A/B | [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) |
 | UseXxx / ISailCollection | [业务管道特性设计.md](../业务管道特性设计.md) |
 | 预选 Store 雏形 | assignee Preselect / 宿主 `IPreselectAssigneeStore` |

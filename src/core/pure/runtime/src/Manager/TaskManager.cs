@@ -57,27 +57,21 @@ namespace sailflow.data
         /// </summary>
         public TaskViewEntity GetTaskView(string taskId)
         {
-            return Sail.UseRunSQL().findRowById<TaskViewEntity>(taskId);
+            var kit = Sail.UseRunSQL();
+            return GetTaskView(kit, taskId);
         }
 
         public TaskViewEntity GetTaskView(SQLBuilder kit, string taskId)
-            => kit.findRowById<TaskViewEntity>(taskId);
+            => Storage.GetViewById(kit, taskId);
 
         /// <summary>
         /// 异步按任务 Id 取任务视图（Clip，可取消）。
         /// </summary>
-        public async Task<TaskViewEntity> GetTaskViewAsync(
+        public Task<TaskViewEntity> GetTaskViewAsync(
             SQLBuilder kit,
             string taskId,
             CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var clip = kit.useClip();
-            clip.from<TaskViewEntity>(out var t)
-                .where(() => t.TaskId, taskId);
-            var list = await clip.select(t).take(1).queryListAsync(cancellationToken).ConfigureAwait(false);
-            return list?.FirstOrDefault();
-        }
+            => Storage.GetViewByIdAsync(kit, taskId, cancellationToken);
 
         /// <summary>
         /// Retrieve task based on task Id
@@ -103,13 +97,8 @@ namespace sailflow.data
         }
 
         public List<TaskEntity> GetTaskListByActivity(SQLBuilder kit, string processInstanceId, string activityInstanceId)
-        {
-            var clip = kit.useClip();
-            clip.from<TaskEntity>(out var t)
-                .where(() => t.ActivityInstanceId, activityInstanceId)
-                .where(() => t.ProcessInstanceId, processInstanceId);
-            return clip.select(t).queryList().ToList();
-        }
+            => Storage.ListByActivity(kit, processInstanceId, activityInstanceId)?.ToList()
+               ?? new List<TaskEntity>();
 
         /// <summary>按多个活动实例 Id 拉取任务（Leave Seats 投影用）。</summary>
         public List<TaskEntity> GetTaskListByActivityIds(
@@ -121,14 +110,8 @@ namespace sailflow.data
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList() ?? new List<string>();
-            if (ids.Count == 0 || string.IsNullOrWhiteSpace(processInstanceId))
-                return new List<TaskEntity>();
-
-            var clip = kit.useClip();
-            clip.from<TaskEntity>(out var t)
-                .where(() => t.ProcessInstanceId, processInstanceId)
-                .whereIn(() => t.ActivityInstanceId, ids);
-            return clip.select(t).queryList().ToList();
+            return Storage.ListByActivityIds(kit, processInstanceId, ids)?.ToList()
+                   ?? new List<TaskEntity>();
         }
 
         /// <summary>
@@ -159,12 +142,8 @@ namespace sailflow.data
 
         public TaskViewEntity GetTaskViewByActivity(SQLBuilder kit, string processInstanceId, string activityInstanceId)
         {
-            var clip = kit.useClip();
-            clip.from<TaskViewEntity>(out var t)
-                .where(() => t.ActivityInstanceId, activityInstanceId)
-                .where(() => t.ProcessInstanceId, processInstanceId);
-            var list = clip.select(t).queryList().ToList();
-            return list.Count > 0 ? list[0] : null;
+            var list = Storage.ListViewsByActivity(kit, processInstanceId, activityInstanceId);
+            return list != null && list.Count > 0 ? list[0] : null;
         }
 
         /// <summary>
@@ -176,13 +155,9 @@ namespace sailflow.data
             string activityInstanceId,
             CancellationToken cancellationToken = default)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var clip = kit.useClip();
-            clip.from<TaskViewEntity>(out var t)
-                .where(() => t.ActivityInstanceId, activityInstanceId)
-                .where(() => t.ProcessInstanceId, processInstanceId);
-            var list = (await clip.select(t).queryListAsync(cancellationToken).ConfigureAwait(false)).ToList();
-            return list.Count > 0 ? list[0] : null;
+            var list = await Storage.ListViewsByActivityAsync(
+                kit, processInstanceId, activityInstanceId, cancellationToken).ConfigureAwait(false);
+            return list != null && list.Count > 0 ? list[0] : null;
         }
 
         #endregion
@@ -202,17 +177,8 @@ namespace sailflow.data
             string activityInstanceId,
             string userId)
         {
-            var clip = kit.useClip();
-            clip.from<TaskViewEntity>(out var t)
-                .where(() => t.ActivityInstanceId, activityInstanceId)
-                .where(() => t.SignId, userId)
-                .where(() => t.ProcessState, (short)2)
-                .whereIn(() => t.ActivityType, new short?[] { (short)4, (short)5, (short)6 })
-                .whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 })
-                .orderByDesc(() => t.ActiveAt)
-                .top(1);
-            var list = clip.select(t).queryList().ToList();
-
+            var list = Storage.ListMineViewsByActivityInstance(kit, activityInstanceId, userId)?.ToList()
+                       ?? new List<TaskViewEntity>();
             return ResolveTaskOfMineByActivityInstance(list, activityInstanceId);
         }
 
@@ -225,17 +191,10 @@ namespace sailflow.data
             string userId,
             CancellationToken cancellationToken = default)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var clip = kit.useClip();
-            clip.from<TaskViewEntity>(out var t)
-                .where(() => t.ActivityInstanceId, activityInstanceId)
-                .where(() => t.SignId, userId)
-                .where(() => t.ProcessState, (short)2)
-                .whereIn(() => t.ActivityType, new short?[] { (short)4, (short)5, (short)6 })
-                .whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 })
-                .orderByDesc(() => t.ActiveAt)
-                .top(1);
-            var list = (await clip.select(t).queryListAsync(cancellationToken).ConfigureAwait(false)).ToList();
+            var list = (await Storage.ListMineViewsByActivityInstanceAsync(
+                    kit, activityInstanceId, userId, cancellationToken).ConfigureAwait(false))
+                ?.ToList()
+                ?? new List<TaskViewEntity>();
             return ResolveTaskOfMineByActivityInstance(list, activityInstanceId);
         }
 
@@ -272,20 +231,8 @@ namespace sailflow.data
             string processId,
             string userId)
         {
-            var clip = kit.useClip();
-            clip.from<TaskViewEntity>(out var t)
-                .where(() => t.BizPK, bizPK)
-                .where(() => t.ProcessId, processId)
-                .where(() => t.SignId, userId)
-                .where(() => t.ProcessState, (short)2)
-                .sinkOR()
-                .whereIn(() => t.ActivityType, new short?[] { (short)4, (short)5, (short)6 })
-                .where(() => t.WorkItemType, (short)1)
-                .rise()
-                .whereIn(() => t.ActivityState, new short?[] { (short)1, (short)2 })
-                .orderByDesc(() => t.ActiveAt)
-                .top(1);
-            var list = clip.select(t).queryList().ToList();
+            var list = Storage.ListMineViewsByBizProcess(kit, bizPK, processId, userId)?.ToList()
+                       ?? new List<TaskViewEntity>();
 
             if (list.Count == 0)
             {
@@ -483,7 +430,7 @@ namespace sailflow.data
         }
 
         public void Update(SQLBuilder kit, TaskEntity entity)
-            => kit.update(entity);
+            => Storage.Update(kit, entity);
 
         /// <summary>
         /// 新待办时钟：发送/首次下达；可立即办理时写 ActiveAt。
@@ -1293,15 +1240,7 @@ namespace sailflow.data
             if (string.IsNullOrWhiteSpace(consultSrcTaskId))
                 return new List<TaskEntity>();
 
-            var clip = kit.useClip();
-            clip.from<TaskEntity>(out var t)
-                .where(() => t.ConsultSrcTaskId, consultSrcTaskId)
-                .whereIn(() => t.TaskState, new short?[]
-                {
-                    (short)TaskStateEnum.Waiting,
-                    (short)TaskStateEnum.Reading
-                });
-            return clip.select(t).queryList()
+            return Storage.ListOpenByConsultSrc(kit, consultSrcTaskId)
                 ?.Where(x => AssigneeRoleHelper.IsParticipant(x.AssigneeRole))
                 .ToList()
                 ?? new List<TaskEntity>();
@@ -1587,10 +1526,7 @@ namespace sailflow.data
 
         public void CancelEntrustedTask(SQLBuilder kit, string taskId)
         {
-            var clip = kit.useClip();
-            clip.from<TaskEntity>(out var t)
-                .where(() => t.EntrustedTaskId, taskId);
-            var entrustedTaskEntity = clip.select(t).queryList().FirstOrDefault();
+            var entrustedTaskEntity = Storage.GetByEntrustedTaskId(kit, taskId);
             entrustedTaskEntity.TaskState = (short)TaskStateEnum.Canceled;
             entrustedTaskEntity.UpdatedDateTime = DateTime.UtcNow;
             Update(kit, entrustedTaskEntity);

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using mooSQL.data;
 using sailflow.data;
 using sailflow.storage;
@@ -126,6 +128,140 @@ public class DefaultProcessInstanceStorage : IProcessInstanceStorage
         clip.from<ProcessInstanceEntity>(out var pi)
             .where(() => pi.InvokedActInstanceId, invokedActivityInstanceId.Trim())
             .where(() => pi.ProcessState, (short)ProcessStateEnum.Suspended)
+            .orderByDesc(() => pi.CreatedDateTime);
+        return clip.select(pi).queryList()?.ToList() ?? new List<ProcessInstanceEntity>();
+    }
+
+    public virtual async Task<ProcessInstanceEntity> GetByIdAsync(
+        SQLBuilder kit,
+        string processInstanceId,
+        CancellationToken cancellationToken = default)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        cancellationToken.ThrowIfCancellationRequested();
+        if (string.IsNullOrWhiteSpace(processInstanceId))
+            return null!;
+
+        var clip = kit.useClip();
+        clip.from<ProcessInstanceEntity>(out var pi)
+            .where(() => pi.ProcessInstanceId, processInstanceId.Trim());
+        var list = await clip.select(pi).take(1).queryListAsync(cancellationToken).ConfigureAwait(false);
+        return list?.FirstOrDefault();
+    }
+
+    public virtual ProcessInstanceEntity GetByVersion(SQLBuilder kit, string processId, string version)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ProcessInstanceEntity>(out var pi)
+            .where(() => pi.ProcessId, processId)
+            .where(() => pi.Version, version)
+            .orderByDesc(() => pi.CreatedDateTime);
+        return clip.select(pi).take(1).queryList()?.FirstOrDefault();
+    }
+
+    public virtual ProcessInstanceEntity GetCurrentValid(
+        SQLBuilder kit,
+        string bizPK,
+        string processId,
+        string version)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ProcessInstanceEntity>(out var pi)
+            .where(() => pi.BizPK, bizPK)
+            .where(() => pi.ProcessId, processId)
+            .where(() => pi.Version, version)
+            .where(() => pi.RecordStatusInvalid, (byte)0)
+            .orderByDesc(() => pi.CreatedDateTime);
+        return clip.select(pi).take(1).queryList()?.FirstOrDefault();
+    }
+
+    public virtual IList<ProcessInstanceEntity> ListValidByBiz(SQLBuilder kit, string bizPK)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ProcessInstanceEntity>(out var pi)
+            .where(() => pi.BizPK, bizPK)
+            .where(() => pi.RecordStatusInvalid, (byte)0)
+            .orderByDesc(() => pi.CreatedDateTime);
+        return clip.select(pi).queryList()?.ToList() ?? new List<ProcessInstanceEntity>();
+    }
+
+    public virtual IList<ProcessInstanceEntity> ListValidByBizProcessVersion(
+        SQLBuilder kit,
+        string bizPK,
+        string processId,
+        string version)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ProcessInstanceEntity>(out var pi)
+            .where(() => pi.BizPK, bizPK)
+            .where(() => pi.ProcessId, processId)
+            .where(() => pi.Version, version)
+            .where(() => pi.RecordStatusInvalid, (byte)0)
+            .orderByDesc(() => pi.CreatedDateTime);
+        return clip.select(pi).queryList()?.ToList() ?? new List<ProcessInstanceEntity>();
+    }
+
+    public virtual IList<ProcessInstanceEntity> ListValidSubProcess(
+        SQLBuilder kit,
+        string bizPK,
+        string processId,
+        string subProcessId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ProcessInstanceEntity>(out var pi)
+            .where(() => pi.BizPK, bizPK)
+            .where(() => pi.ProcessId, processId)
+            .where(() => pi.SubProcessId, subProcessId)
+            .where(() => pi.RecordStatusInvalid, (byte)0)
+            .orderByDesc(() => pi.CreatedDateTime);
+        return clip.select(pi).queryList()?.ToList() ?? new List<ProcessInstanceEntity>();
+    }
+
+    public virtual IList<ProcessInstanceEntity> ListValidReadyOrRunning(
+        SQLBuilder kit,
+        string bizPK,
+        string processId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ProcessInstanceEntity>(out var pi)
+            .where(() => pi.BizPK, bizPK)
+            .where(() => pi.ProcessId, processId)
+            .where(() => pi.RecordStatusInvalid, (byte)0)
+            .whereIn(() => pi.ProcessState, new short?[]
+            {
+                (short)ProcessStateEnum.Ready,
+                (short)ProcessStateEnum.Running
+            })
+            .orderByDesc(() => pi.CreatedDateTime);
+        return clip.select(pi).queryList()?.ToList() ?? new List<ProcessInstanceEntity>();
+    }
+
+    public virtual IList<ProcessInstanceEntity> ListCompletedByInvoked(
+        SQLBuilder kit,
+        string invokedActivityInstanceId,
+        string invokedActivityId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ProcessInstanceEntity>(out var pi)
+            .where(() => pi.InvokedActInstanceId, invokedActivityInstanceId)
+            .where(() => pi.InvokedActivityId, invokedActivityId)
+            .where(() => pi.RecordStatusInvalid, (byte)0)
+            .where(() => pi.ProcessState, (short)ProcessStateEnum.Completed)
             .orderByDesc(() => pi.CreatedDateTime);
         return clip.select(pi).queryList()?.ToList() ?? new List<ProcessInstanceEntity>();
     }

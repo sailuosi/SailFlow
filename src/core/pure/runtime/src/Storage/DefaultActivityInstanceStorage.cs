@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using mooSQL.data;
 using sailflow.data;
 using sailflow.storage;
@@ -18,6 +20,20 @@ public class DefaultActivityInstanceStorage : IActivityInstanceStorage
         (short)ActivityStateEnum.Suspended
     };
 
+    static readonly short?[] ReadyOrRunningStates =
+    {
+        (short)ActivityStateEnum.Ready,
+        (short)ActivityStateEnum.Running
+    };
+
+    static readonly short?[] ValidSplitedOrMiChildStates =
+    {
+        (short)ActivityStateEnum.Ready,
+        (short)ActivityStateEnum.Running,
+        (short)ActivityStateEnum.Completed,
+        (short)ActivityStateEnum.Suspended
+    };
+
     public virtual ActivityInstanceEntity GetById(SQLBuilder kit, string activityInstanceId)
     {
         if (kit == null)
@@ -25,6 +41,293 @@ public class DefaultActivityInstanceStorage : IActivityInstanceStorage
         if (string.IsNullOrWhiteSpace(activityInstanceId))
             return null!;
         return kit.findRowById<ActivityInstanceEntity>(activityInstanceId.Trim());
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListByIds(SQLBuilder kit, IEnumerable<string> activityInstanceIds)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        if (activityInstanceIds == null)
+            return new List<ActivityInstanceEntity>();
+        return kit.findListByIds<ActivityInstanceEntity>(activityInstanceIds)
+               ?? new List<ActivityInstanceEntity>();
+    }
+
+    public virtual async Task<ActivityInstanceEntity> GetByIdAsync(
+        SQLBuilder kit,
+        string activityInstanceId,
+        CancellationToken cancellationToken = default)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        cancellationToken.ThrowIfCancellationRequested();
+        if (string.IsNullOrWhiteSpace(activityInstanceId))
+            return null!;
+
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .where(() => ai.ActivityInstanceId, activityInstanceId.Trim());
+        var list = await clip.select(ai).take(1).queryListAsync(cancellationToken).ConfigureAwait(false);
+        return list?.FirstOrDefault();
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListByProcessInstance(SQLBuilder kit, string processInstanceId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .where(() => ai.ProcessInstanceId, processInstanceId)
+            .orderBy(() => ai.CreatedDateTime);
+        return clip.select(ai).queryList().ToList();
+    }
+
+    public virtual ActivityInstanceEntity GetLatestByProcessInstanceActivity(
+        SQLBuilder kit,
+        string processInstanceId,
+        string activityId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .where(() => ai.ProcessInstanceId, processInstanceId)
+            .where(() => ai.ActivityId, activityId)
+            .orderByDesc(() => ai.CreatedDateTime);
+        return clip.select(ai).take(1).queryList()?.FirstOrDefault();
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListByRunningProcessBizProcessActivity(
+        SQLBuilder kit,
+        string bizPK,
+        string processId,
+        string activityId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
+            .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
+            .where(() => ai.BizPK, bizPK)
+            .where(() => ai.ProcessId, processId)
+            .where(() => ai.ActivityId, activityId);
+        return clip.select(ai).queryList().ToList();
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListReadyOrRunningByRunningProcessVersionActivity(
+        SQLBuilder kit,
+        string processId,
+        string version,
+        string activityId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
+            .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
+            .where(() => pi.ProcessId, processId)
+            .where(() => pi.Version, version)
+            .where(() => ai.ActivityId, activityId)
+            .whereIn(() => ai.ActivityState, ReadyOrRunningStates);
+        return clip.select(ai).queryList().ToList();
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListByProcessInstanceActivityState(
+        SQLBuilder kit,
+        string processInstanceId,
+        string activityId,
+        short activityState)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .where(() => ai.ProcessInstanceId, processInstanceId)
+            .where(() => ai.ActivityId, activityId)
+            .where(() => ai.ActivityState, activityState)
+            .orderByDesc(() => ai.CreatedDateTime);
+        return clip.select(ai).queryList().ToList();
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListCompletedByRunningProcessBizProcess(
+        SQLBuilder kit,
+        string bizPK,
+        string processId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
+            .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
+            .where(() => ai.BizPK, bizPK)
+            .where(() => ai.ProcessId, processId)
+            .where(() => ai.ActivityState, (short)ActivityStateEnum.Completed);
+        return clip.select(ai).queryList().ToList();
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListCompletedByProcessInstanceActivity(
+        SQLBuilder kit,
+        string processInstanceId,
+        string activityId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .where(() => ai.ProcessInstanceId, processInstanceId)
+            .where(() => ai.ActivityId, activityId)
+            .where(() => ai.ActivityState, (short)ActivityStateEnum.Completed)
+            .orderByDesc(() => ai.EndedDateTime);
+        return clip.select(ai).queryList().ToList();
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListByTaskJoin(SQLBuilder kit, string taskId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .InnerJoin<TaskEntity>(out var t).on(() => ai.ActivityInstanceId == t.ActivityInstanceId)
+            .where(() => t.TaskId, taskId);
+        return clip.select(ai).queryList().ToList();
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListRunningReadyByBizProcessVersion(
+        SQLBuilder kit,
+        string bizPK,
+        string processId,
+        string version)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
+            .whereIn(() => ai.ActivityState, ReadyOrRunningStates)
+            .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
+            .where(() => pi.Version, version)
+            .where(() => ai.BizPK, bizPK)
+            .where(() => ai.ProcessId, processId);
+        return clip.select(ai).queryList().ToList();
+    }
+
+    public virtual async Task<IList<ActivityInstanceEntity>> ListRunningReadyByBizProcessVersionAsync(
+        SQLBuilder kit,
+        string bizPK,
+        string processId,
+        string version,
+        CancellationToken cancellationToken = default)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        cancellationToken.ThrowIfCancellationRequested();
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
+            .whereIn(() => ai.ActivityState, ReadyOrRunningStates)
+            .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
+            .where(() => pi.Version, version)
+            .where(() => ai.BizPK, bizPK)
+            .where(() => ai.ProcessId, processId);
+        var list = await clip.select(ai).queryListAsync(cancellationToken).ConfigureAwait(false);
+        return list?.ToList() ?? new List<ActivityInstanceEntity>();
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListCompletedMultipleInstanceByMain(
+        SQLBuilder kit,
+        string mainActivityInstanceId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
+            .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
+            .where(() => ai.MainActInstanceId, mainActivityInstanceId)
+            .where(() => ai.ActivityState, (short)ActivityStateEnum.Completed);
+        return clip.select(ai).queryList().ToList();
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListCompletedByProcessInstanceActivityOrderByEndedDesc(
+        SQLBuilder kit,
+        string processInstanceId,
+        string activityId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .where(() => ai.ProcessInstanceId, processInstanceId)
+            .where(() => ai.ActivityId, activityId)
+            .where(() => ai.ActivityState, (short)ActivityStateEnum.Completed)
+            .orderByDesc(() => ai.EndedDateTime);
+        return clip.select(ai).queryList().ToList();
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListMultipleInstanceChildren(
+        SQLBuilder kit,
+        string mainActivityInstanceId,
+        string processInstanceId,
+        short? activityState)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .where(() => ai.MainActInstanceId, mainActivityInstanceId)
+            .where(() => ai.ProcessInstanceId, processInstanceId);
+        if (activityState.HasValue)
+            clip.where(() => ai.ActivityState, activityState.Value);
+        clip.orderBy(() => ai.CompleteOrder);
+        return clip.select(ai).queryList().ToList();
+    }
+
+    public virtual int CountTracksFromSplit(
+        SQLBuilder kit,
+        string processInstanceId,
+        string splitActivityId,
+        string splitActivityInstanceId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<TrackEntity>(out var ti)
+            .where(() => ti.ProcessInstanceId, processInstanceId)
+            .where(() => ti.FromActId, splitActivityId)
+            .where(() => ti.FromActInstanceId, splitActivityInstanceId);
+        return clip.select(ti).queryList().Count();
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListValidSplitedAfterGateway(
+        SQLBuilder kit,
+        string splitGatewayInstanceId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .InnerJoin<TrackEntity>(out var ti).on(() => ai.ActivityInstanceId == ti.ToActInstanceId)
+            .whereIn(() => ai.ActivityState, ValidSplitedOrMiChildStates)
+            .where(() => ti.FromActInstanceId, splitGatewayInstanceId);
+        return clip.select(ai).queryList().ToList();
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListValidMultipleInstanceChildren(
+        SQLBuilder kit,
+        string mainActivityInstanceId,
+        string processInstanceId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .whereIn(() => ai.ActivityState, ValidSplitedOrMiChildStates)
+            .where(() => ai.MainActInstanceId, mainActivityInstanceId)
+            .where(() => ai.ProcessInstanceId, processInstanceId);
+        return clip.select(ai).queryList().ToList();
     }
 
     public virtual string Insert(SQLBuilder kit, ActivityInstanceEntity entity)

@@ -179,7 +179,20 @@ namespace sailflow.data
         public IList<ActivityInstanceEntity> GetTargetActivityInstanceList(SQLBuilder kit, string fromActivityInstanceId)
         {
             var targetIDs = GetTargetActivityInstanceIDs(kit, fromActivityInstanceId);
-            return kit.findListByIds<ActivityInstanceEntity>(targetIDs);
+            var ids = new List<string>();
+            if (targetIDs != null)
+            {
+                foreach (var x in targetIDs)
+                {
+                    var s = x?.ToString();
+                    if (!string.IsNullOrWhiteSpace(s))
+                        ids.Add(s);
+                }
+            }
+
+            if (Sail.Storages.TryGet<IActivityInstanceStorage>(out var aiStorage) && aiStorage != null)
+                return aiStorage.ListByIds(kit, ids);
+            return new DefaultActivityInstanceStorage().ListByIds(kit, ids);
         }
 
         /// <summary>同库同事务的新 kit，避免链式 select 状态互相污染。</summary>

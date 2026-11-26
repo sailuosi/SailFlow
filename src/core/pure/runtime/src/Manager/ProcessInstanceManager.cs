@@ -75,28 +75,14 @@ namespace sailflow.data
         /// <summary>
         /// 异步按 Id 取流程实例（Clip take(1)，可取消）。
         /// </summary>
-        public async Task<ProcessInstanceEntity> GetByIdAsync(
+        public Task<ProcessInstanceEntity> GetByIdAsync(
             SQLBuilder kit,
             string processInstanceId,
             CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var clip = kit.useClip();
-            clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.ProcessInstanceId, processInstanceId);
-            var list = await clip.select(pi).take(1).queryListAsync(cancellationToken).ConfigureAwait(false);
-            return list?.FirstOrDefault();
-        }
+            => Storage.GetByIdAsync(kit, processInstanceId, cancellationToken);
 
         private ProcessInstanceEntity GetByVersion(SQLBuilder kit, string processId, string version)
-        {
-            var clip = kit.useClip();
-            clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.ProcessId, processId)
-                .where(() => pi.Version, version)
-                .orderByDesc(() => pi.CreatedDateTime);
-            return clip.select(pi).take(1).queryList()?.FirstOrDefault();
-        }
+            => Storage.GetByVersion(kit, processId, version);
 
         public ProcessInstanceEntity GetByActivity(string activityInstanceId)
         {
@@ -106,8 +92,10 @@ namespace sailflow.data
 
         public ProcessInstanceEntity GetByActivity(SQLBuilder kit, string activityInstanceId)
         {
-            var activityInstance = kit.findRowById<ActivityInstanceEntity>(activityInstanceId);
-            return kit.findRowById<ProcessInstanceEntity>(activityInstance.ProcessInstanceId);
+            var activityInstance = ActivityStorage.GetById(kit, activityInstanceId);
+            return activityInstance == null
+                ? null
+                : Storage.GetById(kit, activityInstance.ProcessInstanceId);
         }
 
         public bool IsSubProcess(ProcessInstanceEntity entity)
@@ -133,52 +121,22 @@ namespace sailflow.data
 
         public ProcessInstanceEntity GetProcessInstanceCurrent(
             SQLBuilder kit, string bizPK, string processId, string version)
-        {
-            var clip = kit.useClip();
-            clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.BizPK, bizPK)
-                .where(() => pi.ProcessId, processId)
-                .where(() => pi.Version, version)
-                .where(() => pi.RecordStatusInvalid, (byte)0)
-                .orderByDesc(() => pi.CreatedDateTime);
-            return clip.select(pi).take(1).queryList()?.FirstOrDefault();
-        }
+            => Storage.GetCurrentValid(kit, bizPK, processId, version);
 
         public IEnumerable<ProcessInstanceEntity> GetProcessInstance(string bizPK)
         {
             var kit = Sail.UseRunSQL();
-            var clip = kit.useClip();
-            clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.BizPK, bizPK)
-                .where(() => pi.RecordStatusInvalid, (byte)0)
-                .orderByDesc(() => pi.CreatedDateTime);
-            return clip.select(pi).queryList();
+            return Storage.ListValidByBiz(kit, bizPK);
         }
 
         public IEnumerable<ProcessInstanceEntity> GetProcessInstance(
             SQLBuilder kit, string bizPK, string processId, string version)
-        {
-            var clip = kit.useClip();
-            clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.BizPK, bizPK)
-                .where(() => pi.ProcessId, processId)
-                .where(() => pi.Version, version)
-                .where(() => pi.RecordStatusInvalid, (byte)0)
-                .orderByDesc(() => pi.CreatedDateTime);
-            return clip.select(pi).queryList();
-        }
+            => Storage.ListValidByBizProcessVersion(kit, bizPK, processId, version);
 
         public ProcessInstanceEntity GetSubProcessInstance(
             SQLBuilder kit, string bizPK, string processId, string subProcessId)
         {
-            var clip = kit.useClip();
-            clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.BizPK, bizPK)
-                .where(() => pi.ProcessId, processId)
-                .where(() => pi.SubProcessId, subProcessId)
-                .where(() => pi.RecordStatusInvalid, (byte)0)
-                .orderByDesc(() => pi.CreatedDateTime);
-            var list = clip.select(pi).queryList().ToList();
+            var list = Storage.ListValidSubProcess(kit, bizPK, processId, subProcessId);
 
             if (list.Count == 1)
                 return list[0];
@@ -190,33 +148,12 @@ namespace sailflow.data
         public ProcessInstanceEntity GetRunningProcessInstance(string bizPK, string processId)
         {
             var kit = Sail.UseRunSQL();
-            var clip = kit.useClip();
-            clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.BizPK, bizPK)
-                .where(() => pi.ProcessId, processId)
-                .where(() => pi.RecordStatusInvalid, (byte)0)
-                .whereIn(() => pi.ProcessState, new short?[]
-                {
-                    (short)ProcessStateEnum.Ready,
-                    (short)ProcessStateEnum.Running
-                })
-                .orderByDesc(() => pi.CreatedDateTime);
-            var list = clip.select(pi).queryList().ToList();
-            return EnumHelper.GetFirst<ProcessInstanceEntity>(list);
+            var list = Storage.ListValidReadyOrRunning(kit, bizPK, processId);
+            return EnumHelper.GetFirst<ProcessInstanceEntity>(list.ToList());
         }
 
         public bool CheckSubProcessInstanceCompleted(SQLBuilder kit, string activityInstanceId, string activityId)
-        {
-            var clip = kit.useClip();
-            clip.from<ProcessInstanceEntity>(out var pi)
-                .where(() => pi.InvokedActInstanceId, activityInstanceId)
-                .where(() => pi.InvokedActivityId, activityId)
-                .where(() => pi.RecordStatusInvalid, (byte)0)
-                .where(() => pi.ProcessState, (short)ProcessStateEnum.Completed)
-                .orderByDesc(() => pi.CreatedDateTime);
-            var list = clip.select(pi).queryList().ToList();
-            return list.Count >= 1;
-        }
+            => Storage.ListCompletedByInvoked(kit, activityInstanceId, activityId).Count >= 1;
         #endregion
 
         #region Write

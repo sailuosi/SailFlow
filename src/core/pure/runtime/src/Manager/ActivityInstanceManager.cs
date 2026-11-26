@@ -78,11 +78,7 @@ namespace sailflow.data
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .where(() => ai.ActivityInstanceId, activityInstanceId);
-            var list = await clip.select(ai).take(1).queryListAsync(cancellationToken).ConfigureAwait(false);
-            return list?.FirstOrDefault();
+            return await Storage.GetByIdAsync(kit, activityInstanceId, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -281,13 +277,7 @@ namespace sailflow.data
         /// 获取活动节点实例
         /// </summary>
         public IList<ActivityInstanceEntity> GetActivityInstanceList(SQLBuilder kit, string processInstanceId)
-        {
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .where(() => ai.ProcessInstanceId, processInstanceId)
-                .orderBy(() => ai.CreatedDateTime);
-            return clip.select(ai).queryList().ToList();
-        }
+            => Storage.ListByProcessInstance(kit, processInstanceId).ToList();
 
         /// <summary>
         /// Get Activity Instance Latest
@@ -306,14 +296,7 @@ namespace sailflow.data
         /// </summary>
         public ActivityInstanceEntity GetActivityInstanceLatest(SQLBuilder kit, string processInstanceId,
             string activityId)
-        {
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .where(() => ai.ProcessInstanceId, processInstanceId)
-                .where(() => ai.ActivityId, activityId)
-                .orderByDesc(() => ai.CreatedDateTime);
-            return clip.select(ai).take(1).queryList()?.FirstOrDefault();
-        }
+            => Storage.GetLatestByProcessInstanceActivity(kit, processInstanceId, activityId);
 
         /// <summary>
         /// Get Activity Instance Latest
@@ -331,14 +314,7 @@ namespace sailflow.data
             string processId,
             string activityId)
         {
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
-                .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
-                .where(() => ai.BizPK, bizPK)
-                .where(() => ai.ProcessId, processId)
-                .where(() => ai.ActivityId, activityId);
-            var list = clip.select(ai).queryList().ToList();
+            var list = Storage.ListByRunningProcessBizProcessActivity(kit, bizPK, processId, activityId);
 
             if (list.Count > 0)
             {
@@ -358,19 +334,8 @@ namespace sailflow.data
             string activityId)
         {
             var kit = Sail.UseRunSQL();
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
-                .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
-                .where(() => pi.ProcessId, processId)
-                .where(() => pi.Version, version)
-                .where(() => ai.ActivityId, activityId)
-                .whereIn(() => ai.ActivityState, new short?[]
-                {
-                    (short)ActivityStateEnum.Ready,
-                    (short)ActivityStateEnum.Running
-                });
-            return clip.select(ai).queryList().ToList();
+            return Storage.ListReadyOrRunningByRunningProcessVersionActivity(kit, processId, version, activityId)
+                .ToList();
         }
 
         /// <summary>
@@ -392,13 +357,8 @@ namespace sailflow.data
             ActivityStateEnum activityState)
         {
             ActivityInstanceEntity entity = null;
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .where(() => ai.ProcessInstanceId, processInstanceId)
-                .where(() => ai.ActivityId, activityId)
-                .where(() => ai.ActivityState, (short)activityState)
-                .orderByDesc(() => ai.CreatedDateTime);
-            var list = clip.select(ai).queryList().ToList();
+            var list = Storage.ListByProcessInstanceActivityState(
+                kit, processInstanceId, activityId, (short)activityState);
             if (list.Count == 1)
             {
                 entity = list[0];
@@ -414,14 +374,7 @@ namespace sailflow.data
             string processId)
         {
             var kit = Sail.UseRunSQL();
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
-                .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
-                .where(() => ai.BizPK, bizPK)
-                .where(() => ai.ProcessId, processId)
-                .where(() => ai.ActivityState, (short)ActivityStateEnum.Completed);
-            return clip.select(ai).queryList().ToList();
+            return Storage.ListCompletedByRunningProcessBizProcess(kit, bizPK, processId).ToList();
         }
 
         /// <summary>
@@ -490,15 +443,7 @@ namespace sailflow.data
         /// </summary>
         public IList<ActivityInstanceEntity> GetActivityInstanceListCompletedSimple(SQLBuilder kit, string processInstanceId,
             string activityId)
-        {
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .where(() => ai.ProcessInstanceId, processInstanceId)
-                .where(() => ai.ActivityId, activityId)
-                .where(() => ai.ActivityState, (short)ActivityStateEnum.Completed)
-                .orderByDesc(() => ai.EndedDateTime);
-            return clip.select(ai).queryList().ToList();
-        }
+            => Storage.ListCompletedByProcessInstanceActivity(kit, processInstanceId, activityId);
 
         /// <summary>
         /// Retrieve activity instance information from task Id
@@ -517,11 +462,7 @@ namespace sailflow.data
         public ActivityInstanceEntity GetByTask(SQLBuilder kit, string taskId)
         {
             ActivityInstanceEntity entity = null;
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .InnerJoin<TaskEntity>(out var t).on(() => ai.ActivityInstanceId == t.ActivityInstanceId)
-                .where(() => t.TaskId, taskId);
-            var list = clip.select(ai).queryList().ToList();
+            var list = Storage.ListByTaskJoin(kit, taskId);
             if (list.Count == 1)
             {
                 entity = list[0];
@@ -550,19 +491,7 @@ namespace sailflow.data
             string version)
         {
             if (string.IsNullOrEmpty(version)) version = "1";
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
-                .whereIn(() => ai.ActivityState, new short?[]
-                {
-                    (short)ActivityStateEnum.Ready,
-                    (short)ActivityStateEnum.Running
-                })
-                .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
-                .where(() => pi.Version, version)
-                .where(() => ai.BizPK, bizPK)
-                .where(() => ai.ProcessId, processId);
-            return clip.select(ai).queryList();
+            return Storage.ListRunningReadyByBizProcessVersion(kit, bizPK, processId, version);
         }
 
         /// <summary>
@@ -577,19 +506,10 @@ namespace sailflow.data
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (string.IsNullOrEmpty(version)) version = "1";
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
-                .whereIn(() => ai.ActivityState, new short?[]
-                {
-                    (short)ActivityStateEnum.Ready,
-                    (short)ActivityStateEnum.Running
-                })
-                .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
-                .where(() => pi.Version, version)
-                .where(() => ai.BizPK, bizPK)
-                .where(() => ai.ProcessId, processId);
-            return await clip.select(ai).queryListAsync(cancellationToken).ConfigureAwait(false);
+            var list = await Storage.ListRunningReadyByBizProcessVersionAsync(
+                    kit, bizPK, processId, version, cancellationToken)
+                .ConfigureAwait(false);
+            return list;
         }
 
         /// <summary>
@@ -607,15 +527,7 @@ namespace sailflow.data
         /// 获取主节点下已经完成的子节点列表
         /// </summary>
         public List<ActivityInstanceEntity> GetMultipleInstanceListCompleted(SQLBuilder kit, string mainActivityInstanceId)
-        {
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .InnerJoin<ProcessInstanceEntity>(out var pi).on(() => ai.ProcessInstanceId == pi.ProcessInstanceId)
-                .where(() => pi.ProcessState, (short)ProcessStateEnum.Running)
-                .where(() => ai.MainActInstanceId, mainActivityInstanceId)
-                .where(() => ai.ActivityState, (short)ActivityStateEnum.Completed);
-            return clip.select(ai).queryList().ToList();
-        }
+            => Storage.ListCompletedMultipleInstanceByMain(kit, mainActivityInstanceId).ToList();
 
         /// <summary>
         /// Retrieve completed multi instance nodes
@@ -645,13 +557,9 @@ namespace sailflow.data
                 originalRunningNode = runningNode;
             }
 
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .where(() => ai.ProcessInstanceId, runningNode.ProcessInstanceId)
-                .where(() => ai.ActivityId, previousActivityId)
-                .where(() => ai.ActivityState, (short)ActivityStateEnum.Completed)
-                .orderByDesc(() => ai.EndedDateTime);
-            var instanceList = clip.select(ai).queryList().ToList();
+            var instanceList = Storage.ListCompletedByProcessInstanceActivityOrderByEndedDesc(
+                    kit, runningNode.ProcessInstanceId, previousActivityId)
+                .ToList();
 
             var withoutBackSrcInfoList = instanceList.Where(a => a.BackSrcActInstanceId == null).ToList();
 
@@ -729,18 +637,8 @@ namespace sailflow.data
         public List<ActivityInstanceEntity> GetActivityMulitipleInstanceWithState(SQLBuilder kit, string mainActivityInstanceId,
             string processInstanceId,
             short? activityState)
-        {
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .where(() => ai.MainActInstanceId, mainActivityInstanceId)
-                .where(() => ai.ProcessInstanceId, processInstanceId);
-            if (activityState.HasValue)
-            {
-                clip.where(() => ai.ActivityState, activityState.Value);
-            }
-            clip.orderBy(() => ai.CompleteOrder);
-            return clip.select(ai).queryList().ToList();
-        }
+            => Storage.ListMultipleInstanceChildren(kit, mainActivityInstanceId, processInstanceId, activityState)
+                .ToList();
 
         /// <summary>
         /// Query the number of branch instances
@@ -749,15 +647,7 @@ namespace sailflow.data
         public int GetGatewayInstanceCountByTransition(SQLBuilder kit, string splitActivityId,
             string splitActivityInstanceId,
             string processInstanceId)
-        {
-            var clip = kit.useClip();
-            clip.from<TrackEntity>(out var ti)
-                .where(() => ti.ProcessInstanceId, processInstanceId)
-                .where(() => ti.FromActId, splitActivityId)
-                .where(() => ti.FromActInstanceId, splitActivityInstanceId);
-            var list = clip.select(ti).queryList().ToList();
-            return list.Count();
-        }
+            => Storage.CountTracksFromSplit(kit, processInstanceId, splitActivityId, splitActivityInstanceId);
 
         /// <summary>
         /// Obtain the number of valid branches
@@ -765,20 +655,7 @@ namespace sailflow.data
         /// </summary>
         public List<ActivityInstanceEntity> GetValidSplitedActivityInstanceList(SQLBuilder kit, string processInstanceId,
             string splitGatewayInstanceId)
-        {
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .InnerJoin<TrackEntity>(out var ti).on(() => ai.ActivityInstanceId == ti.ToActInstanceId)
-                .whereIn(() => ai.ActivityState, new short?[]
-                {
-                    (short)ActivityStateEnum.Ready,
-                    (short)ActivityStateEnum.Running,
-                    (short)ActivityStateEnum.Completed,
-                    (short)ActivityStateEnum.Suspended
-                })
-                .where(() => ti.FromActInstanceId, splitGatewayInstanceId);
-            return clip.select(ai).queryList().ToList();
-        }
+            => Storage.ListValidSplitedAfterGateway(kit, splitGatewayInstanceId).ToList();
 
         /// <summary>
         /// Obtain the number of valid branches
@@ -798,18 +675,8 @@ namespace sailflow.data
         public List<ActivityInstanceEntity> GetValidActivityInstanceListOfMI(SQLBuilder kit, string mainActivityInstanceId,
             string processInstanceId)
         {
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var ai)
-                .whereIn(() => ai.ActivityState, new short?[]
-                {
-                    (short)ActivityStateEnum.Ready,
-                    (short)ActivityStateEnum.Running,
-                    (short)ActivityStateEnum.Completed,
-                    (short)ActivityStateEnum.Suspended
-                })
-                .where(() => ai.MainActInstanceId, mainActivityInstanceId)
-                .where(() => ai.ProcessInstanceId, processInstanceId);
-            var list = clip.select(ai).queryList().ToList();
+            var list = Storage.ListValidMultipleInstanceChildren(kit, mainActivityInstanceId, processInstanceId)
+                .ToList();
 
             var backList = new List<string>();
             foreach (var child in list)

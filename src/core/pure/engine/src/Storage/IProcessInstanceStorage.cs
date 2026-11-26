@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using mooSQL.data;
 using sailflow.data;
 
@@ -12,6 +14,11 @@ namespace sailflow.storage
     public interface IProcessInstanceStorage
     {
         ProcessInstanceEntity GetById(SQLBuilder kit, string processInstanceId);
+
+        Task<ProcessInstanceEntity> GetByIdAsync(
+            SQLBuilder kit,
+            string processInstanceId,
+            CancellationToken cancellationToken = default);
 
         string Insert(SQLBuilder kit, ProcessInstanceEntity entity);
 
@@ -46,5 +53,37 @@ namespace sailflow.storage
         IList<ProcessInstanceEntity> ListSuspendedByInvokedActivity(
             SQLBuilder kit,
             string invokedActivityInstanceId);
+
+        ProcessInstanceEntity GetByVersion(SQLBuilder kit, string processId, string version);
+
+        ProcessInstanceEntity GetCurrentValid(
+            SQLBuilder kit,
+            string bizPK,
+            string processId,
+            string version);
+
+        IList<ProcessInstanceEntity> ListValidByBiz(SQLBuilder kit, string bizPK);
+
+        IList<ProcessInstanceEntity> ListValidByBizProcessVersion(
+            SQLBuilder kit,
+            string bizPK,
+            string processId,
+            string version);
+
+        IList<ProcessInstanceEntity> ListValidSubProcess(
+            SQLBuilder kit,
+            string bizPK,
+            string processId,
+            string subProcessId);
+
+        IList<ProcessInstanceEntity> ListValidReadyOrRunning(
+            SQLBuilder kit,
+            string bizPK,
+            string processId);
+
+        IList<ProcessInstanceEntity> ListCompletedByInvoked(
+            SQLBuilder kit,
+            string invokedActivityInstanceId,
+            string invokedActivityId);
     }
 }

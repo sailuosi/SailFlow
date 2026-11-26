@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using mooSQL.data;
 using sailflow.data;
 
@@ -11,6 +13,93 @@ namespace sailflow.storage
     public interface IActivityInstanceStorage
     {
         ActivityInstanceEntity GetById(SQLBuilder kit, string activityInstanceId);
+
+        IList<ActivityInstanceEntity> ListByIds(SQLBuilder kit, IEnumerable<string> activityInstanceIds);
+
+        Task<ActivityInstanceEntity> GetByIdAsync(
+            SQLBuilder kit,
+            string activityInstanceId,
+            CancellationToken cancellationToken = default);
+
+        IList<ActivityInstanceEntity> ListByProcessInstance(SQLBuilder kit, string processInstanceId);
+
+        ActivityInstanceEntity GetLatestByProcessInstanceActivity(
+            SQLBuilder kit,
+            string processInstanceId,
+            string activityId);
+
+        IList<ActivityInstanceEntity> ListByRunningProcessBizProcessActivity(
+            SQLBuilder kit,
+            string bizPK,
+            string processId,
+            string activityId);
+
+        IList<ActivityInstanceEntity> ListReadyOrRunningByRunningProcessVersionActivity(
+            SQLBuilder kit,
+            string processId,
+            string version,
+            string activityId);
+
+        IList<ActivityInstanceEntity> ListByProcessInstanceActivityState(
+            SQLBuilder kit,
+            string processInstanceId,
+            string activityId,
+            short activityState);
+
+        IList<ActivityInstanceEntity> ListCompletedByRunningProcessBizProcess(
+            SQLBuilder kit,
+            string bizPK,
+            string processId);
+
+        IList<ActivityInstanceEntity> ListCompletedByProcessInstanceActivity(
+            SQLBuilder kit,
+            string processInstanceId,
+            string activityId);
+
+        IList<ActivityInstanceEntity> ListByTaskJoin(SQLBuilder kit, string taskId);
+
+        IList<ActivityInstanceEntity> ListRunningReadyByBizProcessVersion(
+            SQLBuilder kit,
+            string bizPK,
+            string processId,
+            string version);
+
+        Task<IList<ActivityInstanceEntity>> ListRunningReadyByBizProcessVersionAsync(
+            SQLBuilder kit,
+            string bizPK,
+            string processId,
+            string version,
+            CancellationToken cancellationToken = default);
+
+        IList<ActivityInstanceEntity> ListCompletedMultipleInstanceByMain(
+            SQLBuilder kit,
+            string mainActivityInstanceId);
+
+        IList<ActivityInstanceEntity> ListCompletedByProcessInstanceActivityOrderByEndedDesc(
+            SQLBuilder kit,
+            string processInstanceId,
+            string activityId);
+
+        IList<ActivityInstanceEntity> ListMultipleInstanceChildren(
+            SQLBuilder kit,
+            string mainActivityInstanceId,
+            string processInstanceId,
+            short? activityState);
+
+        int CountTracksFromSplit(
+            SQLBuilder kit,
+            string processInstanceId,
+            string splitActivityId,
+            string splitActivityInstanceId);
+
+        IList<ActivityInstanceEntity> ListValidSplitedAfterGateway(
+            SQLBuilder kit,
+            string splitGatewayInstanceId);
+
+        IList<ActivityInstanceEntity> ListValidMultipleInstanceChildren(
+            SQLBuilder kit,
+            string mainActivityInstanceId,
+            string processInstanceId);
 
         string Insert(SQLBuilder kit, ActivityInstanceEntity entity);
 
