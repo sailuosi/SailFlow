@@ -1,6 +1,7 @@
 # 专题 · IStorage（数据库连接器）
 
-> 状态：**待实施**（2026-11-26 从讨论稿切出；契约可开工，代码未改）  
+> 状态：**实施中**（S0 已落地：`SailStorageRegistry` + `IProcessInstanceStorage` + `UseDefaultStorages`；S1 Manager 改走接口待续）  
+
 > 用途：流程定义 / 实例套表的**纯库交互层**——无状态、`kit` 首参、热点专属 API、唯一注册可覆盖；为实施提供可执行契约。  
 > 讨论溯源：[讨论-办理人操作模式与人员范围正交.md](../talk/讨论-办理人操作模式与人员范围正交.md)（§6、§8 已定寿命）  
 > 关联：[专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) · [架构设计-项目依赖与分层.md](../架构设计-项目依赖与分层.md) · [业务管道特性设计.md](../业务管道特性设计.md) · [专题-事务一致性.md](./专题-事务一致性.md) · [专题-对象解析器.md](./专题-对象解析器.md)
@@ -122,12 +123,21 @@ public interface IProcessInstanceStorage // 可继承或独立于 IStorage<>
 ## 7. 实施切片（建议）
 
 ```text
-S0  注册槽约定 + kit 首参 + 覆盖日志（仿 DI API）
-S1  试点 IProcessInstanceStorage.UpdateState + 一处 Manager 改走接口
+S0  ✅ 注册槽约定 + kit 首参 + 覆盖日志（SailStorageRegistry / useStorage / UseDefaultStorages）
+S1  试点：一处 ProcessInstanceManager 改走 IProcessInstanceStorage.UpdateState
 S2  Task / ActivityInstance 热点方法下沉
 S3  预选 / Picked 表 Storage 供对象解析器 ext 默认实现复用（**分表**；见下）
 S4  再评估是否按聚合根铺开更多表
 ```
+
+**S0 锚点：**
+
+| 材料 | 路径 |
+|------|------|
+| 注册槽 | `engine/src/Storage/SailStorageRegistry.cs` · `SailClient.Storages` |
+| 试点接口 | `engine/src/Storage/IProcessInstanceStorage.cs` |
+| 默认实现 | `runtime/src/Storage/DefaultProcessInstanceStorage.cs` |
+| 挂载 | `runtime/src/Storage/SailStorageExtensions.cs`（随 `UseSailRuntimeDefaults`） |
 
 **办理人项集表（与对象解析器对齐，已定）：** Preselect 仓与 Picked 仓**不同表**；数据量大，Storage 实现须**考虑分表**（如按 `ProcessInstanceId` 或时间）。Pick 默认不落库，Picked 表可后置。
 
@@ -154,3 +164,4 @@ S4  再评估是否按聚合根铺开更多表
 | 寿命 A/B | [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) |
 | UseXxx / ISailCollection | [业务管道特性设计.md](../业务管道特性设计.md) |
 | 预选 Store 雏形 | assignee Preselect / 宿主 `IPreselectAssigneeStore` |
+| **S0 注册槽** | `SailClient.Storages` · `IProcessInstanceStorage` · `UseDefaultStorages` |

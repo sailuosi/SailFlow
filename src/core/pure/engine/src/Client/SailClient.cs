@@ -147,6 +147,14 @@ public partial class SailClient
     private ScriptMethodRegistry _scriptMethods;
     private ServiceMethodRegistry _serviceMethods;
 
+    private sailflow.storage.SailStorageRegistry _storages;
+
+    /// <summary>
+    /// 纯库 IStorage 唯一注册槽（同寿于本 Client；后注册覆盖）。
+    /// </summary>
+    public sailflow.storage.SailStorageRegistry Storages =>
+        _storages ??= new sailflow.storage.SailStorageRegistry();
+
     /// <summary>Gate / Hook / Notifier 注册表（Client 级）。</summary>
     public FlowCapabilityRegistry Capabilities => _capabilities ??= new FlowCapabilityRegistry(this);
 
