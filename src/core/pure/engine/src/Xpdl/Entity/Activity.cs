@@ -68,9 +68,14 @@ namespace sailflow.xml
         public MultiSignDetail MultiSignDetail { get; set; }
 
         /// <summary>
-        /// BPMN sf:assigneeResolve@type（定范围 Type 字符串；空则走 Legacy/runner）。
+        /// BPMN sf:assigneeResolve@type（人员范围 Scope 注册键；空或 AnyMan = 任意选人）。
         /// </summary>
         public string AssigneeResolveType { get; set; }
+
+        /// <summary>
+        /// BPMN sf:assigneeResolve@selectModel（操作模式 Fixed|Pick|Preselect；配置名 selectModel）。
+        /// </summary>
+        public string AssigneeSelectModel { get; set; }
 
         /// <summary>
         /// BPMN sf:assigneeResolve@params（JSON 对象字符串）。

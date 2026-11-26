@@ -1,14 +1,62 @@
 namespace sailflow.assignee;
 
-/// <summary>内置 Resolve Type 码（静态 string，禁止改成 enum）。</summary>
+/// <summary>
+/// 操作模式 Mode（BPMN / 按钮配置属性名 <c>selectModel</c>）。
+/// 闭集三态；禁止扩展注册表。
+/// </summary>
+public static class AssigneeSelectModelCodes
+{
+    public const string Fixed = "Fixed";
+    public const string Pick = "Pick";
+    public const string Preselect = "Preselect";
+
+    public static bool TryNormalize(string? raw, out string normalized)
+    {
+        normalized = "";
+        if (string.IsNullOrWhiteSpace(raw))
+            return false;
+        var t = raw.Trim();
+        if (string.Equals(t, Fixed, StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = Fixed;
+            return true;
+        }
+
+        if (string.Equals(t, Pick, StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = Pick;
+            return true;
+        }
+
+        if (string.Equals(t, Preselect, StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = Preselect;
+            return true;
+        }
+
+        return false;
+    }
+
+    public static bool IsKnown(string? raw) => TryNormalize(raw, out _);
+}
+
+/// <summary>内置 Resolve Type 码（静态 string，禁止改成 enum）。Scope 注册键；模式型旧码仅兼容残留，新图勿用。</summary>
 public static class AssigneeResolveTypeCodes
 {
+    /// <summary>任意选人（空约束）；配合 selectModel=Pick 时选人器不限范围。</summary>
+    public const string AnyMan = "AnyMan";
+
     public const string Specific = "Specific";
     public const string FixedUsers = "FixedUsers";
     public const string ProcessRelative = "ProcessRelative";
     public const string RoleGroup = "RoleGroup";
+
+    /// <summary>旧模式码；新图用 selectModel=Preselect + allowPreselectFrom 含 Start。</summary>
     public const string StarterPick = "StarterPick";
+
+    /// <summary>旧模式码；新图用 selectModel=Pick。</summary>
     public const string ApproverPick = "ApproverPick";
+
     public const string Fallback = "Fallback";
 
     /// <summary>单位映射：Params.unitField + maps[unit]→userIds。</summary>

@@ -309,6 +309,7 @@ namespace sailflow.xml
             if (resolveNode != null)
             {
                 mActivityEntity.AssigneeResolveType = XMLHelper.GetXmlAttribute(resolveNode, "type");
+                mActivityEntity.AssigneeSelectModel = XMLHelper.GetXmlAttribute(resolveNode, "selectModel");
                 mActivityEntity.AssigneeResolveParams = XMLHelper.GetXmlAttribute(resolveNode, "params");
             }
 

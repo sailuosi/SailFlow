@@ -88,7 +88,10 @@ namespace sailflow.xml
             return result;
         }
 
-        /// <summary>R6：人工任务须具备 AssigneeResolve + LeaveJudge Type。</summary>
+        /// <summary>
+        /// R6 + 对象解析器：人工任务须具备合法 selectModel + LeaveJudge Type；
+        /// Fixed 还须 Scope Type；Pick/Preselect 允许空 type（AnyMan）。不做历史 Type→Mode 推断。
+        /// </summary>
         internal static IList<string> ValidateUserTaskAssigneeConfig(IList<Activity> activities)
         {
             var issues = new List<string>();
@@ -104,13 +107,41 @@ namespace sailflow.xml
                     ? a.ActivityId
                     : a.ActivityName + "(" + a.ActivityId + ")";
 
-                if (string.IsNullOrWhiteSpace(a.AssigneeResolveType))
-                    issues.Add("UserTask '" + label + "' missing AssigneeResolve Type");
+                var mode = NormalizeSelectModel(a.AssigneeSelectModel);
+                if (mode == null)
+                {
+                    issues.Add(
+                        "UserTask '" + label
+                        + "' missing or invalid assigneeResolve selectModel (Fixed|Pick|Preselect)");
+                }
+                else if (string.Equals(mode, "Fixed", StringComparison.OrdinalIgnoreCase)
+                         && string.IsNullOrWhiteSpace(a.AssigneeResolveType))
+                {
+                    issues.Add(
+                        "UserTask '" + label
+                        + "' selectModel=Fixed requires assigneeResolve type (Scope)");
+                }
+
                 if (string.IsNullOrWhiteSpace(a.LeaveJudgeType))
                     issues.Add("UserTask '" + label + "' missing LeaveJudge Type");
             }
 
             return issues;
+        }
+
+        /// <summary>与 assignee.AssigneeSelectModelCodes 对齐（engine 不引用 assignee 包）。</summary>
+        static string? NormalizeSelectModel(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+                return null;
+            var t = raw.Trim();
+            if (string.Equals(t, "Fixed", StringComparison.OrdinalIgnoreCase))
+                return "Fixed";
+            if (string.Equals(t, "Pick", StringComparison.OrdinalIgnoreCase))
+                return "Pick";
+            if (string.Equals(t, "Preselect", StringComparison.OrdinalIgnoreCase))
+                return "Preselect";
+            return null;
         }
 
         /// <summary>

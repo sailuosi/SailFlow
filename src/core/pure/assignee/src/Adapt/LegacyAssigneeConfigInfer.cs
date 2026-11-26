@@ -23,18 +23,23 @@ public static class LegacyAssigneeConfigInfer
         if (runner.NextPerformerType == NextPerformerIntTypeEnum.Specific)
         {
             if (HasPerformers(request, activityId))
-                return ConfigPair.Create(AssigneeResolveTypeCodes.Specific);
+                return ConfigPair.Create(
+                    AssigneeResolveTypeCodes.Specific,
+                    AssigneeSelectModelCodes.Pick);
             return null;
         }
 
         if (runner.NextPerformerType == NextPerformerIntTypeEnum.Single)
         {
             // 测试向：当前操作人 → 当作 FixedUsers 单人
-            return ConfigPair.Create(AssigneeResolveTypeCodes.FixedUsers, new Dictionary<string, object?>
-            {
-                ["userIds"] = runner.UserId ?? "",
-                ["userNames"] = runner.UserName ?? runner.UserId ?? ""
-            });
+            return ConfigPair.Create(
+                AssigneeResolveTypeCodes.FixedUsers,
+                AssigneeSelectModelCodes.Fixed,
+                new Dictionary<string, object?>
+                {
+                    ["userIds"] = runner.UserId ?? "",
+                    ["userNames"] = runner.UserName ?? runner.UserId ?? ""
+                });
         }
 
         return null;

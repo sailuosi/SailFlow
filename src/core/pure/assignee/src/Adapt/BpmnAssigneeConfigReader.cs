@@ -24,10 +24,13 @@ public static class BpmnAssigneeConfigReader
         if (activity == null)
             return null;
 
-        // 仅显式 sf:assigneeResolve；旧 Performers/runner 仍走 LegacyAssigneeConfigInfer
-        return ConfigPairJson.FromTypeAndParamsJson(
-            activity.AssigneeResolveType,
-            activity.AssigneeResolveParams);
+        // 仅显式 sf:assigneeResolve；须带 selectModel（发布校验已拦；运行时再兜底）
+        var selectModel = activity.AssigneeSelectModel?.Trim() ?? "";
+        var type = activity.AssigneeResolveType?.Trim() ?? "";
+        if (string.IsNullOrEmpty(selectModel) && string.IsNullOrEmpty(type))
+            return null;
+
+        return ConfigPair.Create(type, selectModel, ConfigPairJson.ParseParams(activity.AssigneeResolveParams));
     }
 
     public static ConfigPair? ReadLeave(SailClient? sail, LeaveInvokeRequest request)

@@ -110,6 +110,7 @@ public static class SailAssigneeExtensions
         registry.Register(new FixedUsersAssigneeResolver());
         registry.Register(new RoleGroupAssigneeResolver());
         registry.Register(new ProcessRelativeAssigneeResolver());
+        registry.Register(new AnyManAssigneeResolver());
         registry.Register(new StarterPickAssigneeResolver());
         registry.Register(new ApproverPickAssigneeResolver());
         // S4 扩展型（可继承 / 业务同码覆盖）

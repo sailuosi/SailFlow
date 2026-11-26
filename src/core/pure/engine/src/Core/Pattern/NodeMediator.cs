@@ -1327,7 +1327,8 @@ namespace sailflow.run{
             // R2/R4：已挂管道时只走 Assignee，禁止回落 Definition/Specific/Single
             var pipeline = Sail.AssigneePipeline;
             var activityDef = ActivityForwardContext?.CurrentActivity;
-            var hasExplicitResolve = !string.IsNullOrWhiteSpace(activityDef?.AssigneeResolveType);
+            var hasExplicitResolve = !string.IsNullOrWhiteSpace(activityDef?.AssigneeSelectModel)
+                || !string.IsNullOrWhiteSpace(activityDef?.AssigneeResolveType);
 
             if (pipeline != null)
             {

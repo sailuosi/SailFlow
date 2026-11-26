@@ -6,6 +6,15 @@ namespace sailflow.assignee
         /// <summary>节点无显式 Resolve ConfigPair（且无可用 Legacy 推断结果）。</summary>
         public const string AssigneeConfigMissing = "AssigneeConfigMissing";
 
+        /// <summary>缺少或非法 selectModel（须 Fixed|Pick|Preselect；不做历史推断）。</summary>
+        public const string AssigneeSelectModelInvalid = "AssigneeSelectModelInvalid";
+
+        /// <summary>Mode=Fixed 但未配置 Scope Type。</summary>
+        public const string AssigneeScopeTypeMissing = "AssigneeScopeTypeMissing";
+
+        /// <summary>Mode=Preselect 但未挂 IPreselectAssigneeStore（硬失败）。</summary>
+        public const string PreselectStoreMissing = "PreselectStoreMissing";
+
         /// <summary>Resolve Type 已配置但算人为空（且无显式 Fallback / NodePolicy 换人失败）。</summary>
         public const string AssigneeEmpty = "AssigneeEmpty";
 

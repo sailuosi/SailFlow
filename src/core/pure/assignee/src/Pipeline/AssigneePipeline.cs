@@ -75,28 +75,18 @@ public class AssigneePipeline : IAssigneePipeline
         var config = ResolveConfigReader?.Invoke(request)
                      ?? LegacyAssigneeConfigInfer.InferResolve(request);
 
-        if (config == null || string.IsNullOrWhiteSpace(config.Type))
+        if (config == null)
             return false;
 
-        if (!Registry.TryGetResolver(config.Type, out var resolver) || resolver == null)
+        if (!AssigneeSelectModelCodes.TryNormalize(config.SelectModel, out var selectModel))
         {
             throw new WfAssigneeException(
-                AssigneeReasonCodes.AssigneeTypeUnregistered,
-                "Assignee Resolve Type '"
-                + config.Type
-                + "' is not registered. ReasonCode="
-                + AssigneeReasonCodes.AssigneeTypeUnregistered);
+                AssigneeReasonCodes.AssigneeSelectModelInvalid,
+                "Assignee selectModel missing or invalid (Fixed|Pick|Preselect). ReasonCode="
+                + AssigneeReasonCodes.AssigneeSelectModelInvalid);
         }
 
-        if (Registry.IsResolverOverridden(config.Type))
-        {
-            Trace.TraceInformation(
-                "[Assignee] Resolve using overridden Type '{0}' impl={1}",
-                config.Type,
-                Registry.GetResolverImplementationName(config.Type));
-        }
-
-        WireSail(resolver);
+        config.SelectModel = selectModel;
 
         var resolveCtx = new AssigneeResolveContext
         {
@@ -104,10 +94,83 @@ public class AssigneePipeline : IAssigneePipeline
             Config = config
         };
 
-        var resolved = resolver.Resolve(resolveCtx) ?? new PerformerList();
-        var source = string.Equals(config.Type, AssigneeResolveTypeCodes.Specific, StringComparison.OrdinalIgnoreCase)
-            ? PerformerSources.Specific
-            : PerformerSources.Resolver;
+        PerformerList resolved;
+        string source;
+
+        if (string.Equals(selectModel, AssigneeSelectModelCodes.Pick, StringComparison.OrdinalIgnoreCase))
+        {
+            // 发送人自选：只吃当次入参；Scope 仅供选人器，管道不展开
+            resolved = new ApproverPickAssigneeResolver().Resolve(resolveCtx) ?? new PerformerList();
+            source = PerformerSources.Specific;
+        }
+        else if (string.Equals(selectModel, AssigneeSelectModelCodes.Preselect, StringComparison.OrdinalIgnoreCase))
+        {
+            if (!Registry.TryGetResolver(AssigneeResolveTypeCodes.Preselect, out var preResolver)
+                || preResolver == null)
+            {
+                throw new WfAssigneeException(
+                    AssigneeReasonCodes.PreselectStoreMissing,
+                    "selectModel=Preselect but Preselect resolver is not registered (UsePreselectAssignees). ReasonCode="
+                    + AssigneeReasonCodes.PreselectStoreMissing);
+            }
+
+            WireSail(preResolver);
+            if (preResolver is PreselectAssigneeResolver pre
+                && pre.Store == null)
+            {
+                throw new WfAssigneeException(
+                    AssigneeReasonCodes.PreselectStoreMissing,
+                    "selectModel=Preselect requires IPreselectAssigneeStore. ReasonCode="
+                    + AssigneeReasonCodes.PreselectStoreMissing);
+            }
+
+            resolved = preResolver.Resolve(resolveCtx) ?? new PerformerList();
+            source = PerformerSources.Resolver;
+        }
+        else
+        {
+            // Fixed：按 Scope Type 展开
+            var scopeType = config.Type?.Trim() ?? "";
+            if (string.IsNullOrEmpty(scopeType))
+            {
+                throw new WfAssigneeException(
+                    AssigneeReasonCodes.AssigneeScopeTypeMissing,
+                    "selectModel=Fixed requires Scope type. ReasonCode="
+                    + AssigneeReasonCodes.AssigneeScopeTypeMissing);
+            }
+
+            if (string.Equals(scopeType, AssigneeResolveTypeCodes.AnyMan, StringComparison.OrdinalIgnoreCase))
+            {
+                resolved = new PerformerList();
+                source = PerformerSources.Resolver;
+            }
+            else
+            {
+                if (!Registry.TryGetResolver(scopeType, out var resolver) || resolver == null)
+                {
+                    throw new WfAssigneeException(
+                        AssigneeReasonCodes.AssigneeTypeUnregistered,
+                        "Assignee Resolve Type '"
+                        + scopeType
+                        + "' is not registered. ReasonCode="
+                        + AssigneeReasonCodes.AssigneeTypeUnregistered);
+                }
+
+                if (Registry.IsResolverOverridden(scopeType))
+                {
+                    Trace.TraceInformation(
+                        "[Assignee] Resolve using overridden Type '{0}' impl={1}",
+                        scopeType,
+                        Registry.GetResolverImplementationName(scopeType));
+                }
+
+                WireSail(resolver);
+                resolved = resolver.Resolve(resolveCtx) ?? new PerformerList();
+                source = string.Equals(scopeType, AssigneeResolveTypeCodes.Specific, StringComparison.OrdinalIgnoreCase)
+                    ? PerformerSources.Specific
+                    : PerformerSources.Resolver;
+            }
+        }
 
         var filterCtx = new AssigneeFilterContext
         {

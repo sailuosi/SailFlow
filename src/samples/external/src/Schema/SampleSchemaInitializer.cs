@@ -215,7 +215,7 @@ public static class SampleSchemaInitializer
         "<bpmn:incoming>Flow_start_task</bpmn:incoming>" +
         "<bpmn:outgoing>Flow_task_end</bpmn:outgoing>" +
         "<bpmn:extensionElements>" +
-        "<sf:assigneeResolve type=\"ApproverPick\" params=\"\" />" +
+        "<sf:assigneeResolve type=\"\" selectModel=\"Pick\" params=\"\" />" +
         "<sf:leaveJudge type=\"Collaborate\" params=\"{&quot;completeRate&quot;:1}\" />" +
         "</bpmn:extensionElements>" +
         "</bpmn:userTask>" +

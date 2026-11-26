@@ -413,7 +413,7 @@ namespace sailflow.service
                     level = "Error";
                     break;
                 case ProcessValidateResultTypeEnum.AssigneeConfigIncomplete:
-                    text = "校验未通过：用户任务缺少 AssigneeResolve 或 LeaveJudge Type（发布前须配置）";
+                    text = "校验未通过：用户任务缺少合法 selectModel（Fixed|Pick|Preselect）或 LeaveJudge Type（发布前须配置）";
                     level = "Error";
                     break;
                 default:

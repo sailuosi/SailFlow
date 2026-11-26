@@ -1,3 +1,4 @@
+using sailflow.assignee;
 using sailflow.hosting;
 using sailflow.utils;
 using sailflow.xml;
@@ -49,15 +50,24 @@ public static class NextActivityPickProbe
 
             if (userNodes.Count == 1)
             {
-                var t = userNodes[0].AssigneeResolveType?.Trim();
-                if (string.Equals(t, "ApproverPick", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(t, "StarterPick", StringComparison.OrdinalIgnoreCase))
+                var node = userNodes[0];
+                if (AssigneeSelectModelCodes.TryNormalize(node.AssigneeSelectModel, out var mode)
+                    && string.Equals(mode, AssigneeSelectModelCodes.Pick, StringComparison.OrdinalIgnoreCase))
+                {
+                    reason = "next selectModel is Pick";
+                    return true;
+                }
+
+                // 旧图残留模式码（无 selectModel 时）；新图发布已拦
+                var t = node.AssigneeResolveType?.Trim();
+                if (string.Equals(t, AssigneeResolveTypeCodes.ApproverPick, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(t, AssigneeResolveTypeCodes.StarterPick, StringComparison.OrdinalIgnoreCase))
                 {
                     reason = "next Resolve is " + t;
                     return true;
                 }
 
-                if (userNodes[0].ActivityType == ActivityTypeEnum.MultiSignNode)
+                if (node.ActivityType == ActivityTypeEnum.MultiSignNode)
                 {
                     reason = "next is MultiSign (SignTogether needs real performers)";
                     return true;
