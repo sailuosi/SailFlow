@@ -41,6 +41,16 @@ namespace sailflow.data
             }
         }
 
+        protected ITransitionInstanceStorage TransitionStorage
+        {
+            get
+            {
+                if (Sail.Storages.TryGet<ITransitionInstanceStorage>(out var s) && s != null)
+                    return s;
+                return new DefaultTransitionInstanceStorage();
+            }
+        }
+
         Exception FailThrow(Exception ex, string op, string detail = null)
         {
             SailFailLog.Exception(Sail, SailLogCategories.Engine, "ActivityInstance." + op, ex, detail);
@@ -647,7 +657,7 @@ namespace sailflow.data
         public int GetGatewayInstanceCountByTransition(SQLBuilder kit, string splitActivityId,
             string splitActivityInstanceId,
             string processInstanceId)
-            => Storage.CountTracksFromSplit(kit, processInstanceId, splitActivityId, splitActivityInstanceId);
+            => TransitionStorage.CountFromSplit(kit, processInstanceId, splitActivityId, splitActivityInstanceId);
 
         /// <summary>
         /// Obtain the number of valid branches
@@ -655,7 +665,7 @@ namespace sailflow.data
         /// </summary>
         public List<ActivityInstanceEntity> GetValidSplitedActivityInstanceList(SQLBuilder kit, string processInstanceId,
             string splitGatewayInstanceId)
-            => Storage.ListValidSplitedAfterGateway(kit, splitGatewayInstanceId).ToList();
+            => TransitionStorage.ListValidActivitiesAfterGateway(kit, splitGatewayInstanceId).ToList();
 
         /// <summary>
         /// Obtain the number of valid branches

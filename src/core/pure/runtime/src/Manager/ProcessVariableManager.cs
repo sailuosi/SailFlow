@@ -309,7 +309,16 @@ namespace sailflow.data
         }
 
         private string ResolveProcessId(SQLBuilder kit, string processInstanceId)
-            => HotShardEntityAccess.ResolveProcessId(kit, processInstanceId);
+        {
+            if (kit == null || string.IsNullOrWhiteSpace(processInstanceId))
+                return null;
+            IProcessInstanceStorage piStorage = null;
+            if (Sail.Storages.TryGet<IProcessInstanceStorage>(out var s) && s != null)
+                piStorage = s;
+            else
+                piStorage = new DefaultProcessInstanceStorage();
+            return piStorage.GetById(kit, processInstanceId)?.ProcessId;
+        }
 
         private List<ProcessVariableEntity> QueryWithFallback(
             SQLBuilder kit,

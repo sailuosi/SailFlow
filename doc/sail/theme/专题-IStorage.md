@@ -141,7 +141,7 @@ S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非
 |------|------|
 | 注册槽 | `engine/src/Storage/SailStorageRegistry.cs` · `SailClient.Storages` |
 | PI / Task / AI | `I*Storage` · `Default*Storage` · 写 + 列表/视图查询全下沉 |
-| Transition | `ITransitionInstanceStorage` · Insert/Delete/查询；Router 回落留 Manager |
+| Transition | `ITransitionInstanceStorage` · Insert/Delete/查询 + 网关分支 Count/Join；Router 回落留 Manager |
 | HookOutbox | `IHookOutboxStorage` · CAS + Pending/Dead/Purge/Bind 查询全下沉 |
 | Variable | `IProcessVariableStorage` · Get/List/Insert/Update/Delete（分表名入参）；Router 回落留 Manager |
 | 项集投影 | `AssigneeItemRow` |
@@ -162,7 +162,7 @@ S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非
 | 2 | 聚合根切分 | **Task ≠ ActivityInstance ≠ ProcessInstance**：分接口保留（热点列与查询面不同）。Transition、HookOutbox **各自独立接口**，不并入 Task/AI。 |
 | 3 | 乐观并发 | **首版不引入版本列**；状态竞争用 **条件更新 / CAS**（`where Status=…`、`CasClaimPending` 等）。若日后加 `RowVersion`，仅落在对应 Storage 热点 API，不改 Manager 业务语义。 |
 | 4 | `useRepo` 口径 | **仅允许在 Storage 实现内**使用 `useRepo` / `useClip`；Manager / Lane / Mode Store **对外不得泄漏** repo。Manager 未注册槽时允许回落 `new Default*Storage()`。 |
-| 5 | Outbox 业务边界 | Attempt 递增、退避、Skip 原因截断留 **Manager**；Storage 只提供 `Insert` / `Update` / `GetById` / `Cas*` / `DeleteById`。 |
+| 5 | Outbox 业务边界 | Attempt 递增、退避、Skip 原因截断留 **Manager**；Storage 提供 `Insert` / `Update` / `GetById` / `Cas*` / `DeleteById` **及纯查询**（`ListPendingDue` / `ListDead` / `ListStaleProcessing` 等），不含状态机策略。 |
 | 6 | 热分表 | Router 解析物理表名留 **Manager**；Storage `Insert(..., physicalTable)` 只负责写指定表。 |
 
 **下一批（可选，非阻塞）：** 其它运行时 Manager（如 Process 定义元数据表若有 DB 行）按需下沉；宿主/Lane 散落 SQL 审计。

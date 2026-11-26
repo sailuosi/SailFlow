@@ -285,36 +285,6 @@ public class DefaultActivityInstanceStorage : IActivityInstanceStorage
         return clip.select(ai).queryList().ToList();
     }
 
-    public virtual int CountTracksFromSplit(
-        SQLBuilder kit,
-        string processInstanceId,
-        string splitActivityId,
-        string splitActivityInstanceId)
-    {
-        if (kit == null)
-            throw new ArgumentNullException(nameof(kit));
-        var clip = kit.useClip();
-        clip.from<TrackEntity>(out var ti)
-            .where(() => ti.ProcessInstanceId, processInstanceId)
-            .where(() => ti.FromActId, splitActivityId)
-            .where(() => ti.FromActInstanceId, splitActivityInstanceId);
-        return clip.select(ti).queryList().Count();
-    }
-
-    public virtual IList<ActivityInstanceEntity> ListValidSplitedAfterGateway(
-        SQLBuilder kit,
-        string splitGatewayInstanceId)
-    {
-        if (kit == null)
-            throw new ArgumentNullException(nameof(kit));
-        var clip = kit.useClip();
-        clip.from<ActivityInstanceEntity>(out var ai)
-            .InnerJoin<TrackEntity>(out var ti).on(() => ai.ActivityInstanceId == ti.ToActInstanceId)
-            .whereIn(() => ai.ActivityState, ValidSplitedOrMiChildStates)
-            .where(() => ti.FromActInstanceId, splitGatewayInstanceId);
-        return clip.select(ai).queryList().ToList();
-    }
-
     public virtual IList<ActivityInstanceEntity> ListValidMultipleInstanceChildren(
         SQLBuilder kit,
         string mainActivityInstanceId,

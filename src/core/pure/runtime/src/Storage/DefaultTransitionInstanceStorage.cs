@@ -117,4 +117,42 @@ public class DefaultTransitionInstanceStorage : ITransitionInstanceStorage
             .where(() => t.FromActInstanceId, fromActivityInstanceId);
         return clip.select(t).queryList()?.ToList() ?? new List<TrackEntity>();
     }
+
+    static readonly short?[] ValidAfterGatewayStates =
+    {
+        (short)ActivityStateEnum.Ready,
+        (short)ActivityStateEnum.Running,
+        (short)ActivityStateEnum.Completed,
+        (short)ActivityStateEnum.Suspended
+    };
+
+    public virtual int CountFromSplit(
+        SQLBuilder kit,
+        string processInstanceId,
+        string splitActivityId,
+        string splitActivityInstanceId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<TrackEntity>(out var ti)
+            .where(() => ti.ProcessInstanceId, processInstanceId)
+            .where(() => ti.FromActId, splitActivityId)
+            .where(() => ti.FromActInstanceId, splitActivityInstanceId);
+        return clip.select(ti).queryList()?.Count() ?? 0;
+    }
+
+    public virtual IList<ActivityInstanceEntity> ListValidActivitiesAfterGateway(
+        SQLBuilder kit,
+        string splitGatewayInstanceId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var ai)
+            .InnerJoin<TrackEntity>(out var ti).on(() => ai.ActivityInstanceId == ti.ToActInstanceId)
+            .whereIn(() => ai.ActivityState, ValidAfterGatewayStates)
+            .where(() => ti.FromActInstanceId, splitGatewayInstanceId);
+        return clip.select(ai).queryList()?.ToList() ?? new List<ActivityInstanceEntity>();
+    }
 }

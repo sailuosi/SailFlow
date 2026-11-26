@@ -11,6 +11,9 @@ namespace sailflow.data.HotShard
     {
 
 
+        /// <summary>
+        /// 兼容旧调用。新代码应经 <c>IProcessInstanceStorage.GetById</c> 取 <c>ProcessId</c>。
+        /// </summary>
         public static string ResolveProcessId(SQLBuilder kit, string processInstanceId)
         {
             if (kit == null || string.IsNullOrWhiteSpace(processInstanceId))

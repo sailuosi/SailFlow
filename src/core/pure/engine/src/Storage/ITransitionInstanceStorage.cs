@@ -39,5 +39,19 @@ namespace sailflow.storage
             SQLBuilder kit,
             string physicalTable,
             string fromActivityInstanceId);
+
+        /// <summary>从拆分节点出发的轨迹条数（默认表；非热分表路径）。</summary>
+        int CountFromSplit(
+            SQLBuilder kit,
+            string processInstanceId,
+            string splitActivityId,
+            string splitActivityInstanceId);
+
+        /// <summary>
+        /// 网关拆分后有效目标活动（Join Track→AI；状态 ∈ Ready/Running/Completed/Suspended）。
+        /// </summary>
+        IList<ActivityInstanceEntity> ListValidActivitiesAfterGateway(
+            SQLBuilder kit,
+            string splitGatewayInstanceId);
     }
 }

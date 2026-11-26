@@ -86,16 +86,6 @@ namespace sailflow.storage
             string processInstanceId,
             short? activityState);
 
-        int CountTracksFromSplit(
-            SQLBuilder kit,
-            string processInstanceId,
-            string splitActivityId,
-            string splitActivityInstanceId);
-
-        IList<ActivityInstanceEntity> ListValidSplitedAfterGateway(
-            SQLBuilder kit,
-            string splitGatewayInstanceId);
-
         IList<ActivityInstanceEntity> ListValidMultipleInstanceChildren(
             SQLBuilder kit,
             string mainActivityInstanceId,
