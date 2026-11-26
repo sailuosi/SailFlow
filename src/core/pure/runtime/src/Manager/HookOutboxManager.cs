@@ -6,6 +6,8 @@ using sailflow.data;
 using sailflow.hosting;
 using sailflow.hooks;
 using sailflow.run;
+using sailflow.storage;
+using sailflow.runtime.storage;
 
 namespace sailflow.data
 {
@@ -18,12 +20,22 @@ namespace sailflow.data
 
         protected SailClient Sail { get; }
 
+        protected IHookOutboxStorage Storage
+        {
+            get
+            {
+                if (Sail.Storages.TryGet<IHookOutboxStorage>(out var s) && s != null)
+                    return s;
+                return new DefaultHookOutboxStorage();
+            }
+        }
+
         public void InsertPending(SQLBuilder kit, HookOutboxEntity entity)
         {
             entity.Status = HookOutboxStatus.Pending;
             entity.Attempt = 0;
             entity.CreatedAt = DateTime.UtcNow;
-            kit.useRepo<HookOutboxEntity>().Insert(entity);
+            Storage.Insert(kit, entity);
         }
 
         public IList<HookOutboxEntity> GetPending(SQLBuilder kit, int limit = 50) =>
@@ -112,14 +124,7 @@ namespace sailflow.data
                 if (string.IsNullOrWhiteSpace(row.HookOutboxId))
                     continue;
 
-                var update = kit.useClip();
-                update.setTable<HookOutboxEntity>(out var u)
-                    .set(() => u.Status, HookOutboxStatus.Pending)
-                    .setToNull(() => u.LeasedUntil)
-                    .set(() => u.UpdatedAt, now)
-                    .where(() => u.HookOutboxId, row.HookOutboxId)
-                    .where(() => u.Status, HookOutboxStatus.Processing);
-                if (update.doUpdate() > 0)
+                if (Storage.CasResetProcessingToPending(kit, row.HookOutboxId, now) > 0)
                     reclaimed++;
             }
 
@@ -128,15 +133,14 @@ namespace sailflow.data
 
         public void ResetProcessing(SQLBuilder kit, string id)
         {
-            var repo = kit.useRepo<HookOutboxEntity>();
-            var row = repo.GetById(id);
+            var row = Storage.GetById(kit, id);
             if (row == null || row.Status != HookOutboxStatus.Processing)
                 return;
 
             row.Status = HookOutboxStatus.Pending;
             row.LeasedUntil = null;
             row.UpdatedAt = DateTime.UtcNow;
-            repo.Update(row);
+            Storage.Update(kit, row);
         }
 
         public void MarkSucceeded(SQLBuilder kit, HookOutboxEntity row)
@@ -144,7 +148,7 @@ namespace sailflow.data
             row.Status = HookOutboxStatus.Succeeded;
             row.UpdatedAt = DateTime.UtcNow;
             row.LeasedUntil = null;
-            kit.useRepo<HookOutboxEntity>().Update(row);
+            Storage.Update(kit, row);
         }
 
         /// <summary>
@@ -158,7 +162,7 @@ namespace sailflow.data
             row.UpdatedAt = DateTime.UtcNow;
             if (!string.IsNullOrEmpty(note))
                 row.LastError = Truncate(note, 2000);
-            kit.useRepo<HookOutboxEntity>().Update(row);
+            Storage.Update(kit, row);
         }
 
         /// <summary>
@@ -183,7 +187,6 @@ namespace sailflow.data
                 .orderBy(() => o.CreatedAt);
             var candidates = clip.select(o).take(50).queryList() ?? new List<HookOutboxEntity>();
             var n = 0;
-            var repo = kit.useRepo<HookOutboxEntity>();
             foreach (var row in candidates)
             {
                 if (!PayloadActivityIdMatches(row.PayloadJson, activityId))
@@ -191,7 +194,7 @@ namespace sailflow.data
 
                 row.ActivityInstanceId = activityInstanceId;
                 row.UpdatedAt = DateTime.UtcNow;
-                repo.Update(row);
+                Storage.Update(kit, row);
                 n++;
             }
 
@@ -207,7 +210,7 @@ namespace sailflow.data
             row.UpdatedAt = DateTime.UtcNow;
             if (!string.IsNullOrEmpty(note))
                 row.LastError = Truncate(note, 2000);
-            kit.useRepo<HookOutboxEntity>().Update(row);
+            Storage.Update(kit, row);
         }
 
         public void MarkFailed(SQLBuilder kit, HookOutboxEntity row, string error, int maxAttempts = HookOutboxOptions.DefaultMaxAttempts)
@@ -225,13 +228,12 @@ namespace sailflow.data
                 row.NextRetryAt = DateTime.UtcNow.AddMinutes(Math.Pow(2, Math.Min(row.Attempt.Value, 6)));
             }
 
-            kit.useRepo<HookOutboxEntity>().Update(row);
+            Storage.Update(kit, row);
         }
 
         public void ResetDead(SQLBuilder kit, string id)
         {
-            var repo = kit.useRepo<HookOutboxEntity>();
-            var row = repo.GetById(id);
+            var row = Storage.GetById(kit, id);
             if (row == null || row.Status != HookOutboxStatus.Dead)
                 return;
 
@@ -240,7 +242,7 @@ namespace sailflow.data
             row.NextRetryAt = null;
             row.LastError = null;
             row.UpdatedAt = DateTime.UtcNow;
-            repo.Update(row);
+            Storage.Update(kit, row);
         }
 
         public IList<HookOutboxEntity> QueryByStatus(SQLBuilder kit, string status, int limit = 100)
@@ -372,12 +374,11 @@ namespace sailflow.data
                              ?? new List<HookOutboxEntity>();
 
             var n = 0;
-            var repo = kit.useRepo<HookOutboxEntity, string>();
             foreach (var row in candidates)
             {
-                if (!!string.IsNullOrWhiteSpace(row.HookOutboxId))
+                if (string.IsNullOrWhiteSpace(row.HookOutboxId))
                     continue;
-                repo.DeleteById(row.HookOutboxId);
+                Storage.DeleteById(kit, row.HookOutboxId);
                 n++;
             }
 
@@ -386,8 +387,7 @@ namespace sailflow.data
 
         private bool ResetDeadIfDead(SQLBuilder kit, string id)
         {
-            var repo = kit.useRepo<HookOutboxEntity>();
-            var row = repo.GetById(id);
+            var row = Storage.GetById(kit, id);
             if (row == null || row.Status != HookOutboxStatus.Dead)
                 return false;
 
@@ -396,7 +396,7 @@ namespace sailflow.data
             row.NextRetryAt = null;
             row.LastError = null;
             row.UpdatedAt = DateTime.UtcNow;
-            repo.Update(row);
+            Storage.Update(kit, row);
             return true;
         }
 
@@ -405,17 +405,10 @@ namespace sailflow.data
             row = null;
             var now = DateTime.UtcNow;
             var leasedUntil = now.AddSeconds(Math.Max(1, leaseSeconds));
-            var clip = kit.useClip();
-            clip.setTable<HookOutboxEntity>(out var o)
-                .set(() => o.Status, HookOutboxStatus.Processing)
-                .set(() => o.UpdatedAt, now)
-                .set(() => o.LeasedUntil, leasedUntil)
-                .where(() => o.HookOutboxId, id)
-                .where(() => o.Status, HookOutboxStatus.Pending);
-            if (clip.doUpdate() <= 0)
+            if (Storage.CasClaimPending(kit, id, now, leasedUntil) <= 0)
                 return false;
 
-            row = kit.findRowById<HookOutboxEntity>(id);
+            row = Storage.GetById(kit, id);
             return row != null && row.Status == HookOutboxStatus.Processing;
         }
         private static string Truncate(string value, int max)

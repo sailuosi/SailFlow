@@ -1,6 +1,6 @@
 # 专题 · IStorage（数据库连接器）
 
-> 状态：**实施中**（S0–S3 已落地；S4 聚合根铺开待评估）  
+> 状态：**实施中**（S0–S4 决议已拍；S4 试点 Transition + HookOutbox 已落地）  
 
 
 
@@ -130,15 +130,17 @@ S0  ✅ 注册槽约定 + kit 首参 + 覆盖日志（SailStorageRegistry / useS
 S1  ✅ ProcessInstanceManager：GetById + Complete/Suspend/Resume/Reverse/RecallSubProcess → Storage.UpdateState
 S2  ✅ Task/ActivityInstance Storage + Manager 热点（Set/End/Cancel/Children）
 S3  ✅ 预选 / Picked 表 Storage（分表）+ Mode Store 适配；宿主建表/挂载
-S4  再评估是否按聚合根铺开更多表
+S4  ✅ 聚合根评估决议 + Transition / HookOutbox 试点下沉
 ```
 
-**S0–S3 锚点：**
+**S0–S4 锚点：**
 
 | 材料 | 路径 |
 |------|------|
 | 注册槽 | `engine/src/Storage/SailStorageRegistry.cs` · `SailClient.Storages` |
 | PI / Task / AI | `I*Storage` · `Default*Storage` · Manager 热点 |
+| Transition | `ITransitionInstanceStorage` · `DefaultTransitionInstanceStorage` · `TransitionInstanceManager.Insert` |
+| HookOutbox | `IHookOutboxStorage` · `DefaultHookOutboxStorage` · CAS Claim / Reset / Update / Delete |
 | 项集投影 | `AssigneeItemRow` |
 | Preselect Storage | `IPreselectAssigneeStorage` · 宿主 `SleveenPreselectAssigneeStorage` → `sf_preselect_assignee` |
 | Picked Storage | `IPickedAssigneeStorage` · 宿主 `SleveenPickedAssigneeStorage` → `sf_picked_assignee` |
@@ -149,14 +151,18 @@ S4  再评估是否按聚合根铺开更多表
 
 ---
 
-## 8. 待拍
+## 8. S4 决议（已拍）
 
-1. 试点表最终清单与是否含 Definition 包读写  
-2. 聚合根切分边界（Task 与 ActivityInstance 是否分接口）  
-3. 乐观并发（状态更新是否带版本列）  
-4. 与 mooSQL `useRepo`：Storage 内保留、对外是否完全禁止泄漏  
+| # | 议题 | 决议 |
+|---|------|------|
+| 1 | 试点清单 / Definition | **运行时套表优先**：PI / Task / AI（已有）→ Transition / HookOutbox（S4 试点）。**Definition / XPDL** 暂不并入本族（保留既有 `IXPDLStorage` 路径）；变量表 `ProcessVariable` 下一波再评。 |
+| 2 | 聚合根切分 | **Task ≠ ActivityInstance ≠ ProcessInstance**：分接口保留（热点列与查询面不同）。Transition、HookOutbox **各自独立接口**，不并入 Task/AI。 |
+| 3 | 乐观并发 | **首版不引入版本列**；状态竞争用 **条件更新 / CAS**（`where Status=…`、`CasClaimPending` 等）。若日后加 `RowVersion`，仅落在对应 Storage 热点 API，不改 Manager 业务语义。 |
+| 4 | `useRepo` 口径 | **仅允许在 Storage 实现内**使用 `useRepo` / `useClip`；Manager / Lane / Mode Store **对外不得泄漏** repo。Manager 未注册槽时允许回落 `new Default*Storage()`。 |
+| 5 | Outbox 业务边界 | Attempt 递增、退避、Skip 原因截断留 **Manager**；Storage 只提供 `Insert` / `Update` / `GetById` / `Cas*` / `DeleteById`。 |
+| 6 | 热分表 | Router 解析物理表名留 **Manager**；Storage `Insert(..., physicalTable)` 只负责写指定表。 |
 
-（寿命 Client 槽 **已拍**，见 §0 / §3。）
+**下一批（可选，非阻塞）：** ProcessVariable · Definition 包读写再评估 · Transition 查询面下沉 · Outbox `GetPending` clip 查询下沉。
 
 ---
 
@@ -164,8 +170,8 @@ S4  再评估是否按聚合根铺开更多表
 
 | 材料 | 路径 |
 |------|------|
-| Manager + useRepo | `src/core/pure/runtime/src/Manager/*Manager.cs` |
+| Manager + useRepo | `src/core/pure/runtime/src/Manager/*Manager.cs`（热点已逐步迁出） |
 | 寿命 A/B | [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) |
 | UseXxx / ISailCollection | [业务管道特性设计.md](../业务管道特性设计.md) |
 | 预选 Store 雏形 | assignee Preselect / 宿主 `IPreselectAssigneeStore` |
-| **S0–S3 Storage** | PI/Task/AI + Preselect/Picked（分表）· `UseDefaultStorages` / 宿主挂载 |
+| **S0–S4 Storage** | PI/Task/AI/Transition/HookOutbox + Preselect/Picked · `UseDefaultStorages` / 宿主挂载 |

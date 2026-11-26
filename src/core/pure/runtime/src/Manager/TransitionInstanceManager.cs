@@ -9,6 +9,8 @@ using sailflow.hosting;
 using sailflow.data.HotShard;
 using sailflow.log;
 using sailflow.run;
+using sailflow.storage;
+using sailflow.runtime.storage;
 
 namespace sailflow.data
 {
@@ -24,6 +26,16 @@ namespace sailflow.data
         }
 
         protected SailClient Sail { get; }
+
+        protected ITransitionInstanceStorage Storage
+        {
+            get
+            {
+                if (Sail.Storages.TryGet<ITransitionInstanceStorage>(out var s) && s != null)
+                    return s;
+                return new DefaultTransitionInstanceStorage();
+            }
+        }
 
         Exception FailThrow(Exception ex, string op, string detail = null)
         {
@@ -75,9 +87,7 @@ namespace sailflow.data
         public string Insert(SQLBuilder kit, TrackEntity entity)
         {
             var table = Router.ResolveTransitionTable(entity?.ProcessId);
-            var newId = kit.insertReturnId<TrackEntity,string>( entity, table);
-            entity.TrackId = newId;
-            return newId;
+            return Storage.Insert(kit, entity, table);
         }
 
         #endregion
