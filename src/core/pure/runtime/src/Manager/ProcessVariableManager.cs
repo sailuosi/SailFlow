@@ -15,6 +15,8 @@ using sailflow.xml;
 using sailflow.hub.Localize;
 using sailflow.nextStep;
 using sailflow.run;
+using sailflow.storage;
+using sailflow.runtime.storage;
 
 namespace sailflow.data
 {
@@ -31,6 +33,16 @@ namespace sailflow.data
 
         protected SailClient Sail { get; }
 
+        protected IProcessVariableStorage Storage
+        {
+            get
+            {
+                if (Sail.Storages.TryGet<IProcessVariableStorage>(out var s) && s != null)
+                    return s;
+                return new DefaultProcessVariableStorage();
+            }
+        }
+
         Exception FailThrow(Exception ex, string op, string detail = null)
         {
             SailFailLog.Exception(Sail, SailLogCategories.Engine, "ProcessVariable." + op, ex, detail);
@@ -45,12 +57,9 @@ namespace sailflow.data
 
         public ProcessVariableEntity GetVariableById(SQLBuilder kit, string processId, string variableId)
         {
-            //此处不做特殊判断，由Router保证返回的表有效！
+            // 此处不做特殊判断，由 Router 保证返回的表有效！
             var table = Router.ResolveVariableTable(processId);
-  
-            var row = kit.findRowById<ProcessVariableEntity>(variableId, table );
-            return row;
-
+            return Storage.GetById(kit, table, variableId);
         }
 
 
@@ -109,29 +118,19 @@ namespace sailflow.data
         public IList<ProcessVariableEntity> GetVariableList(SQLBuilder kit, string processInstanceId)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
-            return QueryWithFallback(kit, processId, table =>
-            {
-                var clip = kit.useClip();
-                clip.from<ProcessVariableEntity>(table, out var v)
-                    .where(() => v.ProcessInstanceId, processInstanceId)
-                    .orderBy(() => v.ActivityId);
-                return clip.select(v).queryList().ToList();
-            });
+            return QueryWithFallback(kit, processId,
+                table => Storage.ListByProcessInstance(kit, table, processInstanceId)?.ToList()
+                         ?? new List<ProcessVariableEntity>());
         }
 
         public IList<ProcessVariableEntity> GetVariableList(
             SQLBuilder kit, string processInstanceId, string activityInstanceId)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
-            return QueryWithFallback(kit, processId, table =>
-            {
-                var clip = kit.useClip();
-                clip.from<ProcessVariableEntity>(table, out var v)
-                    .where(() => v.ProcessInstanceId, processInstanceId)
-                    .where(() => v.ActivityInstanceId, activityInstanceId)
-                    .orderBy(() => v.ActivityId);
-                return clip.select(v).queryList().ToList();
-            });
+            return QueryWithFallback(kit, processId,
+                table => Storage.ListByActivityInstance(
+                             kit, table, processInstanceId, activityInstanceId)?.ToList()
+                         ?? new List<ProcessVariableEntity>());
         }
 
         public ProcessVariableEntity GetVariableEntity(ProcessVariableQuery query)
@@ -157,16 +156,10 @@ namespace sailflow.data
         public ProcessVariableEntity GetVariableByProcess(SQLBuilder kit, string processInstanceId, string name)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
-            return QueryWithFallback(kit, processId, table =>
-            {
-                var clip = kit.useClip();
-                clip.from<ProcessVariableEntity>(table, out var v)
-                    .where(() => v.VariableScope, ProcessVariableScopeEnum.Process.ToString())
-                    .where(() => v.ProcessInstanceId, processInstanceId)
-                    .where(() => v.Name, name)
-                    .orderBy(() => v.ActivityId);
-                return clip.select(v).queryList().ToList();
-            }).FirstOrDefault();
+            return QueryWithFallback(kit, processId,
+                    table => Storage.ListByProcessScopeName(kit, table, processInstanceId, name)?.ToList()
+                             ?? new List<ProcessVariableEntity>())
+                .FirstOrDefault();
         }
 
 
@@ -174,17 +167,11 @@ namespace sailflow.data
             SQLBuilder kit, string processInstanceId, string activityInstanceId, string name)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
-            return QueryWithFallback(kit, processId, table =>
-            {
-                var clip = kit.useClip();
-                clip.from<ProcessVariableEntity>(table, out var v)
-                    .where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString())
-                    .where(() => v.ProcessInstanceId, processInstanceId)
-                    .where(() => v.ActivityInstanceId, activityInstanceId)
-                    .where(() => v.Name, name)
-                    .orderBy(() => v.Name);
-                return clip.select(v).queryList().ToList();
-            }).FirstOrDefault();
+            return QueryWithFallback(kit, processId,
+                    table => Storage.ListByActivityScopeName(
+                                 kit, table, processInstanceId, activityInstanceId, name)?.ToList()
+                             ?? new List<ProcessVariableEntity>())
+                .FirstOrDefault();
         }
 
 
@@ -195,22 +182,10 @@ namespace sailflow.data
             IList<string> variableNameList)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
-            return QueryWithFallback(kit, processId, table =>
-            {
-                var clip = kit.useClip();
-                clip.from<ProcessVariableEntity>(table, out var v)
-                    .where(() => v.VariableScope, ProcessVariableScopeEnum.Activity.ToString())
-                    .where(() => v.ProcessInstanceId, processInstanceId)
-                    .where(() => v.ActivityInstanceId, activityInstanceId);
-
-                if (variableNameList != null && variableNameList.Count == 1)
-                    clip.where(() => v.Name, variableNameList[0]);
-                else if (variableNameList != null && variableNameList.Count > 1)
-                    clip.whereIn(() => v.Name, variableNameList);
-
-                clip.orderBy(() => v.Name);
-                return clip.select(v).queryList().ToList();
-            });
+            return QueryWithFallback(kit, processId,
+                table => Storage.ListByActivityScopeNames(
+                             kit, table, processInstanceId, activityInstanceId, variableNameList)?.ToList()
+                         ?? new List<ProcessVariableEntity>());
         }
 
 
@@ -304,9 +279,7 @@ namespace sailflow.data
         private string Insert(SQLBuilder kit, ProcessVariableEntity entity)
         {
             var table = Router.ResolveVariableTable(entity?.ProcessId);
-            var newId = kit.insertReturnId<ProcessVariableEntity,string>( entity, table);
-            entity.ProcessVariableId = newId;
-            return newId;
+            return Storage.Insert(kit, entity, table);
         }
 
         private void Update(SQLBuilder kit, ProcessVariableEntity entity)
@@ -315,13 +288,13 @@ namespace sailflow.data
             // 旧行可能仍在默认表：先试解析表，失败再探测
             try
             {
-                kit.update(entity, table);
+                Storage.Update(kit, entity, table);
             }
             catch
             {
                 if (!Router.IsSharded(entity?.ProcessId))
                     throw;
-                kit.update(entity, Router.DefaultVariableTable);
+                Storage.Update(kit, entity, Router.DefaultVariableTable);
             }
         }
 
@@ -330,9 +303,9 @@ namespace sailflow.data
 
         public void DeleteVariable(SQLBuilder kit, string processId, string variableId)
         {
-            //由router保证表，异常，自然抛出，便于业务侧调试期间就发现问题
+            // 由 router 保证表，异常自然抛出，便于业务侧调试期间就发现问题
             var table = Router.ResolveVariableTable(processId);
-            kit.deleteById<ProcessVariableEntity>(variableId, table);
+            Storage.DeleteById(kit, table, variableId);
         }
 
         private string ResolveProcessId(SQLBuilder kit, string processInstanceId)
