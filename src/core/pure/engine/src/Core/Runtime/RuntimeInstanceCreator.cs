@@ -74,7 +74,7 @@ namespace sailflow.run{
             // 下一跳办理人：
             // - 客户端已传 NextActivityPerformers（发起/自选）→ 直接用
             // - 定时/消息/信号/条件启动且无操作人 → 按定义角色展开
-            // - 否则留空，交 Assignee 管道解析（RoleGroup/FixedUsers…）；ApproverPick/StarterPick 空则 R4 拒绝
+            // - 否则留空，交 Assignee 管道解析（RoleGroup/FixedUsers…）；selectModel=Pick 空入参则 R4 拒绝
             // 禁止默认把发起人塞进下一跳（会掩盖未选人却“发起成功、待办归属错误”）
             if (runner.NextActivityPerformers != null && runner.NextActivityPerformers.Count > 0)
             {

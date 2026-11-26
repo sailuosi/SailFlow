@@ -111,7 +111,6 @@ public static class SailAssigneeExtensions
         registry.Register(new RoleGroupAssigneeResolver());
         registry.Register(new ProcessRelativeAssigneeResolver());
         registry.Register(new AnyManAssigneeResolver());
-        // ApproverPick / StarterPick：旧模式码，不进 Scope 注册表（新图用 selectModel）
         // S4 扩展型（可继承 / 业务同码覆盖）
         registry.Register(new UnitMapAssigneeResolver());
         registry.Register(new JobRelativeAssigneeResolver());

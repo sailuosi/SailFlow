@@ -19,7 +19,7 @@ namespace sailflow.run{
 
         /// <summary>
         /// 按主流程被调子活动出口预填 <see cref="FlowCommandContext.NextActivityPerformers"/>。
-        /// Roles 有值时按角色展开；为空且非 End 时回落为办结人（对齐宿主首跳 ApproverPick 默认）。
+        /// Roles 有值时按角色展开；为空且非 End 时回落为办结人（对齐宿主首跳 selectModel=Pick 默认填人）。
         /// </summary>
         /// <param name="completedSubProcessInstanceId">刚 Complete 的子流程实例 Id；写入 DynamicVariables 供续推校验。</param>
         internal static FlowCommandContext FillNextActivityPerformers(

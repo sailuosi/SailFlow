@@ -29,7 +29,7 @@ namespace sailflow.xml
 
         public IList<string> NextActivityNames { get; set; }
 
-        /// <summary>e.g. "A:ApproverPick/Collaborate; B:RoleGroup/Race"</summary>
+        /// <summary>e.g. "A:Pick/Collaborate; B:RoleGroup+Fixed/Race"</summary>
         public string NextAssigneeSummary { get; set; }
 
         public ProcessValidateMessage()

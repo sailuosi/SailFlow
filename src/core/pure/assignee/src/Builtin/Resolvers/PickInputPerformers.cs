@@ -4,7 +4,7 @@ namespace sailflow.assignee.Builtin;
 
 /// <summary>
 /// Mode=Pick（及 Preselect 回落入参）时从请求 <c>NextActivityPerformers</c> 取人。
-/// 非 Scope 注册键；勿与旧 ApproverPick/StarterPick Type 混淆。
+/// 非 Scope 注册键（Mode=Pick 入参路径，不是人员集合 Type）。
 /// </summary>
 public static class PickInputPerformers
 {
