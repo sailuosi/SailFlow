@@ -36,7 +36,7 @@ namespace sailflow.data
         [SooColumn(Name = "fa_form_version", Length = 32)]
         public string FormVersion { get; set; }
 
-        [SooColumn(Name = "fa_fld_perm", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "fa_fld_perm", DataType = DataFam.Text, Tag = "sail.text")]
         public string FieldsPermission { get; set; }
     }
 }

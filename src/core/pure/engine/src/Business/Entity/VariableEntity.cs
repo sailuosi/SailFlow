@@ -58,7 +58,7 @@ namespace sailflow.data
         /// <summary>
         /// 默认值（列 <c>v_dflt_value</c>，JSON/大字段）。
         /// </summary>
-        [SooColumn(Name = "v_dflt_value", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "v_dflt_value", DataType = DataFam.Text, Tag = "sail.text")]
         public string DefaultValue { get; set; }
 
         /// <summary>

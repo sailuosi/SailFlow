@@ -77,7 +77,7 @@ namespace sailflow.data
         /// <summary>
         /// BPMN/XML 模型正文（列 <c>p_xml_content</c>）。
         /// </summary>
-        [SooColumn(Name = "p_xml_content", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "p_xml_content", DataType = DataFam.Text, Tag = "sail.text")]
         public String XmlContent { get; set; }
     }
 

@@ -68,7 +68,7 @@ namespace sailflow.data
         /// <summary>
         /// 调用载荷 JSON（列 <c>ho_payload_json</c>），反序列化为 Hook/Notify 上下文。
         /// </summary>
-        [SooColumn(Name = "ho_payload_json", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ho_payload_json", DataType = DataFam.Text, Tag = "sail.text")]
         public string PayloadJson { get; set; }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace sailflow.data
         /// <summary>
         /// 最近一次错误信息（列 <c>ho_last_err</c>）。
         /// </summary>
-        [SooColumn(Name = "ho_last_err", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ho_last_err", DataType = DataFam.Text, Tag = "sail.text")]
         public string LastError { get; set; }
 
         /// <summary>

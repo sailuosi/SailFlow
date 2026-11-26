@@ -54,19 +54,19 @@ namespace sailflow.data
         /// <summary>
         /// 异常堆栈（列 <c>lg_stk_trc</c>）。
         /// </summary>
-        [SooColumn(Name = "lg_stk_trc", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "lg_stk_trc", DataType = DataFam.Text, Tag = "sail.text")]
         public string StackTrace { get; set; }
 
         /// <summary>
         /// 内层异常堆栈（列 <c>lg_in_stk_trc</c>）。
         /// </summary>
-        [SooColumn(Name = "lg_in_stk_trc", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "lg_in_stk_trc", DataType = DataFam.Text, Tag = "sail.text")]
         public string InnerStackTrace { get; set; }
 
         /// <summary>
         /// 相关请求/上下文数据（列 <c>lg_req_data</c>，JSON）。
         /// </summary>
-        [SooColumn(Name = "lg_req_data", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "lg_req_data", DataType = DataFam.Text, Tag = "sail.text")]
         public string RequestData { get; set; }
 
         /// <summary>

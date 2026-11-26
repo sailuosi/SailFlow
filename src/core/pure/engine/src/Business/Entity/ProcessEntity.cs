@@ -132,10 +132,10 @@ namespace sailflow.data
         public string XmlFilePath { get; set; }
 
         /// <summary>
-        /// 流程模型 XML/BPMN 正文（列 <c>p_xml_content</c>；Tag sail.xml → InitDb 可覆盖为 Json(max)）。
+        /// 流程模型 XML/BPMN 正文（列 <c>p_xml_content</c>；Tag sail.text → InitDb 登记为 Text）。
         /// 运行时解析为内存 ProcessModel；变量定义等亦可从此迁移到 <see cref="VariableEntity"/>。
         /// </summary>
-        [SooColumn(Name = "p_xml_content", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "p_xml_content", DataType = DataFam.Text, Tag = "sail.text")]
         public string XmlContent { get; set; }
 
         /// <summary>

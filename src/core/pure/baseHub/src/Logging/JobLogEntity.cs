@@ -26,11 +26,11 @@ namespace sailflow.data
         public short? Status { get; set; }
         [SooColumn(Name = "jl_message", Length = 500)]
         public string Message { get; set; }
-        [SooColumn(Name = "jl_stk_trc", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "jl_stk_trc", DataType = DataFam.Text, Tag = "sail.text")]
         public string StackTrace { get; set; }
-        [SooColumn(Name = "jl_in_stk_trc", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "jl_in_stk_trc", DataType = DataFam.Text, Tag = "sail.text")]
         public string InnerStackTrace { get; set; }
-        [SooColumn(Name = "jl_req_data", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "jl_req_data", DataType = DataFam.Text, Tag = "sail.text")]
         public string RequestData { get; set; }
         [SooColumn(Name = "jl_crt_time")]
         public DateTime? CreatedDateTime { get; set; }

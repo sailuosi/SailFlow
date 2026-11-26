@@ -27,9 +27,9 @@ namespace sailflow.data
         public decimal? Temperature { get; set; }
         [SooColumn(Name = "ac_max_tokens")]
         public int? MaxTokens { get; set; }
-        [SooColumn(Name = "ac_sys_prompt", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ac_sys_prompt", DataType = DataFam.Text, Tag = "sail.text")]
         public string SystemPrompt { get; set; }
-        [SooColumn(Name = "ac_usr_message", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ac_usr_message", DataType = DataFam.Text, Tag = "sail.text")]
         public string UserMessage { get; set; }
         [SooColumn(Name = "ac_resp_format", Length = 64)]
         public string ResponseFormat { get; set; }
@@ -43,7 +43,7 @@ namespace sailflow.data
         public string FallbackAgent { get; set; }
         [SooColumn(Name = "ac_log_level", Length = 32)]
         public string LogLevel { get; set; }
-        [SooColumn(Name = "ac_cstm_instr", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ac_cstm_instr", DataType = DataFam.Text, Tag = "sail.text")]
         public string CustomInstructions { get; set; }
         [SooColumn(Name = "ac_rag_strategy", Length = 64)]
         public string RagSearchStrategy { get; set; }

@@ -46,7 +46,7 @@ namespace sailflow.engine.tests
                 .useDBInit()
                 .preview()
                 .columnTypeByTag("sail.id", DataFam.Guid)
-                .columnTypeByTag("sail.xml", DataFam.Json)
+                .columnTypeByTag("sail.text", DataFam.Text)
                 .createTable<ProcessEntity>()
                 .Result;
 
@@ -54,7 +54,7 @@ namespace sailflow.engine.tests
             Assert.Contains("uniqueidentifier", sql, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("[p_id] uniqueidentifier", sql, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("[p_process_id] uniqueidentifier", sql, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("[p_xml_content] nvarchar(max)", sql, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("[p_xml_content] text", sql, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("[p_description] nvarchar(500)", sql, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("[p_name] nvarchar(255)", sql, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("[p_start_expression] nvarchar(2000)", sql, StringComparison.OrdinalIgnoreCase);

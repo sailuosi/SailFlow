@@ -19,13 +19,13 @@ namespace sailflow.data
         [SooColumn(Name = "ff_version", Length = 32)]
         public string Version { get; set; }
 
-        [SooColumn(Name = "ff_fld_summary", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ff_fld_summary", DataType = DataFam.Text, Tag = "sail.text")]
         public string FieldSummary { get; set; }
 
-        [SooColumn(Name = "ff_template", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ff_template", DataType = DataFam.Text, Tag = "sail.text")]
         public string TemplateContent { get; set; }
 
-        [SooColumn(Name = "ff_html", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ff_html", DataType = DataFam.Text, Tag = "sail.text")]
         public string HTMLContent { get; set; }
 
         [SooColumn(Name = "ff_description", Length = 500)]

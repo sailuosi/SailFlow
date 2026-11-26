@@ -92,13 +92,13 @@ namespace sailflow.data
         /// 办理对象 Id 汇总（列 <c>ai_sign_ids</c>，JSON/逗号列表）。
         /// 活动级；个人待办以 <see cref="TaskEntity.SignId"/> 为准。
         /// </summary>
-        [SooColumn(Name = "ai_sign_ids", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ai_sign_ids", DataType = DataFam.Text, Tag = "sail.text")]
         public string SignIds { get; set; }
 
         /// <summary>
         /// 办理对象显示名汇总（列 <c>ai_sign_names</c>），与 <see cref="SignIds"/> 对应。
         /// </summary>
-        [SooColumn(Name = "ai_sign_names", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ai_sign_names", DataType = DataFam.Text, Tag = "sail.text")]
         public string SignNames { get; set; }
 
         /// <summary>
@@ -269,7 +269,7 @@ namespace sailflow.data
         /// <summary>
         /// 生效 Leave 判定 Params JSON 快照（列 <c>ai_leave_params</c>），对齐 <c>sf:leaveJudge@params</c>。
         /// </summary>
-        [SooColumn(Name = "ai_leave_params", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ai_leave_params", DataType = DataFam.Text, Tag = "sail.text")]
         public string LeaveJudgeParams { get; set; }
 
         /// <summary>
@@ -297,7 +297,7 @@ namespace sailflow.data
         /// 下一步办理人预选序列化（列 <c>ai_nxt_perf</c>，JSON）。
         /// 会签/加签路径上缓存后续步骤 Performer 映射，供继续前进消费。
         /// </summary>
-        [SooColumn(Name = "ai_nxt_perf", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "ai_nxt_perf", DataType = DataFam.Text, Tag = "sail.text")]
         public string NextStepPerformers { get; set; }
 
         /// <summary>

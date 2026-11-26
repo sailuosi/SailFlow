@@ -93,7 +93,7 @@ namespace sailflow.data.Lifecycle
             => Ensure(kit, physicalTable, templateTable, entityType: null, configure: null, rethrow);
 
         /// <summary>
-        /// 宿主常用 Tag：与 Schema InitDb 对齐（Guid 主键 / Json 大字段）。
+        /// 宿主常用 Tag：与 Schema InitDb 对齐（Guid 主键 / Text 大字段）。
         /// 不强制调用方使用；拷模板表时已继承现网类型，通常无需再配。
         /// </summary>
         public static void ApplySailColumnTags(DBTableCreator creator)
@@ -102,7 +102,7 @@ namespace sailflow.data.Lifecycle
                 return;
             creator
                 .columnTypeByTag("sail.id", DataFam.Guid)
-                .columnTypeByTag("sail.xml", DataFam.Json);
+                .columnTypeByTag("sail.text", DataFam.Text);
         }
 
         /// <summary>测试或运维：清除 ENSURE 缓存。</summary>

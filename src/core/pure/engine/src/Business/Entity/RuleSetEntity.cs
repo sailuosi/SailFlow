@@ -39,7 +39,7 @@ namespace sailflow.data
         /// 规则正文（列 <c>rs_rule_content</c>，JSON/大字段）。
         /// 内容形态由 Mode 决定：Fluent 类型清单或 Bindings JSON DSL。
         /// </summary>
-        [SooColumn(Name = "rs_rule_content", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "rs_rule_content", DataType = DataFam.Text, Tag = "sail.text")]
         public string RuleContent { get; set; }
 
         /// <summary>

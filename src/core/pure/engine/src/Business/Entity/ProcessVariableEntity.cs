@@ -72,7 +72,7 @@ namespace sailflow.data
         /// <summary>
         /// 变量值（列 <c>pv_value</c>，JSON/大字段），按 MediaType 解释。
         /// </summary>
-        [SooColumn(Name = "pv_value", DataType = DataFam.Json, Tag = "sail.xml")]
+        [SooColumn(Name = "pv_value", DataType = DataFam.Text, Tag = "sail.text")]
         public string Value { get; set; }
 
         /// <summary>

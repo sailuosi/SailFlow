@@ -78,7 +78,7 @@ public static class SampleSchemaInitializer
         var wk = kit.useDBInit()
             .upsertMode()
             .columnTypeByTag("sail.id", DataFam.Guid)
-            .columnTypeByTag("sail.xml", DataFam.Json)
+            .columnTypeByTag("sail.text", DataFam.Text)
             .createTable<ProcessEntity>()
             .createTable<ProcessInstanceEntity>()
             .createTable<ActivityInstanceEntity>()
@@ -151,7 +151,7 @@ public static class SampleSchemaInitializer
         var wk = kit.useDBInit()
             .upsertMode()
             .columnTypeByTag("sail.id", DataFam.Guid)
-            .columnTypeByTag("sail.xml", DataFam.Json)
+            .columnTypeByTag("sail.text", DataFam.Text)
             .createTable<AiModelProviderEntity>()
             .createTable<AiActivityConfigEntity>();
         return wk.WorkingProgress?.ToString() ?? string.Empty;
@@ -168,7 +168,7 @@ public static class SampleSchemaInitializer
         {
             new ProcessEntity
             {
-                ProcessId = "sail-seed-hello",
+                ProcessId = "a0e0e001-5eed-4000-8000-000000000001",
                 ProcessName = "Sail Seed Hello",
                 ProcessCode = "SEED_HELLO",
                 Version = "1",
@@ -206,7 +206,7 @@ public static class SampleSchemaInitializer
         "xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\" " +
         "xmlns:sf=\"http://www.sailflow.com/schema/sf\" " +
         "id=\"Definitions_SailSeed\" targetNamespace=\"http://bpmn.io/schema/bpmn\">" +
-        "<bpmn:process id=\"Process_1\" name=\"Sail Seed Hello\" isExecutable=\"true\" " +
+        "<bpmn:process id=\"Process_a0e0e0015eed40008000000000000001\" name=\"Sail Seed Hello\" isExecutable=\"true\" " +
         "sf:code=\"SEED_HELLO\" sf:version=\"1\">" +
         "<bpmn:startEvent id=\"StartEvent_1\" name=\"Start\">" +
         "<bpmn:outgoing>Flow_start_task</bpmn:outgoing>" +
@@ -226,7 +226,7 @@ public static class SampleSchemaInitializer
         "<bpmn:sequenceFlow id=\"Flow_task_end\" sourceRef=\"UserTask_1\" targetRef=\"EndEvent_1\" />" +
         "</bpmn:process>" +
         "<bpmndi:BPMNDiagram id=\"BPMNDiagram_1\">" +
-        "<bpmndi:BPMNPlane id=\"BPMNPlane_1\" bpmnElement=\"Process_1\">" +
+        "<bpmndi:BPMNPlane id=\"BPMNPlane_1\" bpmnElement=\"Process_a0e0e0015eed40008000000000000001\">" +
         "<bpmndi:BPMNShape id=\"StartEvent_1_di\" bpmnElement=\"StartEvent_1\">" +
         "<dc:Bounds x=\"180\" y=\"160\" width=\"36\" height=\"36\" />" +
         "</bpmndi:BPMNShape>" +
