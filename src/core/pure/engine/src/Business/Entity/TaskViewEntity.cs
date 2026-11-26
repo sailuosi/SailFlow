@@ -20,7 +20,7 @@ namespace sailflow.data
         OnA = "ai.ai_m_act_instance_id", OnB = "mai.ai_id")]
     public class TaskViewEntity
     {
-        [SooColumn(Name = "tk_id", Kind = FieldKind.Base, IsPrimaryKey = true, AutoKey = "SailId", Length = 64)]
+        [SooColumn(Name = "tk_id", Kind = FieldKind.Base, IsPrimaryKey = true, AutoKey = "SailId", Length = 64, Tag = "sail.id")]
         public string TaskId { get; set; }
 
         [SooColumn(Name = "tk_biz_channel", Kind = FieldKind.Base)]
@@ -41,11 +41,11 @@ namespace sailflow.data
             Name = "pi_name", Alias = "pi_name")]
         public string ProcessName { get; set; }
 
-        [SooColumn(Name = "tk_proc_instance_id", Kind = FieldKind.Base, Length = 64)]
+        [SooColumn(Name = "tk_proc_instance_id", Kind = FieldKind.Base, Length = 64, Tag = "sail.id", IsFK = true)]
         public string ProcessInstanceId { get; set; }
 
         [SooColumn(Kind = FieldKind.Join, SrcTable = "pi", SrcField = "pi_process_id",
-            Name = "pi_process_id", Alias = "pi_process_id")]
+            Name = "pi_process_id", Alias = "pi_process_id", Length = 64, Tag = "sail.id")]
         public string ProcessId { get; set; }
 
         [SooColumn(Kind = FieldKind.Join, SrcTable = "pi", SrcField = "pi_version",
@@ -55,7 +55,7 @@ namespace sailflow.data
         [SooColumn(Name = "tk_activity_id", Kind = FieldKind.Base)]
         public string ActivityId { get; set; }
 
-        [SooColumn(Name = "tk_act_instance_id", Kind = FieldKind.Base, Length = 64)]
+        [SooColumn(Name = "tk_act_instance_id", Kind = FieldKind.Base, Length = 64, Tag = "sail.id", IsFK = true)]
         public string ActivityInstanceId { get; set; }
 
         [SooColumn(Kind = FieldKind.Join, SrcTable = "ai", SrcField = "ai_activity_name",
@@ -82,14 +82,14 @@ namespace sailflow.data
         public short? SubProcessType { get; set; }
 
         [SooColumn(Kind = FieldKind.Join, SrcTable = "pi", SrcField = "pi_sub_process_id",
-            Name = "pi_sub_process_id", Alias = "pi_sub_process_id", Length = 64)]
+            Name = "pi_sub_process_id", Alias = "pi_sub_process_id", Length = 64, Tag = "sail.id")]
         public string SubProcessDefId { get; set; }
 
         [SooColumn(Kind = FieldKind.Join, SrcTable = "pi", SrcField = "pi_sub_proc_id",
-            Name = "pi_sub_proc_id", Alias = "pi_sub_proc_id")]
+            Name = "pi_sub_proc_id", Alias = "pi_sub_proc_id", Length = 64, Tag = "sail.id")]
         public string SubProcessId { get; set; }
 
-        [SooColumn(Name = "tk_entr_task_id", Kind = FieldKind.Base, Length = 64)]
+        [SooColumn(Name = "tk_entr_task_id", Kind = FieldKind.Base, Length = 64, Tag = "sail.id", IsFK = true)]
         public string EntrustedTaskId { get; set; }
 
         [SooColumn(Name = "tk_weight", Kind = FieldKind.Base)]
@@ -107,11 +107,11 @@ namespace sailflow.data
         [SooColumn(Name = "tk_assignee_role", Kind = FieldKind.Base)]
         public int? AssigneeRole { get; set; }
 
-        [SooColumn(Name = "tk_consult_src_task_id", Kind = FieldKind.Base, Length = 64)]
+        [SooColumn(Name = "tk_consult_src_task_id", Kind = FieldKind.Base, Length = 64, Tag = "sail.id", IsFK = true)]
         public string ConsultSrcTaskId { get; set; }
 
         [SooColumn(Kind = FieldKind.Join, SrcTable = "ai", SrcField = "ai_m_act_instance_id",
-            Name = "ai_m_act_instance_id", Alias = "ai_m_act_instance_id", Length = 64)]
+            Name = "ai_m_act_instance_id", Alias = "ai_m_act_instance_id", Length = 64, Tag = "sail.id")]
         public string MainActInstanceId { get; set; }
 
         [SooColumn(Kind = FieldKind.Join, SrcTable = "ai", SrcField = "ai_cmp_order",
