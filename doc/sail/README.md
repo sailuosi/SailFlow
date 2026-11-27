@@ -52,7 +52,7 @@
 | [专题-钩子治理与同事务可观测.md](./theme/专题-钩子治理与同事务可观测.md) | **P0+P1 已落地**：Log 契约、Sync/CreateHook 软超时、Notifier/Outbox 日志；P2 可选 |
 | [专题-Bug治理-Sync钩子同事务自锁.md](./theme/专题-Bug治理-Sync钩子同事务自锁.md) | **案例库**：第二连接自锁指纹 / 评审检查单 |
 | [专题-对象解析器.md](./theme/专题-对象解析器.md) | **本切片已完成**（A0–A6 / B0–B3）；附录[范围注册清单](./theme/专题-对象解析器-范围注册清单.md) |
-| [专题-IStorage.md](./theme/专题-IStorage.md) | **P0–P2 已收口**：十二件套 + Preselect；Picked 预留；宿主散落读可选 |
+| [专题-IStorage.md](./theme/专题-IStorage.md) | **P0–P2 已收口**：十二件套 + Preselect/Picked；宿主散落读见 §8.2 |
 
 ## 目录
 
