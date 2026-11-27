@@ -5,13 +5,13 @@ using sailflow.factory;
 using sailflow.nextStep;
 using sailflow.runtime.Actions;
 using sailflow.runtime.NextStep;
-using sailflow.data.Storage;
 
 namespace sailflow.runtime.Hosting;
 
 /// <summary>
 /// 引擎默认扩展能力总包（pure、无重 NuGet）。
 /// 当前：DefaultManagerFactory；NextStep LINQ Evaluator；Guid 发号；内置 Action/Script/Service。
+/// 默认 IStorage 在 <c>sailflow.data</c>（<c>UseSailData</c> / <c>UseDefaultStorages</c>），本包不引用 data。
 /// Assignee 仍见 <c>UseAssign</c> / <c>sailflow.assignee</c>（后续迁入本包）。
 /// </summary>
 public static class SailRuntimeExtensions
@@ -55,9 +55,6 @@ public static class SailRuntimeExtensions
         // 内置 Action/Script/Service（原 engine EnsurePorts 自动挂载）
         BuiltinActionMethods.RegisterAll(services);
 
-        // IStorage S0：默认流程实例 Storage（kit 首参；可后覆盖）
-        services.UseDefaultStorages();
-
         // 占位 Feature：便于 ProbeInstalledFeatures / DependsOn
         if (!services.Any(f => string.Equals(f.Name, FeatureName, StringComparison.Ordinal)))
         {
@@ -84,7 +81,6 @@ public static class SailRuntimeExtensions
         });
         client.UseSailIdDefaults();
         BuiltinActionMethods.RegisterAll(client);
-        client.UseDefaultStorages();
         return client;
     }
 }

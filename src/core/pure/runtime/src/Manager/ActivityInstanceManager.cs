@@ -14,7 +14,6 @@ using sailflow.run;
 using sailflow.xml;
 using sailflow.hub.Localize;
 using sailflow.storage;
-using sailflow.data.Storage;
 
 namespace sailflow.data
 {
@@ -31,25 +30,11 @@ namespace sailflow.data
 
         protected SailClient Sail { get; }
 
-        protected IActivityInstanceStorage Storage
-        {
-            get
-            {
-                if (Sail.Storages.TryGet<IActivityInstanceStorage>(out var s) && s != null)
-                    return s;
-                return new DefaultActivityInstanceStorage();
-            }
-        }
+        protected IActivityInstanceStorage Storage =>
+            Sail.Storages.GetRequired<IActivityInstanceStorage>();
 
-        protected ITransitionInstanceStorage TransitionStorage
-        {
-            get
-            {
-                if (Sail.Storages.TryGet<ITransitionInstanceStorage>(out var s) && s != null)
-                    return s;
-                return new DefaultTransitionInstanceStorage();
-            }
-        }
+        protected ITransitionInstanceStorage TransitionStorage =>
+            Sail.Storages.GetRequired<ITransitionInstanceStorage>();
 
         Exception FailThrow(Exception ex, string op, string detail = null)
         {

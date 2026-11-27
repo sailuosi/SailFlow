@@ -148,7 +148,7 @@ S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非
 | Preselect Storage | `IPreselectAssigneeStorage` · 宿主 `SleveenPreselectAssigneeStorage` → `sf_preselect_assignee` |
 | Picked Storage | `IPickedAssigneeStorage` · 宿主 `SleveenPickedAssigneeStorage` → `sf_picked_assignee` |
 | Mode 适配 | `SleveenPreselectAssigneeStore` / `SleveenPickedAssigneeStore`（无 kit 对外；内部 kit 首参） |
-| 挂载 | `UseSailData` / `UseDefaultStorages`（及 runtime `UseSailRuntimeDefaults`）；宿主 Preselect/Picked |
+| 挂载 | **`UseSailData` / `UseDefaultStorages`（sailflow.data）**；runtime **不**挂默认 Storage；宿主 Preselect/Picked |
 
 **办理人项集表（与对象解析器对齐，已定）：** Preselect 仓与 Picked 仓**不同表**；覆盖写入为**物理删后插**（项集语义，非软删）。数据量大时 Storage 实现须**考虑分片**（如按 `ProcessInstanceId` 哈希）；首版单表 + `(process_instance_id, activity_id)` 索引。
 
@@ -161,7 +161,7 @@ S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非
 | 1 | 试点清单 / Definition | **运行时套表**：PI / Task / AI / Transition / HookOutbox / **Variable（已下沉）**。**Definition / XPDL 不并入**本 kit 族（见 S5）：`IXPDLStorage` 为文件/XML 读写，无 `SQLBuilder kit` 首参，经 `IProcessModelFactory` 创建，与 `SailStorages` 分离。 |
 | 2 | 聚合根切分 | **Task ≠ ActivityInstance ≠ ProcessInstance**：分接口保留（热点列与查询面不同）。Transition、HookOutbox **各自独立接口**，不并入 Task/AI。 |
 | 3 | 乐观并发 | **首版不引入版本列**；状态竞争用 **条件更新 / CAS**（`where Status=…`、`CasClaimPending` 等）。若日后加 `RowVersion`，仅落在对应 Storage 热点 API，不改 Manager 业务语义。 |
-| 4 | `useRepo` 口径 | **仅允许在 Storage 实现内**使用 `useRepo` / `useClip`；Manager / Lane / Mode Store **对外不得泄漏** repo。默认实现在 **`sailflow.data`**；Manager 未注册槽时允许回落 `new Default*Storage()`。 |
+| 4 | `useRepo` 口径 | **仅允许在 Storage 实现内**使用 `useRepo` / `useClip`；Manager / Lane / Mode Store **对外不得泄漏** repo。默认实现在 **`sailflow.data`**；Manager **只**经 `Storages.GetRequired` 取实现（**禁止** runtime → data；未挂 `UseSailData`/`UseDefaultStorages` 则硬失败）。 |
 | 5 | Outbox 业务边界 | Attempt 递增、退避、Skip 原因截断留 **Manager**；Storage 提供 `Insert` / `Update` / `GetById` / `Cas*` / `DeleteById` **及纯查询**（`ListPendingDue` / `ListDead` / `ListStaleProcessing` 等），不含状态机策略。 |
 | 6 | 热分表 | Router 解析物理表名留 **Manager**；Storage `Insert(..., physicalTable)` 只负责写指定表。 |
 

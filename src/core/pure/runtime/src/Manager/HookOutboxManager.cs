@@ -7,7 +7,6 @@ using sailflow.hosting;
 using sailflow.hooks;
 using sailflow.run;
 using sailflow.storage;
-using sailflow.data.Storage;
 
 namespace sailflow.data
 {
@@ -20,15 +19,8 @@ namespace sailflow.data
 
         protected SailClient Sail { get; }
 
-        protected IHookOutboxStorage Storage
-        {
-            get
-            {
-                if (Sail.Storages.TryGet<IHookOutboxStorage>(out var s) && s != null)
-                    return s;
-                return new DefaultHookOutboxStorage();
-            }
-        }
+        protected IHookOutboxStorage Storage =>
+            Sail.Storages.GetRequired<IHookOutboxStorage>();
 
         public void InsertPending(SQLBuilder kit, HookOutboxEntity entity)
         {

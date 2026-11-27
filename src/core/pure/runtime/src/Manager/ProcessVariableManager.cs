@@ -16,7 +16,6 @@ using sailflow.hub.Localize;
 using sailflow.nextStep;
 using sailflow.run;
 using sailflow.storage;
-using sailflow.data.Storage;
 
 namespace sailflow.data
 {
@@ -33,15 +32,8 @@ namespace sailflow.data
 
         protected SailClient Sail { get; }
 
-        protected IProcessVariableStorage Storage
-        {
-            get
-            {
-                if (Sail.Storages.TryGet<IProcessVariableStorage>(out var s) && s != null)
-                    return s;
-                return new DefaultProcessVariableStorage();
-            }
-        }
+        protected IProcessVariableStorage Storage =>
+            Sail.Storages.GetRequired<IProcessVariableStorage>();
 
         Exception FailThrow(Exception ex, string op, string detail = null)
         {
@@ -312,12 +304,8 @@ namespace sailflow.data
         {
             if (kit == null || string.IsNullOrWhiteSpace(processInstanceId))
                 return null;
-            IProcessInstanceStorage piStorage = null;
-            if (Sail.Storages.TryGet<IProcessInstanceStorage>(out var s) && s != null)
-                piStorage = s;
-            else
-                piStorage = new DefaultProcessInstanceStorage();
-            return piStorage.GetById(kit, processInstanceId)?.ProcessId;
+            return Sail.Storages.GetRequired<IProcessInstanceStorage>()
+                .GetById(kit, processInstanceId)?.ProcessId;
         }
 
         private List<ProcessVariableEntity> QueryWithFallback(

@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\engine\sailflow.engine.csproj" />
-    <ProjectReference Include="..\..\ext\data\sailflow.data.csproj" />
   </ItemGroup>
 
 </Project>

@@ -13,7 +13,13 @@
     <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
-  <!-- Published dependency; leaf projects keep local mooSQL ProjectReference for compile. -->
+  <!--
+    发布依赖：叶子工程编译仍用本地 mooSQL ProjectReference；
+    聚合包须显式 PackageReference，否则 PrivateAssets=all 不会把 mooSQL 写进 nuspec。
+  -->
+  <ItemGroup>
+    <PackageReference Include="mooSQL.Ext" Version="8.2.1.13" />
+  </ItemGroup>
 
   <!-- Layer assemblies → packed into this nupkg; not separate NuGet deps -->
   <ItemGroup>

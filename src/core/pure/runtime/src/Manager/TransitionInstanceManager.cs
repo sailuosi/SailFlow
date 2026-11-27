@@ -10,7 +10,6 @@ using sailflow.data.HotShard;
 using sailflow.log;
 using sailflow.run;
 using sailflow.storage;
-using sailflow.data.Storage;
 
 namespace sailflow.data
 {
@@ -27,15 +26,8 @@ namespace sailflow.data
 
         protected SailClient Sail { get; }
 
-        protected ITransitionInstanceStorage Storage
-        {
-            get
-            {
-                if (Sail.Storages.TryGet<ITransitionInstanceStorage>(out var s) && s != null)
-                    return s;
-                return new DefaultTransitionInstanceStorage();
-            }
-        }
+        protected ITransitionInstanceStorage Storage =>
+            Sail.Storages.GetRequired<ITransitionInstanceStorage>();
 
         Exception FailThrow(Exception ex, string op, string detail = null)
         {
@@ -190,9 +182,7 @@ namespace sailflow.data
                 }
             }
 
-            if (Sail.Storages.TryGet<IActivityInstanceStorage>(out var aiStorage) && aiStorage != null)
-                return aiStorage.ListByIds(kit, ids);
-            return new DefaultActivityInstanceStorage().ListByIds(kit, ids);
+            return Sail.Storages.GetRequired<IActivityInstanceStorage>().ListByIds(kit, ids);
         }
 
         /// <summary>同库同事务的新 kit，避免链式 select 状态互相污染。</summary>
@@ -216,9 +206,8 @@ namespace sailflow.data
 
         private string ResolveProcessIdFromActivity(SQLBuilder kit, string activityInstanceId)
         {
-            if (Sail.Storages.TryGet<IActivityInstanceStorage>(out var aiStorage) && aiStorage != null)
-                return aiStorage.GetProcessId(kit, activityInstanceId);
-            return new DefaultActivityInstanceStorage().GetProcessId(kit, activityInstanceId);
+            return Sail.Storages.GetRequired<IActivityInstanceStorage>()
+                .GetProcessId(kit, activityInstanceId);
         }
 
         /// <summary>

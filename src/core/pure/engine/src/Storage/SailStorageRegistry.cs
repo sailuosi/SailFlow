@@ -51,7 +51,7 @@ namespace sailflow.storage
             throw new InvalidOperationException(
                 "No storage registered for "
                 + typeof(TStorage).Name
-                + ". Call UseStorage / useStorage<"
+                + ". Call UseSailData() / UseDefaultStorages() (sailflow.data), or useStorage<"
                 + typeof(TStorage).Name
                 + ">(...).");
         }

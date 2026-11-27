@@ -16,7 +16,6 @@ using sailflow.hosting;
 using sailflow.log;
 using sailflow.run;
 using sailflow.storage;
-using sailflow.data.Storage;
 
 
 namespace sailflow.data
@@ -34,15 +33,8 @@ namespace sailflow.data
 
         protected SailClient Sail { get; }
 
-        protected ITaskStorage Storage
-        {
-            get
-            {
-                if (Sail.Storages.TryGet<ITaskStorage>(out var s) && s != null)
-                    return s;
-                return new DefaultTaskStorage();
-            }
-        }
+        protected ITaskStorage Storage =>
+            Sail.Storages.GetRequired<ITaskStorage>();
 
         Exception FailThrow(Exception ex, string op, string detail = null)
         {

@@ -16,7 +16,6 @@ using sailflow.hub.Localize;
 using sailflow.hub.Resource;
 using sailflow.run;
 using sailflow.storage;
-using sailflow.data.Storage;
 
 namespace sailflow.data
 {
@@ -33,18 +32,9 @@ namespace sailflow.data
 
         protected SailClient Sail { get; }
 
-        /// <summary>
-        /// 纯库层；未注册时回落默认实现（S0/S1）。
-        /// </summary>
-        protected IProcessInstanceStorage Storage
-        {
-            get
-            {
-                if (Sail.Storages.TryGet<IProcessInstanceStorage>(out var s) && s != null)
-                    return s;
-                return new DefaultProcessInstanceStorage();
-            }
-        }
+        /// <summary>纯库层；须 <c>UseSailData</c> / <c>UseDefaultStorages</c> 注册（默认实现在 sailflow.data）。</summary>
+        protected IProcessInstanceStorage Storage =>
+            Sail.Storages.GetRequired<IProcessInstanceStorage>();
 
         /// <summary>业务硬失败：写 <see cref="SailFailLog"/> 后原样抛出。</summary>
         Exception FailThrow(Exception ex, string op, string detail = null)
@@ -175,45 +165,17 @@ namespace sailflow.data
         public void Update(SQLBuilder kit, ProcessInstanceEntity entity)
             => Storage.Update(kit, entity);
 
-        protected ITaskStorage TaskStorage
-        {
-            get
-            {
-                if (Sail.Storages.TryGet<ITaskStorage>(out var s) && s != null)
-                    return s;
-                return new DefaultTaskStorage();
-            }
-        }
+        protected ITaskStorage TaskStorage =>
+            Sail.Storages.GetRequired<ITaskStorage>();
 
-        protected IActivityInstanceStorage ActivityStorage
-        {
-            get
-            {
-                if (Sail.Storages.TryGet<IActivityInstanceStorage>(out var s) && s != null)
-                    return s;
-                return new DefaultActivityInstanceStorage();
-            }
-        }
+        protected IActivityInstanceStorage ActivityStorage =>
+            Sail.Storages.GetRequired<IActivityInstanceStorage>();
 
-        protected ITransitionInstanceStorage TransitionStorage
-        {
-            get
-            {
-                if (Sail.Storages.TryGet<ITransitionInstanceStorage>(out var s) && s != null)
-                    return s;
-                return new DefaultTransitionInstanceStorage();
-            }
-        }
+        protected ITransitionInstanceStorage TransitionStorage =>
+            Sail.Storages.GetRequired<ITransitionInstanceStorage>();
 
-        protected IProcessVariableStorage VariableStorage
-        {
-            get
-            {
-                if (Sail.Storages.TryGet<IProcessVariableStorage>(out var s) && s != null)
-                    return s;
-                return new DefaultProcessVariableStorage();
-            }
-        }
+        protected IProcessVariableStorage VariableStorage =>
+            Sail.Storages.GetRequired<IProcessVariableStorage>();
 
         public ProcessInstanceEntity CreateNewProcessInstanceObject(
             FlowCommandContext runner,
