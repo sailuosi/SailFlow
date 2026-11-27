@@ -1,6 +1,6 @@
 ﻿# 中国式 OA 审批要素（办理动词）
 
-> 状态：**现行对照说明**（2026-11-01）  
+> 状态：**现行对照说明**（2026-11-01；**2026-11-27** 码表分层回写）  
 > 用途：用「场景 → Sail 编码 → 执行含义」固化中国式办公审批里常见办理动词；指导按钮码表、引擎命令与产品文案，避免和 AntFlow/其它 BPM 产品名词一一硬套。  
 > 权威码表（已入办理条）：宿主 `SailButtonsCatalog` / `buttonsCatalog.ts` · [宿主 sailflow-buttons-capability.md](../../../sleveen-admin/doc/sailflow-buttons-capability.md)  
 > 关联：[特性说明-引擎能力基线.md](./特性说明-引擎能力基线.md) · [特性说明-待办人管道.md](./特性说明-待办人管道.md) · [存疑参考功能点.md](./talk/存疑参考功能点.md) · [todo-产品缺口.md](./dev/todo-产品缺口.md) · [专题-流转动作骨架.md](./theme/专题-流转动作骨架.md)（动词扩展配方，已落地）
@@ -41,6 +41,15 @@
 | 关闭 | `Close` | `CloseProcess` | 结束/关闭实例（管理向）；与终止/作废文案需产品区分 |
 | 修订 | `Revise` | `ReviseProcess` | 修订类路径；码表默认 **enable=false** |
 | 反转 | `Reverse` | `ReverseProcess` | 反转/回转类路径，**≠** `SendBack`；默认关，接入前核对场景 |
+| 转办 | `Transfer` | `TransferProcess` | **个人办结 + 本节点交人，不发生节点流转**（≠ 委派回转）；细表 [OA/专题-转办.md](./OA/专题-转办.md) |
+| 委派 | `Delegate` | `DelegateProcess` | 请人代办；**办结自动回转**原责任人；码表默认关；≠ Surrogate 出差代批 |
+| 减签 | `RemoveAssignee` | `RemoveAssigneeProcess` | 移除当前节点未办办理人；禁减至 0；细表 [OA/专题-改签.md](./OA/专题-改签.md) |
+| 改派 | `ChangeAssignee` | `ChangeAssigneeProcess` | 差量改当前节点办理人全集；码表默认关 |
+| 加人 | `AddAssignee` | `AddAssigneeProcess` | 扁节点增量加人；不改 Leave、不压加签栈；码表默认关 |
+| 认领 | `TakeOn` | `TakeOnProcess` | **仅** `Leave=Race`/`GroupRace` 独占待办、不推进；不做「认领前藏通过」 |
+| 催办 | `Urge` | `UrgeProcess` | 对打开待办发 `Urged`，**不改**状态；码表默认关；≠ 加急优先级 |
+| 终止 | `Terminate` | `TerminateProcess` | 强行结束运行实例；码表默认关；Host Handler 已挂 |
+| 作废 | `Discard` | `DiscardProcess` | 作废实例；码表默认关；Host Handler 已挂 |
 
 **发起**（Submit / Start）属发起页，**不是**任务办理条按钮；引擎对应 `StartProcess` / `StartProcessByMessage`。
 
@@ -62,28 +71,20 @@
 
 ---
 
-## 4. 中国式 OA 常见、尚未入码表（候选编码）
+## 4. 仍候选 / 未产品化（勿空壳上线）
 
-下列为调研常见要素（AntFlow / 公文习惯）。**候选 Id 仅文档建议**；落地须先有引擎命令 + Host API + 审计，再进码表。
+下列为调研常见要素（AntFlow / 公文习惯）中**尚未**升为正式码表一等公民，或仅有引擎 Lifecycle、产品暂缓者。**候选 Id 仅文档建议**；落地须先有引擎命令 + Host API + 审计。已接线动词见 §2（含默认关的 `Delegate`/`Urge`/`Terminate` 等）。
 
 | 场景 / 常用名 | 建议 Sail 编码 | 建议引擎落点 | 执行含义 | 现状 |
 |---------------|----------------|--------------|----------|------|
-| 转办 | `Transfer` | `TransferProcess` | **个人办结 + 本节点交人，不发生节点流转**（原人待办 Closed，新人同 Activity 待办；刷新 SignIds/Names；≠ 委派回转） | **已接线**（码表 + Host `ButtonsOperation`）；见 [todo-产品缺口.md](./dev/todo-产品缺口.md) **§F** · [OA/专题-转办.md](./OA/专题-转办.md) |
-| 委派 / 委托 | `Delegate` | `DelegateProcess` | 请他人代办；**受托人办结后自动回转**原责任人待办（不推进）。若办完不回转 → 用 `Transfer`。审计走审批轨迹，不默认单独流水表 | **已接线**（码表默认关 + Handler + 办理条；≠ Surrogate 出差代批） |
-| 变更处理人 | `ChangeAssignee` | `ChangeAssigneeProcess` | 管理员/有权人改当前节点办理人集合（差量） | **已接线**（码表默认关 + Handler + Workbench `CurrentAssignees` + 办理条） |
-| 承办 / 认领 | `TakeOn`（展示「认领」；**不用** Claim/Undertake 作 Id） | `TakeOnProcess`；**仅** `Leave=Race`/`GroupRace` | 或签多人时先独占待办（旁关他人或同组），**不推进**；通过仍可直接或签旁关 | **已接线**（码表 + Handler + 工作台 Leave/同伴裁剪）；不做「认领前藏通过」 |
 | 加批 | `SignAddNode`（候选） | 与 `SignForward` 拆语义后定 | **生成新审批节点/段**再审（AntFlow JP） | 现揉在加签，未拆 |
-| 当前节点加人 | `AddAssignee` | `AddAssigneeProcess` | 扁节点追加普通办理人（增量）；不改 Leave、不压加签栈；加签对话框可路由 | **已接线**（码表默认关 + Handler + 办理条 / 加签「普通加人」）；见 [OA/专题-改签.md](./OA/专题-改签.md) §1b |
-| 减签 | `RemoveAssignee` | `RemoveAssigneeProcess` | 从当前多人节点移除尚未办完的办理人 | **已接线**（码表 + Host Handler + Workbench 候选人 + 办理条弹窗）；与加签/改派见 [OA/专题-改签.md](./OA/专题-改签.md) |
 | 未来节点加签 | `AddFutureAssignee` | 待定 | 改尚未到达节点的预定办理人（加人） | 无；主场景用预选表，见 [OA/专题-超前选人.md](./OA/专题-超前选人.md) |
 | 未来节点减签 | `RemoveFutureAssignee` | 待定 | 同上，减人 | 无；改/清预选表 |
 | 未来节点换人 | `ChangeFutureAssignee` | 待定 | 同上，替换 | 无；`WfPreselect/Replace` 覆盖 |
-| 打回修改 | （多用 `SendBack`） | `SendBackProcess` + 策略 | 退回修改态；常要求发起人/原节点改完再来 | 有退回；缺「再提交落点」策略 |
-| 重新提交 | `Resubmit`（候选） | 常组合 `Resend` / `Run` | 被打回后再次提交；落点由 Disagree 策略决定 | 有 `Resend`；缺策略枚举 |
-| 终止 | `Terminate` | `TerminateProcess` | 强行结束运行实例 | 码表默认关；Host Handler 已挂 |
-| 作废 | `Discard` | `DiscardProcess` | 作废实例 | 码表默认关；Host Handler 已挂 |
-| 取消 | `Cancel` | `CancelProcess` | 取消 | 未产品化 |
-| 挂起 / 恢复 | `Suspend` / `Resume` | `SuspendProcess` 等 | 暂停与恢复 | 未产品化 |
+| 打回修改 | （多用 `SendBack`） | `SendBackProcess` + 策略 | 退回修改态；常要求发起人/原节点改完再来 | 有退回；「再提交落点」策略仍可补强 |
+| 重新提交 | `Resubmit`（候选） | 常组合 `Resend` / `Run` | 被打回后再次提交；落点由 Disagree 策略决定 | 有 `Resend`；缺独立策略枚举 |
+| 取消 | `Cancel` | `CancelProcess` | 取消 | 引擎有；产品码表暂缓 |
+| 挂起 / 恢复 | `Suspend` / `Resume` | `SuspendProcess` / `ResumeProcess` | 暂停与恢复 | 引擎有；产品码表暂缓；≠ WaitToken Resume |
 | 转发（知会外的转发） | 慎用；多归 `Copyto` | Host 抄送或独立 | AntFlow Forward：偏知会/转发；易与抄送混淆 | 以 `Copyto` 为主通道 |
 
 ### 4.1 退回策略：两维（配置要素，非单独按钮）
@@ -127,10 +128,10 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 办理上下文 | 典型动词（码表） | 说明 |
 |------------|------------------|------|
 | 发起页 | （无码表 Id）`StartProcess` | 选定义、填表、选人后启动 |
-| 待办 `handle` | `Approve` `Reject` `SendBack` `SignForward` `Transfer` `Consult` `Acknowledge` `RecallConsult` `Copyto` `Revise` | 当前用户有待办；参与者仅 `Acknowledge` |
+| 待办 `handle` | `Approve` `Reject` `SendBack` `SignForward` `Transfer` `Delegate*` `RemoveAssignee` `AddAssignee*` `TakeOn` `Urge*` `Consult` `Acknowledge` `RecallConsult` `Copyto` `Revise*` | 当前用户有待办；参与者仅 `Acknowledge`；`*`=码表默认关 |
 | 已办 `done` | `Withdraw` `Resend` | 本人已办且流程仍运行 |
-| 管理 `admin` | `Jump` `Close` `Reverse` | 运维/有权跳转关闭 |
-| 候选扩展 | `Transfer` `Delegate` `TakeOn` `Terminate` `Discard` … | 见 §4 |
+| 管理 `admin` | `Jump` `Close` `Reverse` `ChangeAssignee*` `Terminate*` `Discard*` | 运维/有权；`*`=码表默认关 |
+| 仍候选 | `SignAddNode` `*FutureAssignee` `Cancel` `Suspend`/`Resume` … | 见 §4 |
 
 显隐 = **上下文** ∧ **节点 `ButtonsSetting.enable`**（宿主约定）。
 
@@ -148,7 +149,8 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 认领 / 承办 | 通过 / 越过会签 | `TakeOn`；仅 Leave=`Race`/`GroupRace` |
 | 抄送 | 算人 / 待办 | Host `Copyto`；禁止塞进 Resolve Type |
 | 沟通 | 抄送 / 前加签 | `Consult` 建参与者 `sf_task` 并锁审批；抄送不锁、不加签无审批权 |
-| 关闭 | 终止 / 作废 | `Close` vs 候选 `Terminate`/`Discard` |
+| 关闭 | 终止 / 作废 | `Close` vs `Terminate`/`Discard`（后二者码表默认关） |
+| 催办 | 加急 | `Urge`=提醒不改状态；加急=优先级字段，勿混 |
 
 ---
 
@@ -174,3 +176,4 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 2026-11-15 | 沟通入码表：`Consult`/`Acknowledge`/`RecallConsult`；参与者 `AssigneeRole=1` + 等待协议 |
 | 2026-11-15 | 驳回定型：极简 + `RejectMode` 四态；与退回两维划界；Host 不再转调 SendBack |
 | 2026-11-16 | 委托一族专项解说：[解说-OA委托动词.md](../helps/解说-OA委托动词.md)（转办/委派现行 + 委托代批候选） |
+| 2026-11-27 | §2 收入已接线动词（转办/委派/减签/改派/加人/认领/催办/终止作废）；§4 收窄为仍候选；场景速查同步 |

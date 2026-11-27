@@ -39,20 +39,27 @@
 
 | 文档 | 用途 |
 |------|------|
+| [专题-事务一致性.md](./theme/专题-事务一致性.md) | **规范**：流转动词严格同事务；kit/锁/Sync·Outbox 信封；钩子与插件派生规约 |
 | [专题-流转动作骨架.md](./theme/专题-流转动作骨架.md) | **已落地**：三族动作骨架（含沟通/委派）；Host 减签办理条 / Copyto 独立 |
 | [专题-对象生命周期与复用边界.md](./theme/专题-对象生命周期与复用边界.md) | **规范**：A/B/C/H、四槽、入参袋 vs 编排袋（D3 + D4-a/b 已落地） |
 | [专题-主键与设计键发号契约.md](./theme/专题-主键与设计键发号契约.md) | **P0+P1 已落地**：`ISailIdSource` / `SailId` AutoKey + BPMN codec |
 | [专题-办理人权重与委托体系.md](./theme/专题-办理人权重与委托体系.md) | Weight / EffectiveWeight / 委托代批；与转办·委派划界 |
 | [专题-节点实例与任务.md](./theme/专题-节点实例与任务.md) | ActInstance ↔ Task 职责、基数、主/子与 OA 原语落库 |
+| [专题-Task办理主体.md](./theme/专题-Task办理主体.md) | Task 多维办理主体：SignKind+SignId；精确人 vs 模糊部门/角色/池 |
 | [专题-节点实例临时子规则.md](./theme/专题-节点实例临时子规则.md) | **已落地**：AI Leave 快照；加签改写子 Leave；TryCanLeave 统一判定 |
 | [专题测试.md](./theme/专题测试.md) | OA 办理真人点验（一文档）：通过/加签/沟通/驳回/退回/返送已过 |
 | [专题-流程实例标题与业务字段.md](./theme/专题-流程实例标题与业务字段.md) | 流程实例标题与业务字段契约 |
+| [专题-钩子治理与同事务可观测.md](./theme/专题-钩子治理与同事务可观测.md) | **P0+P1 已落地**：Log 契约、Sync/CreateHook 软超时、Notifier/Outbox 日志；P2 可选 |
+| [专题-Bug治理-Sync钩子同事务自锁.md](./theme/专题-Bug治理-Sync钩子同事务自锁.md) | **案例库**：第二连接自锁指纹 / 评审检查单 |
+| [专题-对象解析器.md](./theme/专题-对象解析器.md) | **本切片已完成**（A0–A6 / B0–B3）；附录[范围注册清单](./theme/专题-对象解析器-范围注册清单.md) |
+| [专题-IStorage.md](./theme/专题-IStorage.md) | **实施中**：运行时套表含 Variable 已收口；XPDL 维持独立路径 |
 
 ## 目录
 
 | 文档 | 用途 |
 |------|------|
 | [目录-扩展插件.md](./目录-扩展插件.md) | pure/ext/biz + sleveen-admin 的 UseXxx / Resolver / Filter / Hook / Handler |
+| [目录-能力成熟度.md](./目录-能力成熟度.md) | **梳理快照**：办理动词 / 算人 / 回调存储 / 文档仓健康度一览 |
 
 ## 设计与规范（现行）
 
