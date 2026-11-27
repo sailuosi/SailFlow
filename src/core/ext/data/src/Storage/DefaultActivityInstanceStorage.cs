@@ -251,6 +251,25 @@ public class DefaultActivityInstanceStorage : IActivityInstanceStorage
         return clip.select(ai).queryList().ToList();
     }
 
+    public virtual ActivityInstanceEntity GetCompletedMiChildByMainAndOrder(
+        SQLBuilder kit,
+        string mainActivityInstanceId,
+        float completeOrder)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        if (string.IsNullOrWhiteSpace(mainActivityInstanceId))
+            return null;
+
+        var clip = kit.useClip();
+        clip.from<ActivityInstanceEntity>(out var a)
+            .where(() => a.MainActInstanceId, mainActivityInstanceId.Trim())
+            .where(() => a.CompleteOrder, completeOrder)
+            .where(() => a.ActivityState, (short)ActivityStateEnum.Completed)
+            .orderByDesc(() => a.CreatedDateTime);
+        return clip.select(a).queryUnique();
+    }
+
     public virtual IList<ActivityInstanceEntity> ListCompletedByProcessInstanceActivityOrderByEndedDesc(
         SQLBuilder kit,
         string processInstanceId,

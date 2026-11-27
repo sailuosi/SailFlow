@@ -1,8 +1,8 @@
 # 专题 · IStorage（数据库连接器）
 
-> 状态：**P0–P2 已收口**（含 Preselect / Picked；2026-11-27）  
-> 已收口：运行时六件套 + 定义四件 + Log/Archive + Preselect/Picked；`UseDefaultStorages` 十二件套；XPDL 独立。  
-> 余债：宿主策略 Job/Hook / Query **散落读**（§8.2 审计清单；**不默认全迁**）。  
+> 状态：**P0–P2 已收口**（含 Preselect / Picked；sailflow pure 旁路已净；2026-11-27）  
+> 已收口：运行时六件套 + 定义四件 + Log/Archive + Preselect/Picked；`UseDefaultStorages` 十二件套；XPDL 独立；`PreviousStepChecker` / `AutoApproveAnchorWorker` 已走 Storage。  
+> 宿主 C 档：**明确不做**（§8.2；产品侧策略 Hook/Job 散落 SQL 保留）。  
 > 用途：流程定义 / 实例套表的**纯库交互层**——无状态、`kit` 首参、热点专属 API、唯一注册可覆盖；为实施提供可执行契约。  
 > 讨论溯源：[讨论-办理人操作模式与人员范围正交-分析归档.md](../done/讨论-办理人操作模式与人员范围正交-分析归档.md)（§6、§8 已定寿命）  
 > 关联：[专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) · [架构设计-项目依赖与分层.md](../架构设计-项目依赖与分层.md) · [业务管道特性设计.md](../业务管道特性设计.md) · [专题-事务一致性.md](./专题-事务一致性.md) · [专题-对象解析器.md](./专题-对象解析器.md)
@@ -197,13 +197,14 @@ S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非
 ### 8.2 宿主散落 SQL 审计（sleveen-admin · 2026-11-27）
 
 > 范围：`backend/sailflow/src` 内 `useRepo` / `useClip` / `UseRunSQL`。  
-> 原则：**产品表 / 报表 / 种子 / Schema 可留宿主**；**引擎热路径套表**已走 Storage；策略 Hook/Job 的套表读写为**可选下沉**，不默认全迁。
+> 原则：**产品表 / 报表 / 种子 / Schema 可留宿主**；**引擎套表热路径已走 Storage**。  
+> **决议（已拍）：宿主 C 档明确不做**——策略 Hook/Job 等产品侧散落 SQL **保留**，不纳入引擎 IStorage 战役。
 
 | 档 | 含义 |
 |----|------|
 | **A · 已合规** | 经 IStorage / Mode Store，或纯 Schema/种子 |
 | **B · 产品域 · 保留** | 宿主产品表 / 门户 / 报表 / API 编排；**不迁**引擎 Storage |
-| **C · 可选下沉** | 直接打 PI/Task/AI 等套表；有复用价值时可改走 `Storages.GetRequired`，非阻塞 |
+| **C · 明确不做** | 直接打 PI/Task/AI 等套表的宿主策略/超时代码；**保留原样** |
 
 #### A · 已合规
 
@@ -228,18 +229,24 @@ S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非
 | `Controller/WfFormController` · `WfOutboxController` · `Wf2XmlController*` | API / 设计器查询 |
 | `Assignee/SurrogateAssigneeFilter` | 代理过滤读 |
 
-#### C · 可选下沉（策略 / 超时打戳）
+#### C · 明确不做（策略 / 超时打戳 · 保留）
 
-| 位置 | 触达套表 | 建议 |
-|------|----------|------|
-| `Timeout/SailNodePolicyTimeoutStampHook` | Task / AI / PI `useRepo`·`useClip` | 可改 `ITaskStorage` / `IActivityInstanceStorage` / `IProcessInstanceStorage` |
-| `Timeout/SailNodePolicyJobWorker` | 同上 + 到期扫描 | 扫描可留 Job；写状态优先 Storage |
-| `Assignee/SailNodePolicyAutoApproveHook` | Task / AI / PI | 读 PI 取 starter；写任务可走 Storage |
-| `Hooks/SailProcessExtraStartedHook` | PI GetById | 可 `IProcessInstanceStorage.GetById` |
-| `Hooks/SailEndTextLocalizeHook` | 局部读 | 低优先级 |
-| `Controller/Wf2XmlController.Runtime` | 运行时 clip 查询 | 查询面可留 Controller；热点写勿新增散落 |
+| 位置 | 触达套表 |
+|------|----------|
+| `Timeout/SailNodePolicyTimeoutStampHook` | Task / AI / PI |
+| `Timeout/SailNodePolicyJobWorker` | Task / AI |
+| `Assignee/SailNodePolicyAutoApproveHook` | Task / AI / PI |
+| `Hooks/SailProcessExtraStartedHook` 等 Extra/本地化 Hook | PI / Task |
+| `Controller/Wf2XmlController.Runtime` | 运行时查询面 |
 
-**决议：** C 档**不默认全迁**；新代码写套表须走 Storage；改旧 Hook 时顺手下沉即可。
+### 8.3 sailflow pure 旁路（**2026-11-27 已收口**）
+
+| 位置 | 改后 |
+|------|------|
+| `runtime/Parser/PreviousStepChecker` | `IActivityInstanceStorage.GetCompletedMiChildByMainAndOrder` |
+| `assignee/Job/AutoApproveAnchorWorker` | `IProcessInstanceStorage` / `ITaskStorage` / `IActivityInstanceStorage` |
+
+`pure` 业务路径除 `SailClient.useClip` 门面与 `baseHub/LogService`（无引擎引用、可注入 Sink）外，**无**套表 `useClip`/`useRepo`。`ext/form`·`ext/graph` 非本战役。
 
 ---
 
@@ -255,7 +262,8 @@ S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非
 | UseXxx / ISailCollection | [业务管道特性设计.md](../业务管道特性设计.md) |
 | Preselect / Picked | 宿主 `Sleveen*AssigneeStorage|Store` + `UseSleveen*Assignees`（**P0**） |
 | 默认十二件套 | 接口 `engine/Storage`；实现 `ext/data/Storage`（`sailflow.data`） |
-| 宿主散落审计 | 本专题 §8.2 |
+| pure 旁路 | §8.3（PreviousStepChecker / AutoApproveAnchorWorker） |
+| 宿主散落审计 | 本专题 §8.2（C 档明确不做） |
 
 ---
 
@@ -268,3 +276,4 @@ S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非
 | 2026-11-27 | **P1**：Process/Variable 定义/RuleSet/Job → Storage；`UseDefaultStorages` 扩至十件套 |
 | 2026-11-27 | **P2**：`IEngineLogStorage` / `IProcessArchiveStorage`；热删复用运行时 Storage；十二件套 |
 | 2026-11-27 | **P0 Picked**：`sf_picked_assignee` + Storage/Store/`UseSleveenPickedAssignees`；§8.2 宿主散落 SQL 审计 |
+| 2026-11-27 | **pure 旁路**：PreviousStepChecker / AutoApproveAnchorWorker → Storage；§8.2 C 档改为明确不做；§8.3 |

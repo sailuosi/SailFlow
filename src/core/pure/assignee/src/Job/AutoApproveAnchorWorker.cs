@@ -7,6 +7,7 @@ using sailflow.hosting;
 using sailflow.utils;
 using sailflow.result;
 using sailflow.service;
+using sailflow.storage;
 using sailflow.xml;
 
 namespace sailflow.assignee.Job;
@@ -296,14 +297,14 @@ public sealed class AutoApproveAnchorWorker
         }
     }
 
-    static TaskEntity? FindWaitingTask(SQLBuilder kit, AutoApproveAnchor anchor)
+    TaskEntity? FindWaitingTask(SQLBuilder kit, AutoApproveAnchor anchor)
     {
-        var clip = kit.useClip();
-        clip.from<TaskEntity>(out var t)
-            .where(() => t.ProcessInstanceId, anchor.ProcessInstanceId)
-            .where(() => t.ActivityId, anchor.ActivityId)
-            .where(() => t.TaskState, (short)TaskStateEnum.Waiting);
-        var list = clip.select(t).queryList()?.ToList() ?? new List<TaskEntity>();
+        var open = Sail.Storages.GetRequired<ITaskStorage>()
+            .ListOpenByProcessInstance(kit, anchor.ProcessInstanceId);
+        var list = open
+            .Where(t => t.TaskState == (short)TaskStateEnum.Waiting
+                        && string.Equals(t.ActivityId, anchor.ActivityId, StringComparison.Ordinal))
+            .ToList();
         if (list.Count == 0)
             return null;
 
@@ -319,7 +320,7 @@ public sealed class AutoApproveAnchorWorker
         return list.Count == 1 ? list[0] : null;
     }
 
-    static bool IsProcessInstanceRunnable(SQLBuilder kit, string processInstanceId)
+    bool IsProcessInstanceRunnable(SQLBuilder kit, string processInstanceId)
     {
         try
         {
@@ -336,7 +337,7 @@ public sealed class AutoApproveAnchorWorker
         }
     }
 
-    static bool IsProcessInstanceTerminal(SQLBuilder kit, string processInstanceId)
+    bool IsProcessInstanceTerminal(SQLBuilder kit, string processInstanceId)
     {
         try
         {
@@ -357,26 +358,22 @@ public sealed class AutoApproveAnchorWorker
     /// <summary>
     /// 目标活动已离开 Ready（Completed 等）且无 Waiting 待办 → 视为已代办成功（幂等）。
     /// </summary>
-    static bool IsAnchorTargetAlreadyLeft(SQLBuilder kit, AutoApproveAnchor anchor)
+    bool IsAnchorTargetAlreadyLeft(SQLBuilder kit, AutoApproveAnchor anchor)
     {
         try
         {
+            var aiStore = Sail.Storages.GetRequired<IActivityInstanceStorage>();
             if (!string.IsNullOrWhiteSpace(anchor.ActivityInstanceId))
             {
-                var clip = kit.useClip();
-                clip.from<ActivityInstanceEntity>(out var a)
-                    .where(() => a.ActivityInstanceId, anchor.ActivityInstanceId);
-                var act = clip.select(a).queryList()?.FirstOrDefault();
+                var act = aiStore.GetById(kit, anchor.ActivityInstanceId);
                 if (act == null)
                     return false;
                 return IsLeftReady(act.ActivityState);
             }
 
-            var listClip = kit.useClip();
-            listClip.from<ActivityInstanceEntity>(out var ai)
-                .where(() => ai.ProcessInstanceId, anchor.ProcessInstanceId)
-                .where(() => ai.ActivityId, anchor.ActivityId);
-            var list = listClip.select(ai).queryList()?.ToList() ?? new List<ActivityInstanceEntity>();
+            var list = aiStore.ListByProcessInstance(kit, anchor.ProcessInstanceId)
+                .Where(x => string.Equals(x.ActivityId, anchor.ActivityId, StringComparison.Ordinal))
+                .ToList();
             if (list.Count == 0)
                 return false;
 
@@ -402,16 +399,14 @@ public sealed class AutoApproveAnchorWorker
         || state == (short)ActivityStateEnum.Cancelled
         || state == (short)ActivityStateEnum.Terminated;
 
-    static bool IsTaskActivityReady(SQLBuilder kit, TaskEntity task)
+    bool IsTaskActivityReady(SQLBuilder kit, TaskEntity task)
     {
         if (string.IsNullOrWhiteSpace(task.ActivityInstanceId))
             return true;
         try
         {
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var a)
-                .where(() => a.ActivityInstanceId, task.ActivityInstanceId);
-            var act = clip.select(a).queryList()?.FirstOrDefault();
+            var act = Sail.Storages.GetRequired<IActivityInstanceStorage>()
+                .GetById(kit, task.ActivityInstanceId);
             if (act == null)
                 return false;
             return act.ActivityState == (short)ActivityStateEnum.Ready
@@ -424,15 +419,13 @@ public sealed class AutoApproveAnchorWorker
         }
     }
 
-    static ProcessInstanceEntity? LoadProcessInstance(SQLBuilder kit, string processInstanceId)
+    ProcessInstanceEntity? LoadProcessInstance(SQLBuilder kit, string processInstanceId)
     {
-        var clip = kit.useClip();
-        clip.from<ProcessInstanceEntity>(out var p)
-            .where(() => p.ProcessInstanceId, processInstanceId);
-        return clip.select(p).queryList()?.FirstOrDefault();
+        return Sail.Storages.GetRequired<IProcessInstanceStorage>()
+            .GetById(kit, processInstanceId);
     }
 
-    static string ResolveVersionByProcessInstance(SQLBuilder kit, string processInstanceId)
+    string ResolveVersionByProcessInstance(SQLBuilder kit, string processInstanceId)
     {
         try
         {

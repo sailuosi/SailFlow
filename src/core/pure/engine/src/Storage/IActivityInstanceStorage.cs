@@ -75,6 +75,14 @@ namespace sailflow.storage
             SQLBuilder kit,
             string mainActivityInstanceId);
 
+        /// <summary>
+        /// MI 已办结子节点：MainAct + CompleteOrder + Completed，按 CreatedDateTime 降序取首。
+        /// </summary>
+        ActivityInstanceEntity GetCompletedMiChildByMainAndOrder(
+            SQLBuilder kit,
+            string mainActivityInstanceId,
+            float completeOrder);
+
         IList<ActivityInstanceEntity> ListCompletedByProcessInstanceActivityOrderByEndedDesc(
             SQLBuilder kit,
             string processInstanceId,

@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using mooSQL.data;
 using sailflow.data;
 using sailflow.hub.Localize;
 using sailflow.hub.Resource;
 using sailflow.utils;
 using sailflow.xml;
 using sailflow.run;
-
+using sailflow.storage;
 using sailflow.hosting;
+
 namespace sailflow.runtime.Parser
 {
     /// <summary>
@@ -25,7 +25,6 @@ namespace sailflow.runtime.Parser
 
         protected SailClient Sail { get; }
 
-        private SQLBuilder Kit() => Sail.UseRunSQL();
         /// <summary>
         /// Retrieve the previous node tree
         /// 获取上一步节点树
@@ -284,13 +283,9 @@ namespace sailflow.runtime.Parser
             float completeOrder)
         {
             _ = activityInstanceId; // 历史参数保留；原 SQL 未使用
-            var clip = Kit().useClip();
-            clip.from<ActivityInstanceEntity>(out var a)
-                .where(() => a.MainActInstanceId, mainActivityInstanceId)
-                .where(() => a.CompleteOrder, completeOrder - 1)
-                .where(() => a.ActivityState, (short)ActivityStateEnum.Completed)
-                .orderByDesc(() => a.CreatedDateTime);
-            return clip.select(a).queryUnique();
+            using var kit = Sail.UseRunSQL();
+            return Sail.Storages.GetRequired<IActivityInstanceStorage>()
+                .GetCompletedMiChildByMainAndOrder(kit, mainActivityInstanceId, completeOrder - 1);
         }
 
         /// <summary>
