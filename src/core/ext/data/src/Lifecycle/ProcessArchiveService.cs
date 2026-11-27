@@ -4,12 +4,14 @@ using System.Linq;
 using mooSQL.data;
 using sailflow.data;
 using sailflow.hosting;
+using sailflow.storage;
 using sailflow.utils;
 
 namespace sailflow.data.Lifecycle
 {
     /// <summary>
     /// 终态流程实例闭包：热表 → 按年冷表 → 删热表。读 <see cref="SailDataLifecycleOptions"/>；由 Host 定时或立刻 Hook 唤起。
+    /// 冷表经 <see cref="IProcessArchiveStorage"/>；热表删读写复用 PI/Task/AI/Transition/Variable Storage。
     /// </summary>
     public sealed class ProcessArchiveService
     {
@@ -25,6 +27,24 @@ namespace sailflow.data.Lifecycle
         public SailDataLifecycleOptions Options =>
             Sail.DataLifecycleOptions ?? new SailDataLifecycleOptions();
 
+        IProcessArchiveStorage ArchiveStorage =>
+            Sail.Storages.GetRequired<IProcessArchiveStorage>();
+
+        IProcessInstanceStorage ProcessInstances =>
+            Sail.Storages.GetRequired<IProcessInstanceStorage>();
+
+        ITaskStorage Tasks =>
+            Sail.Storages.GetRequired<ITaskStorage>();
+
+        IActivityInstanceStorage Activities =>
+            Sail.Storages.GetRequired<IActivityInstanceStorage>();
+
+        ITransitionInstanceStorage Transitions =>
+            Sail.Storages.GetRequired<ITransitionInstanceStorage>();
+
+        IProcessVariableStorage Variables =>
+            Sail.Storages.GetRequired<IProcessVariableStorage>();
+
         /// <summary>按保留窗批量归档；返回成功迁出实例数。</summary>
         public int RunBatch(int? batchSize = null, DateTime? nowUtc = null)
         {
@@ -36,7 +56,7 @@ namespace sailflow.data.Lifecycle
             List<ProcessInstanceEntity> candidates;
             using (var hot = Cold.UseHotSQL())
             {
-                candidates = LoadCandidates(hot, cutoff, Math.Max(1, limit));
+                candidates = ArchiveStorage.ListArchivableCandidates(hot, cutoff, Math.Max(1, limit)).ToList();
             }
 
             var ok = 0;
@@ -64,8 +84,8 @@ namespace sailflow.data.Lifecycle
                 kit.beginTransaction();
                 try
                 {
-                    var pi = kit.findRowById<ProcessInstanceEntity>(processInstanceId);
-                    if (pi == null || !!string.IsNullOrWhiteSpace(pi.ProcessInstanceId) || !IsArchivable(pi))
+                    var pi = ProcessInstances.GetById(kit, processInstanceId);
+                    if (pi == null || string.IsNullOrWhiteSpace(pi.ProcessInstanceId) || !IsArchivable(pi))
                     {
                         kit.commit();
                         return false;
@@ -95,13 +115,13 @@ namespace sailflow.data.Lifecycle
 
             using (var hot = Cold.UseHotSQL())
             {
-                pi = hot.findRowById<ProcessInstanceEntity>(processInstanceId);
+                pi = ProcessInstances.GetById(hot, processInstanceId);
                 if (pi == null || !IsArchivable(pi))
                     return false;
 
                 var id = pi.ProcessInstanceId;
-                activities = LoadActivities(hot, id);
-                tasks = LoadTasks(hot, id);
+                activities = Activities.ListByProcessInstance(hot, id).ToList();
+                tasks = Tasks.ListByProcessInstance(hot, id).ToList();
                 transitions = LoadTransitions(hot, id);
                 variables = LoadVariables(hot, id);
             }
@@ -139,23 +159,6 @@ namespace sailflow.data.Lifecycle
             return true;
         }
 
-        private static List<ProcessInstanceEntity> LoadCandidates(SQLBuilder hot, DateTime cutoff, int limit)
-        {
-            var clip = hot.useClip();
-            clip.from<ProcessInstanceEntity>(out var pi)
-                .whereIn(() => pi.ProcessState, new short?[]
-                {
-                    (short)ProcessStateEnum.Completed,
-                    (short)ProcessStateEnum.Canceled,
-                    (short)ProcessStateEnum.Discarded,
-                    (short)ProcessStateEnum.Terminated
-                })
-                .whereIsNotNull(() => pi.EndedDateTime)
-                .where(() => pi.EndedDateTime, cutoff, "<")
-                .orderBy(() => pi.EndedDateTime);
-            return clip.select(pi).queryList().Take(limit).ToList();
-        }
-
         private void EnsureYearTables(SQLBuilder kit, int year)
         {
             var opts = Options;
@@ -173,8 +176,8 @@ namespace sailflow.data.Lifecycle
                 cold,
                 year,
                 pi,
-                LoadActivities(hot, id),
-                LoadTasks(hot, id),
+                Activities.ListByProcessInstance(hot, id).ToList(),
+                Tasks.ListByProcessInstance(hot, id).ToList(),
                 LoadTransitions(hot, id),
                 LoadVariables(hot, id));
         }
@@ -200,7 +203,7 @@ namespace sailflow.data.Lifecycle
                 Upsert(cold, HistTableCatalog.ResolveHistName(opts, HistTableCatalog.ProcessVariable, year), row);
         }
 
-        private static void Upsert<T>(SQLBuilder kit, string histTable, T entity) where T : class, new()
+        private void Upsert<T>(SQLBuilder kit, string histTable, T entity) where T : class, new()
         {
             var keyMap = SailEntityMapper.GetColumnMaps<T>().FirstOrDefault(m => m.IsKey);
             var id = keyMap?.GetValue(entity) as string;
@@ -209,74 +212,54 @@ namespace sailflow.data.Lifecycle
             ArchiveRowCopier.InsertPreservingKey(kit, histTable, entity);
         }
 
-        private static List<ActivityInstanceEntity> LoadActivities(SQLBuilder kit, string processInstanceId)
-        {
-            var clip = kit.useClip();
-            clip.from<ActivityInstanceEntity>(out var a)
-                .where(() => a.ProcessInstanceId, processInstanceId);
-            return clip.select(a).queryList().ToList();
-        }
-
-        private static List<TaskEntity> LoadTasks(SQLBuilder kit, string processInstanceId)
-        {
-            var clip = kit.useClip();
-            clip.from<TaskEntity>(out var t)
-                .where(() => t.ProcessInstanceId, processInstanceId);
-            return clip.select(t).queryList().ToList();
-        }
-
         private List<TrackEntity> LoadTransitions(SQLBuilder kit, string processInstanceId)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
-            return LoadByProcessInstanceWithFallback<TrackEntity>(
+            return LoadByProcessInstanceWithFallback(
                 kit,
                 processInstanceId,
                 Sail.HotShard.ResolveTransitionTable(processId),
                 Sail.HotShard.DefaultTransitionTable,
-                Sail.HotShard.IsSharded(processId));
+                Sail.HotShard.IsSharded(processId),
+                (k, table, pi) => ArchiveStorage.ListTransitions(k, table, pi).ToList());
         }
 
         private List<ProcessVariableEntity> LoadVariables(SQLBuilder kit, string processInstanceId)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
-            return LoadByProcessInstanceWithFallback<ProcessVariableEntity>(
+            return LoadByProcessInstanceWithFallback(
                 kit,
                 processInstanceId,
                 Sail.HotShard.ResolveVariableTable(processId),
                 Sail.HotShard.DefaultVariableTable,
-                Sail.HotShard.IsSharded(processId));
+                Sail.HotShard.IsSharded(processId),
+                (k, table, pi) => Variables.ListByProcessInstance(k, table, pi).ToList());
         }
 
         private void DeleteHotClosure(SQLBuilder kit, string processInstanceId)
         {
             var processId = ResolveProcessId(kit, processInstanceId);
 
-            var clip = kit.useClip();
-            clip.setTable<TaskEntity>(out var t)
-                .where(() => t.ProcessInstanceId, processInstanceId)
-                .doDelete();
+            Tasks.DeleteByProcessInstance(kit, processInstanceId);
 
-            DeleteTransitionsByProcessInstance(kit, Sail.HotShard.ResolveTransitionTable(processId), processInstanceId);
+            Transitions.DeleteByProcessInstance(kit, Sail.HotShard.ResolveTransitionTable(processId), processInstanceId);
             if (Sail.HotShard.IsSharded(processId))
-                DeleteTransitionsByProcessInstance(kit, Sail.HotShard.DefaultTransitionTable, processInstanceId);
+                Transitions.DeleteByProcessInstance(kit, Sail.HotShard.DefaultTransitionTable, processInstanceId);
 
-            clip = kit.useClip();
-            clip.setTable<ActivityInstanceEntity>(out var ai)
-                .where(() => ai.ProcessInstanceId, processInstanceId)
-                .doDelete();
+            Activities.DeleteByProcessInstance(kit, processInstanceId);
 
-            DeleteVariablesByProcessInstance(kit, Sail.HotShard.ResolveVariableTable(processId), processInstanceId);
+            Variables.DeleteByProcessInstance(kit, Sail.HotShard.ResolveVariableTable(processId), processInstanceId);
             if (Sail.HotShard.IsSharded(processId))
-                DeleteVariablesByProcessInstance(kit, Sail.HotShard.DefaultVariableTable, processInstanceId);
+                Variables.DeleteByProcessInstance(kit, Sail.HotShard.DefaultVariableTable, processInstanceId);
 
-            kit.useRepo<ProcessInstanceEntity, string>().DeleteById(processInstanceId);
+            ProcessInstances.DeleteById(kit, processInstanceId);
         }
 
-        private static string ResolveProcessId(SQLBuilder kit, string processInstanceId)
+        private string ResolveProcessId(SQLBuilder kit, string processInstanceId)
         {
             try
             {
-                var pi = kit.findRowById<ProcessInstanceEntity>(processInstanceId);
+                var pi = ProcessInstances.GetById(kit, processInstanceId);
                 return pi?.ProcessId;
             }
             catch
@@ -290,13 +273,14 @@ namespace sailflow.data.Lifecycle
             string processInstanceId,
             string primaryTable,
             string defaultTable,
-            bool mergeDefault) where T : class, new()
+            bool mergeDefault,
+            Func<SQLBuilder, string, string, List<T>> load) where T : class, new()
         {
-            var rows = LoadByProcessInstance<T>(kit, primaryTable, processInstanceId);
+            var rows = load(kit, primaryTable, processInstanceId) ?? new List<T>();
             if (!mergeDefault || string.Equals(primaryTable, defaultTable, StringComparison.OrdinalIgnoreCase))
                 return rows;
 
-            var legacy = LoadByProcessInstance<T>(kit, defaultTable, processInstanceId);
+            var legacy = load(kit, defaultTable, processInstanceId) ?? new List<T>();
             if (legacy.Count == 0)
                 return rows;
 
@@ -314,70 +298,6 @@ namespace sailflow.data.Lifecycle
                 rows.Add(row);
             }
             return rows;
-        }
-
-        private static List<T> LoadByProcessInstance<T>(SQLBuilder kit, string table, string processInstanceId)
-            where T : class, new()
-        {
-            try
-            {
-                if (typeof(T) == typeof(TrackEntity))
-                {
-                    var clip = kit.useClip();
-                    clip.from<TrackEntity>(table, out var row)
-                        .where(() => row.ProcessInstanceId, processInstanceId);
-                    return clip.select(row).queryList().Cast<T>().ToList();
-                }
-                if (typeof(T) == typeof(ProcessVariableEntity))
-                {
-                    var clip = kit.useClip();
-                    clip.from<ProcessVariableEntity>(table, out var row)
-                        .where(() => row.ProcessInstanceId, processInstanceId);
-                    return clip.select(row).queryList().Cast<T>().ToList();
-                }
-
-                throw new NotSupportedException("LoadByProcessInstance unsupported type: " + typeof(T).Name);
-            }
-            catch (NotSupportedException)
-            {
-                throw;
-            }
-            catch
-            {
-                return new List<T>();
-            }
-        }
-
-        private static void DeleteTransitionsByProcessInstance(SQLBuilder kit, string physicalTable, string processInstanceId)
-        {
-            try
-            {
-                var clip = kit.useClip();
-                clip.setTable<TrackEntity>(out var t)
-                    .useSQL(b => b.setTable(physicalTable))
-                    .where(() => t.ProcessInstanceId, processInstanceId)
-                    .doDelete();
-            }
-            catch
-            {
-                // 分表未创建时忽略
-            }
-        }
-
-        private static void DeleteVariablesByProcessInstance(SQLBuilder kit, string physicalTable, string processInstanceId)
-        {
-            try
-            {
-                var clip = kit.useClip();
-                clip.setTable<ProcessVariableEntity>(out var v)
-                    .useSQL(b => b.setTable(physicalTable))
-                    .where(() => v.ProcessInstanceId, processInstanceId)
-                    .doDelete();
-            }
-            catch
-            {
-                // 分表未创建时忽略
-            }
         }
 
         private static bool IsArchivable(ProcessInstanceEntity pi) =>

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using mooSQL.data;
 using sailflow.data;
 using sailflow.hosting;
 using sailflow.run;
+using sailflow.storage;
 
 namespace sailflow.data
 {
@@ -16,28 +16,23 @@ namespace sailflow.data
     {
         public VariableManager(SailClient client)
         {
-            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
         }
 
         protected SailClient Sail { get; }
+
+        protected IVariableDefinitionStorage Storage =>
+            Sail.Storages.GetRequired<IVariableDefinitionStorage>();
 
         public IList<VariableEntity> GetList(string processId, string version, string activityId)
         {
             if (string.IsNullOrEmpty(processId) || string.IsNullOrEmpty(version) || string.IsNullOrEmpty(activityId))
                 return new List<VariableEntity>();
-
-            var clip = Sail.UseRunSQL().useClip();
-            clip.from<VariableEntity>(out var v)
-                .where(() => v.ProcessId, processId)
-                .where(() => v.Version, version)
-                .where(() => v.ActivityId, activityId)
-                .orderBy(() => v.SortOrder)
-                .orderBy(() => v.VariableId);
-            return clip.select(v).queryList().ToList();
+            return Storage.ListByActivity(Sail.UseRunSQL(), processId, version, activityId);
         }
 
         public VariableEntity GetById(string id)
-            => Sail.UseRunSQL().findRowById<VariableEntity>(id);
+            => Storage.GetById(Sail.UseRunSQL(), id);
 
         public string Insert(VariableEntity entity)
         {
@@ -48,9 +43,7 @@ namespace sailflow.data
         public string Insert(SQLBuilder kit, VariableEntity entity)
         {
             entity.CreatedDateTime = DateTime.UtcNow;
-            var newId = kit.useRepo<VariableEntity, string>().InsertReturnId(entity);
-            entity.VariableId = newId;
-            return newId;
+            return Storage.Insert(kit, entity);
         }
 
         public void Update(VariableEntity entity)
@@ -62,14 +55,14 @@ namespace sailflow.data
         public void Update(SQLBuilder kit, VariableEntity entity)
         {
             entity.UpdatedDateTime = DateTime.UtcNow;
-            kit.useRepo<VariableEntity>().Update(entity);
+            Storage.Update(kit, entity);
         }
 
         public void Delete(string id)
-            => Sail.UseRunSQL().useRepo<VariableEntity, string>().DeleteById(id);
+            => Storage.DeleteById(Sail.UseRunSQL(), id);
 
         public void Delete(SQLBuilder kit, string id)
-            => kit.useRepo<VariableEntity, string>().DeleteById(id);
+            => Storage.DeleteById(kit, id);
 
         public void DeleteByProcessActivity(string processId, string version, string activityId)
         {
@@ -78,7 +71,7 @@ namespace sailflow.data
                 kit.beginTransaction();
                 try
                 {
-                    DeleteByProcessActivity(kit, processId, version, activityId);
+                    Storage.DeleteByProcessActivity(kit, processId, version, activityId);
                     kit.commit();
                 }
                 catch
@@ -108,7 +101,7 @@ namespace sailflow.data
         /// <summary>有事务：使用上游灌入的同一个 kit。</summary>
         public void SaveList(SQLBuilder kit, string processId, string version, string activityId, IList<VariableEntity> list)
         {
-            DeleteByProcessActivity(kit, processId, version, activityId);
+            Storage.DeleteByProcessActivity(kit, processId, version, activityId);
             if (list == null)
                 return;
             var order = 0;
@@ -118,20 +111,9 @@ namespace sailflow.data
                 item.Version = version;
                 item.ActivityId = activityId;
                 item.SortOrder = order++;
-                // 新建：清空 Id，由 AutoKey=SailId 发号
                 item.VariableId = null;
                 Insert(kit, item);
             }
-        }
-
-        private static void DeleteByProcessActivity(SQLBuilder kit, string processId, string version, string activityId)
-        {
-            var clip = kit.useClip();
-            clip.setTable<VariableEntity>(out var v)
-                .where(() => v.ProcessId, processId)
-                .where(() => v.Version, version)
-                .where(() => v.ActivityId, activityId)
-                .doDelete();
         }
     }
 }

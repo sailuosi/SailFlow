@@ -1,11 +1,8 @@
 # 专题 · IStorage（数据库连接器）
 
-> 状态：**实施中**（运行时套表含 Variable 已收口；**默认实现已迁 `sailflow.data`**；Definition/XPDL 维持独立路径）  
-
-
-
-
-
+> 状态：**P0–P2 主路径已收口**（2026-11-27）  
+> 已收口：运行时六件套 + 定义四件 + Log/Archive + Preselect；`UseDefaultStorages` 十二件套；XPDL 独立。  
+> 余债：Picked 接口预留（Noop）；宿主策略 Job/Hook / Query 散落读（可选审计，不默认全迁）。  
 > 用途：流程定义 / 实例套表的**纯库交互层**——无状态、`kit` 首参、热点专属 API、唯一注册可覆盖；为实施提供可执行契约。  
 > 讨论溯源：[讨论-办理人操作模式与人员范围正交-分析归档.md](../done/讨论-办理人操作模式与人员范围正交-分析归档.md)（§6、§8 已定寿命）  
 > 关联：[专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) · [架构设计-项目依赖与分层.md](../架构设计-项目依赖与分层.md) · [业务管道特性设计.md](../业务管道特性设计.md) · [专题-事务一致性.md](./专题-事务一致性.md) · [专题-对象解析器.md](./专题-对象解析器.md)
@@ -94,13 +91,15 @@ public interface IProcessInstanceStorage // 可继承或独立于 IStorage<>
 
 ---
 
-## 4. 与现行差距
+## 4. 与现行差距（2026-11-27）
 
-| 现行 | 目标 |
-|------|------|
-| `TaskManager` / `ProcessManager` / … 内 `kit.useRepo` + 业务同文件 | SQL 下沉 Storage；规则留 Manager/Lane |
-| `IPreselectAssigneeStore` 等零散 Store | 统一 kit 首参 + 无状态 + 可覆盖；可归为 Storage 族 |
-| `DefaultManagerFactory` 懒持 Manager（A） | Storage 同为 A；Manager **注入** Storage 接口 |
+| 现行 | 目标 / 备注 |
+|------|-------------|
+| PI / Task / AI / Transition / HookOutbox / ProcessVariable Manager | **已收口**：仅 `Storages.GetRequired`；无 `useRepo` |
+| `ProcessManager` / `VariableManager` / `RuleSetManager` / `JobInfoManager` | **已收口** → `IProcessDefinitionStorage` / `IVariableDefinitionStorage` / `IRuleSetStorage` / `IJobInfoStorage` |
+| `IPreselectAssigneeStorage` | **已挂**（宿主 Storage + Mode Store） |
+| `IPickedAssigneeStorage` | **仅接口**；产品仍 Noop |
+| `DefaultManagerFactory` 懒持 Manager（A） | Storage 同为 A；已挂默认六件套；余 Manager 按需注入 |
 
 ---
 
@@ -124,31 +123,32 @@ public interface IProcessInstanceStorage // 可继承或独立于 IStorage<>
 
 ---
 
-## 7. 实施切片（建议）
+## 7. 实施切片
 
 ```text
 S0  ✅ 注册槽约定 + kit 首参 + 覆盖日志（SailStorageRegistry / useStorage / UseDefaultStorages）
 S1  ✅ ProcessInstanceManager：GetById + Complete/Suspend/Resume/Reverse/RecallSubProcess → Storage.UpdateState
 S2  ✅ Task/ActivityInstance Storage + Manager 热点（Set/End/Cancel/Children）
-S3  ✅ 预选 / Picked 表 Storage（分表）+ Mode Store 适配；宿主建表/挂载
-S4  ✅ 聚合根评估决议 + Transition / HookOutbox / Variable(删) 下沉
-S4+ ✅ 写/查收口：PI/Task/AI/Transition/Outbox/Variable（Router 回落留 Manager）
+S3  ✅ Preselect：宿主 Storage + Mode Store 已挂；Picked：接口预留、宿主未挂（仍 Noop）
+S4  ✅ 聚合根评估决议 + Transition / HookOutbox / ProcessVariable 下沉
+S4+ ✅ 写/查收口：PI/Task/AI/Transition/Outbox/ProcessVariable（Router 回落留 Manager）
 S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非 kit 首参族）
 ```
 
+**注意：** `ProcessVariableManager`（实例变量，已收口）≠ `VariableManager`（定义表 `sf_variable`，仍 P1）。
+
 **S0–S5 锚点：**
 
-| 材料 | 路径 |
-|------|------|
+| 材料 | 路径 / 现状 |
+|------|-------------|
 | 注册槽 | `engine/src/Storage/SailStorageRegistry.cs` · `SailClient.Storages` |
-| 接口（engine） | `I*Storage` · `SailStorageRegistry` / `SailClient.Storages` |
+| 运行时六件套接口 | `IProcessInstanceStorage` / `ITaskStorage` / `IActivityInstanceStorage` / `ITransitionInstanceStorage` / `IHookOutboxStorage` / `IProcessVariableStorage` |
 | 默认实现（`sailflow.data`） | `Default*Storage` · `UseDefaultStorages`（NS：`sailflow.data.Storage`） |
-| Transition / Outbox / Variable | 同上：接口在 engine，默认实现在 data；Router 回落留 Manager |
 | 项集投影 | `AssigneeItemRow` |
-| Preselect Storage | `IPreselectAssigneeStorage` · 宿主 `SleveenPreselectAssigneeStorage` → `sf_preselect_assignee` |
-| Picked Storage | `IPickedAssigneeStorage` · 宿主 `SleveenPickedAssigneeStorage` → `sf_picked_assignee` |
-| Mode 适配 | `SleveenPreselectAssigneeStore` / `SleveenPickedAssigneeStore`（无 kit 对外；内部 kit 首参） |
-| 挂载 | **`UseSailData` / `UseDefaultStorages`（sailflow.data）**；runtime **不**挂默认 Storage；宿主 Preselect/Picked |
+| Preselect Storage | `IPreselectAssigneeStorage` · 宿主 `SleveenPreselectAssigneeStorage` → `sf_preselect_assignee`（**已挂**） |
+| Picked 接口 | `IPickedAssigneeStorage`（**仅接口**；目标表 `sf_picked_assignee`；宿主未挂） |
+| Mode Store | 宿主 `SleveenPreselectAssigneeStore` → `Storages.GetRequired`；Picked 仍引擎 `NoopPickedAssigneeStore` |
+| 挂载 | **`UseSailData` / `UseDefaultStorages`**；宿主 `UseSleveenPreselectAssignees` 注册 Preselect Storage |
 
 **办理人项集表（与对象解析器对齐，已定）：** Preselect 仓与 Picked 仓**不同表**；覆盖写入为**物理删后插**（项集语义，非软删）。数据量大时 Storage 实现须**考虑分片**（如按 `ProcessInstanceId` 哈希）；首版单表 + `(process_instance_id, activity_id)` 索引。
 
@@ -165,7 +165,38 @@ S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非
 | 5 | Outbox 业务边界 | Attempt 递增、退避、Skip 原因截断留 **Manager**；Storage 提供 `Insert` / `Update` / `GetById` / `Cas*` / `DeleteById` **及纯查询**（`ListPendingDue` / `ListDead` / `ListStaleProcessing` 等），不含状态机策略。 |
 | 6 | 热分表 | Router 解析物理表名留 **Manager**；Storage `Insert(..., physicalTable)` 只负责写指定表。 |
 
-**下一批（可选，非阻塞）：** 其它运行时 Manager（如 Process 定义元数据表若有 DB 行）按需下沉；宿主/Lane 散落 SQL 审计。
+### 8.1 剩余任务（2026-11-27 盘点）
+
+#### P0 — Preselect / Picked Storage
+
+| 项 | 现状 |
+|----|------|
+| 引擎接口 | `IPreselectAssigneeStorage` / `IPickedAssigneeStorage` 已有 |
+| 宿主 Preselect | **已挂**：`SleveenPreselectAssigneeStorage` + Store 经 `Storages.GetRequired`；`UseSleveenPreselectAssignees` 注册 |
+| 宿主 Picked | **接口预留、宿主未挂**；产品仍 `NoopPickedAssigneeStore`（无 `sf_picked_assignee` 表/接线） |
+
+**Picked 续刀（产品要 persistPick 落库时）：** 建表 + `*PickedAssigneeStorage` + Mode Store + `UsePickedAssignees`；勿与 Preselect 同表。
+
+#### P1 — 定义侧 Manager（**2026-11-27 已收口**）
+
+| Manager | Storage | 备注 |
+|---------|---------|------|
+| `ProcessManager` | `IProcessDefinitionStorage` | `ProcessEntity` SQL 下沉；XML/XPDL 编排仍在 Manager；`UpgradePoolProcess` 现行仅查询 |
+| `VariableManager` | `IVariableDefinitionStorage` | ≠ `IProcessVariableStorage`（实例变量） |
+| `RuleSetManager` | `IRuleSetStorage` | |
+| `JobInfoManager` | `IJobInfoStorage` | |
+
+#### P2 — Log / Archive（**2026-11-27 已收口**）
+
+| 组件 | Storage | 备注 |
+|------|---------|------|
+| `TableEngineLogSink` | `IEngineLogStorage` | 分表物理名仍由 Sink 解析 |
+| `ProcessArchiveService` / `ProcessArchiveQuery` | `IProcessArchiveStorage` | 冷表候选/读写；热表删读写复用 PI/Task/AI/Transition/Variable |
+| `ArchiveRowCopier` | 兼容门面 → `DefaultProcessArchiveStorage` | 新代码优先 `IProcessArchiveStorage` |
+
+**仍可选（不默认全迁）：** 宿主策略 Job/Hook、`WorkflowQueryService` 等散落读（审计清单）。
+
+**明确不做 / 已决议：** Definition **文件/XML** 不并入 kit 族（`IXPDLStorage`）；热分表 Router 留 Manager；首版无 RowVersion。
 
 ---
 
@@ -173,9 +204,22 @@ S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非
 
 | 材料 | 路径 |
 |------|------|
-| 运行时套表 Manager | PI/Task/AI/Transition/HookOutbox/Variable：**无** `useClip`/`useRepo`（经 Storage） |
-| Definition | `IXPDLStorage` / `XPDLLocalStorage`（文件侧；非 `SailStorages`） |
+| 运行时套表 Manager | PI/Task/AI/Transition/HookOutbox/**ProcessVariable**：**无** `useClip`/`useRepo` |
+| 定义侧 Manager | Process / Variable 定义 / RuleSet / JobInfo：**已**经 Storage（**P1**） |
+| Log / Archive | `IEngineLogStorage` / `IProcessArchiveStorage`（**P2**） |
+| Definition 文件 | `IXPDLStorage` / `XPDLLocalStorage`（非 `SailStorages`） |
 | 寿命 A/B | [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) |
 | UseXxx / ISailCollection | [业务管道特性设计.md](../业务管道特性设计.md) |
-| 预选 Store | 宿主 Preselect/Picked Storage + Mode Store |
-| **S0–S5 Storage** | 接口 `engine/Storage`；默认实现 `ext/data/Storage`（`sailflow.data`）；Preselect/Picked 宿主挂载 |
+| 预选 Storage / Store | 宿主 `SleveenPreselectAssigneeStorage` + `SleveenPreselectAssigneeStore`（**P0**） |
+| 默认十二件套 | 接口 `engine/Storage`；实现 `ext/data/Storage`（`sailflow.data`） |
+
+---
+
+## 修订记录
+
+| 日期 | 说明 |
+|------|------|
+| 2026-11-27 | 盘点回写：纠正 S3 过标；展开 P0–P2；状态改为「运行时已收口 · 余债实施中」 |
+| 2026-11-27 | **P0 Preselect**：宿主 Storage + Mode Store 适配落地；Picked 标明接口预留 |
+| 2026-11-27 | **P1**：Process/Variable 定义/RuleSet/Job → Storage；`UseDefaultStorages` 扩至十件套 |
+| 2026-11-27 | **P2**：`IEngineLogStorage` / `IProcessArchiveStorage`；热删复用运行时 Storage；十二件套 |

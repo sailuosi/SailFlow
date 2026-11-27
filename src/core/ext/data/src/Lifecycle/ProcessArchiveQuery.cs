@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using mooSQL.data;
 using sailflow.data;
 using sailflow.hosting;
+using sailflow.storage;
 
 namespace sailflow.data.Lifecycle
 {
@@ -25,18 +25,16 @@ namespace sailflow.data.Lifecycle
         public SailDataLifecycleOptions Options =>
             Sail.DataLifecycleOptions ?? new SailDataLifecycleOptions();
 
+        IProcessArchiveStorage ArchiveStorage =>
+            Sail.Storages.GetRequired<IProcessArchiveStorage>();
+
         public ProcessInstanceEntity GetProcessInstance(string id, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.ProcessInstance, endedYear);
             try
             {
                 using (var kit = Cold.UseColdSQL())
-                {
-                    var clip = kit.useClip();
-                    clip.from<ProcessInstanceEntity>(table, out var row)
-                        .where(() => row.ProcessInstanceId, id);
-                    return clip.select(row).queryList().FirstOrDefault();
-                }
+                    return ArchiveStorage.GetProcessInstance(kit, table, id);
             }
             catch
             {
@@ -47,45 +45,57 @@ namespace sailflow.data.Lifecycle
         public IList<TaskEntity> GetTasks(string processInstanceId, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.Task, endedYear);
-            return LoadByPi<TaskEntity>(table, processInstanceId, (clip, tb, pi) =>
+            try
             {
-                clip.from<TaskEntity>(tb, out var row)
-                    .where(() => row.ProcessInstanceId, pi);
-                return clip.select(row).queryList().ToList();
-            });
+                using (var kit = Cold.UseColdSQL())
+                    return ArchiveStorage.ListTasks(kit, table, processInstanceId);
+            }
+            catch
+            {
+                return new List<TaskEntity>();
+            }
         }
 
         public IList<ActivityInstanceEntity> GetActivityInstances(string processInstanceId, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.ActivityInstance, endedYear);
-            return LoadByPi<ActivityInstanceEntity>(table, processInstanceId, (clip, tb, pi) =>
+            try
             {
-                clip.from<ActivityInstanceEntity>(tb, out var row)
-                    .where(() => row.ProcessInstanceId, pi);
-                return clip.select(row).queryList().ToList();
-            });
+                using (var kit = Cold.UseColdSQL())
+                    return ArchiveStorage.ListActivities(kit, table, processInstanceId);
+            }
+            catch
+            {
+                return new List<ActivityInstanceEntity>();
+            }
         }
 
         public IList<TrackEntity> GetTransitions(string processInstanceId, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.TransitionInstance, endedYear);
-            return LoadByPi<TrackEntity>(table, processInstanceId, (clip, tb, pi) =>
+            try
             {
-                clip.from<TrackEntity>(tb, out var row)
-                    .where(() => row.ProcessInstanceId, pi);
-                return clip.select(row).queryList().ToList();
-            });
+                using (var kit = Cold.UseColdSQL())
+                    return ArchiveStorage.ListTransitions(kit, table, processInstanceId);
+            }
+            catch
+            {
+                return new List<TrackEntity>();
+            }
         }
 
         public IList<ProcessVariableEntity> GetVariables(string processInstanceId, int endedYear)
         {
             var table = HistTableCatalog.ResolveHistName(Options, HistTableCatalog.ProcessVariable, endedYear);
-            return LoadByPi<ProcessVariableEntity>(table, processInstanceId, (clip, tb, pi) =>
+            try
             {
-                clip.from<ProcessVariableEntity>(tb, out var row)
-                    .where(() => row.ProcessInstanceId, pi);
-                return clip.select(row).queryList().ToList();
-            });
+                using (var kit = Cold.UseColdSQL())
+                    return ArchiveStorage.ListVariables(kit, table, processInstanceId);
+            }
+            catch
+            {
+                return new List<ProcessVariableEntity>();
+            }
         }
 
         /// <summary>热表未命中时按候选年份依次查冷表。</summary>
@@ -101,24 +111,6 @@ namespace sailflow.data.Lifecycle
             }
 
             return null;
-        }
-
-        private IList<T> LoadByPi<T>(
-            string table,
-            string processInstanceId,
-            Func<SQLClip, string, string, IList<T>> query) where T : class, new()
-        {
-            try
-            {
-                using (var kit = Cold.UseColdSQL())
-                {
-                    return query(kit.useClip(), table, processInstanceId);
-                }
-            }
-            catch
-            {
-                return new List<T>();
-            }
         }
     }
 }

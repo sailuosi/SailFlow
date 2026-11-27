@@ -69,6 +69,18 @@ public class DefaultTaskStorage : ITaskStorage
             .doDelete();
     }
 
+    public virtual IList<TaskEntity> ListByProcessInstance(SQLBuilder kit, string processInstanceId)
+    {
+        if (kit == null)
+            throw new ArgumentNullException(nameof(kit));
+        if (string.IsNullOrWhiteSpace(processInstanceId))
+            return new List<TaskEntity>();
+        var clip = kit.useClip();
+        clip.from<TaskEntity>(out var t)
+            .where(() => t.ProcessInstanceId, processInstanceId.Trim());
+        return clip.select(t).queryList()?.ToList() ?? new List<TaskEntity>();
+    }
+
     public virtual int UpdateState(
         SQLBuilder kit,
         string taskId,

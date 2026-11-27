@@ -30,6 +30,9 @@ namespace sailflow.storage
 
         void DeleteByProcessInstance(SQLBuilder kit, string processInstanceId);
 
+        /// <summary>按流程实例列出全部任务（归档闭包等）。</summary>
+        IList<TaskEntity> ListByProcessInstance(SQLBuilder kit, string processInstanceId);
+
         /// <summary>仅更新 TaskState + Updated*（如 Reading）。</summary>
         int UpdateState(
             SQLBuilder kit,

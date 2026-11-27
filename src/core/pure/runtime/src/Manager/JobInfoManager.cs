@@ -4,6 +4,7 @@ using mooSQL.data;
 using sailflow.data;
 using sailflow.hosting;
 using sailflow.run;
+using sailflow.storage;
 
 namespace sailflow.data
 {
@@ -18,6 +19,10 @@ namespace sailflow.data
         }
 
         protected SailClient Sail { get; }
+
+        protected IJobInfoStorage Storage =>
+            Sail.Storages.GetRequired<IJobInfoStorage>();
+
         public List<JobInfoEntity> GetJobSubscribedByTopic(string topic)
         {
             var kit = Sail.UseRunSQL();
@@ -25,13 +30,6 @@ namespace sailflow.data
         }
 
         public List<JobInfoEntity> GetJobSubscribedByTopic(SQLBuilder kit, string topic)
-        {
-            var clip = kit.useClip();
-            clip.from<JobInfoEntity>(out var j)
-                .where(() => j.Topic, topic)
-                .where(() => j.JobStatus, "Subscribed")
-                .orderByDesc(() => j.JobInfoId);
-            return clip.select(j).queryList().ToList();
-        }
+            => Storage.ListSubscribedByTopic(kit, topic).ToList();
     }
 }

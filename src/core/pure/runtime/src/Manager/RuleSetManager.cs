@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using mooSQL.data;
 using sailflow.data;
 using sailflow.hosting;
 using sailflow.run;
+using sailflow.storage;
 
 namespace sailflow.data
 {
@@ -15,28 +15,22 @@ namespace sailflow.data
     {
         public RuleSetManager(SailClient client)
         {
-            Sail = client ?? throw new System.ArgumentNullException(nameof(client));
+            Sail = client ?? throw new ArgumentNullException(nameof(client));
         }
 
         protected SailClient Sail { get; }
 
+        protected IRuleSetStorage Storage =>
+            Sail.Storages.GetRequired<IRuleSetStorage>();
+
         public IList<RuleSetEntity> GetAll()
-            => Sail.UseRunSQL()
-                .useRepo<RuleSetEntity>()
-                .GetList()
-                .OrderBy(x => x.RuleSetCode)
-                .ThenBy(x => x.RuleSetId)
-                .ToList();
+            => Storage.GetAll(Sail.UseRunSQL());
 
         public RuleSetEntity GetByCode(string ruleSetCode)
         {
             if (string.IsNullOrEmpty(ruleSetCode))
                 return null;
-            return Sail.useRunClip()
-                .from<RuleSetEntity>(out var r)
-                .where(()=> r.RuleSetCode ,ruleSetCode)
-                .select(r)
-                .queryUnique();
+            return Storage.GetByCode(Sail.UseRunSQL(), ruleSetCode);
         }
 
         public string Insert(RuleSetEntity entity)
@@ -50,9 +44,7 @@ namespace sailflow.data
             entity.CreatedDateTime = DateTime.UtcNow;
             if (entity.IsEnabled == 0) { /* keep */ }
             else if (entity.IsEnabled != 1) entity.IsEnabled = 1;
-            var newId = kit.insertReturnId<RuleSetEntity, string>(entity);
-            entity.RuleSetId = newId;
-            return newId;
+            return Storage.Insert(kit, entity);
         }
 
         public void Update(RuleSetEntity entity)
@@ -64,7 +56,7 @@ namespace sailflow.data
         public void Update(SQLBuilder kit, RuleSetEntity entity)
         {
             entity.UpdatedDateTime = DateTime.UtcNow;
-            kit.update(entity);
+            Storage.Update(kit, entity);
         }
 
         public void DeleteByCode(string ruleSetCode)
@@ -90,10 +82,7 @@ namespace sailflow.data
         {
             if (string.IsNullOrEmpty(ruleSetCode))
                 return;
-            kit.useClip()
-                .setTable<RuleSetEntity>(out var r)
-                .where(() => r.RuleSetCode, ruleSetCode)
-                .doDelete();
+            Storage.DeleteByCode(kit, ruleSetCode);
         }
     }
 }

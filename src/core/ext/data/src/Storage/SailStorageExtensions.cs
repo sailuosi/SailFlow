@@ -9,7 +9,9 @@ public static class SailStorageExtensions
 {
     public const string FeatureName = "UseDefaultStorages";
 
-    /// <summary>挂默认 PI / Task / AI / Transition / HookOutbox / Variable Storage（可被后注册覆盖）。</summary>
+    /// <summary>
+    /// 挂默认十二件套：运行时六 + 定义四 + Log/Archive（可被后注册覆盖）。
+    /// </summary>
     public static SailClient UseDefaultStorages(this SailClient client)
     {
         if (client == null)
@@ -20,6 +22,12 @@ public static class SailStorageExtensions
         client.useStorage<ITransitionInstanceStorage>(new DefaultTransitionInstanceStorage());
         client.useStorage<IHookOutboxStorage>(new DefaultHookOutboxStorage());
         client.useStorage<IProcessVariableStorage>(new DefaultProcessVariableStorage());
+        client.useStorage<IProcessDefinitionStorage>(new DefaultProcessDefinitionStorage());
+        client.useStorage<IVariableDefinitionStorage>(new DefaultVariableDefinitionStorage());
+        client.useStorage<IRuleSetStorage>(new DefaultRuleSetStorage());
+        client.useStorage<IJobInfoStorage>(new DefaultJobInfoStorage());
+        client.useStorage<IEngineLogStorage>(new DefaultEngineLogStorage());
+        client.useStorage<IProcessArchiveStorage>(new DefaultProcessArchiveStorage());
         return client;
     }
 

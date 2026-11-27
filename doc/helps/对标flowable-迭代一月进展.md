@@ -74,7 +74,7 @@ BPMN 事件节点、子流程、跳转/撤回产品化路径、Assignee 管道�
 1. 联调矩阵细项：空人策略 A2–A12、出站探针 E4–E5；默认关按钮的产品开箱策略  
 2. Lifecycle 暂缓：Cancel / Suspend / Resume 产品化（≠ WaitToken）  
 3. 可学契约（讨论稿）：业务 SPI + Outcome 故障语义 → CapabilityCatalog  
-4. 内部收口：IStorage 剩余路径；真并行会签语义债  
+4. 内部收口：IStorage Picked 落库（产品驱动）/ 宿主散落读审计；真并行会签语义债  
 
 ---
 

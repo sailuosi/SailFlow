@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using sailflow.run;
+using sailflow.storage;
 
 namespace sailflow.data
 {
@@ -25,6 +26,11 @@ namespace sailflow.data
         }
 
         protected SailClient Sail { get; }
+
+        /// <summary>纯库层；须 <c>UseSailData</c> / <c>UseDefaultStorages</c> 注册。</summary>
+        protected IProcessDefinitionStorage Storage =>
+            Sail.Storages.GetRequired<IProcessDefinitionStorage>();
+
         #region Obtain process data 获取流程数据
         /// <summary>
         /// Obtain process entity based on Id
@@ -32,7 +38,7 @@ namespace sailflow.data
         /// </summary>
         public ProcessEntity GetById(string id)
         {
-            return Sail.UseRunSQL().findRowById<ProcessEntity>(id);
+            return Storage.GetById(Sail.UseRunSQL(), id);
         }
 
         /// <summary>
@@ -41,7 +47,7 @@ namespace sailflow.data
         /// </summary>
         public ProcessEntity GetById(SQLBuilder kit, string id)
         {
-            return kit.findRowById<ProcessEntity>(id);
+            return Storage.GetById(kit, id);
         }
 
         /// <summary>
@@ -67,27 +73,16 @@ namespace sailflow.data
             string version,
             bool throwException = true)
         {
-            ProcessEntity entity = null;
-            var clip = kit.useClip();
-            clip.from<ProcessEntity>(out var p)
-                .where(() => p.ProcessId, processId)
-                .where(() => p.Version, version);
-            var list = clip.select(p).queryList().ToList();
-
-            if (list.Count() == 1)
+            var list = Storage.ListByProcessIdVersion(kit, processId, version);
+            if (list.Count == 1)
+                return list[0];
+            if (throwException)
             {
-                entity = list[0];
+                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbyversion.error",
+                    string.Format("ProcessId: {0}, Version: {1}", processId, version)
+                ));
             }
-            else
-            {
-                if (throwException == true)
-                {
-                    throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbyversion.error",
-                        string.Format("ProcessId: {0}, Version: {1}", processId, version)
-                    ));
-                }
-            }
-            return entity;
+            return null;
         }
 
         /// <summary>
@@ -109,13 +104,9 @@ namespace sailflow.data
             bool isNotThrownException)
         {
             ProcessEntity entity = null;
-            var clip = kit.useClip();
-            clip.from<ProcessEntity>(out var p)
-                .where(() => p.ProcessId, processId)
-                .where(() => p.Status, (byte)1);
-            var list = clip.select(p).queryList().ToList();
+            var list = Storage.ListByProcessIdStatus(kit, processId, 1);
 
-            if (list.Count() == 1)
+            if (list.Count == 1)
             {
                 entity = list[0];
             }
@@ -139,26 +130,12 @@ namespace sailflow.data
         {
             if (string.IsNullOrEmpty(version)) version = "1";
 
-            ProcessEntity entity = null;
-            var clip = Sail.useClip();
-            clip.from<ProcessEntity>(out var p)
-                .where(() => p.ProcessName, processName)
-                .where(() => p.Version, version);
-            var list = clip.select(p).queryList().ToList();
-
-            if (list.Count() == 1)
-            {
-                entity = list[0];
-            }
-            else if (list.Count() == 0)
-            {
-                ;
-            }
-            else
-            {
-                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbyname.error"));
-            }
-            return entity;
+            var list = Storage.ListByName(Sail.UseRunSQL(), processName, version);
+            if (list.Count == 1)
+                return list[0];
+            if (list.Count == 0)
+                return null;
+            throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbyname.error"));
         }
 
         /// <summary>
@@ -169,26 +146,12 @@ namespace sailflow.data
         {
             if (string.IsNullOrEmpty(version)) version = "1";
 
-            ProcessEntity entity = null;
-            var clip = Sail.useClip();
-            clip.from<ProcessEntity>(out var p)
-                .where(() => p.ProcessCode, processCode)
-                .where(() => p.Version, version);
-            var list = clip.select(p).queryList().ToList();
-
-            if (list.Count() == 1)
-            {
-                entity = list[0];
-            }
-            else if (list.Count() == 0)
-            {
-                ;
-            }
-            else
-            {
-                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbycode.error"));
-            }
-            return entity;
+            var list = Storage.ListByCode(Sail.UseRunSQL(), processCode, version);
+            if (list.Count == 1)
+                return list[0];
+            if (list.Count == 0)
+                return null;
+            throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbycode.error"));
         }
 
         /// <summary>
@@ -199,22 +162,14 @@ namespace sailflow.data
             string processId,
             string version)
         {
-            ProcessEntity entity = null;
-            var clip = kit.useClip();
-            clip.from<ProcessEntity>(out var p)
-                .where(() => p.ProcessId, processId)
-                .where(() => p.Version, version);
-            var list = clip.select(p).queryList().ToList();
-
-            if (list.Count() > 1)
+            var list = Storage.ListByProcessIdVersion(kit, processId, version);
+            if (list.Count > 1)
             {
                 throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbyversioninternal.error"));
             }
-            else if (list.Count() == 1)
-            {
-                entity = list[0];
-            }
-            return entity;
+            if (list.Count == 1)
+                return list[0];
+            return null;
         }
 
         /// <summary>
@@ -223,24 +178,16 @@ namespace sailflow.data
         /// </summary>
         public ProcessEntity GetByMessage(string topic)
         {
-            ProcessEntity entity = null;
             //StartType:2  --- message trigger
             //StartExpression -- message topic
-            var clip = Sail.UseRunSQL().useClip();
-            clip.from<ProcessEntity>(out var p)
-                .where(() => p.StartType, (byte)ProcessStartTypeEnum.Message)
-                .where(() => p.StartExpression, topic);
-            var list = clip.select(p).queryList().ToList();
-
-            if (list.Count() > 1)
+            var list = Storage.ListByMessage(Sail.UseRunSQL(), topic);
+            if (list.Count > 1)
             {
                 throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getbymessage.error"));
             }
-            else if (list.Count() == 1)
-            {
-                entity = list[0];
-            }
-            return entity;
+            if (list.Count == 1)
+                return list[0];
+            return null;
         }
 
         /// <summary>
@@ -259,21 +206,10 @@ namespace sailflow.data
         /// </summary>
         public ProcessEntity GetSingleByAppType(SQLBuilder kit, string appType)
         {
-            ProcessEntity entity = null;
-            var clip = kit.useClip();
-            clip.from<ProcessEntity>(out var p)
-                .where(() => p.AppType, appType);
-            var list = clip.select(p).queryList().ToList();
-
-            if (list.Count() == 1)
-            {
-                entity = list[0];
-            }
-            else
-            {
-                throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getsinglebyapptype.error"));
-            }
-            return entity;
+            var list = Storage.ListByAppType(kit, appType);
+            if (list.Count == 1)
+                return list[0];
+            throw new ApplicationException(Sail.Messages.GetEngineMessage("processmanager.getsinglebyapptype.error"));
         }
 
         /// <summary>
@@ -281,11 +217,7 @@ namespace sailflow.data
         /// 获取所有流程记录
         /// </summary>
         public List<ProcessEntity> GetAll()
-        {
-            var clip = Sail.UseRunSQL().useClip();
-            clip.from<ProcessEntity>(out var p);
-            return clip.select(p).queryList().ToList();
-        }
+            => Storage.GetAll(Sail.UseRunSQL()).ToList();
 
         #endregion
 
@@ -325,7 +257,7 @@ namespace sailflow.data
             }
 
             entity.ProcessDefId = null;
-            return kit.useRepo<ProcessEntity, string>().InsertReturnId(entity);
+            return Storage.Insert(kit, entity);
         }
 
         /// <summary>
@@ -344,14 +276,9 @@ namespace sailflow.data
                     if (entityDB.PackageType == (short)PackageTypeEnum.Package)
                     {
                         //更新主流程泳道流程的使用状态信息
-                        //Update the usage status information of the main flow lane process
-                        var clip = kit.useClip();
-                        clip.setTable<ProcessEntity>(out var p)
-                            .set(() => p.Status, entity.Status)
-                            .where(() => p.PackageId, entity.ProcessDefId)
-                            .doUpdate();
+                        Storage.UpdateStatusByPackageId(kit, entity.ProcessDefId, entity.Status ?? 0);
                     }
-                    kit.update(entity);
+                    Storage.Update(kit, entity);
                     kit.commit();
                     Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);
                 }
@@ -368,7 +295,7 @@ namespace sailflow.data
         /// </summary>
         public void Update(SQLBuilder kit, ProcessEntity entity)
         {
-            kit.update(entity);
+            Storage.Update(kit, entity);
             Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);
         }
 
@@ -387,7 +314,7 @@ namespace sailflow.data
                 {
                     var entity = GetByVersion(kit, processId, version, true);
                     entity.Status = usingState;
-                    kit.useRepo<ProcessEntity, string>().Update(entity);
+                    Storage.Update(kit, entity);
                     kit.commit();
                 }
                 catch
@@ -423,7 +350,7 @@ namespace sailflow.data
                     entity.ProcessDefId = null;
                     //升级主流程版本
                     //Upgrade package process version
-                    newProcessId = kit.insertReturnId<ProcessEntity, string>(entity);
+                    newProcessId = Storage.Insert(kit, entity);
 
                     if (entity.PackageType == (short)PackageTypeEnum.Package)
                     {
@@ -450,13 +377,10 @@ namespace sailflow.data
             string newProcessId,
             string newVersion)
         {
-            //升级泳道流程的使用状态信息
-            //Upgrade the usage status information of the lane process
-            var clip = kit.useClip();
-            clip.from<ProcessEntity>(out var p)
-                .where(() => p.PackageType, (byte)PackageTypeEnum.Pool)
-                .where(() => p.PackageId, originProcessId);
-            var list = clip.select(p).queryList().ToList();
+            //升级泳道流程的使用状态信息（现行实现仅查询；续刀见专题）
+            _ = Storage.ListPoolsByPackageId(kit, originProcessId);
+            _ = newProcessId;
+            _ = newVersion;
         }
 
         /// <summary>
@@ -465,8 +389,9 @@ namespace sailflow.data
         /// </summary>
         public void Delete(string id)
         {
-            var entity = Sail.UseRunSQL().findRowById<ProcessEntity>(id);
-            Sail.UseRunSQL().useRepo<ProcessEntity, string>().DeleteById(id);
+            var kit = Sail.UseRunSQL();
+            var entity = Storage.GetById(kit, id);
+            Storage.DeleteById(kit, id);
             if (entity != null)
                 Sail.ProcessModelFactory.Invalidate( entity.ProcessId, entity.Version);
         }
@@ -484,7 +409,7 @@ namespace sailflow.data
                 kit.beginTransaction();
                 try
                 {
-                    kit.useRepo<ProcessEntity, string>().Delete(entity);
+                    Storage.Delete(kit, entity);
                     kit.commit();
                     Sail.ProcessModelFactory.Invalidate( processId, version);
                 }
@@ -501,10 +426,7 @@ namespace sailflow.data
         /// </summary>
         public void Delete(SQLBuilder kit, string processId)
         {
-            var clip = kit.useClip();
-            clip.setTable<ProcessEntity>(out var p)
-                .where(() => p.ProcessId, processId)
-                .doDelete();
+            Storage.DeleteByProcessId(kit, processId);
             // 无 version：清空全部进程内模型缓存，避免残留
             Sail.ProcessModelFactory.ClearAllCache();
         }
@@ -524,20 +446,11 @@ namespace sailflow.data
                     if (entity.PackageType == (short)PackageTypeEnum.Package)
                     {
                         //删除泳道流程
-                        //Delete pool process
-                        var poolClip = kit.useClip();
-                        poolClip.setTable<ProcessEntity>(out var pool)
-                            .where(() => pool.PackageId, entity.ProcessDefId)
-                            .doDelete();
+                        Storage.DeleteByPackageId(kit, entity.ProcessDefId);
                     }
 
                     //删除主流程
-                    //Delete package process
-                    var clip = kit.useClip();
-                    clip.setTable<ProcessEntity>(out var p)
-                        .where(() => p.ProcessId, processId)
-                        .where(() => p.Version, version)
-                        .doDelete();
+                    Storage.DeleteByProcessIdVersion(kit, processId, version);
 
                     kit.commit();
                     Sail.ProcessModelFactory.Invalidate( processId, version);
@@ -720,7 +633,7 @@ namespace sailflow.data
                         //数据库存储
                         //Update to database
                         processEntity.UpdatedDateTime = DateTime.UtcNow;
-                        kit.useRepo<ProcessEntity, string>().Update(processEntity);
+                        Storage.Update(kit, processEntity);
                     }
                     else
                     {
@@ -737,8 +650,7 @@ namespace sailflow.data
                         processEntity.UpdatedDateTime = DateTime.UtcNow;
 
                         //数据库存储
-                        //Insert into database
-                        kit.useRepo<ProcessEntity, string>().Insert(processEntity);
+                        processEntity.ProcessDefId = Storage.Insert(kit, processEntity);
                     }
                     kit.commit();
                     Sail.ProcessModelFactory.Invalidate( processEntity.ProcessId, processEntity.Version);
@@ -982,12 +894,8 @@ namespace sailflow.data
         /// 获取主流程下的泳道流程列表
         /// </summary>
         private List<ProcessEntity> GetPoolProcessList(SQLBuilder kit, string packageId)
-        {
-            var clip = kit.useClip();
-            clip.from<ProcessEntity>(out var p)
-                .where(() => p.PackageId, packageId);
-            return clip.select(p).queryList().ToList();
-        }
+            => Storage.ListByPackageId(kit, packageId).ToList();
+
 
         /// <summary>
         /// Import XML document to generate process records
@@ -1054,26 +962,14 @@ namespace sailflow.data
         private void DeletePoolProcess(SQLBuilder kit,
             string packageId,
             List<string> poolProcessIds)
-        {
-            var clip = kit.useClip();
-            clip.setTable<ProcessEntity>(out var p)
-                .where(() => p.PackageId, packageId)
-                .whereIn(() => p.ProcessDefId, poolProcessIds)
-                .doDelete();
-        }
+            => Storage.DeletePoolsByPackageIdAndDefIds(kit, packageId, poolProcessIds);
 
         /// <summary>
         /// Delete pool process by package id
         /// 删除泳道流程记录
         /// </summary>
         private void DeletePoolProcess(SQLBuilder kit, string packageId)
-        {
-            var clip = kit.useClip();
-            clip.setTable<ProcessEntity>(out var p)
-                .where(() => p.PackageId, packageId)
-                .where(() => p.PackageType, (byte)PackageTypeEnum.Pool)
-                .doDelete();
-        }
+            => Storage.DeletePoolsByPackageId(kit, packageId);
 
         /// <summary>
         /// Read the content of the process XML file
