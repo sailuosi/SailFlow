@@ -438,6 +438,13 @@ namespace sailflow.service
         public Task<WfExecutedResult> RemoveAssigneeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
             => RunActionAsync(runner, cancellationToken, (kit, r) => new RemoveAssigneeLane(Sail, kit, r).Execute());
 
+        /// <summary>认领/承办（Assignee 族）：或签独占，不推进。</summary>
+        public WfExecutedResult TakeOnProcess(FlowCommandContext runner)
+            => RunAction(runner, (kit, r) => new TakeOnLane(Sail, kit, r).Execute());
+
+        public Task<WfExecutedResult> TakeOnProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+            => RunActionAsync(runner, cancellationToken, (kit, r) => new TakeOnLane(Sail, kit, r).Execute());
+
         /// <summary>A4 续：改派（Assignee 族）。Host 办理条待产品。</summary>
         public WfExecutedResult ChangeAssigneeProcess(FlowCommandContext runner)
             => RunAction(runner, (kit, r) => new ChangeAssigneeLane(Sail, kit, r).Execute());

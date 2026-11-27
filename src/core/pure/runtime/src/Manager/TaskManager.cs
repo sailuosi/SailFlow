@@ -1183,6 +1183,210 @@ namespace sailflow.data
             return WfDataManagedResult.Success();
         }
 
+        /// <summary>
+        /// 办理台显隐：可被 TakeOn 旁关的同伴；Leave 不合法或不可认领时返回空。
+        /// </summary>
+        public IList<TaskEntity> ListTakeOnPeersToClose(
+            SQLBuilder kit,
+            string taskId,
+            out string leaveJudgeType)
+        {
+            leaveJudgeType = null;
+            if (string.IsNullOrWhiteSpace(taskId) || kit == null)
+                return new List<TaskEntity>();
+
+            var task = GetTask(kit, taskId);
+            if (task == null || AssigneeRoleHelper.IsParticipant(task.AssigneeRole))
+                return new List<TaskEntity>();
+            if (task.TaskState != (short)TaskStateEnum.Waiting
+                && task.TaskState != (short)TaskStateEnum.Reading)
+                return new List<TaskEntity>();
+
+            var am = Sail.ManagerFactory.Activities;
+            var activityInstance = am.GetById(kit, task.ActivityInstanceId);
+            if (activityInstance == null)
+                return new List<TaskEntity>();
+            if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
+                && activityInstance.ActivityState != (short)ActivityStateEnum.Running)
+                return new List<TaskEntity>();
+
+            ResolveTakeOnScope(activityInstance, am, kit, out var scopeRoot, out leaveJudgeType);
+            if (!TakeOnPeerHelper.IsTakeOnLeaveAllowed(leaveJudgeType))
+                return new List<TaskEntity>();
+
+            var open = CollectOpenApproversInTakeOnScope(kit, scopeRoot, activityInstance);
+            return TakeOnPeerHelper.FilterPeersToClose(
+                open,
+                task.TaskId,
+                task.SignId,
+                task.ProxySignId,
+                task.GroupId,
+                leaveJudgeType);
+        }
+
+        /// <summary>
+        /// 认领/承办：关闭同作用域他人（或同组）打开办理人待办，只留认领人席；不推进。
+        /// 仅 Leave=Race/GroupRace；沟通参与者不关。
+        /// </summary>
+        public WfDataManagedResult TakeOnExclusive(
+            SQLBuilder kit,
+            string taskId,
+            FlowCommandContext runner)
+        {
+            if (string.IsNullOrWhiteSpace(taskId))
+                return WfDataManagedResult.Exception("TakeOn requires TaskId.");
+
+            var task = GetTask(kit, taskId);
+            if (task == null)
+                return WfDataManagedResult.Exception("TakeOn task not found.");
+            if (AssigneeRoleHelper.IsParticipant(task.AssigneeRole))
+                return WfDataManagedResult.Exception("TakeOn cannot start from a participant task.");
+            if (!string.IsNullOrWhiteSpace(runner?.UserId)
+                && !string.Equals(task.SignId, runner.UserId, StringComparison.OrdinalIgnoreCase))
+                return WfDataManagedResult.Exception("TakeOn requires the current user's to-do.");
+            if (task.TaskState != (short)TaskStateEnum.Waiting
+                && task.TaskState != (short)TaskStateEnum.Reading)
+                return WfDataManagedResult.Exception("TakeOn task is not ready/running.");
+
+            var am = Sail.ManagerFactory.Activities;
+            var activityInstance = am.GetById(kit, task.ActivityInstanceId);
+            if (activityInstance == null)
+                return WfDataManagedResult.Exception("TakeOn activity not found.");
+            if (activityInstance.ActivityState != (short)ActivityStateEnum.Ready
+                && activityInstance.ActivityState != (short)ActivityStateEnum.Running)
+            {
+                return WfDataManagedResult.Exception("TakeOn activity is not ready/running.");
+            }
+
+            ResolveTakeOnScope(activityInstance, am, kit, out var scopeRoot, out var leaveType);
+            if (!TakeOnPeerHelper.IsTakeOnLeaveAllowed(leaveType))
+                return WfDataManagedResult.Exception("TakeOn requires Leave=Race or GroupRace.");
+
+            var open = CollectOpenApproversInTakeOnScope(kit, scopeRoot, activityInstance);
+            var toClose = TakeOnPeerHelper.FilterPeersToClose(
+                open,
+                task.TaskId,
+                task.SignId,
+                task.ProxySignId,
+                task.GroupId,
+                leaveType);
+
+            if (toClose.Count == 0)
+                return WfDataManagedResult.Success();
+
+            var cancelledChildAi = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var t in toClose)
+            {
+                var peerAi = string.Equals(
+                        t.ActivityInstanceId,
+                        activityInstance.ActivityInstanceId,
+                        StringComparison.OrdinalIgnoreCase)
+                    ? activityInstance
+                    : am.GetById(kit, t.ActivityInstanceId);
+
+                ApplyTaskEnd(t, TaskStateEnum.Closed, runner, TaskEndTypes.TakeOnTaken);
+                Update(kit, t);
+                Sail.CapabilityDispatcher.FireTaskLifecycle(
+                    kit, t, peerAi ?? activityInstance, runner, TaskNotifyKind.Cancelled);
+
+                // SignTogether 等：同伴在不同子 AI 上时淹没其加签子树并取消空子 AI
+                if (peerAi != null
+                    && !string.Equals(
+                        peerAi.ActivityInstanceId,
+                        activityInstance.ActivityInstanceId,
+                        StringComparison.OrdinalIgnoreCase)
+                    && cancelledChildAi.Add(peerAi.ActivityInstanceId))
+                {
+                    am.CancelSignForwardSubtreeUnder(kit, peerAi.ActivityInstanceId, runner);
+                    if (peerAi.ActivityState == (short)ActivityStateEnum.Ready
+                        || peerAi.ActivityState == (short)ActivityStateEnum.Running
+                        || peerAi.ActivityState == (short)ActivityStateEnum.Suspended)
+                    {
+                        peerAi.ActivityState = (short)ActivityStateEnum.Cancelled;
+                        peerAi.UpdatedUserId = runner?.UserId;
+                        peerAi.UpdatedUserName = runner?.UserName;
+                        peerAi.UpdatedDateTime = DateTime.UtcNow;
+                        am.Update(kit, peerAi);
+                    }
+                }
+            }
+
+            RefreshActivitySignFromOpenTasks(kit, activityInstance);
+            if (!string.Equals(
+                    scopeRoot.ActivityInstanceId,
+                    activityInstance.ActivityInstanceId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                RefreshActivitySignFromOpenTasks(kit, scopeRoot);
+            }
+
+            return WfDataManagedResult.Success();
+        }
+
+        static void ResolveTakeOnScope(
+            ActivityInstanceEntity activityInstance,
+            IActivityInstanceManager am,
+            SQLBuilder kit,
+            out ActivityInstanceEntity scopeRoot,
+            out string leaveType)
+        {
+            scopeRoot = activityInstance;
+            if (!string.IsNullOrWhiteSpace(activityInstance.MainActInstanceId)
+                && !string.Equals(
+                    activityInstance.MainActInstanceId,
+                    activityInstance.ActivityInstanceId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                scopeRoot = am.GetById(kit, activityInstance.MainActInstanceId) ?? activityInstance;
+            }
+
+            leaveType = !string.IsNullOrWhiteSpace(activityInstance.LeaveJudgeType)
+                ? activityInstance.LeaveJudgeType
+                : scopeRoot.LeaveJudgeType;
+        }
+
+        /// <summary>TakeOn 作用域内打开办理人：SignTogether 扫主下子 AI，否则当前扁节点。</summary>
+        List<TaskEntity> CollectOpenApproversInTakeOnScope(
+            SQLBuilder kit,
+            ActivityInstanceEntity scopeRoot,
+            ActivityInstanceEntity claimerActivity)
+        {
+            if (scopeRoot != null
+                && scopeRoot.ComplexType == (short)ComplexTypeEnum.SignTogether)
+            {
+                var children = Sail.ManagerFactory.Activities.GetActivityMulitipleInstanceWithState(
+                    kit,
+                    scopeRoot.ActivityInstanceId,
+                    scopeRoot.ProcessInstanceId,
+                    null);
+                var ids = new List<string> { scopeRoot.ActivityInstanceId };
+                if (children != null)
+                {
+                    foreach (var c in children)
+                    {
+                        if (c == null || string.IsNullOrWhiteSpace(c.ActivityInstanceId))
+                            continue;
+                        if (c.ActivityState != (short)ActivityStateEnum.Ready
+                            && c.ActivityState != (short)ActivityStateEnum.Running
+                            && c.ActivityState != (short)ActivityStateEnum.Suspended)
+                            continue;
+                        ids.Add(c.ActivityInstanceId);
+                    }
+                }
+
+                return GetTaskListByActivityIds(kit, scopeRoot.ProcessInstanceId, ids)
+                    .Where(t => (t.TaskState == (short)TaskStateEnum.Waiting
+                            || t.TaskState == (short)TaskStateEnum.Reading)
+                        && AssigneeRoleHelper.IsApprover(t.AssigneeRole))
+                    .ToList();
+            }
+
+            return GetOpenApproverTasks(
+                kit,
+                claimerActivity.ProcessInstanceId,
+                claimerActivity.ActivityInstanceId);
+        }
+
         /// <summary>用 Waiting/Reading 的<strong>常规办理人</strong>待办重建活动 SignIds/Names（排除沟通参与者）。</summary>
         public void RefreshActivitySignFromOpenTasks(
             SQLBuilder kit,

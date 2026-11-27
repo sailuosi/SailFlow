@@ -22,6 +22,7 @@ namespace sailflow.utils
             FlowOperation.Delegate,
             FlowOperation.ChangeAssignee,
             FlowOperation.RemoveAssignee,
+            FlowOperation.TakeOn,
             FlowOperation.AddAssignee,
             FlowOperation.Revise,
             FlowOperation.Resend,

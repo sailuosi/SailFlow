@@ -100,6 +100,10 @@ namespace sailflow.events
 
         OnAssigneeRemoved = 105,
 
+        OnAssigneeTakingOn = 120,
+
+        OnAssigneeTakeOn = 121,
+
         OnAssigneeChanging = 106,
 
         OnAssigneeChanged = 107,

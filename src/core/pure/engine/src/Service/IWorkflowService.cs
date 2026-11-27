@@ -172,6 +172,13 @@ namespace sailflow.service
         Task<WfExecutedResult> RemoveAssigneeProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// 认领/承办：仅 Leave=Race/GroupRace；旁关他人（或同组）打开待办、只留自己，不发生节点流转。
+        /// 定位靠 <c>TaskId</c>。
+        /// </summary>
+        WfExecutedResult TakeOnProcess(FlowCommandContext runner);
+        Task<WfExecutedResult> TakeOnProcessAsync(FlowCommandContext runner, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// 改派：用 <c>NextActivityPerformers</c> 作为当前节点新办理人全集（差量关旧/建新），不发生节点流转。
         /// 定位活动靠 <c>TaskId</c>。
         /// </summary>

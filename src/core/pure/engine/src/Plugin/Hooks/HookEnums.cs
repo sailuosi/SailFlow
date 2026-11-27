@@ -63,6 +63,8 @@ namespace sailflow.hooks
         Transfer,
         /// <summary>减签：从当前多人节点移除尚未办完的办理人待办，不推进下一节点。</summary>
         RemoveAssignee,
+        /// <summary>认领/承办：或签（Race/GroupRace）下独占待办，旁关他人（或同组），不推进下一节点。</summary>
+        TakeOn,
         /// <summary>改派：用新办理人集合替换当前节点未办待办（差量关旧/建新），不推进下一节点。</summary>
         ChangeAssignee,
         /// <summary>加人：向当前扁节点追加普通办理人待办（不改 Leave / 不压加签栈），不推进下一节点。</summary>

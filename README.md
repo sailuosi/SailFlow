@@ -94,6 +94,7 @@ Host  →  biz（组合根 / UseBiz*）
 | 退回 | `SendBack` | `SendBackProcess` | 打回修改；目标 × 再发送两维正交 |
 | 加签（前 / 后 / 并） | `SignForward` | `SignForwardProcess` | 办理中临时插人，不改流程图 |
 | 减签 | `RemoveAssignee` | `RemoveAssigneeProcess` | 多人节点拿掉未办完的人 |
+| 认领 / 承办 | `TakeOn` | `TakeOnProcess` | 或签（Race/GroupRace）独占；旁关他人或同组，**不推进** |
 | 转办 | `Transfer` | `TransferProcess` | 本节点交人，**不还回** |
 | 沟通 | `Consult` | `ConsultProcess` | 征询参与者；源待办硬锁至阅办/收回 |
 | 阅办 | `Acknowledge` | `AcknowledgeProcess` | 被沟通人关闭自己的沟通待办 |
@@ -129,7 +130,7 @@ Host  →  biz（组合根 / UseBiz*）
 
 会签 / 或签 / 抢办 / 顺序会签是节点 **Leave**，不是办理条键：`Race` · `Collaborate` · `GroupRace` · `GroupCollaborate` · `Captain`。
 
-**选型口诀：** 不还回 → 转办；要还回 → 委派；管理换名单 → 改派；临时插人 → 加签；知情 → 抄送；征询 → 沟通。
+**选型口诀：** 不还回 → 转办；要还回 → 委派；管理换名单 → 改派；临时插人 → 加签；或签先锁人 → 认领；知情 → 抄送；征询 → 沟通。
 
 简单流转初测（通过 / 加签三型 / 转办 / 沟通 / 驳回 / 退回 / 返送）已通；网关叠用与边界场景仍在清单上。详解：[解说-OA动词齐备与初测.md](./doc/helps/解说-OA动词齐备与初测.md) · [解说-办理动词.md](./doc/helps/解说-办理动词.md) · [特性说明-中国式OA审批要素.md](./doc/sail/特性说明-中国式OA审批要素.md)。
 

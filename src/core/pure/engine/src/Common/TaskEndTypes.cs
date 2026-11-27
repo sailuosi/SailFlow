@@ -8,6 +8,8 @@ namespace sailflow.utils
     {
         public const string SelfComplete = "SelfComplete";
         public const string RaceTaken = "RaceTaken";
+        /// <summary>认领/承办（TakeOn）：同活动（或同组）他人待办被独占关闭。</summary>
+        public const string TakeOnTaken = "TakeOnTaken";
         public const string ProxyTaken = "ProxyTaken";
         public const string DelegatedOut = "DelegatedOut";
         public const string TransferredOut = "TransferredOut";

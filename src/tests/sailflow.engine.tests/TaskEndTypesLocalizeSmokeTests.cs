@@ -12,6 +12,7 @@ public class TaskEndTypesLocalizeSmokeTests
         Assert.Equal("SelfComplete", TaskEndTypes.SelfComplete);
         Assert.Equal("ProxyTaken", TaskEndTypes.ProxyTaken);
         Assert.Equal("RaceTaken", TaskEndTypes.RaceTaken);
+        Assert.Equal("TakeOnTaken", TaskEndTypes.TakeOnTaken);
         Assert.Equal("DelegatedOut", TaskEndTypes.DelegatedOut);
         Assert.Equal("TransferredOut", TaskEndTypes.TransferredOut);
     }

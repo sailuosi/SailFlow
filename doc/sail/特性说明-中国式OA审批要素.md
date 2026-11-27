@@ -58,7 +58,7 @@
 | 组间协办 | `GroupCollaborate` | 组维度协办（可叠加 Count/Rate，见管道 R7） |
 | 队长关卡 | `Captain` | 关卡与组员待办并存；关卡办完才算组完成（R8） |
 
-**与「承办」关系：** AntFlow 的承办 = 或签场景下**先认领再审批**；Sail 默认用 `Race` 表达「谁办完谁独占」，**不**默认增加 `Undertake` 按钮。详见 [存疑参考功能点.md](./talk/存疑参考功能点.md) §1。
+**与「认领/承办」关系：** 可选动词 `TakeOn` 仅叠在 `Race`/`GroupRace` 上（独占待办、不推进）；仍可用通过直接或签旁关。详见 [存疑参考功能点.md](./talk/存疑参考功能点.md) §1 · [解说-办理动词.md](../helps/解说-办理动词.md)。
 
 ---
 
@@ -71,7 +71,7 @@
 | 转办 | `Transfer` | `TransferProcess` | **个人办结 + 本节点交人，不发生节点流转**（原人待办 Closed，新人同 Activity 待办；刷新 SignIds/Names；≠ 委派回转） | **已接线**（码表 + Host `ButtonsOperation`）；见 [todo-产品缺口.md](./dev/todo-产品缺口.md) **§F** · [OA/专题-转办.md](./OA/专题-转办.md) |
 | 委派 / 委托 | `Delegate` | `DelegateProcess` | 请他人代办；**受托人办结后自动回转**原责任人待办（不推进）。若办完不回转 → 用 `Transfer`。审计走审批轨迹，不默认单独流水表 | **已接线**（码表默认关 + Handler + 办理条；≠ Surrogate 出差代批） |
 | 变更处理人 | `ChangeAssignee` | `ChangeAssigneeProcess` | 管理员/有权人改当前节点办理人集合（差量） | **已接线**（码表默认关 + Handler + Workbench `CurrentAssignees` + 办理条） |
-| 承办 / 认领 | `Claim`（勿用 Undertake 当万能名） | 待定认领命令；**仅** `Leave=Race` | 或签多人时先独占待办，**不推进**；再 `Approve`/`Reject` | 存疑，默认不跟 AntFlow 按钮 |
+| 承办 / 认领 | `TakeOn`（展示「认领」；**不用** Claim/Undertake 作 Id） | `TakeOnProcess`；**仅** `Leave=Race`/`GroupRace` | 或签多人时先独占待办（旁关他人或同组），**不推进**；通过仍可直接或签旁关 | **已接线**（码表 + Handler + 工作台 Leave/同伴裁剪）；不做「认领前藏通过」 |
 | 加批 | `SignAddNode`（候选） | 与 `SignForward` 拆语义后定 | **生成新审批节点/段**再审（AntFlow JP） | 现揉在加签，未拆 |
 | 当前节点加人 | `AddAssignee` | `AddAssigneeProcess` | 扁节点追加普通办理人（增量）；不改 Leave、不压加签栈；加签对话框可路由 | **已接线**（码表默认关 + Handler + 办理条 / 加签「普通加人」）；见 [OA/专题-改签.md](./OA/专题-改签.md) §1b |
 | 减签 | `RemoveAssignee` | `RemoveAssigneeProcess` | 从当前多人节点移除尚未办完的办理人 | **已接线**（码表 + Host Handler + Workbench 候选人 + 办理条弹窗）；与加签/改派见 [OA/专题-改签.md](./OA/专题-改签.md) |
@@ -130,7 +130,7 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 待办 `handle` | `Approve` `Reject` `SendBack` `SignForward` `Transfer` `Consult` `Acknowledge` `RecallConsult` `Copyto` `Revise` | 当前用户有待办；参与者仅 `Acknowledge` |
 | 已办 `done` | `Withdraw` `Resend` | 本人已办且流程仍运行 |
 | 管理 `admin` | `Jump` `Close` `Reverse` | 运维/有权跳转关闭 |
-| 候选扩展 | `Transfer` `Delegate` `Claim` `Terminate` `Discard` … | 见 §4 |
+| 候选扩展 | `Transfer` `Delegate` `TakeOn` `Terminate` `Discard` … | 见 §4 |
 
 显隐 = **上下文** ∧ **节点 `ButtonsSetting.enable`**（宿主约定）。
 
@@ -145,7 +145,7 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 退回 | 反转 | `SendBack` ≠ `Reverse` |
 | 加签 | 加批（生新节点） | 现 `SignForward`；加批待拆；办理细表 [OA/专题-改签.md](./OA/专题-改签.md) |
 | 转办 | 委派 | `Transfer`＝交人不再回；`Delegate`＝代办完**自动回转**原人；细表 [OA/专题-转办.md](./OA/专题-转办.md)；配置型「委托代批」见 [解说-OA委托动词.md](../helps/解说-OA委托动词.md) · [OA/专题-委托代办.md](./OA/专题-委托代办.md) |
-| 承办 | 通过 / 越过会签 | 仅或签认领；见存疑文档；Leave=`Race` |
+| 认领 / 承办 | 通过 / 越过会签 | `TakeOn`；仅 Leave=`Race`/`GroupRace` |
 | 抄送 | 算人 / 待办 | Host `Copyto`；禁止塞进 Resolve Type |
 | 沟通 | 抄送 / 前加签 | `Consult` 建参与者 `sf_task` 并锁审批；抄送不锁、不加签无审批权 |
 | 关闭 | 终止 / 作废 | `Close` vs 候选 `Terminate`/`Discard` |
@@ -157,7 +157,7 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 1. **禁止空壳**：无引擎命令 + Host API，不得进办理条码表。  
 2. **Leave 正交**：认领/转办不得默认可绕过 `Collaborate` / 会签。  
 3. **抄送独立通道**：不与 Assignee ConfigPair、Task Notifier 混用；用 `AddCopytoNotifier` + `CopytoNotifyKind`。待办推送见 [OA/专题-待办推送.md](./OA/专题-待办推送.md)。  
-4. **存疑先记文档**：怪异 UX（如 AntFlow 承办）进 [talk/存疑参考功能点.md](./talk/存疑参考功能点.md)，不默许进基线。  
+4. **存疑先记文档**：怪异 UX（如 AntFlow「认领前藏通过」）进 [talk/存疑参考功能点.md](./talk/存疑参考功能点.md)；窄语义 `TakeOn` 已落地，两段式 UX 仍不跟。  
 5. **文案可本地化**：码表 `DisplayName` 可改「同意/通过」；**Id 与 Engine 稳定**。
 
 ---

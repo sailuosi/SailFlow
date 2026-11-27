@@ -205,6 +205,14 @@ namespace sailflow.result
         public const string RemoveAssignee_LastAssignee = "RemoveAssignee_LastAssignee";
         public const string RemoveAssignee_RuntimeError = "RemoveAssignee_RuntimeError";
 
+        // 认领 / 承办（TakeOn）
+        public const string TakeOn_ErrorArguments = "TakeOn_ErrorArguments";
+        public const string TakeOn_LeaveNotAllowed = "TakeOn_LeaveNotAllowed";
+        public const string TakeOn_NotInRunning = "TakeOn_NotInRunning";
+        public const string TakeOn_NotMineTask = "TakeOn_NotMineTask";
+        public const string TakeOn_RuntimeError = "TakeOn_RuntimeError";
+        public const string TakeOnLeaveNotAllowed = "TakeOnLeaveNotAllowed";
+
         // 改派
         public const string ChangeAssignee_ErrorArguments = "ChangeAssignee_ErrorArguments";
         public const string ChangeAssignee_NoneTargets = "ChangeAssignee_NoneTargets";

@@ -145,6 +145,17 @@ public interface ITaskManager
 
     WfDataManagedResult RemoveAssignees( SQLBuilder kit, string taskId, FlowCommandContext runner, PerformerList removeTargets);
 
+    /// <summary>
+    /// 认领/承办：或签下关闭他人（或同组）打开办理人待办，只留认领人席；不推进。
+    /// </summary>
+    WfDataManagedResult TakeOnExclusive(SQLBuilder kit, string taskId, FlowCommandContext runner);
+
+    /// <summary>
+    /// 办理台显隐：若当前 Task 可 TakeOn，返回将被旁关的同伴待办；否则空列表。
+    /// <paramref name="leaveJudgeType"/> 为解析到的 Leave（可能为空）。
+    /// </summary>
+    IList<TaskEntity> ListTakeOnPeersToClose(SQLBuilder kit, string taskId, out string leaveJudgeType);
+
     void RefreshActivitySignFromOpenTasks( SQLBuilder kit, ActivityInstanceEntity activityInstance);
 
     List<TaskEntity> GetOpenApproverTasks( SQLBuilder kit, string processInstanceId, string activityInstanceId);
