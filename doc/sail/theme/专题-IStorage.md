@@ -1,9 +1,9 @@
 # 专题 · IStorage（数据库连接器）
 
-> 状态：**P0–P2 已收口**（含 Preselect / Picked；sailflow pure 旁路已净；2026-11-27）  
-> 已收口：运行时六件套 + 定义四件 + Log/Archive + Preselect/Picked；`UseDefaultStorages` 十二件套；XPDL 独立；`PreviousStepChecker` / `AutoApproveAnchorWorker` 已走 Storage。  
-> 宿主 C 档：**明确不做**（§8.2；产品侧策略 Hook/Job 散落 SQL 保留）。  
-> 用途：流程定义 / 实例套表的**纯库交互层**——无状态、`kit` 首参、热点专属 API、唯一注册可覆盖；为实施提供可执行契约。  
+> 状态：**已完工**（2026-11-27）  
+> 引擎侧：运行时六件套 + 定义四件 + Log/Archive；`UseDefaultStorages` 十二件套；pure 业务路径已净；XPDL 独立。  
+> 办理人项集：`IPreselectAssigneeStorage` / `IPickedAssigneeStorage` 接口在引擎；**默认实现由宿主注册**（本设计如此）。  
+> 用途：流程套表**纯库契约**——无状态、`kit` 首参、热点 API、唯一槽可覆盖；**宿主用自定义 Storage / UseXxx 替换默认实现**，产品域 SQL **不在**本专题战役内。  
 > 讨论溯源：[讨论-办理人操作模式与人员范围正交-分析归档.md](../done/讨论-办理人操作模式与人员范围正交-分析归档.md)（§6、§8 已定寿命）  
 > 关联：[专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) · [架构设计-项目依赖与分层.md](../架构设计-项目依赖与分层.md) · [业务管道特性设计.md](../业务管道特性设计.md) · [专题-事务一致性.md](./专题-事务一致性.md) · [专题-对象解析器.md](./专题-对象解析器.md)
 
@@ -17,10 +17,12 @@
 | **事务** | **`SQLBuilder kit` 为第一参数**；连接器不持 kit/连接字段 |
 | **状态 / 寿命** | **无状态**；**同寿于一个 `SailClient` 注册槽**（已拍；非跨 Client 进程上帝单例） |
 | **热点** | 状态更新等建**专属方法**；禁止只靠厚仓储泛化 |
-| **默认实现** | **`sailflow.data`**（`Default*Storage`）；可继承；注册替换 |
+| **默认实现** | 套表：**`sailflow.data`**（`Default*Storage`）；可继承；注册替换 |
+| **宿主自定义** | **设计目标**：唯一槽后注册覆盖 / `UseXxx` 注入自有实现（分库、分表、只读副本、产品项集表等） |
 | **注册** | **唯一槽**；后注册覆盖（建议打日志，类比 R9） |
 | **DI** | 引擎**仿 DI**（`ISailCollection` / `UseXxx`）；宿主**真 DI** 桥接注入 |
-| **与办理人落库** | [对象解析器](./专题-对象解析器.md) 的 pre/`LoadPicked` 默认实现应**调用**本层，不另写 SQL 风格 |
+| **与办理人落库** | [对象解析器](./专题-对象解析器.md) Mode Store **内部调用**对应 Storage；Preselect/Picked **实现属宿主** |
+| **范畴外** | 宿主产品表、策略 Hook、报表、Schema/种子——**不是**引擎 Storage 欠债 |
 
 ---
 
@@ -91,15 +93,14 @@ public interface IProcessInstanceStorage // 可继承或独立于 IStorage<>
 
 ---
 
-## 4. 与现行差距（2026-11-27）
+## 4. 现状对齐（2026-11-27 · 已完工）
 
-| 现行 | 目标 / 备注 |
-|------|-------------|
-| PI / Task / AI / Transition / HookOutbox / ProcessVariable Manager | **已收口**：仅 `Storages.GetRequired`；无 `useRepo` |
-| `ProcessManager` / `VariableManager` / `RuleSetManager` / `JobInfoManager` | **已收口** → `IProcessDefinitionStorage` / `IVariableDefinitionStorage` / `IRuleSetStorage` / `IJobInfoStorage` |
-| `IPreselectAssigneeStorage` | **已挂**（宿主 Storage + Mode Store） |
-| `IPickedAssigneeStorage` | **已挂**（宿主 `sf_picked_assignee`；`persistPick=true` 时读写） |
-| `DefaultManagerFactory` 懒持 Manager（A） | Storage 同为 A；已挂默认六件套；余 Manager 按需注入 |
+| 项 | 备注 |
+|----|------|
+| PI / Task / AI / Transition / HookOutbox / ProcessVariable Manager | 仅 `Storages.GetRequired`；无 `useRepo` |
+| `ProcessManager` / `VariableManager` / `RuleSetManager` / `JobInfoManager` | → 对应 Definition / RuleSet / Job Storage |
+| `IPreselectAssigneeStorage` / `IPickedAssigneeStorage` | 引擎接口；**实现由宿主注册**（示例：sleveen `UseSleveen*Assignees`） |
+| `DefaultManagerFactory` 懒持 Manager（A） | Storage 同为 A；`UseDefaultStorages` 十二件套 |
 
 ---
 
@@ -194,59 +195,29 @@ S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非
 
 **明确不做 / 已决议：** Definition **文件/XML** 不并入 kit 族（`IXPDLStorage`）；热分表 Router 留 Manager；首版无 RowVersion。
 
-### 8.2 宿主散落 SQL 审计（sleveen-admin · 2026-11-27）
+### 8.2 宿主边界（设计：可自定义，非欠债）
 
-> 范围：`backend/sailflow/src` 内 `useRepo` / `useClip` / `UseRunSQL`。  
-> 原则：**产品表 / 报表 / 种子 / Schema 可留宿主**；**引擎套表热路径已走 Storage**。  
-> **决议（已拍）：宿主 C 档明确不做**——策略 Hook/Job 等产品侧散落 SQL **保留**，不纳入引擎 IStorage 战役。
+> **IStorage 战役止于引擎契约 + 默认套表实现。**  
+> 宿主通过 `Storages.Register` / `UseXxx` **替换或补挂**实现（例：sleveen `UseSleveenPreselectAssignees` / `UseSleveenPickedAssignees`）。  
+> 产品表、Schema/种子、策略 Hook、报表、门户读模型属于**宿主产品域**——可继续自写 SQL，也可自愿改走已注册 Storage；**均不构成引擎未完工项**。
 
-| 档 | 含义 |
-|----|------|
-| **A · 已合规** | 经 IStorage / Mode Store，或纯 Schema/种子 |
-| **B · 产品域 · 保留** | 宿主产品表 / 门户 / 报表 / API 编排；**不迁**引擎 Storage |
-| **C · 明确不做** | 直接打 PI/Task/AI 等套表的宿主策略/超时代码；**保留原样** |
+| 角色 | 谁负责 |
+|------|--------|
+| 套表接口 + `Default*Storage` | 引擎（`UseDefaultStorages`） |
+| Preselect / Picked 表实现 | **宿主**（接口在引擎；无强制默认表） |
+| 产品分类 / Meta / 请假 / 代理 / Extra / 报表 | 宿主产品代码 |
+| 策略超时 / NodePolicy Hook | 宿主产品代码（可读套表或调 Manager/Storage） |
 
-#### A · 已合规
+参考挂载（sleveen-admin，示例非清单债）：`Sleveen*AssigneeStorage|Store`、`SailHostSchemaInitializer`、各类 `Sail*Service` / 策略 Hook。
 
-| 位置 | 说明 |
-|------|------|
-| `Assignee/Sleveen*Preselect*Storage|Store` | → `IPreselectAssigneeStorage` |
-| `Assignee/Sleveen*Picked*Storage|Store` | → `IPickedAssigneeStorage` |
-| `Hosting/SailHostSchemaInitializer` | 建表/索引（含 `sf_picked_assignee`） |
-| `Hosting/SailProductSeed` | 种子写定义/表单/分类 |
+### 8.3 sailflow pure（**已净**）
 
-#### B · 产品域 · 保留（摘录）
-
-| 位置 | 表/职责 |
-|------|---------|
-| `Service/SailCategoryService` | `SailProcessCategoryEntity` |
-| `Service/SailProcessMetaService` | `SailProcessMetaEntity` |
-| `Service/SailLeaveService` / `SailApprovalPhraseService` / `SailSurrogateService` | 请假 / 常用语 / 代理产品表 |
-| `Service/SailProcessExtraService` + `Hooks/SailProcessExtra*` | Extra JSON / HTTP / 去重 / 创建触发 |
-| `Service/SailReleaseService` | 发布编排 |
-| `Service/SailReportService` · `Integration/.../SailTodoPortalRecordService` | 报表 / 门户读模型 |
-| `UnitScope/SailProcessAuthStore` | 流程授权 |
-| `Controller/WfFormController` · `WfOutboxController` · `Wf2XmlController*` | API / 设计器查询 |
-| `Assignee/SurrogateAssigneeFilter` | 代理过滤读 |
-
-#### C · 明确不做（策略 / 超时打戳 · 保留）
-
-| 位置 | 触达套表 |
-|------|----------|
-| `Timeout/SailNodePolicyTimeoutStampHook` | Task / AI / PI |
-| `Timeout/SailNodePolicyJobWorker` | Task / AI |
-| `Assignee/SailNodePolicyAutoApproveHook` | Task / AI / PI |
-| `Hooks/SailProcessExtraStartedHook` 等 Extra/本地化 Hook | PI / Task |
-| `Controller/Wf2XmlController.Runtime` | 运行时查询面 |
-
-### 8.3 sailflow pure 旁路（**2026-11-27 已收口**）
-
-| 位置 | 改后 |
-|------|------|
+| 位置 | 走 Storage |
+|------|------------|
 | `runtime/Parser/PreviousStepChecker` | `IActivityInstanceStorage.GetCompletedMiChildByMainAndOrder` |
 | `assignee/Job/AutoApproveAnchorWorker` | `IProcessInstanceStorage` / `ITaskStorage` / `IActivityInstanceStorage` |
 
-`pure` 业务路径除 `SailClient.useClip` 门面与 `baseHub/LogService`（无引擎引用、可注入 Sink）外，**无**套表 `useClip`/`useRepo`。`ext/form`·`ext/graph` 非本战役。
+`pure` 业务路径除 `SailClient.useClip` 门面与 `baseHub/LogService`（无引擎引用、可注入 Sink）外，**无**套表 `useClip`/`useRepo`。`ext/form`·`ext/graph` 非套表契约战役。
 
 ---
 
@@ -255,15 +226,15 @@ S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非
 | 材料 | 路径 |
 |------|------|
 | 运行时套表 Manager | PI/Task/AI/Transition/HookOutbox/**ProcessVariable**：**无** `useClip`/`useRepo` |
-| 定义侧 Manager | Process / Variable 定义 / RuleSet / JobInfo：**已**经 Storage（**P1**） |
-| Log / Archive | `IEngineLogStorage` / `IProcessArchiveStorage`（**P2**） |
+| 定义侧 Manager | Process / Variable 定义 / RuleSet / JobInfo：**已**经 Storage |
+| Log / Archive | `IEngineLogStorage` / `IProcessArchiveStorage` |
 | Definition 文件 | `IXPDLStorage` / `XPDLLocalStorage`（非 `SailStorages`） |
 | 寿命 A/B | [专题-对象生命周期与复用边界.md](./专题-对象生命周期与复用边界.md) |
 | UseXxx / ISailCollection | [业务管道特性设计.md](../业务管道特性设计.md) |
-| Preselect / Picked | 宿主 `Sleveen*AssigneeStorage|Store` + `UseSleveen*Assignees`（**P0**） |
+| Preselect / Picked（宿主示例） | `Sleveen*AssigneeStorage|Store` + `UseSleveen*Assignees` |
 | 默认十二件套 | 接口 `engine/Storage`；实现 `ext/data/Storage`（`sailflow.data`） |
-| pure 旁路 | §8.3（PreviousStepChecker / AutoApproveAnchorWorker） |
-| 宿主散落审计 | 本专题 §8.2（C 档明确不做） |
+| pure | §8.3 |
+| 宿主边界 | §8.2（自定义点，非欠债） |
 
 ---
 
@@ -275,5 +246,6 @@ S5  ✅ Definition/XPDL 评估：维持 `IXPDLStorage` 独立（文件/XML，非
 | 2026-11-27 | **P0 Preselect**：宿主 Storage + Mode Store 适配落地；Picked 标明接口预留 |
 | 2026-11-27 | **P1**：Process/Variable 定义/RuleSet/Job → Storage；`UseDefaultStorages` 扩至十件套 |
 | 2026-11-27 | **P2**：`IEngineLogStorage` / `IProcessArchiveStorage`；热删复用运行时 Storage；十二件套 |
-| 2026-11-27 | **P0 Picked**：`sf_picked_assignee` + Storage/Store/`UseSleveenPickedAssignees`；§8.2 宿主散落 SQL 审计 |
-| 2026-11-27 | **pure 旁路**：PreviousStepChecker / AutoApproveAnchorWorker → Storage；§8.2 C 档改为明确不做；§8.3 |
+| 2026-11-27 | **P0 Picked**：`sf_picked_assignee` + Storage/Store/`UseSleveenPickedAssignees` |
+| 2026-11-27 | **pure 旁路净**：PreviousStepChecker / AutoApproveAnchorWorker → Storage |
+| 2026-11-27 | **口径定稿**：状态改为已完工；§8.2 改「宿主边界 / 可自定义」；去掉「宿主欠债 / C 档不做」表述 |
