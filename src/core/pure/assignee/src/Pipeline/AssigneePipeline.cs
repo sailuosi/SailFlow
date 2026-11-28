@@ -265,6 +265,94 @@ public class AssigneePipeline : IAssigneePipeline
         return performers.Count > 0 || request.ResultAutoApprovePending;
     }
 
+    /// <inheritdoc />
+    public virtual bool TryLoadScopeCandidates(
+        string scopeType,
+        IDictionary<string, object> scopeParams,
+        AssigneeInvokeRequest request,
+        out PerformerList performers,
+        out ScopeLoadMeta meta)
+    {
+        performers = new PerformerList();
+        meta = new ScopeLoadMeta();
+
+        var type = (scopeType ?? "").Trim();
+        meta.ScopeType = type;
+
+        if (string.IsNullOrEmpty(type)
+            || string.Equals(type, AssigneeResolveTypeCodes.AnyMan, StringComparison.OrdinalIgnoreCase))
+        {
+            meta.Unconstrained = true;
+            return true;
+        }
+
+        if (!Registry.TryGetResolver(type, out var resolver) || resolver == null)
+        {
+            meta.UnregisteredType = true;
+            meta.ReasonCode = AssigneeReasonCodes.AssigneeTypeUnregistered;
+            return false;
+        }
+
+        var invoke = request ?? new AssigneeInvokeRequest();
+        if (string.IsNullOrEmpty(invoke.ActivityId))
+            invoke.ActivityId = "_scope_preview_";
+
+        IDictionary<string, object?>? paramBag = null;
+        if (scopeParams != null)
+        {
+            paramBag = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kv in scopeParams)
+                paramBag[kv.Key] = kv.Value;
+        }
+
+        var fixedConfig = ConfigPair.Create(type, AssigneeSelectModelCodes.Fixed, paramBag);
+        var resolveCtx = new AssigneeResolveContext
+        {
+            Request = invoke,
+            Config = fixedConfig
+        };
+
+        if (Registry.IsResolverOverridden(type))
+        {
+            Trace.TraceInformation(
+                "[Assignee] ScopePreview using overridden Type '{0}' impl={1}",
+                type,
+                Registry.GetResolverImplementationName(type));
+        }
+
+        WireSail(resolver);
+        performers = resolver.Resolve(resolveCtx) ?? new PerformerList();
+        return true;
+    }
+
+    /// <summary>ConfigPair 重载：宿主已持有按钮/节点配置对时使用。</summary>
+    public virtual bool TryLoadScopeCandidates(
+        ConfigPair config,
+        AssigneeInvokeRequest request,
+        out PerformerList performers,
+        out ScopeLoadMeta meta)
+    {
+        if (config == null)
+        {
+            performers = new PerformerList();
+            meta = new ScopeLoadMeta();
+            return false;
+        }
+
+        IDictionary<string, object> bag = null;
+        if (config.Params != null)
+        {
+            bag = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kv in config.Params)
+            {
+                if (kv.Value != null)
+                    bag[kv.Key] = kv.Value;
+            }
+        }
+
+        return TryLoadScopeCandidates(config.Type, bag, request, out performers, out meta);
+    }
+
     public virtual bool TryCanLeave(LeaveInvokeRequest request, out LeaveJudgeResult result)
     {
         result = null!;

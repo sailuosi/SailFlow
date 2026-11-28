@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using sailflow.utils;
 
 namespace sailflow.assignee
@@ -22,5 +23,19 @@ namespace sailflow.assignee
         /// 宿主已挂管道时 AIM 按 R2 拒绝回落旧会签通过率。
         /// </summary>
         bool TryCanLeave(LeaveInvokeRequest request, out LeaveJudgeResult result);
+
+        /// <summary>
+        /// 按 Scope 注册表加载选人候选（工具栏 / 选人器预览快捷方法）。
+        /// 语义：强制走 Fixed 展开；空 type 或 <c>AnyMan</c> → <see cref="ScopeLoadMeta.Unconstrained"/>；
+        /// 未注册 type → 返回 false 且 <see cref="ScopeLoadMeta.UnregisteredType"/>。
+        /// 不跑 EmptyAction / Filter（预览用原始 Scope 结果）。
+        /// <paramref name="scopeParams"/> 与 BPMN <c>params</c> / 按钮 Scope 参数同形。
+        /// </summary>
+        bool TryLoadScopeCandidates(
+            string scopeType,
+            IDictionary<string, object> scopeParams,
+            AssigneeInvokeRequest request,
+            out PerformerList performers,
+            out ScopeLoadMeta meta);
     }
 }
