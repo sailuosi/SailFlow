@@ -308,27 +308,27 @@ namespace sailflow.hooks
         /// 由命令袋构建事务生命周期上下文（Kit 恒空）。
         /// </summary>
         public FlowHookContext BuildTxLifecycleContext(
-            FlowCommandContext runner,
+            FlowCommandContext context,
             EventFireTypeEnum eventType,
             WfExecutedResult result,
             Exception failureException)
         {
-            var processInstanceId = runner?.ProcessInstanceId;
+            var processInstanceId = context?.ProcessInstanceId;
             if (string.IsNullOrEmpty(processInstanceId))
                 processInstanceId = result?.ProcessInstanceIdStarted;
 
             return new FlowHookContext
             {
-                BizChannel = runner?.BizChannel,
-                BizPK = runner?.BizPK,
-                ProcessId = runner?.ProcessId,
-                ProcessCode = runner?.ProcessCode,
-                Version = runner?.Version,
+                BizChannel = context?.BizChannel,
+                BizPK = context?.BizPK,
+                ProcessId = context?.ProcessId,
+                ProcessCode = context?.ProcessCode,
+                Version = context?.Version,
                 ProcessInstanceId = processInstanceId,
-                ActivityInstanceId = runner?.ActivityInstanceId,
-                TaskId = runner?.TaskId,
-                SignId = runner?.UserId,
-                SignName = runner?.UserName,
+                ActivityInstanceId = context?.ActivityInstanceId,
+                TaskId = context?.TaskId,
+                SignId = context?.UserId,
+                SignName = context?.UserName,
                 EventType = eventType,
                 Kit = null,
                 ExecutedStatus = result?.Status,
@@ -469,14 +469,14 @@ namespace sailflow.hooks
             SQLBuilder kit,
             TaskEntity task,
             ActivityInstanceEntity activityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             TaskNotifyKind kind)
         {
             if (task == null)
                 return;
 
-            // runner 保留签名兼容调用方；上下文由 task/activityInstance 构造
-            _ = runner;
+            // context 保留签名兼容调用方；上下文由 task/activityInstance 构造
+            _ = context;
 
             // Created/Urged 有独立事件；其余（Completed/Cancelled/Entrusted）保持历史映射 OnTaskCompleted
             var eventType = kind switch
@@ -747,7 +747,7 @@ namespace sailflow.hooks
         }
 
         public FlowHookContext BuildHookContextFromRuntime(
-            FlowCommandContext runner,
+            FlowCommandContext context,
             string processInstanceId,
             ActivityInstanceEntity activityInstance,
             string taskId,
@@ -756,17 +756,17 @@ namespace sailflow.hooks
         {
             return new FlowHookContext
             {
-                BizChannel = runner?.BizChannel,
-                BizPK = runner?.BizPK,
-                ProcessId = runner?.ProcessId ?? activityInstance?.ProcessId,
-                Version = runner?.Version,
+                BizChannel = context?.BizChannel,
+                BizPK = context?.BizPK,
+                ProcessId = context?.ProcessId ?? activityInstance?.ProcessId,
+                Version = context?.Version,
                 ProcessInstanceId = processInstanceId,
                 ActivityId = activityInstance?.ActivityId,
                 ActivityCode = activityInstance?.ActivityCode,
                 ActivityInstanceId = activityInstance?.ActivityInstanceId,
                 TaskId = taskId,
-                SignId = runner?.UserId,
-                SignName = runner?.UserName,
+                SignId = context?.UserId,
+                SignName = context?.UserName,
                 EventType = eventType,
                 Operation = operation,
             };

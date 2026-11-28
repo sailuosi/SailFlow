@@ -60,14 +60,14 @@ namespace sailflow.utils
         /// Construct function
         /// 构造函数
         /// </summary>
-        /// <param name="runner"></param>
+        /// <param name="context"></param>
         /// <param name="nextActivityPerformers"></param>
         /// <param name="conditionKeyValuePair"></param>
-        public ActivityResource(FlowCommandContext runner,
+        public ActivityResource(FlowCommandContext context,
             IDictionary<string, PerformerList> nextActivityPerformers,
             IDictionary<string, string> conditionKeyValuePair = null)
         {
-            AppRunner = runner;
+            AppRunner = context;
             NextActivityPerformers = nextActivityPerformers;
             ConditionKeyValuePair = conditionKeyValuePair;
         }

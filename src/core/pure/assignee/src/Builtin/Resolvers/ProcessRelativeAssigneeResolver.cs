@@ -6,7 +6,7 @@ using mooSQL.data;
 namespace sailflow.assignee.Builtin;
 
 /// <summary>
-/// 流程相对人。Params.relative = Starter | PrevSender（S1：PrevSender≈当前 runner）。
+/// 流程相对人。Params.relative = Starter | PrevSender（S1：PrevSender≈当前 context）。
 /// 禁止 sealed。
 /// </summary>
 public class ProcessRelativeAssigneeResolver : IAssigneeResolver, IAssigneeResolverWire
@@ -47,10 +47,10 @@ public class ProcessRelativeAssigneeResolver : IAssigneeResolver, IAssigneeResol
         if (string.Equals(relative, RelativePrevSender, StringComparison.OrdinalIgnoreCase)
             || string.Equals(relative, RelativePrevAssignee, StringComparison.OrdinalIgnoreCase))
         {
-            var runner = ctx.Runner;
-            if (runner != null && !string.IsNullOrEmpty(runner.UserId))
+            var context = ctx.Runner;
+            if (context != null && !string.IsNullOrEmpty(context.UserId))
             {
-                list.Add(new Performer(runner.UserId, runner.UserName ?? runner.UserId)
+                list.Add(new Performer(context.UserId, context.UserName ?? context.UserId)
                 {
                     GroupRole = GroupRoles.Member
                 });

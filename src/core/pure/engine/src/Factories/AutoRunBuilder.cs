@@ -15,23 +15,23 @@ namespace sailflow.factory;
 public sealed class AutoRunBuilder
 {
     private readonly SailClient _sail;
-    private readonly FlowCommandContext _runner;
-    private readonly AutoExecutionContext _context = new AutoExecutionContext();
+    private readonly FlowCommandContext _cmdContext;
+    private readonly AutoExecutionContext _auto = new AutoExecutionContext();
     private IProcessModel _processModel;
     private string _notifySessionId;
     private Action<string, object> _notifyCallback;
 
-    internal AutoRunBuilder(SailClient sail, FlowCommandContext runner)
+    internal AutoRunBuilder(SailClient sail, FlowCommandContext context)
     {
         _sail = sail ?? throw new ArgumentNullException(nameof(sail));
-        _runner = runner ?? throw new ArgumentNullException(nameof(runner));
-        if (_runner.NextPerformerType == default)
-            _runner.NextPerformerType = NextPerformerIntTypeEnum.Unattented;
+        _cmdContext = context ?? throw new ArgumentNullException(nameof(context));
+        if (_cmdContext.NextPerformerType == default)
+            _cmdContext.NextPerformerType = NextPerformerIntTypeEnum.Unattented;
     }
 
     public AutoRunBuilder UseBiz(BizDataDto biz)
     {
-        _runner.ApplyBizData(biz);
+        _cmdContext.ApplyBizData(biz);
         return this;
     }
 
@@ -58,33 +58,33 @@ public sealed class AutoRunBuilder
 
         if (Guid.TryParse(processId, out _))
         {
-            _runner.ProcessId = processId;
-            _runner.Version = version;
+            _cmdContext.ProcessId = processId;
+            _cmdContext.Version = version;
         }
         else
         {
             var entity = _sail.ManagerFactory.Processes.GetByVersion(processId, version);
-            _runner.ProcessId = entity.ProcessId;
-            _runner.Version = entity.Version;
+            _cmdContext.ProcessId = entity.ProcessId;
+            _cmdContext.Version = entity.Version;
         }
 
-        _processModel = _sail.ProcessModelFactory.CreateByProcess(_runner.ProcessId, _runner.Version);
+        _processModel = _sail.ProcessModelFactory.CreateByProcess(_cmdContext.ProcessId, _cmdContext.Version);
         return this;
     }
 
     public AutoRunBuilder UseProcess(ProcessEntity processEntity)
     {
         ArgumentNullException.ThrowIfNull(processEntity);
-        _runner.ProcessId = processEntity.ProcessId;
-        _runner.Version = processEntity.Version;
+        _cmdContext.ProcessId = processEntity.ProcessId;
+        _cmdContext.Version = processEntity.Version;
         _processModel = _sail.ProcessModelFactory.CreateByProcess(processEntity);
         return this;
     }
 
     public AutoRunBuilder AddVariable(string name, string value)
     {
-        _context.Variables ??= new Dictionary<string, string>();
-        _context.Variables.Add(name, value);
+        _auto.Variables ??= new Dictionary<string, string>();
+        _auto.Variables.Add(name, value);
         return this;
     }
 
@@ -97,20 +97,20 @@ public sealed class AutoRunBuilder
 
     public AutoRunBuilder WithDelegateRegistry(IServiceTaskDelegateRegistry registry)
     {
-        _context.DelegateRegistry = registry;
+        _auto.DelegateRegistry = registry;
         return this;
     }
 
-    public FlowCommandContext BuildRunner() => _runner;
+    public FlowCommandContext BuildRunner() => _cmdContext;
 
     public Task<WfExecutedResult> Run()
     {
         if (_processModel == null)
             throw new InvalidOperationException("Call UseProcess(...) before Run().");
         return new WorkflowExecutor(_sail).Run(
-            _runner,
+            _cmdContext,
             _processModel,
-            _context,
+            _auto,
             _notifySessionId,
             _notifyCallback);
     }

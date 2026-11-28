@@ -50,38 +50,38 @@ public partial class SailClient
     /// <summary>B · 每次 new <see cref="RunBuilder"/>；入参袋为 <see cref="FlowCommandContext"/>；禁止做成属性缓存。</summary>
     public RunBuilder CreateRunBuilder(string userId, string userName)
     {
-        var runner = new FlowCommandContext
+        var context = new FlowCommandContext
         {
             UserId = userId,
             UserName = userName,
             TaskId = null,
         };
-        return new RunBuilder(this, runner);
+        return new RunBuilder(this, context);
     }
 
     /// <summary>B · 以已有入参袋开建造会话（仍每次 new Builder，不写回 Client 字段）。</summary>
-    public RunBuilder CreateRunBuilder(FlowCommandContext runner)
+    public RunBuilder CreateRunBuilder(FlowCommandContext context)
     {
-        ArgumentNullException.ThrowIfNull(runner);
-        return new RunBuilder(this, runner);
+        ArgumentNullException.ThrowIfNull(context);
+        return new RunBuilder(this, context);
     }
 
     /// <summary>B · 自动编排建造会话（每次 new；默认 NextPerformer=Unattended；袋为 <see cref="FlowCommandContext"/>）。</summary>
     public AutoRunBuilder CreateAutoRunBuilder(string userId = null, string userName = null)
     {
-        var runner = new FlowCommandContext
+        var context = new FlowCommandContext
         {
             UserId = userId,
             UserName = userName,
             NextPerformerType = NextPerformerIntTypeEnum.Unattented,
         };
-        return new AutoRunBuilder(this, runner);
+        return new AutoRunBuilder(this, context);
     }
 
     /// <summary>B · 以已有袋开自动编排建造会话。</summary>
-    public AutoRunBuilder CreateAutoRunBuilder(FlowCommandContext runner)
+    public AutoRunBuilder CreateAutoRunBuilder(FlowCommandContext context)
     {
-        ArgumentNullException.ThrowIfNull(runner);
-        return new AutoRunBuilder(this, runner);
+        ArgumentNullException.ThrowIfNull(context);
+        return new AutoRunBuilder(this, context);
     }
 }

@@ -11,8 +11,8 @@ namespace sailflow.lanes
     /// <summary>阅办：参与者办结自己的沟通待办。</summary>
     public sealed class AcknowledgeLane : AssigneeLaneBase
     {
-        public AcknowledgeLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public AcknowledgeLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

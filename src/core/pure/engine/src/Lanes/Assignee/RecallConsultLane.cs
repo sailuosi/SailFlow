@@ -11,8 +11,8 @@ namespace sailflow.lanes
     /// <summary>收回沟通：取消源 Task 下仍打开的参与者待办。</summary>
     public sealed class RecallConsultLane : AssigneeLaneBase
     {
-        public RecallConsultLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public RecallConsultLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

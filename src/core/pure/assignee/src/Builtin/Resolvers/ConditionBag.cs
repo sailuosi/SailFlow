@@ -3,7 +3,7 @@ using sailflow.utils;
 
 namespace sailflow.assignee.Builtin;
 
-/// <summary>从 runner.Conditions / 扩展字典取字符串。</summary>
+/// <summary>从 context.Conditions / 扩展字典取字符串。</summary>
 public static class ConditionBag
 {
     public static string? Get(AssigneeResolveContext ctx, string? field)

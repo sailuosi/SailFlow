@@ -26,12 +26,12 @@ namespace sailflow.run{
         /// <summary>
         /// 自动创建
         /// </summary>
-        public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, FlowCommandContext runner, SQLBuilder kit)
+        public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, FlowCommandContext context, SQLBuilder kit)
         {
-            var timerActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, runner);
+            var timerActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, context);
 
             //保存下一步人员信息
-            timerActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
+            timerActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(context.NextActivityPerformers, Sail.JsonSerializer);
 
             //逾期时间
             timerActivityInstance.DueAt = CalcDataTimeFromVariable(toActivity);
@@ -74,10 +74,10 @@ namespace sailflow.run{
             ActivityInstanceEntity fromActivityInstance,
             Activity toActivity,
             ActivityInstanceEntity toActivityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
-            base.IActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance, runner);
+            base.IActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance, context);
 
             LinkContext.CurrentActivityInstance = toActivityInstance;
 
@@ -87,13 +87,13 @@ namespace sailflow.run{
                 toActivityInstance,
                 TransitionTypeEnum.Forward,
                 TransitionFlyingTypeEnum.NotFlying,
-                runner,
+                context,
                 kit);
 
             var tm = Sail.ManagerFactory.Tasks;
             var newTaskId = tm.Insert(kit.useSQL(), toActivityInstance,
                 new Performer(WfDefine.SYSTEM_JOBTIMER_USER_ID, WfDefine.SYSTEM_JOBTIMER_USER_NAME),
-                runner);
+                context);
             tm.SetTaskType(kit.useSQL(), newTaskId, TaskTypeEnum.Automantic);
 
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Successed);

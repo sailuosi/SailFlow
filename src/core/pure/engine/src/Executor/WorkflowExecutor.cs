@@ -21,13 +21,13 @@ namespace sailflow.run{
         protected SailClient Sail { get; }
 
         public Task<WfExecutedResult> Run(
-            FlowCommandContext runner,
+            FlowCommandContext context,
             IProcessModel processModel,
             AutoExecutionContext executionContext = null,
             string notifyClientSessionId = null,
             Action<string, object> notifyClientCallback = null)
         {
-            ArgumentNullException.ThrowIfNull(runner);
+            ArgumentNullException.ThrowIfNull(context);
             ArgumentNullException.ThrowIfNull(processModel);
 
             var result = new WfExecutedResult
@@ -38,7 +38,7 @@ namespace sailflow.run{
             var ctx = executionContext ?? new AutoExecutionContext();
             ctx.Sail = Sail;
             ctx.ProcessModel = processModel;
-            ctx.Runner = runner;
+            ctx.Runner = context;
             ctx.Variables ??= new System.Collections.Generic.Dictionary<string, string>();
 
             try
@@ -69,7 +69,7 @@ namespace sailflow.run{
             {
                 result.Status = WfExecutedStatus.Failed;
                 result.Message = $"Auto orchestration execution failed: {ex.Message}";
-                ILogManager.RecordLog(Sail, WfDefine.WF_WORKFLOW_EXECUTOR_RUN_ERROR, LogEventType.Error, LogPriority.High, runner, ex);
+                ILogManager.RecordLog(Sail, WfDefine.WF_WORKFLOW_EXECUTOR_RUN_ERROR, LogEventType.Error, LogPriority.High, context, ex);
             }
 
             return Task.FromResult(result);

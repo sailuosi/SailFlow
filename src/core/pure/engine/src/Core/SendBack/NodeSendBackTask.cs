@@ -52,7 +52,7 @@ namespace sailflow.run{
         /// </summary>
         private void CancelBrothersNode(Activity toActivity,
             ActivityInstanceEntity fromActivityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
             var processModel = this.SendBackOperation.ProcessModel;
@@ -65,7 +65,7 @@ namespace sailflow.run{
                 if (activityInstance != null 
                     && this.IActivityInstanceManager.IncludeRunningState(activityInstance) == true)
                 {
-                    this.IActivityInstanceManager.Cancel(kit.useSQL(), activityInstance.ActivityInstanceId, runner);
+                    this.IActivityInstanceManager.Cancel(kit.useSQL(), activityInstance.ActivityInstanceId, context);
                 }
             }
         }

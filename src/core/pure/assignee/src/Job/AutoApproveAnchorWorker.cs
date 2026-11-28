@@ -210,7 +210,7 @@ public sealed class AutoApproveAnchorWorker
         } // 释放 probe 连接后再 Run
 
         var wf = new WorkflowService(Sail);
-        var runner = new FlowCommandContext
+        var context = new FlowCommandContext
         {
             UserId = userId,
             UserName = anchor.PreferUserName ?? task!.SignName ?? userId,
@@ -221,7 +221,7 @@ public sealed class AutoApproveAnchorWorker
             BizPK = task.BizPK,
             DynamicVariables = dyn
         };
-        var exec = wf.RunProcess(runner);
+        var exec = wf.RunProcess(context);
 
         ct.ThrowIfCancellationRequested();
 

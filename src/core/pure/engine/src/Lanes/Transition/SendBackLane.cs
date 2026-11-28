@@ -12,8 +12,8 @@ namespace sailflow.lanes
     /// <summary>退回：CreateRuntimeInstanceSendBack → Execute；族群固化 Gate/成功 Hook。</summary>
     public sealed class SendBackLane : TransitionLaneBase
     {
-        public SendBackLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public SendBackLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

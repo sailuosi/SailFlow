@@ -12,8 +12,8 @@ namespace sailflow.lanes
     /// <summary>关闭：填 End 办理人 → CreateRuntimeInstanceClose → Execute。</summary>
     public sealed class CloseLane : TransitionLaneBase
     {
-        public CloseLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public CloseLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

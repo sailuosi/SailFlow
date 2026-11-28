@@ -14,8 +14,8 @@ namespace sailflow.lanes
     /// </summary>
     public abstract class LifecycleLaneBase : FlowLaneBase
     {
-        protected LifecycleLaneBase(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        protected LifecycleLaneBase(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

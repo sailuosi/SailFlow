@@ -66,7 +66,7 @@ namespace sailflow.signal
         public List<SignalConsumedResult> ConsumeSignal(SignalEntity entity)
         {
             var resultList = new List<SignalConsumedResult>();
-            //get signal runner info
+            //get signal context info
             var signalRunnerView = Sail.JsonSerializer.Deserialize<SignalRunnerView>(entity.Line);
             var appRunner = signalRunnerView.CommandContext;
             var topic = appRunner.MessageTopic;
@@ -133,15 +133,15 @@ namespace sailflow.signal
         /// <returns></returns>
         private FlowCommandContext GetStartRunnerFromSignalExchange(SignalRunnerView msgRunnerView, JobInfoEntity jobInfo)
         {
-            var runner = new FlowCommandContext();
-            runner.ProcessId = jobInfo.ProcessId;
-            runner.Version = jobInfo.Version;
-            runner.BizChannel = msgRunnerView.CommandContext.BizChannel;
-            runner.BizPK = msgRunnerView.CommandContext.BizPK;
-            runner.BizCode = msgRunnerView.CommandContext.BizCode;
-            runner.UserId = msgRunnerView.CommandContext.UserId;
-            runner.UserName = msgRunnerView.CommandContext.UserName;
-            return runner;
+            var context = new FlowCommandContext();
+            context.ProcessId = jobInfo.ProcessId;
+            context.Version = jobInfo.Version;
+            context.BizChannel = msgRunnerView.CommandContext.BizChannel;
+            context.BizPK = msgRunnerView.CommandContext.BizPK;
+            context.BizCode = msgRunnerView.CommandContext.BizCode;
+            context.UserId = msgRunnerView.CommandContext.UserId;
+            context.UserName = msgRunnerView.CommandContext.UserName;
+            return context;
         }
 
         /// <summary>
@@ -160,9 +160,9 @@ namespace sailflow.signal
             foreach (var activityInstance in runningActivityInstanceList)
             {
                 var signalResult = SignalConsumedResult.Default();
-                var runner = GetRunnerFromActivityInstance(signalRunner, jobInfo, activityInstance);
+                var context = GetRunnerFromActivityInstance(signalRunner, jobInfo, activityInstance);
                 var wfService = new WorkflowService(Sail);
-                var wfResult = wfService.RunProcessAuto(runner);
+                var wfResult = wfService.RunProcessAuto(context);
                 if (wfResult.Status == WfExecutedStatus.Success)
                 {
                     signalResult.Status = SignalConsumedStatus.Success;
@@ -184,7 +184,7 @@ namespace sailflow.signal
         }
 
         /// <summary>
-        /// Get runner info from activity instance
+        /// Get context info from activity instance
         /// 从活动实例获取运行者信息
         /// </summary>
         /// <param name="signalRunner"></param>
@@ -194,23 +194,23 @@ namespace sailflow.signal
             JobInfoEntity jobInfo, 
             ActivityInstanceEntity activityInstance)
         {
-            var runner = new FlowCommandContext();
-            runner.ProcessId = jobInfo.ProcessId;
-            runner.Version = jobInfo.Version;
-            runner.BizChannel = activityInstance.BizChannel;
-            runner.BizPK = activityInstance.BizPK;
-            runner.BizCode = activityInstance.BizCode;
+            var context = new FlowCommandContext();
+            context.ProcessId = jobInfo.ProcessId;
+            context.Version = jobInfo.Version;
+            context.BizChannel = activityInstance.BizChannel;
+            context.BizPK = activityInstance.BizPK;
+            context.BizCode = activityInstance.BizCode;
             //using activityinstanceid to call RunProcessAuto() method
-            runner.ActivityInstanceId = activityInstance.ActivityInstanceId;
-            runner.UserId = signalRunner.CommandContext.UserId;
-            runner.UserName = signalRunner.CommandContext.UserName;
+            context.ActivityInstanceId = activityInstance.ActivityInstanceId;
+            context.UserId = signalRunner.CommandContext.UserId;
+            context.UserName = signalRunner.CommandContext.UserName;
 
             if (!string.IsNullOrEmpty(activityInstance.NextStepPerformers))
             {
-                runner.NextActivityPerformers = NextStepUtility.DeserializeNextStepPerformers(
+                context.NextActivityPerformers = NextStepUtility.DeserializeNextStepPerformers(
                     activityInstance.NextStepPerformers, Sail.JsonSerializer);
             }
-            return runner;
+            return context;
         }
         #endregion
     }

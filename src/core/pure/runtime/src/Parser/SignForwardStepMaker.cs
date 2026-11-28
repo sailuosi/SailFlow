@@ -29,12 +29,12 @@ namespace sailflow.runtime.Parser
         /// Obtain information on the steps for adding a signature
         /// 获取加签步骤信息
         /// </summary>
-        /// <param name="runner"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        public SignForwardStepInfo GetSignForwardStepInfo(FlowCommandContext runner)
+        public SignForwardStepInfo GetSignForwardStepInfo(FlowCommandContext context)
         {
             var signForwardStepInfo = new SignForwardStepInfo();
-            var signResult = GetSignForwardRoleUserTree(runner);
+            var signResult = GetSignForwardRoleUserTree(context);
             signForwardStepInfo.SignForwardRoleUserTree = signResult.StepList;
             return signForwardStepInfo;
         }
@@ -43,16 +43,16 @@ namespace sailflow.runtime.Parser
         /// According to the application, obtain the next node list of the process, including role users
         /// 根据应用获取流程下一步节点列表，包含角色用户
         /// </summary>
-        /// <param name="runner"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        public NextActivityListViewResult GetSignForwardRoleUserTree(FlowCommandContext runner)
+        public NextActivityListViewResult GetSignForwardRoleUserTree(FlowCommandContext context)
         {
             var nextTreeResult = new NextActivityListViewResult();
 
             //判断应用数据是否缺失
             //Determine whether the application data is missing
-            if (string.IsNullOrEmpty(runner.BizPK)
-                || string.IsNullOrEmpty(runner.ProcessId))
+            if (string.IsNullOrEmpty(context.BizPK)
+                || string.IsNullOrEmpty(context.ProcessId))
             {
                 throw new WorkflowException(Sail.Messages.GetEngineMessage("nextstepparser.getnextactivityroleusertree.error"));
             }
@@ -62,7 +62,7 @@ namespace sailflow.runtime.Parser
                 //运行状态的流程实例
                 //Process instance of running status
                 var tm = Sail.ManagerFactory.Tasks;
-                TaskViewEntity taskView = tm.GetTaskOfMine(kit.useSQL(), runner);
+                TaskViewEntity taskView = tm.GetTaskOfMine(kit.useSQL(), context);
 
                 var isRunningTask = tm.CheckTaskStateInRunningState(taskView);
                 if (isRunningTask == false)

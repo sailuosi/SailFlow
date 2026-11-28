@@ -12,7 +12,7 @@ namespace sailflow.run{
     public interface IWorkflowExecutor
     {
         Task<WfExecutedResult> Run(
-            FlowCommandContext runner,
+            FlowCommandContext context,
             IProcessModel processModel,
             AutoExecutionContext executionContext = null,
             string notifyClientSessionId = null,

@@ -17,8 +17,8 @@ namespace sailflow.lanes
     {
         HashSet<string> _filterUserIds;
 
-        public UrgeLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public UrgeLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

@@ -6,7 +6,7 @@ using sailflow.xml;
 namespace sailflow.assignee.Adapt;
 
 /// <summary>
-/// 无显式 BPMN ConfigPair 时，从既有 runner / 会签主活动推断 Type（旧数据双轨适配）。
+/// 无显式 BPMN ConfigPair 时，从既有 context / 会签主活动推断 Type（旧数据双轨适配）。
 /// </summary>
 public static class LegacyAssigneeConfigInfer
 {
@@ -15,12 +15,12 @@ public static class LegacyAssigneeConfigInfer
         if (request?.Runner == null)
             return null;
 
-        var runner = request.Runner;
+        var context = request.Runner;
         var activityId = request.ActivityId;
 
         // R2：仅适配「前端已带 Specific 名单」或测试 Single；禁止 Definition→RoleGroup 运行时静默回落
         //（角色须在 BPMN 显式写 AssigneeResolve Type=RoleGroup）
-        if (runner.NextPerformerType == NextPerformerIntTypeEnum.Specific)
+        if (context.NextPerformerType == NextPerformerIntTypeEnum.Specific)
         {
             if (HasPerformers(request, activityId))
                 return ConfigPair.Create(
@@ -29,7 +29,7 @@ public static class LegacyAssigneeConfigInfer
             return null;
         }
 
-        if (runner.NextPerformerType == NextPerformerIntTypeEnum.Single)
+        if (context.NextPerformerType == NextPerformerIntTypeEnum.Single)
         {
             // 测试向：当前操作人 → 当作 FixedUsers 单人
             return ConfigPair.Create(
@@ -37,8 +37,8 @@ public static class LegacyAssigneeConfigInfer
                 AssigneeSelectModelCodes.Fixed,
                 new Dictionary<string, object?>
                 {
-                    ["userIds"] = runner.UserId ?? "",
-                    ["userNames"] = runner.UserName ?? runner.UserId ?? ""
+                    ["userIds"] = context.UserId ?? "",
+                    ["userNames"] = context.UserName ?? context.UserId ?? ""
                 });
         }
 

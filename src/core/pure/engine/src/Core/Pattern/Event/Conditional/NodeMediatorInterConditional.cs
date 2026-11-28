@@ -27,11 +27,11 @@ namespace sailflow.run{
         /// <summary>
         /// 自动创建
         /// </summary>
-        public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, FlowCommandContext runner, SQLBuilder kit)
+        public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, FlowCommandContext context, SQLBuilder kit)
         {
-            var condActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, runner);
+            var condActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, context);
             //保存下一步办理人信息
-            condActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
+            condActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(context.NextActivityPerformers, Sail.JsonSerializer);
             condActivityInstance.SignIds = WfDefine.SYSTEM_JOBTIMER_USER_ID;
             condActivityInstance.SignNames = WfDefine.SYSTEM_JOBTIMER_USER_NAME;
 
@@ -70,10 +70,10 @@ namespace sailflow.run{
             ActivityInstanceEntity fromActivityInstance,
             Activity toActivity,
             ActivityInstanceEntity toActivityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
-            base.IActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance, runner);
+            base.IActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance, context);
             LinkContext.CurrentActivityInstance = toActivityInstance;
 
             //写入转移实例数据
@@ -83,14 +83,14 @@ namespace sailflow.run{
                 toActivityInstance,
                 TransitionTypeEnum.Forward,
                 TransitionFlyingTypeEnum.NotFlying,
-                runner,
+                context,
                 kit);
 
             //插入任务数据
             var tm = Sail.ManagerFactory.Tasks;
             var newTaskId = tm.Insert(kit.useSQL(), toActivityInstance,
                 new Performer(WfDefine.SYSTEM_JOBTIMER_USER_ID, WfDefine.SYSTEM_JOBTIMER_USER_NAME),
-                runner);
+                context);
             tm.SetTaskType(kit.useSQL(), newTaskId, TaskTypeEnum.Automantic);
 
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Successed);

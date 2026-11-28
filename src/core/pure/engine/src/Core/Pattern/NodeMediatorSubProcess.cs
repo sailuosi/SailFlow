@@ -42,11 +42,11 @@ namespace sailflow.run{
                 if (base.LinkContext.FromActivity.ActivityType == ActivityTypeEnum.SubProcessNode)
                 {
                     //检查子流程是否结束（同步续推优先用刚 Complete 的子 PI Id）
-                    var runner = ActivityForwardContext.ActivityResource?.AppRunner;
+                    var context = ActivityForwardContext.ActivityResource?.AppRunner;
                     bool isCompleted = SubProcessMainContinueHelper.IsInvokedSubProcessCompleted(
                         Sail,
                         this.Kit,
-                        runner,
+                        context,
                         base.LinkContext.FromActivityInstance);
                     if (isCompleted == false)
                     {
@@ -415,16 +415,16 @@ namespace sailflow.run{
         /// 创建子流程时，重新生成runner信息
         /// </summary>
         /// <returns></returns>
-        private FlowCommandContext CreateSubProcessRunner(FlowCommandContext runner, 
+        private FlowCommandContext CreateSubProcessRunner(FlowCommandContext context, 
             Performer performer,
             SQLBuilder kit)
         {
             FlowCommandContext subRunner = new FlowCommandContext();
-            subRunner.ProcessId = runner.ProcessId;
-            subRunner.BizCode = runner.BizCode;
-            subRunner.BizPK = runner.BizPK;
-            subRunner.BizChannel = runner.BizChannel;
-            subRunner.Version = runner.Version;
+            subRunner.ProcessId = context.ProcessId;
+            subRunner.BizCode = context.BizCode;
+            subRunner.BizPK = context.BizPK;
+            subRunner.BizChannel = context.BizChannel;
+            subRunner.Version = context.Version;
             subRunner.UserId = performer.UserId;
             subRunner.UserName = performer.UserName;
 

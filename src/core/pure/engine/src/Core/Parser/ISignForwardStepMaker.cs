@@ -22,7 +22,7 @@ namespace sailflow.run;
 /// <summary>契约 · SignForwardStepMaker（实现位于 sailflow.runtime）。</summary>
 public interface ISignForwardStepMaker
 {
-    SignForwardStepInfo GetSignForwardStepInfo(FlowCommandContext runner);
+    SignForwardStepInfo GetSignForwardStepInfo(FlowCommandContext context);
 
-    NextActivityListViewResult GetSignForwardRoleUserTree(FlowCommandContext runner);
+    NextActivityListViewResult GetSignForwardRoleUserTree(FlowCommandContext context);
 }

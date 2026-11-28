@@ -80,21 +80,21 @@ namespace sailflow.data
         /// Obtain the current running node information of the process
         /// 获取流程当前运行节点信息
         /// </summary>
-        public ActivityInstanceEntity GetRunningNode(FlowCommandContext runner)
+        public ActivityInstanceEntity GetRunningNode(FlowCommandContext context)
         {
             var kit = Sail.UseRunSQL();
-            return GetRunningNode(kit, runner, out _);
+            return GetRunningNode(kit, context, out _);
         }
 
         /// <summary>
         /// Obtain the current running node information of the process
         /// 获取流程当前运行节点信息
         /// </summary>
-        public ActivityInstanceEntity GetRunningNode(FlowCommandContext runner,
+        public ActivityInstanceEntity GetRunningNode(FlowCommandContext context,
             out TaskViewEntity taskView)
         {
             var kit = Sail.UseRunSQL();
-            return GetRunningNode(kit, runner, out taskView);
+            return GetRunningNode(kit, context, out taskView);
         }
 
         /// <summary>
@@ -102,10 +102,10 @@ namespace sailflow.data
         /// 获取流程当前运行节点信息
         /// </summary>
         public ActivityInstanceEntity GetRunningNode(SQLBuilder kit,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             out TaskViewEntity taskView)
         {
-            var taskId = runner.TaskId;
+            var taskId = context.TaskId;
             taskView = null;
 
             var tm = Sail.ManagerFactory.Tasks;
@@ -117,7 +117,7 @@ namespace sailflow.data
                 return runningNode;
             }
 
-            var activityInstanceList = GetRunningActivityInstanceList(kit, runner.BizPK, runner.ProcessId, runner.Version).ToList();
+            var activityInstanceList = GetRunningActivityInstanceList(kit, context.BizPK, context.ProcessId, context.Version).ToList();
             if (activityInstanceList == null || activityInstanceList.Count == 0)
             {
                 var message = Sail.Messages.GetEngineMessage("activityinstancemanager.getrunningnode.error");
@@ -129,14 +129,14 @@ namespace sailflow.data
             if (activityInstanceList.Count == 1)
             {
                 runningNode = activityInstanceList[0];
-                taskView = tm.GetTaskOfMineByActivityInstance(kit, runningNode.ActivityInstanceId, runner.UserId);
+                taskView = tm.GetTaskOfMineByActivityInstance(kit, runningNode.ActivityInstanceId, context.UserId);
             }
             else if (activityInstanceList.Count > 1)
             {
                 // 以本人打开待办挂靠的 AI 为准（勿用 SignIds 汇总选型）
                 foreach (var ai in activityInstanceList)
                 {
-                    var mine = tm.GetTaskOfMineByActivityInstance(kit, ai.ActivityInstanceId, runner.UserId);
+                    var mine = tm.GetTaskOfMineByActivityInstance(kit, ai.ActivityInstanceId, context.UserId);
                     if (mine == null)
                         continue;
                     runningNode = ai;
@@ -161,7 +161,7 @@ namespace sailflow.data
         /// </summary>
         public async Task<(ActivityInstanceEntity Node, TaskViewEntity TaskView)> GetRunningNodeAsync(
             SQLBuilder kit,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -169,7 +169,7 @@ namespace sailflow.data
             TaskViewEntity taskView = null;
             ActivityInstanceEntity runningNode = null;
 
-            var taskId = runner.TaskId;
+            var taskId = context.TaskId;
             if (!string.IsNullOrWhiteSpace(taskId))
             {
                 taskView = await tm.GetTaskViewAsync(kit, taskId, cancellationToken).ConfigureAwait(false);
@@ -179,7 +179,7 @@ namespace sailflow.data
             }
 
             var activityInstanceList = (await GetRunningActivityInstanceListAsync(
-                    kit, runner.BizPK, runner.ProcessId, runner.Version, cancellationToken)
+                    kit, context.BizPK, context.ProcessId, context.Version, cancellationToken)
                 .ConfigureAwait(false)).ToList();
 
             if (activityInstanceList == null || activityInstanceList.Count == 0)
@@ -194,7 +194,7 @@ namespace sailflow.data
             {
                 runningNode = activityInstanceList[0];
                 taskView = await tm.GetTaskOfMineByActivityInstanceAsync(
-                        kit, runningNode.ActivityInstanceId, runner.UserId, cancellationToken)
+                        kit, runningNode.ActivityInstanceId, context.UserId, cancellationToken)
                     .ConfigureAwait(false);
             }
             else
@@ -203,7 +203,7 @@ namespace sailflow.data
                 foreach (var ai in activityInstanceList)
                 {
                     var mine = await tm.GetTaskOfMineByActivityInstanceAsync(
-                            kit, ai.ActivityInstanceId, runner.UserId, cancellationToken)
+                            kit, ai.ActivityInstanceId, context.UserId, cancellationToken)
                         .ConfigureAwait(false);
                     if (mine == null)
                         continue;
@@ -711,7 +711,7 @@ namespace sailflow.data
             string processId,
             string processInstanceId,
             Activity activity,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             ActivityInstanceEntity instance = new ActivityInstanceEntity();
             instance.ActivityId = activity.ActivityId;
@@ -727,8 +727,8 @@ namespace sailflow.data
             instance.ProcessInstanceId = processInstanceId;
             instance.TokensRequired = 1;
             instance.TokensHad = 1;
-            instance.CreatedUserId = runner.UserId;
-            instance.CreatedUserName = runner.UserName;
+            instance.CreatedUserId = context.UserId;
+            instance.CreatedUserName = context.UserName;
             instance.CreatedDateTime = System.DateTime.UtcNow;
             instance.DueAt = CalculateActivityOverdueDateTime(activity.BoundaryList, instance.CreatedDateTime.Value);
             instance.ActivityState = (short)ActivityStateEnum.Ready;
@@ -804,7 +804,7 @@ namespace sailflow.data
             BackwardTypeEnum backwardType,
             string backSrcActivityInstanceId,
             string backOrgActivityInstanceId,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             ActivityInstanceEntity instance = new ActivityInstanceEntity();
             instance.ActivityId = activity.ActivityId;
@@ -823,8 +823,8 @@ namespace sailflow.data
             instance.BackOrgActInstanceId = backOrgActivityInstanceId;
             instance.TokensRequired = 1;
             instance.TokensHad = 1;
-            instance.CreatedUserId = runner.UserId;
-            instance.CreatedUserName = runner.UserName;
+            instance.CreatedUserId = context.UserId;
+            instance.CreatedUserName = context.UserName;
             instance.CreatedDateTime = System.DateTime.UtcNow;
             instance.ActivityState = (short)ActivityStateEnum.Ready;
             instance.CanNotRenewInstance = 0;
@@ -849,10 +849,10 @@ namespace sailflow.data
         /// 更新活动节点的Token数目
         /// </summary>
         public void IncreaseTokensHad(SQLBuilder kit, string activityInstanceId,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             // CAS 自增：WHERE TokensHad=旧值，避免并行汇聚丢 token
-            _ = runner;
+            _ = context;
             for (var attempt = 0; attempt < 8; attempt++)
             {
                 var activityInstance = GetById(kit, activityInstanceId);
@@ -876,9 +876,9 @@ namespace sailflow.data
         /// 活动实例被读取
         /// </summary>
         public void Read(SQLBuilder kit, string activityInstanceId,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
-            SetActivityState(kit, activityInstanceId, ActivityStateEnum.Running, runner);
+            SetActivityState(kit, activityInstanceId, ActivityStateEnum.Running, context);
         }
 
         /// <summary>
@@ -887,19 +887,19 @@ namespace sailflow.data
         /// </summary>
         private void SetActivityState(SQLBuilder kit, string activityInstanceId,
             ActivityStateEnum activityState,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             var activityInstance = GetById(kit, activityInstanceId);
             activityInstance.ActivityState = (short)activityState;
-            activityInstance.UpdatedUserId = runner.UserId;
-            activityInstance.UpdatedUserName = runner.UserName;
+            activityInstance.UpdatedUserId = context.UserId;
+            activityInstance.UpdatedUserName = context.UserName;
             activityInstance.UpdatedDateTime = System.DateTime.UtcNow;
             Storage.UpdateState(
                 kit,
                 activityInstanceId,
                 (short)activityState,
-                runner.UserId,
-                runner.UserName);
+                context.UserId,
+                context.UserName);
         }
 
         /// <summary>
@@ -907,9 +907,9 @@ namespace sailflow.data
         /// 撤销活动实例
         /// </summary>
         public void Withdraw(SQLBuilder kit, string activityInstanceId,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
-            EndActivityState(kit, activityInstanceId, ActivityStateEnum.Withdrawed, runner);
+            EndActivityState(kit, activityInstanceId, ActivityStateEnum.Withdrawed, context);
         }
 
         /// <summary>
@@ -917,9 +917,9 @@ namespace sailflow.data
         /// 退回活动实例
         /// </summary>
         public void SendBack(SQLBuilder kit, string activityInstanceId,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
-            EndActivityState(kit, activityInstanceId, ActivityStateEnum.Sendbacked, runner);
+            EndActivityState(kit, activityInstanceId, ActivityStateEnum.Sendbacked, context);
         }
 
         /// <summary>
@@ -928,21 +928,21 @@ namespace sailflow.data
         /// </summary>
         private void EndActivityState(SQLBuilder kit, string activityInstanceId,
             ActivityStateEnum activityState,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             var activityInstance = GetById(kit, activityInstanceId);
             var endedAt = System.DateTime.UtcNow;
             activityInstance.ActivityState = (short)activityState;
-            activityInstance.EndedUserId = runner.UserId;
-            activityInstance.EndedUserName = runner.UserName;
+            activityInstance.EndedUserId = context.UserId;
+            activityInstance.EndedUserName = context.UserName;
             activityInstance.EndedDateTime = endedAt;
             Storage.EndState(
                 kit,
                 activityInstanceId,
                 (short)activityState,
                 endedAt,
-                runner.UserId,
-                runner.UserName);
+                context.UserId,
+                context.UserName);
         }
 
         /// <summary>
@@ -950,26 +950,26 @@ namespace sailflow.data
         /// 活动实例完成
         /// </summary>
         public void Complete(SQLBuilder kit, string activityInstanceId,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
-            EndActivityState(kit, activityInstanceId, ActivityStateEnum.Completed, runner);
+            EndActivityState(kit, activityInstanceId, ActivityStateEnum.Completed, context);
         }
 
         public void Complete(SQLBuilder kit, ActivityInstanceEntity activityInstance,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             var endedAt = System.DateTime.UtcNow;
             activityInstance.ActivityState = (short)ActivityStateEnum.Completed;
-            activityInstance.EndedUserId = runner.UserId;
-            activityInstance.EndedUserName = runner.UserName;
+            activityInstance.EndedUserId = context.UserId;
+            activityInstance.EndedUserName = context.UserName;
             activityInstance.EndedDateTime = endedAt;
             Storage.EndState(
                 kit,
                 activityInstance.ActivityInstanceId,
                 (short)ActivityStateEnum.Completed,
                 endedAt,
-                runner.UserId,
-                runner.UserName);
+                context.UserId,
+                context.UserName);
         }
 
         /// <summary>
@@ -1054,23 +1054,23 @@ namespace sailflow.data
         /// 取消节点运行
         /// </summary>
         public void Cancel(SQLBuilder kit, string activityInstanceId,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
-            Storage.CancelOpen(kit, activityInstanceId, runner.UserId, runner.UserName);
+            Storage.CancelOpen(kit, activityInstanceId, context.UserId, context.UserName);
         }
 
         /// <summary>
         /// 取消主下未完成子 AI，并<strong>递归</strong>取消其后代（加签嵌套子树）。
         /// </summary>
-        public void CancelUnCompletedMultipleInstance(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner)
+        public void CancelUnCompletedMultipleInstance(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext context)
         {
-            CancelUnCompletedMultipleInstanceRecursive(kit, mainActivityInstanceId, runner, depth: 0);
+            CancelUnCompletedMultipleInstanceRecursive(kit, mainActivityInstanceId, context, depth: 0);
         }
 
         /// <summary>
         /// 淹没节点下全部未完成 SignForward 容器及其子树（Race 旁关时调用）。
         /// </summary>
-        public void CancelSignForwardSubtreeUnder(SQLBuilder kit, string rootActivityInstanceId, FlowCommandContext runner)
+        public void CancelSignForwardSubtreeUnder(SQLBuilder kit, string rootActivityInstanceId, FlowCommandContext context)
         {
             if (string.IsNullOrWhiteSpace(rootActivityInstanceId))
                 return;
@@ -1092,21 +1092,21 @@ namespace sailflow.data
                     && !string.IsNullOrEmpty(child.LeaveJudgeType);
                 if (isSfContainer || child.ComplexType == (short)ComplexTypeEnum.SignForward)
                 {
-                    CancelUnCompletedMultipleInstanceRecursive(kit, child.ActivityInstanceId, runner, 0);
+                    CancelUnCompletedMultipleInstanceRecursive(kit, child.ActivityInstanceId, context, 0);
                     if (child.ActivityState == (short)ActivityStateEnum.Ready
                         || child.ActivityState == (short)ActivityStateEnum.Running
                         || child.ActivityState == (short)ActivityStateEnum.Suspended)
                     {
                         child.ActivityState = (short)ActivityStateEnum.Cancelled;
-                        child.UpdatedUserId = runner?.UserId;
-                        child.UpdatedUserName = runner?.UserName;
+                        child.UpdatedUserId = context?.UserId;
+                        child.UpdatedUserName = context?.UserName;
                         child.UpdatedDateTime = System.DateTime.UtcNow;
                         Update(kit, child);
                         Sail.ManagerFactory.Tasks.CloseOpenApproverTasksOnActivityIds(
                             kit,
                             root.ProcessInstanceId,
                             new[] { child.ActivityInstanceId },
-                            runner,
+                            context,
                             TaskEndTypes.RaceTaken);
                     }
                 }
@@ -1116,7 +1116,7 @@ namespace sailflow.data
         private void CancelUnCompletedMultipleInstanceRecursive(
             SQLBuilder kit,
             string mainActivityInstanceId,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             int depth)
         {
             if (string.IsNullOrWhiteSpace(mainActivityInstanceId) || depth > 32)
@@ -1139,7 +1139,7 @@ namespace sailflow.data
                     .ToList();
 
             foreach (var child in openChildren)
-                CancelUnCompletedMultipleInstanceRecursive(kit, child.ActivityInstanceId, runner, depth + 1);
+                CancelUnCompletedMultipleInstanceRecursive(kit, child.ActivityInstanceId, context, depth + 1);
 
             Storage.UpdateChildrenState(
                 kit,
@@ -1151,8 +1151,8 @@ namespace sailflow.data
                     (short)ActivityStateEnum.Running,
                     (short)ActivityStateEnum.Suspended
                 },
-                runner.UserId,
-                runner.UserName);
+                context.UserId,
+                context.UserName);
 
             if (!string.IsNullOrWhiteSpace(processInstanceId) && openChildren.Count > 0)
             {
@@ -1160,7 +1160,7 @@ namespace sailflow.data
                     kit,
                     processInstanceId,
                     openChildren.Select(c => c.ActivityInstanceId),
-                    runner,
+                    context,
                     TaskEndTypes.RaceTaken);
             }
         }
@@ -1169,17 +1169,17 @@ namespace sailflow.data
         /// Withdraw the master node and its multiple instance nodes below it
         /// 撤销主节点及其下面的多实例子节点
         /// </summary>
-        public void WithdrawMainIncludedChildNodes(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner)
+        public void WithdrawMainIncludedChildNodes(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext context)
         {
-            SetActivityState(kit, mainActivityInstanceId, ActivityStateEnum.Withdrawed, runner);
-            WithdrawMultipleInstance(kit, mainActivityInstanceId, runner);
+            SetActivityState(kit, mainActivityInstanceId, ActivityStateEnum.Withdrawed, context);
+            WithdrawMultipleInstance(kit, mainActivityInstanceId, context);
         }
 
         /// <summary>
         /// Update the node status of the counter signature processing node
         /// 更新会签办理节点的节点状态
         /// </summary>
-        private void WithdrawMultipleInstance(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner)
+        private void WithdrawMultipleInstance(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext context)
         {
             Storage.UpdateChildrenState(
                 kit,
@@ -1190,26 +1190,26 @@ namespace sailflow.data
                     (short)ActivityStateEnum.Ready,
                     (short)ActivityStateEnum.Suspended
                 },
-                runner.UserId,
-                runner.UserName);
+                context.UserId,
+                context.UserName);
         }
 
         /// <summary>
         /// Put the node back in a suspended state
         /// 重新使节点处于挂起状态
         /// </summary>
-        public void Resuspend(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner)
+        public void Resuspend(SQLBuilder kit, string activityInstanceId, FlowCommandContext context)
         {
-            SetActivityState(kit, activityInstanceId, ActivityStateEnum.Suspended, runner);
+            SetActivityState(kit, activityInstanceId, ActivityStateEnum.Suspended, context);
         }
 
         /// <summary>
         /// Put the node back in a running state
         /// 重新使节点处于运行状态
         /// </summary>
-        public void Rerun(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner)
+        public void Rerun(SQLBuilder kit, string activityInstanceId, FlowCommandContext context)
         {
-            SetActivityState(kit, activityInstanceId, ActivityStateEnum.Running, runner);
+            SetActivityState(kit, activityInstanceId, ActivityStateEnum.Running, context);
         }
 
         /// <summary>

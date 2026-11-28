@@ -31,14 +31,14 @@ namespace sailflow.run{
         /// Startup Process
         /// 启动流程
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceStartup(FlowCommandContext runner, ref WfExecutedResult result)
+        public WfRuntimeManager CreateRuntimeInstanceStartup(FlowCommandContext context, ref WfExecutedResult result)
         {
             using var kit = _sail.UseRunSQL();
-            return CreateRuntimeInstanceStartup(runner, kit, ref result);
+            return CreateRuntimeInstanceStartup(context, kit, ref result);
         }
 
         /// <summary>Start 查重与后续 Insert 共用同一 kit/事务。</summary>
-        public WfRuntimeManager CreateRuntimeInstanceStartup(FlowCommandContext runner, SQLBuilder kit, ref WfExecutedResult result)
+        public WfRuntimeManager CreateRuntimeInstanceStartup(FlowCommandContext context, SQLBuilder kit, ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerStartup();
             rmins.WfExecutedResult = result = new WfExecutedResult();
@@ -47,9 +47,9 @@ namespace sailflow.run{
             var pim = _sail.ProcessInstances;
             ProcessInstanceEntity processInstance = pim.GetProcessInstanceCurrent(
                 kit,
-                runner.BizPK,
-                runner.ProcessId,
-                runner.Version);
+                context.BizPK,
+                context.ProcessId,
+                context.Version);
 
             //不能同时启动多个主流程
             //Cannot start multiple main processes simultaneously
@@ -63,29 +63,29 @@ namespace sailflow.run{
                 return rmins;
             }
 
-            rmins.CmdContext = runner;
+            rmins.CmdContext = context;
 
             //获取流程第一个可办理节点
             //Obtain the first available processing node in the process
-            rmins.ProcessModel = _sail.ProcessModelFactory.CreateByProcess(kit, runner.ProcessId, runner.Version);
+            rmins.ProcessModel = _sail.ProcessModelFactory.CreateByProcess(kit, context.ProcessId, context.Version);
             var startActivity = rmins.ProcessModel.GetStartActivity();
-            var nextActivityTree = rmins.ProcessModel.GetFirstActivityTreeView(startActivity, runner.Conditions);
+            var nextActivityTree = rmins.ProcessModel.GetFirstActivityTreeView(startActivity, context.Conditions);
 
             // 下一跳办理人：
             // - 客户端已传 NextActivityPerformers（发起/自选）→ 直接用
             // - 定时/消息/信号/条件启动且无操作人 → 按定义角色展开
             // - 否则留空，交 Assignee 管道解析（RoleGroup/FixedUsers…）；selectModel=Pick 空入参则 R4 拒绝
             // 禁止默认把发起人塞进下一跳（会掩盖未选人却“发起成功、待办归属错误”）
-            if (runner.NextActivityPerformers != null && runner.NextActivityPerformers.Count > 0)
+            if (context.NextActivityPerformers != null && context.NextActivityPerformers.Count > 0)
             {
-                rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
+                rmins.CmdContext.NextActivityPerformers = context.NextActivityPerformers;
             }
             else if (startActivity.TriggerDetail != null
                 && (startActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Timer
                     || startActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Message
                     || startActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Signal
                     || startActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Conditional)
-                && string.IsNullOrEmpty(runner.UserId))
+                && string.IsNullOrEmpty(context.UserId))
             {
                 rmins.CmdContext.NextActivityPerformers = rmins.ProcessModel.GetActivityPerformers(nextActivityTree);
             }
@@ -93,7 +93,7 @@ namespace sailflow.run{
             {
                 rmins.CmdContext.NextActivityPerformers = new Dictionary<string, PerformerList>();
             }
-            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers, runner.Conditions);
+            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(context, rmins.CmdContext.NextActivityPerformers, context.Conditions);
 
             return rmins;
         }
@@ -102,7 +102,7 @@ namespace sailflow.run{
         /// Sub Process Startup
         /// 子流程启动
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceStartupSub(FlowCommandContext runner,
+        public WfRuntimeManager CreateRuntimeInstanceStartupSub(FlowCommandContext context,
             ProcessInstanceEntity processInstance,
             SubProcessNode subProcessNode,
             PerformerList performerList,
@@ -115,8 +115,8 @@ namespace sailflow.run{
 
             var pim = _sail.ProcessInstances;
             var subProcessInstance = pim.GetSubProcessInstance(kit,
-                runner.BizPK,
-                runner.ProcessId,
+                context.BizPK,
+                context.ProcessId,
                 subProcessNode.SubProcessId);
 
             //不能同时启动多个主流程
@@ -130,7 +130,7 @@ namespace sailflow.run{
                 return rmins;
             }
 
-            rmins.CmdContext = runner;
+            rmins.CmdContext = context;
             rmins.ProcessInstance = subProcessInstance;
             rmins.InvokedSubProcessNode = subProcessNode;
             rmins.ProcessModel = _sail.ProcessModelFactory.CreateSubByNode(kit.useSQL(), subProcessNode);
@@ -143,7 +143,7 @@ namespace sailflow.run{
             //The subprocess automatically retrieves the list of performers on the first processing node
             rmins.CmdContext.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(subFirstActivity.ActivityId, 
                 performerList);
-            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(context, rmins.CmdContext.NextActivityPerformers);
 
             return rmins;
         }
@@ -154,7 +154,7 @@ namespace sailflow.run{
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceAppRunning(FlowCommandContext runner,
+        public WfRuntimeManager CreateRuntimeInstanceAppRunning(FlowCommandContext context,
             SQLBuilder kit,
             ref WfExecutedResult result)
         {
@@ -164,25 +164,25 @@ namespace sailflow.run{
 
             //检查传入参数是否有效
             //Check if the incoming parameters are valid
-            if (string.IsNullOrEmpty(runner.BizChannel)
-                || string.IsNullOrEmpty(runner.BizPK)
-                || runner.ProcessId == null)
+            if (string.IsNullOrEmpty(context.BizChannel)
+                || string.IsNullOrEmpty(context.BizPK)
+                || context.ProcessId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_ErrorArguments;
                 result.Message = _sail.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
                 return rmins;
             }
-            rmins.CmdContext = runner;
+            rmins.CmdContext = context;
 
             var aim = _sail.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
-            var runningNode = aim.GetRunningNode(kit.useSQL(), runner, out taskView);
+            var runningNode = aim.GetRunningNode(kit.useSQL(), context, out taskView);
 
             // 以当前待办 Task.SignId 为准（活动 SignIds 仅汇总展示）
             // Ownership by TaskView.SignId; activity SignIds is display-only aggregate.
             var tmRun = _sail.ManagerFactory.Tasks;
-            if (taskView == null || tmRun.IsMine(taskView, runner.UserId) == false)
+            if (taskView == null || tmRun.IsMine(taskView, context.UserId) == false)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_HasNoTask;
@@ -214,7 +214,7 @@ namespace sailflow.run{
             //检查节点上的输出变量定义，并把必填的输出变量，加入到Condition对象里面去
             //Check the output variable definition on the node and add the required output variable to the Condition object
             var pvr = _sail.ManagerFactory.ProcessVariableResolver;
-            var isVariableRequiredChecked = pvr.CheckVariableRequired(kit, taskView, currentNode, runner.Conditions);
+            var isVariableRequiredChecked = pvr.CheckVariableRequired(kit, taskView, currentNode, context.Conditions);
             if (isVariableRequiredChecked == false)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -223,9 +223,9 @@ namespace sailflow.run{
                 return rmins;
             }
 
-            var activityResource = _sail.RuntimeFactory.CreateActivityResource(runner,
-                runner.NextActivityPerformers,
-                runner.Conditions);
+            var activityResource = _sail.RuntimeFactory.CreateActivityResource(context,
+                context.NextActivityPerformers,
+                context.Conditions);
 
             rmins.TaskView = taskView;
             rmins.RunningActivityInstance = runningNode;
@@ -238,7 +238,7 @@ namespace sailflow.run{
         /// <summary>
         /// 异步创建 Run 运行时：预载热点走 Manager *Async(ct)；后续 Execute 仍同步（阶段 3 首刀）。
         /// </summary>
-        public async Task<(WfRuntimeManager Manager, WfExecutedResult Result)> CreateRuntimeInstanceAppRunningAsync(FlowCommandContext runner,
+        public async Task<(WfRuntimeManager Manager, WfExecutedResult Result)> CreateRuntimeInstanceAppRunningAsync(FlowCommandContext context,
             SQLBuilder kit,
             CancellationToken cancellationToken = default)
         {
@@ -248,24 +248,24 @@ namespace sailflow.run{
             rmins.WfExecutedResult = result;
             rmins.Sail = _sail;
 
-            if (string.IsNullOrEmpty(runner.BizChannel)
-                || string.IsNullOrEmpty(runner.BizPK)
-                || runner.ProcessId == null)
+            if (string.IsNullOrEmpty(context.BizChannel)
+                || string.IsNullOrEmpty(context.BizPK)
+                || context.ProcessId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_ErrorArguments;
                 result.Message = _sail.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
                 return (rmins, result);
             }
-            rmins.CmdContext = runner;
+            rmins.CmdContext = context;
 
             var aim = _sail.ManagerFactory.Activities;
-            var (runningNode, taskView) = await aim.GetRunningNodeAsync(kit, runner, cancellationToken)
+            var (runningNode, taskView) = await aim.GetRunningNodeAsync(kit, context, cancellationToken)
                 .ConfigureAwait(false);
 
             // 以当前待办 Task.SignId 为准（活动 SignIds 仅汇总展示）
             var tmRunAsync = _sail.ManagerFactory.Tasks;
-            if (taskView == null || tmRunAsync.IsMine(taskView, runner.UserId) == false)
+            if (taskView == null || tmRunAsync.IsMine(taskView, context.UserId) == false)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_HasNoTask;
@@ -291,7 +291,7 @@ namespace sailflow.run{
 
             var currentNode = processModel.GetActivity(taskView.ActivityId);
             var pvr = _sail.ManagerFactory.ProcessVariableResolver;
-            var isVariableRequiredChecked = pvr.CheckVariableRequired(kit, taskView, currentNode, runner.Conditions);
+            var isVariableRequiredChecked = pvr.CheckVariableRequired(kit, taskView, currentNode, context.Conditions);
             if (isVariableRequiredChecked == false)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -300,9 +300,9 @@ namespace sailflow.run{
                 return (rmins, result);
             }
 
-            var activityResource = _sail.RuntimeFactory.CreateActivityResource(runner,
-                runner.NextActivityPerformers,
-                runner.Conditions);
+            var activityResource = _sail.RuntimeFactory.CreateActivityResource(context,
+                context.NextActivityPerformers,
+                context.Conditions);
 
             rmins.TaskView = taskView;
             rmins.RunningActivityInstance = runningNode;
@@ -318,7 +318,7 @@ namespace sailflow.run{
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceRunAuto(FlowCommandContext runner,
+        public WfRuntimeManager CreateRuntimeInstanceRunAuto(FlowCommandContext context,
             SQLBuilder kit,
             ref WfExecutedResult result)
         {
@@ -327,19 +327,19 @@ namespace sailflow.run{
             var rmins = new WfRuntimeManagerRun();
             rmins.WfExecutedResult = result = new WfExecutedResult();
             rmins.Sail = _sail;
-            if (string.IsNullOrEmpty(runner.BizChannel)
-                || string.IsNullOrEmpty(runner.BizPK)
-                || runner.ProcessId == null)
+            if (string.IsNullOrEmpty(context.BizChannel)
+                || string.IsNullOrEmpty(context.BizPK)
+                || context.ProcessId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_ErrorArguments;
                 result.Message = _sail.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
                 return rmins;
             }
-            rmins.CmdContext = runner;
+            rmins.CmdContext = context;
 
             var aim = _sail.ManagerFactory.Activities;
-            var runningNode = aim.GetById(runner.ActivityInstanceId);
+            var runningNode = aim.GetById(context.ActivityInstanceId);
 
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
@@ -347,9 +347,9 @@ namespace sailflow.run{
             var processInstance = _sail.ProcessInstances.GetById(kitForPi, runningNode.ProcessInstanceId);
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
             var processModel = _sail.ProcessModelFactory.CreateByProcess( processInstance.ProcessId, processInstance.Version);
-            var activityResource = _sail.RuntimeFactory.CreateActivityResource(runner,
-                runner.NextActivityPerformers,
-                runner.Conditions);
+            var activityResource = _sail.RuntimeFactory.CreateActivityResource(context,
+                context.NextActivityPerformers,
+                context.Conditions);
 
             rmins.RunningActivityInstance = runningNode;
             rmins.ProcessModel = processModel;
@@ -361,7 +361,7 @@ namespace sailflow.run{
         /// <summary>
         /// 异步创建 RunAuto 运行时：AI/PI 预载走 Manager *Async(ct)（阶段 3 首刀）。
         /// </summary>
-        public async Task<(WfRuntimeManager Manager, WfExecutedResult Result)> CreateRuntimeInstanceRunAutoAsync(FlowCommandContext runner,
+        public async Task<(WfRuntimeManager Manager, WfExecutedResult Result)> CreateRuntimeInstanceRunAutoAsync(FlowCommandContext context,
             SQLBuilder kit,
             CancellationToken cancellationToken = default)
         {
@@ -370,19 +370,19 @@ namespace sailflow.run{
             var rmins = new WfRuntimeManagerRun();
             rmins.WfExecutedResult = result;
             rmins.Sail = _sail;
-            if (string.IsNullOrEmpty(runner.BizChannel)
-                || string.IsNullOrEmpty(runner.BizPK)
-                || runner.ProcessId == null)
+            if (string.IsNullOrEmpty(context.BizChannel)
+                || string.IsNullOrEmpty(context.BizPK)
+                || context.ProcessId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_ErrorArguments;
                 result.Message = _sail.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceAppRunning.missing.error");
                 return (rmins, result);
             }
-            rmins.CmdContext = runner;
+            rmins.CmdContext = context;
 
             var aim = _sail.ManagerFactory.Activities;
-            var runningNode = await aim.GetByIdAsync(kit, runner.ActivityInstanceId, cancellationToken)
+            var runningNode = await aim.GetByIdAsync(kit, context.ActivityInstanceId, cancellationToken)
                 .ConfigureAwait(false);
 
             var processInstance = await _sail.ProcessInstances
@@ -390,9 +390,9 @@ namespace sailflow.run{
                 .ConfigureAwait(false);
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
             var processModel = _sail.ProcessModelFactory.CreateByProcess( processInstance.ProcessId, processInstance.Version);
-            var activityResource = _sail.RuntimeFactory.CreateActivityResource(runner,
-                runner.NextActivityPerformers,
-                runner.Conditions);
+            var activityResource = _sail.RuntimeFactory.CreateActivityResource(context,
+                context.NextActivityPerformers,
+                context.Conditions);
 
             rmins.RunningActivityInstance = runningNode;
             rmins.ProcessModel = processModel;
@@ -407,7 +407,7 @@ namespace sailflow.run{
         /// Create a runtime instance object
         /// 创建跳转实例信息
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceJump(FlowCommandContext runner,
+        public WfRuntimeManager CreateRuntimeInstanceJump(FlowCommandContext context,
             ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerJump();
@@ -416,10 +416,10 @@ namespace sailflow.run{
 
             //检查传入参数是否有效
             //Check if the incoming parameters are valid
-            if (string.IsNullOrEmpty(runner.BizChannel)
-               || string.IsNullOrEmpty(runner.BizPK)
-               || runner.ProcessId == null
-               || runner.NextActivityPerformers == null)
+            if (string.IsNullOrEmpty(context.BizChannel)
+               || string.IsNullOrEmpty(context.BizPK)
+               || context.ProcessId == null
+               || context.NextActivityPerformers == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Jump_ErrorArguments;
@@ -429,32 +429,32 @@ namespace sailflow.run{
 
             //流程跳转时，只能跳转到一个节点
             //When a process jumps, it can only jump to one node
-            if (runner.NextActivityPerformers.Count() > 1)
+            if (context.NextActivityPerformers.Count() > 1)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Jump_OverOneStep;
                 result.Message = _sail.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceJump.jump.error",
-                    runner.NextActivityPerformers.Count().ToString());
+                    context.NextActivityPerformers.Count().ToString());
                 return rmins;
             }
 
             var aim = _sail.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
-            var runningNode = aim.GetRunningNode(runner, out taskView);
+            var runningNode = aim.GetRunningNode(context, out taskView);
 
             rmins.TaskView = taskView;
-            rmins.CmdContext.BizChannel = runner.BizChannel;
-            rmins.CmdContext.BizPK = runner.BizPK;
-            rmins.CmdContext.ProcessId = runner.ProcessId;
-            rmins.CmdContext.UserId = runner.UserId;
-            rmins.CmdContext.UserName = runner.UserName;
-            rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
+            rmins.CmdContext.BizChannel = context.BizChannel;
+            rmins.CmdContext.BizPK = context.BizPK;
+            rmins.CmdContext.ProcessId = context.ProcessId;
+            rmins.CmdContext.UserId = context.UserId;
+            rmins.CmdContext.UserName = context.UserName;
+            rmins.CmdContext.NextActivityPerformers = context.NextActivityPerformers;
 
             //用于流程注册时间调用时候的流程实例ID提供
             //Provide process instance Id for process registration events
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
             rmins.RunningActivityInstance = runningNode;
-            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(context, rmins.CmdContext.NextActivityPerformers);
 
             var processModel = _sail.ProcessModelFactory.CreateByTask( taskView);
             rmins.ProcessModel = processModel;
@@ -468,7 +468,7 @@ namespace sailflow.run{
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceReject(FlowCommandContext runner,
+        public WfRuntimeManager CreateRuntimeInstanceReject(FlowCommandContext context,
             ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerReject();
@@ -477,10 +477,10 @@ namespace sailflow.run{
 
             //检查传入参数是否有效
             //Check if the incoming parameters are valid
-            if (string.IsNullOrEmpty(runner.BizChannel)
-               || string.IsNullOrEmpty(runner.BizPK)
-               || runner.ProcessId == null
-               || runner.NextActivityPerformers == null)
+            if (string.IsNullOrEmpty(context.BizChannel)
+               || string.IsNullOrEmpty(context.BizPK)
+               || context.ProcessId == null
+               || context.NextActivityPerformers == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Jump_ErrorArguments;
@@ -488,26 +488,26 @@ namespace sailflow.run{
                 return rmins;
             }
 
-            if (runner.NextActivityPerformers.Count() > 1)
+            if (context.NextActivityPerformers.Count() > 1)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Jump_OverOneStep;
                 result.Message = _sail.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceReject.jump.error",
-                    runner.NextActivityPerformers.Count().ToString());
+                    context.NextActivityPerformers.Count().ToString());
                 return rmins;
             }
 
             var aim = _sail.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
-            var runningNode = aim.GetRunningNode(runner, out taskView);
+            var runningNode = aim.GetRunningNode(context, out taskView);
 
             rmins.TaskView = taskView;
-            rmins.CmdContext = runner;
-            rmins.CmdContext.BizChannel = runner.BizChannel;
-            rmins.CmdContext.BizPK = runner.BizPK;
-            rmins.CmdContext.ProcessId = runner.ProcessId;
-            rmins.CmdContext.UserId = runner.UserId;
-            rmins.CmdContext.UserName = runner.UserName;
+            rmins.CmdContext = context;
+            rmins.CmdContext.BizChannel = context.BizChannel;
+            rmins.CmdContext.BizPK = context.BizPK;
+            rmins.CmdContext.ProcessId = context.ProcessId;
+            rmins.CmdContext.UserId = context.UserId;
+            rmins.CmdContext.UserName = context.UserName;
 
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
 
@@ -516,7 +516,7 @@ namespace sailflow.run{
 
             //获取跳转节点信息
             //Obtain jump node information
-            var jumpBackActivityId = runner.NextActivityPerformers.First().Key;
+            var jumpBackActivityId = context.NextActivityPerformers.First().Key;
             var jumpBackActivityInstance = aim.GetActivityInstanceLatest(runningNode.ProcessInstanceId, jumpBackActivityId);
 
 
@@ -530,8 +530,8 @@ namespace sailflow.run{
             //Retrieve the previous node of the current running node
             bool hasGatewayNode = false;
             var tim = _sail.ManagerFactory.Transitions;
-            var lastTaskTransitionInstance = tim.GetLastTaskTransition(runner.BizChannel,
-                runner.BizPK, runner.ProcessId);
+            var lastTaskTransitionInstance = tim.GetLastTaskTransition(context.BizChannel,
+                context.BizPK, context.ProcessId);
 
             var npc = _sail.ManagerFactory.PreviousSteps;
             var previousActivityInstanceList = npc.GetPreviousActivityInstanceList(runningNode, true,
@@ -593,7 +593,7 @@ namespace sailflow.run{
 
             var activityResourceBack = _sail.RuntimeFactory.CreateActivityResource(rmins.CmdContext,
                 rmins.CmdContext.NextActivityPerformers,
-                runner.Conditions);
+                context.Conditions);
             activityResourceBack.AllowSameAsStarterPolicy = false;
             rmins.ActivityResource = activityResourceBack;
 
@@ -606,7 +606,7 @@ namespace sailflow.run{
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceClose(FlowCommandContext runner,
+        public WfRuntimeManager CreateRuntimeInstanceClose(FlowCommandContext context,
             ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerClose();
@@ -615,10 +615,10 @@ namespace sailflow.run{
 
             //检查传入参数是否有效
             //Check if the incoming parameters are valid
-            if (string.IsNullOrEmpty(runner.BizChannel)
-               || string.IsNullOrEmpty(runner.BizPK)
-               || runner.ProcessId == null
-               || runner.NextActivityPerformers == null)
+            if (string.IsNullOrEmpty(context.BizChannel)
+               || string.IsNullOrEmpty(context.BizPK)
+               || context.ProcessId == null
+               || context.NextActivityPerformers == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Jump_ErrorArguments;
@@ -628,26 +628,26 @@ namespace sailflow.run{
 
             //流程跳转时，只能跳转到一个节点
             //When a process jumps, it can only jump to one node
-            if (runner.NextActivityPerformers.Count() > 1)
+            if (context.NextActivityPerformers.Count() > 1)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Jump_OverOneStep;
                 result.Message = _sail.Messages.GetEngineMessage("wfruntimemanagerfactory.CreateRuntimeInstanceClose.jump.error",
-                    runner.NextActivityPerformers.Count().ToString());
+                    context.NextActivityPerformers.Count().ToString());
                 return rmins;
             }
 
             var aim = _sail.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
-            var runningNode = aim.GetRunningNode(runner, out taskView);
+            var runningNode = aim.GetRunningNode(context, out taskView);
 
             rmins.TaskView = taskView;
-            rmins.CmdContext = runner;
-            rmins.CmdContext.BizChannel = runner.BizChannel;
-            rmins.CmdContext.BizPK = runner.BizPK;
-            rmins.CmdContext.ProcessId = runner.ProcessId;
-            rmins.CmdContext.UserId = runner.UserId;
-            rmins.CmdContext.UserName = runner.UserName;
+            rmins.CmdContext = context;
+            rmins.CmdContext.BizChannel = context.BizChannel;
+            rmins.CmdContext.BizPK = context.BizPK;
+            rmins.CmdContext.ProcessId = context.ProcessId;
+            rmins.CmdContext.UserId = context.UserId;
+            rmins.CmdContext.UserName = context.UserName;
 
             //用于流程注册时间调用时候的流程实例ID提供
             //Provide process instance Id for process registration time call
@@ -656,8 +656,8 @@ namespace sailflow.run{
             var processModel = _sail.ProcessModelFactory.CreateByTask( taskView);
             rmins.ProcessModel = processModel;
 
-            var endActivityId = runner.NextActivityPerformers.First().Key;
-            var activityResource = _sail.RuntimeFactory.CreateActivityResource(runner, runner.NextActivityPerformers);
+            var endActivityId = context.NextActivityPerformers.First().Key;
+            var activityResource = _sail.RuntimeFactory.CreateActivityResource(context, context.NextActivityPerformers);
             rmins.ActivityResource = activityResource;
             rmins.RunningActivityInstance = runningNode;
 
@@ -670,7 +670,7 @@ namespace sailflow.run{
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        internal WfRuntimeManager CreateRuntimeInstanceSendBack(FlowCommandContext runner,
+        internal WfRuntimeManager CreateRuntimeInstanceSendBack(FlowCommandContext context,
             ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerSendBack();
@@ -679,8 +679,8 @@ namespace sailflow.run{
 
             //没有指定退回节点信息
             //No sendback node information specified
-            if (runner.NextPerformerType != NextPerformerIntTypeEnum.Traced
-                && (runner.NextActivityPerformers == null || runner.NextActivityPerformers.Count == 0))
+            if (context.NextPerformerType != NextPerformerIntTypeEnum.Traced
+                && (context.NextActivityPerformers == null || context.NextActivityPerformers.Count == 0))
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_IsNull;
@@ -693,7 +693,7 @@ namespace sailflow.run{
             //First, search for the running node that the current user is currently processing
             var aim = _sail.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
-            var runningNode = aim.GetRunningNode(runner, out taskView);
+            var runningNode = aim.GetRunningNode(context, out taskView);
 
             if (runningNode == null
                 || (runningNode.ActivityState != (short)ActivityStateEnum.Ready && runningNode.ActivityState != (short)ActivityStateEnum.Running))
@@ -706,7 +706,7 @@ namespace sailflow.run{
             }
 
             // 以当前待办 Task.SignId 为准（活动 SignIds 仅汇总展示）
-            if (taskView == null || _sail.ManagerFactory.Tasks.IsMine(taskView, runner.UserId) == false)
+            if (taskView == null || _sail.ManagerFactory.Tasks.IsMine(taskView, context.UserId) == false)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_NotMineTask;
@@ -744,9 +744,9 @@ namespace sailflow.run{
 
             //前端用户指定退回步骤的模式
             //Front end user specifies the mode of return steps
-            if (runner.NextPerformerType != NextPerformerIntTypeEnum.Traced)
+            if (context.NextPerformerType != NextPerformerIntTypeEnum.Traced)
             {
-                if (runner.NextActivityPerformers == null || runner.NextActivityPerformers.Count == 0)
+                if (context.NextActivityPerformers == null || context.NextActivityPerformers.Count == 0)
                 {
                     result.Status = WfExecutedStatus.Exception;
                     result.ExceptionType = WfExceptionType.Sendback_IsNull;
@@ -761,7 +761,7 @@ namespace sailflow.run{
                 {
                     var onlyActivityId = previousActivityList[0].ActivityId;
                     var isOnly = true;
-                    foreach (var step in runner.NextActivityPerformers)
+                    foreach (var step in context.NextActivityPerformers)
                     {
                         if (step.Key != onlyActivityId)
                         {
@@ -788,7 +788,7 @@ namespace sailflow.run{
                 //Traced is used to directly return to the previous step for testing mode
                 var prevActivity = previousActivityList[0];
                 var performerList = PerformerBuilder.CreatePerformerList(runningNode.CreatedUserId, runningNode.CreatedUserName);
-                runner.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(prevActivity.ActivityId, performerList);
+                context.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(prevActivity.ActivityId, performerList);
             }
 
             rmins.TaskView = taskView;
@@ -797,11 +797,11 @@ namespace sailflow.run{
             rmins.ProcessInstance = processInstance;
             rmins.ProcessModel = processModel;
 
-            rmins.CmdContext.BizChannel = runner.BizChannel;
-            rmins.CmdContext.BizPK = runner.BizPK;
-            rmins.CmdContext.UserId = runner.UserId;
-            rmins.CmdContext.UserName = runner.UserName;
-            rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
+            rmins.CmdContext.BizChannel = context.BizChannel;
+            rmins.CmdContext.BizPK = context.BizPK;
+            rmins.CmdContext.UserId = context.UserId;
+            rmins.CmdContext.UserName = context.UserName;
+            rmins.CmdContext.NextActivityPerformers = context.NextActivityPerformers;
 
             //设置退回选项类
             //Set sendback options
@@ -810,11 +810,11 @@ namespace sailflow.run{
             sendbackOperation.ProcessInstance = processInstance;
             sendbackOperation.BackwardFromActivityInstance = runningNode;
             sendbackOperation.HasGatewayPassed = hasGatewayPassed;
-            sendbackOperation.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            sendbackOperation.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(context, rmins.CmdContext.NextActivityPerformers);
             sendbackOperation.ActivityResource.AllowSameAsStarterPolicy = false;
             sendbackOperation.ProcessModel = processModel;
-            sendbackOperation.IsCancellingBrothersNode = (runner.ControlParameterSheet != null 
-                    && runner.ControlParameterSheet.IsCancellingBrothersNode == 1) ? true : false;
+            sendbackOperation.IsCancellingBrothersNode = (context.ControlParameterSheet != null 
+                    && context.ControlParameterSheet.IsCancellingBrothersNode == 1) ? true : false;
 
             rmins.SendBackOperation = sendbackOperation;
 
@@ -877,14 +877,14 @@ namespace sailflow.run{
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        internal WfRuntimeManager CreateRuntimeInstanceWithdraw(FlowCommandContext runner,
+        internal WfRuntimeManager CreateRuntimeInstanceWithdraw(FlowCommandContext context,
            ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerSendBack();
             rmins.WfExecutedResult = result = new WfExecutedResult();
             rmins.Sail = _sail;
 
-            if (runner.TaskId == null)
+            if (context.TaskId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Withdraw_ErrorArguments;
@@ -894,9 +894,9 @@ namespace sailflow.run{
             //获取已经完成任务的信息
             //Retrieve information on completed tasks
             var tm = _sail.ManagerFactory.Tasks;
-            var taskDone = tm.GetTaskView(runner.TaskId);
+            var taskDone = tm.GetTaskView(context.TaskId);
 
-            if (tm.IsMine(taskDone, runner.UserId) == false)
+            if (tm.IsMine(taskDone, context.UserId) == false)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_NotMineTask;
@@ -904,12 +904,12 @@ namespace sailflow.run{
                 return rmins;
             }
 
-            runner.NextActivityPerformers = NextStepUtility.CreateNextStepPerformerList(taskDone.ActivityId,
+            context.NextActivityPerformers = NextStepUtility.CreateNextStepPerformerList(taskDone.ActivityId,
                 taskDone.SignId, taskDone.SignName);
 
             //没有指定退回节点信息
             //No return node information specified
-            if (runner.NextActivityPerformers == null || runner.NextActivityPerformers.Count == 0)
+            if (context.NextActivityPerformers == null || context.NextActivityPerformers.Count == 0)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Sendback_IsNull;
@@ -955,8 +955,8 @@ namespace sailflow.run{
             }
 
             var taskToDo = tm.GetTaskViewByActivity(runningNode.ProcessInstanceId, runningNode.ActivityInstanceId);
-            runner.UserId = taskToDo.SignId;
-            runner.UserName = taskToDo.SignName;
+            context.UserId = taskToDo.SignId;
+            context.UserName = taskToDo.SignName;
 
             //获取上一步节点信息
             //Obtain the previous node information
@@ -983,7 +983,7 @@ namespace sailflow.run{
             {
                 var onlyActivityId = previousActivityList[0].ActivityId;
                 var isOnly = true;
-                foreach (var step in runner.NextActivityPerformers)
+                foreach (var step in context.NextActivityPerformers)
                 {
                     if (step.Key != onlyActivityId)
                     {
@@ -1010,11 +1010,11 @@ namespace sailflow.run{
             rmins.ProcessInstance = processInstance;
             rmins.ProcessModel = processModel;
 
-            rmins.CmdContext.BizChannel = runner.BizChannel;
-            rmins.CmdContext.BizPK = runner.BizPK;
-            rmins.CmdContext.UserId = runner.UserId;
-            rmins.CmdContext.UserName = runner.UserName;
-            rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
+            rmins.CmdContext.BizChannel = context.BizChannel;
+            rmins.CmdContext.BizPK = context.BizPK;
+            rmins.CmdContext.UserId = context.UserId;
+            rmins.CmdContext.UserName = context.UserName;
+            rmins.CmdContext.NextActivityPerformers = context.NextActivityPerformers;
 
             //设置退回选项类
             //Set return option class
@@ -1023,7 +1023,7 @@ namespace sailflow.run{
             sendbackOperation.ProcessInstance = processInstance;
             sendbackOperation.BackwardFromActivityInstance = runningNode;
             sendbackOperation.HasGatewayPassed = hasGatewayPassed;
-            sendbackOperation.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            sendbackOperation.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(context, rmins.CmdContext.NextActivityPerformers);
             sendbackOperation.ActivityResource.AllowSameAsStarterPolicy = false;
             sendbackOperation.ProcessModel = processModel;
 
@@ -1042,14 +1042,14 @@ namespace sailflow.run{
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        internal WfRuntimeManager CreateRuntimeInstanceResend(FlowCommandContext runner,
+        internal WfRuntimeManager CreateRuntimeInstanceResend(FlowCommandContext context,
             ref WfExecutedResult result)
         {
             WfRuntimeManager rmins = new WfRuntimeManagerResend();
             rmins.WfExecutedResult = result = new WfExecutedResult();
             rmins.Sail = _sail;
 
-            if (runner.TaskId == null)
+            if (context.TaskId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Resend_NotTaskNode;
@@ -1061,7 +1061,7 @@ namespace sailflow.run{
             //获取退回源活动实例数据
             //Retrieve the data of the returned source activity instance
             var tm = _sail.ManagerFactory.Tasks;
-            var taskView = tm.GetTaskView(runner.TaskId);
+            var taskView = tm.GetTaskView(context.TaskId);
 
             var aim = _sail.ManagerFactory.Activities;
             var runningActivityInstance = aim.GetById(taskView.ActivityInstanceId);
@@ -1079,16 +1079,16 @@ namespace sailflow.run{
             rmins.RunningActivityInstance = aim.GetById(taskView.ActivityInstanceId);
             rmins.ProcessModel = _sail.ProcessModelFactory.CreateByTask( taskView);
 
-            rmins.CmdContext.BizChannel = runner.BizChannel;
-            rmins.CmdContext.BizPK = runner.BizPK;
-            rmins.CmdContext.UserId = runner.UserId;
-            rmins.CmdContext.UserName = runner.UserName;
-            if (runner.ControlParameterSheet != null
-                && runner.ControlParameterSheet.RecreatedMultipleInstanceWhenResending == 1)
+            rmins.CmdContext.BizChannel = context.BizChannel;
+            rmins.CmdContext.BizPK = context.BizPK;
+            rmins.CmdContext.UserId = context.UserId;
+            rmins.CmdContext.UserName = context.UserName;
+            if (context.ControlParameterSheet != null
+                && context.ControlParameterSheet.RecreatedMultipleInstanceWhenResending == 1)
             {
                 rmins.CmdContext.NextActivityPerformers = ActivityResource.CreateNextActivityPerformers(
                     backSrcActivityInstance.ActivityId,
-                    runner.NextActivityPerformers[backSrcActivityInstance.ActivityId]);
+                    context.NextActivityPerformers[backSrcActivityInstance.ActivityId]);
             }
             else
             {
@@ -1097,7 +1097,7 @@ namespace sailflow.run{
                     runningActivityInstance.CreatedUserId,
                     runningActivityInstance.CreatedUserName);
             }
-            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(context, rmins.CmdContext.NextActivityPerformers);
 
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
@@ -1112,14 +1112,14 @@ namespace sailflow.run{
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceRevise(FlowCommandContext runner,
+        public WfRuntimeManager CreateRuntimeInstanceRevise(FlowCommandContext context,
             ref WfExecutedResult result)
         {
             WfRuntimeManager rmins = new WfRuntimeManagerRevise();
             rmins.WfExecutedResult = result = new WfExecutedResult();
             rmins.Sail = _sail;
 
-            if (runner.TaskId == null)
+            if (context.TaskId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.Resend_NotTaskNode;
@@ -1131,7 +1131,7 @@ namespace sailflow.run{
             //获取退回源活动实例数据
             //Retrieve the data of the returned source activity instance
             var tm = _sail.ManagerFactory.Tasks;
-            var taskView = tm.GetTaskView(runner.TaskId);
+            var taskView = tm.GetTaskView(context.TaskId);
 
             var aim = _sail.ManagerFactory.Activities;
 
@@ -1139,12 +1139,12 @@ namespace sailflow.run{
             rmins.RunningActivityInstance = aim.GetById(taskView.ActivityInstanceId);
             rmins.ProcessModel = _sail.ProcessModelFactory.CreateByTask( taskView);
 
-            rmins.CmdContext.BizChannel = runner.BizChannel;
-            rmins.CmdContext.BizPK = runner.BizPK;
-            rmins.CmdContext.UserId = runner.UserId;
-            rmins.CmdContext.UserName = runner.UserName;
-            rmins.CmdContext.NextActivityPerformers = runner.NextActivityPerformers;
-            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            rmins.CmdContext.BizChannel = context.BizChannel;
+            rmins.CmdContext.BizPK = context.BizPK;
+            rmins.CmdContext.UserId = context.UserId;
+            rmins.CmdContext.UserName = context.UserName;
+            rmins.CmdContext.NextActivityPerformers = context.NextActivityPerformers;
+            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(context, rmins.CmdContext.NextActivityPerformers);
 
             //用于流程注册事件时的流程实例ID提供
             //Provide process instance Id for process registration events
@@ -1159,14 +1159,14 @@ namespace sailflow.run{
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceReverse(FlowCommandContext runner,
+        public WfRuntimeManager CreateRuntimeInstanceReverse(FlowCommandContext context,
             ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerReverse();
             rmins.WfExecutedResult = result = new WfExecutedResult();
             rmins.Sail = _sail;
             var pim = _sail.ProcessInstances;
-            var processInstance = pim.GetProcessInstanceLatest(runner.BizPK, runner.ProcessId, runner.Version);
+            var processInstance = pim.GetProcessInstanceLatest(context.BizPK, context.ProcessId, context.Version);
             if (processInstance == null || processInstance.ProcessState != (short)ProcessStateEnum.Completed)
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -1180,7 +1180,7 @@ namespace sailflow.run{
             rmins.ProcessInstanceId = processInstance.ProcessInstanceId;
 
             var tim = _sail.ManagerFactory.Transitions;
-            var endTransitionInstance = tim.GetEndTransition(runner.BizChannel, runner.BizPK, runner.ProcessId);
+            var endTransitionInstance = tim.GetEndTransition(context.BizChannel, context.BizPK, context.ProcessId);
 
             var processModel = _sail.ProcessModelFactory.CreateByProcessInstance( processInstance);
             var endActivity = processModel.GetActivity(endTransitionInstance.ToActId);
@@ -1200,13 +1200,13 @@ namespace sailflow.run{
                 lastTaskActivityInstance.EndedUserId,
                 lastTaskActivityInstance.EndedUserName);
 
-            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(runner, rmins.CmdContext.NextActivityPerformers);
+            rmins.ActivityResource = _sail.RuntimeFactory.CreateActivityResource(context, rmins.CmdContext.NextActivityPerformers);
             rmins.ActivityResource.AllowSameAsStarterPolicy = false;
-            rmins.CmdContext.BizChannel = runner.BizChannel;
-            rmins.CmdContext.BizPK = runner.BizPK;
-            rmins.CmdContext.ProcessId = runner.ProcessId;
-            rmins.CmdContext.UserId = runner.UserId;
-            rmins.CmdContext.UserName = runner.UserName;
+            rmins.CmdContext.BizChannel = context.BizChannel;
+            rmins.CmdContext.BizPK = context.BizPK;
+            rmins.CmdContext.ProcessId = context.ProcessId;
+            rmins.CmdContext.UserId = context.UserId;
+            rmins.CmdContext.UserName = context.UserName;
 
             rmins.BackwardContext.ProcessInstance = processInstance;
             rmins.BackwardContext.BackwardToTaskActivity = lastTaskActivity;
@@ -1229,17 +1229,17 @@ namespace sailflow.run{
         /// Create a runtime instance object
         /// 创建运行时实例对象
         /// </summary>
-        public WfRuntimeManager CreateRuntimeInstanceSignForward(FlowCommandContext runner,
+        public WfRuntimeManager CreateRuntimeInstanceSignForward(FlowCommandContext context,
             ref WfExecutedResult result)
         {
             var rmins = new WfRuntimeManagerSignForward();
             rmins.WfExecutedResult = result = new WfExecutedResult();
             rmins.Sail = _sail;
 
-            if (string.IsNullOrEmpty(runner.BizChannel)
-                || string.IsNullOrEmpty(runner.BizPK)
-                || runner.ProcessId == null
-                || runner.NextActivityPerformers == null)
+            if (string.IsNullOrEmpty(context.BizChannel)
+                || string.IsNullOrEmpty(context.BizPK)
+                || context.ProcessId == null
+                || context.NextActivityPerformers == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.SignForward_ErrorArguments;
@@ -1247,7 +1247,7 @@ namespace sailflow.run{
                 return rmins;
             }
 
-            if (runner.NextActivityPerformers.Count() == 0)
+            if (context.NextActivityPerformers.Count() == 0)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.SignForward_NoneSigners;
@@ -1255,15 +1255,15 @@ namespace sailflow.run{
                 return rmins;
             }
 
-            rmins.CmdContext = runner;
+            rmins.CmdContext = context;
 
             var aim = _sail.ManagerFactory.Activities;
             TaskViewEntity taskView = null;
-            var runningNode = aim.GetRunningNode(runner, out taskView);
+            var runningNode = aim.GetRunningNode(context, out taskView);
 
             // 以当前待办 Task.SignId 为准（活动 SignIds 仅汇总展示）
             var tm = _sail.ManagerFactory.Tasks;
-            if (taskView == null || tm.IsMine(taskView, runner.UserId) == false)
+            if (taskView == null || tm.IsMine(taskView, context.UserId) == false)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_HasNoTask;
@@ -1276,9 +1276,9 @@ namespace sailflow.run{
             rmins.ProcessInstanceId = runningNode.ProcessInstanceId;
 
             var processModel = _sail.ProcessModelFactory.CreateByTask( taskView);
-            var activityResource = _sail.RuntimeFactory.CreateActivityResource(runner, 
-                runner.NextActivityPerformers, 
-                runner.Conditions);
+            var activityResource = _sail.RuntimeFactory.CreateActivityResource(context, 
+                context.NextActivityPerformers, 
+                context.Conditions);
             rmins.TaskView = taskView;
             rmins.RunningActivityInstance = runningNode;
             rmins.ProcessModel = processModel;

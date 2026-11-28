@@ -12,8 +12,8 @@ namespace sailflow.lanes
     /// <summary>取消运行中的流程实例（按 BizPK+ProcessId+Version 定位，同旧 PIM.Cancel）。</summary>
     public sealed class CancelLane : LifecycleLaneBase
     {
-        public CancelLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public CancelLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

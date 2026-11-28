@@ -109,8 +109,8 @@ namespace sailflow.signal
                         if (catchActivity.TriggerDetail.TriggerType == TriggerTypeEnum.Message
                             && catchActivity.TriggerDetail.MessageDirection == MessageDirectionEnum.Catch)
                         {
-                            var runner = GetRunnerFromMessagExchange(msgRunnerView);
-                            wfResult = wfService.RunProcessAuto(runner);
+                            var context = GetRunnerFromMessagExchange(msgRunnerView);
+                            wfResult = wfService.RunProcessAuto(context);
                             if (wfResult.Status == WfExecutedStatus.Success)
                             {
                                 msgResult.Status = MessageConsumedStatus.Success;
@@ -154,31 +154,31 @@ namespace sailflow.signal
         /// <returns></returns>
         private FlowCommandContext GetRunnerFromMessagExchange(MessageRunnerView msgRunnerView)
         {
-            var runner = new FlowCommandContext();
-            runner.ProcessId = msgRunnerView.ProcessEntity.ProcessId;
-            runner.Version = msgRunnerView.ProcessEntity.Version;
-            runner.ProcessCode = msgRunnerView.ProcessEntity.ProcessCode;
-            runner.BizChannel = msgRunnerView.CommandContext.BizChannel;
-            runner.BizPK = msgRunnerView.CommandContext.BizPK;
-            runner.BizCode = msgRunnerView.CommandContext.BizCode;
-            runner.UserId = msgRunnerView.CommandContext.UserId;
-            runner.UserName = msgRunnerView.CommandContext.UserName;
+            var context = new FlowCommandContext();
+            context.ProcessId = msgRunnerView.ProcessEntity.ProcessId;
+            context.Version = msgRunnerView.ProcessEntity.Version;
+            context.ProcessCode = msgRunnerView.ProcessEntity.ProcessCode;
+            context.BizChannel = msgRunnerView.CommandContext.BizChannel;
+            context.BizPK = msgRunnerView.CommandContext.BizPK;
+            context.BizCode = msgRunnerView.CommandContext.BizCode;
+            context.UserId = msgRunnerView.CommandContext.UserId;
+            context.UserName = msgRunnerView.CommandContext.UserName;
 
             //封装下一步的步骤信息
             //Encapsulate the next step information
             var aim = Sail.ManagerFactory.Activities;
-            var runningActivityInstance = aim.GetActivityInstanceLatest(runner.BizPK, runner.ProcessId, msgRunnerView.ActivityEntity.ActivityId);
+            var runningActivityInstance = aim.GetActivityInstanceLatest(context.BizPK, context.ProcessId, msgRunnerView.ActivityEntity.ActivityId);
             if (runningActivityInstance != null)
             {
-                runner.ActivityInstanceId = runningActivityInstance.ActivityInstanceId;
+                context.ActivityInstanceId = runningActivityInstance.ActivityInstanceId;
                 if (!string.IsNullOrEmpty(runningActivityInstance.NextStepPerformers))
                 {
-                    runner.NextActivityPerformers = NextStepUtility.DeserializeNextStepPerformers(
+                    context.NextActivityPerformers = NextStepUtility.DeserializeNextStepPerformers(
                         runningActivityInstance.NextStepPerformers, Sail.JsonSerializer);
                 }
             }
 
-            return runner;
+            return context;
         }
         #endregion
     }

@@ -35,15 +35,15 @@ namespace sailflow.runtime.Parser
         /// 流程下一步信息获取
         /// </summary>
         /// <param name="resourceService"></param>
-        /// <param name="runner"></param>
+        /// <param name="context"></param>
         /// <param name="condition"></param>
         /// <returns></returns>
         public NextStepInfo GetNextStepInfo(IResourceService resourceService,
-            FlowCommandContext runner, 
+            FlowCommandContext context, 
             IDictionary<string, string> condition = null)
         {
             NextStepInfo nextStepInfo = new NextStepInfo();
-            var nextResult = GetNextActivityRoleUserTree(resourceService, runner, condition);
+            var nextResult = GetNextActivityRoleUserTree(resourceService, context, condition);
             if (nextResult == null)
                 return nextStepInfo;
 
@@ -52,9 +52,9 @@ namespace sailflow.runtime.Parser
             // 预选办理人依赖运行中 TaskView；发起前预览没有任务，跳过以免 NRE
             if (nextResult.StepList != null
                 && nextResult.StepList.Count > 0
-                && (runner.TaskId != null || !string.IsNullOrEmpty(runner.BizPK)))
+                && (context.TaskId != null || !string.IsNullOrEmpty(context.BizPK)))
             {
-                nextStepInfo.NextActivityPerformers = GetNextActivityPerformersPriliminary(runner);
+                nextStepInfo.NextActivityPerformers = GetNextActivityPerformersPriliminary(context);
             }
 
             return nextStepInfo;
@@ -64,14 +64,14 @@ namespace sailflow.runtime.Parser
         /// Obtain the list of performer for the pre selection steps
         /// 获取预选步骤人员列表
         /// </summary>
-        /// <param name="runner"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        private IDictionary<string, PerformerList> GetNextActivityPerformersPriliminary(FlowCommandContext runner)
+        private IDictionary<string, PerformerList> GetNextActivityPerformersPriliminary(FlowCommandContext context)
         {
             IDictionary<string, PerformerList> nextSteps = null;
 
             var tm = Sail.ManagerFactory.Tasks;
-            TaskViewEntity taskView = tm.GetTaskOfMine(runner);
+            TaskViewEntity taskView = tm.GetTaskOfMine(context);
             // 发起前 / 无我的任务：无可读的预选步骤
             if (taskView == null)
                 return nextSteps;
@@ -132,7 +132,7 @@ namespace sailflow.runtime.Parser
         /// 根据应用获取流程下一步节点列表，包含角色用户
         /// </summary>
         /// <param name="resourceService"></param>
-        /// <param name="runner"></param>
+        /// <param name="context"></param>
         /// <param name="condition"></param>
         /// <returns></returns>
         public NextActivityListViewResult GetNextActivityRoleUserTree(IResourceService resourceService, 

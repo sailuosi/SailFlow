@@ -11,8 +11,8 @@ namespace sailflow.lanes
 {
     public sealed class SignForwardLane : TransitionLaneBase
     {
-        public SignForwardLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public SignForwardLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

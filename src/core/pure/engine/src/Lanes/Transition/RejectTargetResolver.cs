@@ -20,16 +20,16 @@ internal static class RejectTargetResolver
         public string? Message { get; init; }
     }
 
-    public static string ReadMode(FlowCommandContext runner)
+    public static string ReadMode(FlowCommandContext context)
     {
-        var raw = runner?.ControlParameterSheet?.RejectMode;
+        var raw = context?.ControlParameterSheet?.RejectMode;
         var normalized = RejectModeCodes.Normalize(raw);
         return normalized;
     }
 
-    public static ResolveResult ResolveBackwardTarget(SailClient sail, FlowCommandContext runner)
+    public static ResolveResult ResolveBackwardTarget(SailClient sail, FlowCommandContext context)
     {
-        var mode = ReadMode(runner);
+        var mode = ReadMode(context);
         if (string.IsNullOrEmpty(mode))
         {
             return Fail(RejectReasonCodes.RejectModeInvalid,
@@ -43,18 +43,18 @@ internal static class RejectTargetResolver
         }
 
         if (string.Equals(mode, RejectModeCodes.Starter, StringComparison.OrdinalIgnoreCase))
-            return ResolveStarter(sail, runner);
+            return ResolveStarter(sail, context);
 
         if (string.Equals(mode, RejectModeCodes.Specified, StringComparison.OrdinalIgnoreCase))
-            return ResolveSpecified(sail, runner);
+            return ResolveSpecified(sail, context);
 
         // Previous（默认）
-        return ResolvePrevious(sail, runner);
+        return ResolvePrevious(sail, context);
     }
 
-    static ResolveResult ResolveStarter(SailClient sail, FlowCommandContext runner)
+    static ResolveResult ResolveStarter(SailClient sail, FlowCommandContext context)
     {
-        var pm = sail.ProcessModelFactory.CreateByProcess(runner.ProcessId, runner.Version);
+        var pm = sail.ProcessModelFactory.CreateByProcess(context.ProcessId, context.Version);
         var first = pm?.GetFirstActivity();
         if (first == null || string.IsNullOrWhiteSpace(first.ActivityId))
         {
@@ -63,8 +63,8 @@ internal static class RejectTargetResolver
 
         var aim = sail.ManagerFactory.Activities;
         ActivityInstanceEntity firstAi = null;
-        if (!string.IsNullOrWhiteSpace(runner.BizPK))
-            firstAi = aim.GetActivityInstanceLatest(runner.BizPK, runner.ProcessId, first.ActivityId);
+        if (!string.IsNullOrWhiteSpace(context.BizPK))
+            firstAi = aim.GetActivityInstanceLatest(context.BizPK, context.ProcessId, first.ActivityId);
 
         var userId = firstAi?.CreatedUserId;
         var userName = firstAi?.CreatedUserName;
@@ -77,11 +77,11 @@ internal static class RejectTargetResolver
         return Ok(first.ActivityId, userId, userName ?? userId);
     }
 
-    static ResolveResult ResolvePrevious(SailClient sail, FlowCommandContext runner)
+    static ResolveResult ResolvePrevious(SailClient sail, FlowCommandContext context)
     {
         var aim = sail.ManagerFactory.Activities;
         TaskViewEntity taskView;
-        var runningNode = aim.GetRunningNode(runner, out taskView);
+        var runningNode = aim.GetRunningNode(context, out taskView);
         if (runningNode == null)
         {
             return Fail(RejectReasonCodes.RejectTargetMissing, "Reject Previous: running node not found.");
@@ -108,9 +108,9 @@ internal static class RejectTargetResolver
         return Ok(previous.ActivityId, userId, userName ?? userId);
     }
 
-    static ResolveResult ResolveSpecified(SailClient sail, FlowCommandContext runner)
+    static ResolveResult ResolveSpecified(SailClient sail, FlowCommandContext context)
     {
-        var activityId = runner?.ControlParameterSheet?.RejectReturnActivityId?.Trim();
+        var activityId = context?.ControlParameterSheet?.RejectReturnActivityId?.Trim();
         if (string.IsNullOrEmpty(activityId))
         {
             return Fail(RejectReasonCodes.RejectReturnActivityRequired,
@@ -119,7 +119,7 @@ internal static class RejectTargetResolver
 
         var aim = sail.ManagerFactory.Activities;
         TaskViewEntity taskView;
-        var runningNode = aim.GetRunningNode(runner, out taskView);
+        var runningNode = aim.GetRunningNode(context, out taskView);
         if (runningNode == null || string.IsNullOrWhiteSpace(runningNode.ProcessInstanceId))
         {
             return Fail(RejectReasonCodes.RejectTargetMissing, "Reject Specified: running node not found.");

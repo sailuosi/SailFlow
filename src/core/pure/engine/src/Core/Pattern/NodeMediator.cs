@@ -225,9 +225,9 @@ namespace sailflow.run{
         /// <summary>活动生命周期走 Gate/Hook 三轨（不再走 EventSubscriptionList）。</summary>
         protected void FireActivityHook(EventFireTypeEnum eventType, ActivityInstanceEntity activityInstance = null)
         {
-            var runner = ActivityForwardContext?.ActivityResource?.AppRunner;
+            var context = ActivityForwardContext?.ActivityResource?.AppRunner;
             var processInstance = ActivityForwardContext?.ProcessInstance;
-            if (runner == null || processInstance?.ProcessInstanceId == null)
+            if (context == null || processInstance?.ProcessInstanceId == null)
                 return;
 
             var ai = activityInstance
@@ -237,7 +237,7 @@ namespace sailflow.run{
             var hookCtx = FlowCapabilityPipeline.BuildHookContext(
                 Sail,
                 Kit,
-                runner,
+                context,
                 processInstance.ProcessInstanceId,
                 ai,
                 ActivityForwardContext.TaskId,
@@ -1063,7 +1063,7 @@ namespace sailflow.run{
         /// </summary>
         protected ActivityInstanceEntity CreateActivityInstanceObject(Activity activity,
             ProcessInstanceEntity processInstance,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             ActivityInstanceEntity entity = IActivityInstanceManager.CreateActivityInstanceObject(processInstance.BizChannel,
                 processInstance.BizPK,
@@ -1071,7 +1071,7 @@ namespace sailflow.run{
                 processInstance.ProcessId,
                 processInstance.ProcessInstanceId,
                 activity,
-                runner);
+                context);
 
             return entity;
         }
@@ -1089,7 +1089,7 @@ namespace sailflow.run{
         /// 完成活动实例
         /// </summary>
         protected virtual void CompleteActivityInstance(string ActivityInstanceId,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
             var sql = kit.useSQL();
@@ -1098,14 +1098,14 @@ namespace sailflow.run{
             {
                 // 抢办/或签旁人：关剩余办理人（同链 ProxyTaken，否则 RaceTaken）
                 ITaskManager.CloseOpenApproverTasksOnActivity(
-                    sql, ai, runner,
+                    sql, ai, context,
                     preferredEndType: TaskEndTypes.RaceTaken,
-                    completedSignId: runner?.UserId);
-                ITaskManager.CancelOpenParticipantsOnActivity(sql, ai, runner);
+                    completedSignId: context?.UserId);
+                ITaskManager.CancelOpenParticipantsOnActivity(sql, ai, context);
                 // 淹没未完成加签子树（席位级 SignForward 容器及后代）
-                IActivityInstanceManager.CancelSignForwardSubtreeUnder(sql, ai.ActivityInstanceId, runner);
+                IActivityInstanceManager.CancelSignForwardSubtreeUnder(sql, ai.ActivityInstanceId, context);
             }
-            IActivityInstanceManager.Complete(sql, ActivityInstanceId, runner);
+            IActivityInstanceManager.Complete(sql, ActivityInstanceId, context);
         }
 
         /// <summary>
@@ -1237,16 +1237,16 @@ namespace sailflow.run{
             SQLBuilder kit,
             ProcessInstanceEntity processInstance,
             ActivityInstanceEntity activityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             EventFireTypeEnum eventType)
         {
-            if (runner == null || processInstance?.ProcessInstanceId == null || activityInstance == null)
+            if (context == null || processInstance?.ProcessInstanceId == null || activityInstance == null)
                 return;
 
             var hookCtx = FlowCapabilityPipeline.BuildHookContext(
                 Sail,
                 kit,
-                runner,
+                context,
                 processInstance.ProcessInstanceId,
                 activityInstance,
                 null,
@@ -1259,13 +1259,13 @@ namespace sailflow.run{
         protected void FireActivityReady(
             SQLBuilder kit,
             ActivityInstanceEntity activityInstance,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
-            if (runner == null || activityInstance?.ProcessInstanceId == null)
+            if (context == null || activityInstance?.ProcessInstanceId == null)
                 return;
 
             var processInstance = IProcessInstanceManager.GetById(kit, activityInstance.ProcessInstanceId);
-            FireActivityLifecycle(kit, processInstance, activityInstance, runner, EventFireTypeEnum.OnActivityReady);
+            FireActivityLifecycle(kit, processInstance, activityInstance, context, EventFireTypeEnum.OnActivityReady);
         }
 
         /// <summary>
@@ -1275,7 +1275,7 @@ namespace sailflow.run{
             BackwardTypeEnum backwardType,
             string backSrcActivityInstanceId,
             string backOrgActivityInstanceId,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             ActivityInstanceEntity entity = IActivityInstanceManager.CreateBackwardActivityInstanceObject(
                 processInstance.BizChannel,
@@ -1287,7 +1287,7 @@ namespace sailflow.run{
                 backwardType,
                 backSrcActivityInstanceId,
                 backOrgActivityInstanceId,
-                runner);
+                context);
 
             return entity;
         }
@@ -1301,7 +1301,7 @@ namespace sailflow.run{
             ActivityInstanceEntity toActivityInstance,
             TransitionTypeEnum transitionType,
             TransitionFlyingTypeEnum flyingType,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
             var tim = Sail.ManagerFactory.Transitions;
@@ -1311,7 +1311,7 @@ namespace sailflow.run{
                 toActivityInstance,
                 transitionType,
                 flyingType,
-                runner,
+                context,
                 (byte)ConditionParseResultEnum.Passed);
             var newId = tim.Insert(kit.useSQL(), transitionInstanceObject);
 

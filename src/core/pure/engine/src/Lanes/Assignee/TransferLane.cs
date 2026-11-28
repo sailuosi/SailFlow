@@ -13,8 +13,8 @@ namespace sailflow.lanes
     /// </summary>
     public sealed class TransferLane : AssigneeLaneBase
     {
-        public TransferLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public TransferLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 
@@ -65,7 +65,7 @@ namespace sailflow.lanes
                 ProcessInstanceId = activityInstance.ProcessInstanceId,
                 TaskId = Context.TaskId
             };
-            // stash targets for Core via runner already; keep local via field
+            // stash targets for Core via context already; keep local via field
             _targets = targets;
             return true;
         }
@@ -98,12 +98,12 @@ namespace sailflow.lanes
             result.ExceptionType = WfExceptionType.Transfer_RuntimeError;
         }
 
-        internal static PerformerList FlattenTransferTargets(FlowCommandContext runner)
+        internal static PerformerList FlattenTransferTargets(FlowCommandContext context)
         {
             var list = new PerformerList();
-            if (runner?.NextActivityPerformers == null)
+            if (context?.NextActivityPerformers == null)
                 return list;
-            foreach (var kv in runner.NextActivityPerformers)
+            foreach (var kv in context.NextActivityPerformers)
             {
                 if (kv.Value == null) continue;
                 foreach (var p in kv.Value)

@@ -18,7 +18,7 @@ namespace sailflow.hub.External
             //实现用户自己的业务逻辑
             //...
 
-            //get variable from runner
+            //get variable from context
             //var a = this.DynamicVariables["amount"];
 
             //get varaible from WfProcessVariable table

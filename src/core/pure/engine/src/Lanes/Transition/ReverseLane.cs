@@ -11,8 +11,8 @@ namespace sailflow.lanes
 {
     public sealed class ReverseLane : TransitionLaneBase
     {
-        public ReverseLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public ReverseLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

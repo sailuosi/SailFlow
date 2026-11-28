@@ -14,7 +14,7 @@ namespace sailflow.run{
     {
         ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, 
             ProcessInstanceEntity processInstance, 
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit);
     }
 }

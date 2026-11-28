@@ -28,18 +28,18 @@ namespace sailflow.run{
             string transitionId,
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
             var gatewayActivityInstance = base.CreateActivityInstanceObject(base.GatewayActivity,
-                processInstance, runner);
+                processInstance, context);
             gatewayActivityInstance.GateWayTypeId = (short)GatewayDirectionEnum.AndSplitMI;
 
             base.InsertActivityInstance(gatewayActivityInstance,
                 kit);
 
             base.CompleteActivityInstance(gatewayActivityInstance.ActivityInstanceId,
-                runner,
+                context,
                 kit);
 
             gatewayActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
@@ -51,7 +51,7 @@ namespace sailflow.run{
                 gatewayActivityInstance,
                 TransitionTypeEnum.Forward,
                 TransitionFlyingTypeEnum.NotFlying,
-                runner,
+                context,
                 kit);
 
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Successed);

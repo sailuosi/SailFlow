@@ -15,8 +15,8 @@ namespace sailflow.lanes
     {
         PerformerList _targets;
 
-        public ConsultLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public ConsultLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

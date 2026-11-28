@@ -24,7 +24,7 @@ public interface IPreviousStepChecker
 {
     IList<NodeView> GetPreviousActivityTree(string taskId, out Boolean hasGatewayPassed);
 
-    IList<NodeView> GetPreviousActivityTree(FlowCommandContext runner, out Boolean hasGatewayPassed);
+    IList<NodeView> GetPreviousActivityTree(FlowCommandContext context, out Boolean hasGatewayPassed);
 
     IList<Activity> GetPreviousActivityList(ActivityInstanceEntity runningNode, IProcessModel processModel, out Boolean hasGatewayPassed);
 

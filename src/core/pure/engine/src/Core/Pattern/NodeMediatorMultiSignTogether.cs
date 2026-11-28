@@ -60,7 +60,7 @@ namespace sailflow.run{
         {
             bool canContinueForwardCurrentNode = true;
 
-            FlowCommandContext runner = new FlowCommandContext
+            FlowCommandContext context = new FlowCommandContext
             {
                 UserId = activityResource.AppRunner.UserId,        
                 UserName = activityResource.AppRunner.UserName
@@ -132,7 +132,7 @@ namespace sailflow.run{
                                 var nextActivityInstance = sqList[0];     //Always take the first suspended instance
                                 nextActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
                                 base.IActivityInstanceManager.Update(kit.useSQL(), nextActivityInstance);
-                                base.FireActivityReady(kit, nextActivityInstance, runner);
+                                base.FireActivityReady(kit, nextActivityInstance, context);
 
                                 //更新主节点执行人员列表
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
@@ -155,7 +155,7 @@ namespace sailflow.run{
                                     base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                     //将未完成节点状态更新为取消
-                                    base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
+                                    base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, context);
                                 }
                                 else
                                 {
@@ -182,7 +182,7 @@ namespace sailflow.run{
                                     base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
 
                                     //将未完成节点状态更新为取消
-                                    base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
+                                    base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, context);
                                 }
                                 else
                                 {
@@ -197,7 +197,7 @@ namespace sailflow.run{
                                 var nextActivityInstance = sqList[0];     //Always take the first suspended instance
                                 nextActivityInstance.ActivityState = (short)ActivityStateEnum.Ready;
                                 base.IActivityInstanceManager.Update(kit.useSQL(), nextActivityInstance);
-                                base.FireActivityReady(kit, nextActivityInstance, runner);
+                                base.FireActivityReady(kit, nextActivityInstance, context);
 
                                 //更新主节点执行人员列表
                                 mainActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
@@ -239,7 +239,7 @@ namespace sailflow.run{
                                     mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
                                     base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
                                     //将未完成节点状态更新为取消
-                                    base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
+                                    base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, context);
                                 }
                                 else
                                 {
@@ -289,7 +289,7 @@ namespace sailflow.run{
                                     mainActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
                                     base.IActivityInstanceManager.Update(kit.useSQL(), mainActivityInstance);
                                     //将未完成节点状态更新为取消
-                                    base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, runner);
+                                    base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(kit.useSQL(), mainActivityInstance.ActivityInstanceId, context);
                                 }
                                 else
                                 {

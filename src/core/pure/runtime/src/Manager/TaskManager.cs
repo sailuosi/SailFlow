@@ -245,17 +245,17 @@ namespace sailflow.data
         /// Get my taskview
         /// 获取任务视图
         /// </summary>
-        public TaskViewEntity GetTaskOfMine(FlowCommandContext runner)
+        public TaskViewEntity GetTaskOfMine(FlowCommandContext context)
         {
             var kit = Sail.UseRunSQL();
-            return GetTaskOfMine(kit, runner);
+            return GetTaskOfMine(kit, context);
         }
 
-        public TaskViewEntity GetTaskOfMine(SQLBuilder kit, FlowCommandContext runner)
+        public TaskViewEntity GetTaskOfMine(SQLBuilder kit, FlowCommandContext context)
         {
-            if (runner.TaskId != null)
-                return GetTaskView(kit, runner.TaskId);
-            return GetTaskOfMine(kit, runner.BizPK, runner.ProcessId, runner.UserId);
+            if (context.TaskId != null)
+                return GetTaskView(kit, context.TaskId);
+            return GetTaskOfMine(kit, context.BizPK, context.ProcessId, context.UserId);
         }
 
         /// <summary>
@@ -309,17 +309,17 @@ namespace sailflow.data
 
         public void Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
             PerformerList performers,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             foreach (Performer performer in performers)
-                Insert(kit, activityInstance, performer, runner);
+                Insert(kit, activityInstance, performer, context);
         }
 
         public string Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
             Performer performer,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
-            return Insert(kit, activityInstance, performer, runner.UserId, runner.UserName, null, runner, null);
+            return Insert(kit, activityInstance, performer, context.UserId, context.UserName, null, context, null);
         }
 
         private string Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
@@ -328,7 +328,7 @@ namespace sailflow.data
             string runnerId,
             string runnerName,
             string entrustedTaskId = null,
-            FlowCommandContext runner = null,
+            FlowCommandContext context = null,
             TaskEntity copyMetaFrom = null)
         {
             return Insert(kit, activityInstance,
@@ -341,7 +341,7 @@ namespace sailflow.data
                     UnitCode = activityInstance?.UnitCode,
                     UnitName = activityInstance?.UnitName
                 },
-                runnerId, runnerName, entrustedTaskId, runner, copyMetaFrom);
+                runnerId, runnerName, entrustedTaskId, context, copyMetaFrom);
         }
 
         private string Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
@@ -349,7 +349,7 @@ namespace sailflow.data
             string runnerId,
             string runnerName,
             string entrustedTaskId = null,
-            FlowCommandContext runner = null,
+            FlowCommandContext context = null,
             TaskEntity copyMetaFrom = null)
         {
             var entity = new TaskEntity
@@ -386,14 +386,14 @@ namespace sailflow.data
                 CreatedDateTime = DateTime.UtcNow,
                 RecordStatusInvalid = 0
             };
-            ApplyRunnerTaskMeta(entity, runner, copyMetaFrom);
+            ApplyRunnerTaskMeta(entity, context, copyMetaFrom);
             StampNewTaskClocks(entity, activateNow: true);
             if (!string.IsNullOrWhiteSpace(entrustedTaskId))
                 entity.EntrustedTaskId = entrustedTaskId;
 
             string taskId = Insert(kit, entity);
             entity.TaskId = taskId;
-            Sail.CapabilityDispatcher.FireTaskLifecycle(kit, entity, activityInstance, runner, TaskNotifyKind.Created);
+            Sail.CapabilityDispatcher.FireTaskLifecycle(kit, entity, activityInstance, context, TaskNotifyKind.Created);
             return taskId;
         }
 
@@ -403,7 +403,7 @@ namespace sailflow.data
         /// </summary>
         public void Renew(SQLBuilder kit, ActivityInstanceEntity sourceActivityInstance,
             ActivityInstanceEntity newInstance,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             var performer = new Performer(sourceActivityInstance.SignIds,
                 sourceActivityInstance.SignNames)
@@ -415,7 +415,7 @@ namespace sailflow.data
                 UnitCode = sourceActivityInstance.UnitCode,
                 UnitName = sourceActivityInstance.UnitName
             };
-            Insert(kit, newInstance, performer, runner);
+            Insert(kit, newInstance, performer, context);
         }
 
         public void Update(TaskEntity entity)
@@ -447,12 +447,12 @@ namespace sailflow.data
         }
 
         /// <summary>
-        /// 从命令入参写入新待办缓急/提醒；可选从源任务拷贝后再 merge <paramref name="runner"/>.RowPara。
+        /// 从命令入参写入新待办缓急/提醒；可选从源任务拷贝后再 merge <paramref name="context"/>.RowPara。
         /// 不改 Idx（队列序号）。
         /// </summary>
         public static void ApplyRunnerTaskMeta(
             TaskEntity entity,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             TaskEntity copyFrom = null)
         {
             if (entity == null)
@@ -465,24 +465,24 @@ namespace sailflow.data
                 entity.RowPara = copyFrom.RowPara;
             }
 
-            if (runner == null)
+            if (context == null)
             {
                 entity.Hurry ??= 0;
                 return;
             }
 
-            if (runner.Hurry != null)
-                entity.Hurry = runner.Hurry;
+            if (context.Hurry != null)
+                entity.Hurry = context.Hurry;
             else
                 entity.Hurry ??= 0;
 
-            if (!string.IsNullOrWhiteSpace(runner.Tips))
-                entity.Tips = RowParaHelper.TruncateTips(runner.Tips);
+            if (!string.IsNullOrWhiteSpace(context.Tips))
+                entity.Tips = RowParaHelper.TruncateTips(context.Tips);
             else if (copyFrom == null)
                 entity.Tips = RowParaHelper.TruncateTips(entity.Tips);
 
-            if (!string.IsNullOrWhiteSpace(runner.RowPara))
-                entity.RowPara = RowParaHelper.Merge(entity.RowPara, runner.RowPara);
+            if (!string.IsNullOrWhiteSpace(context.RowPara))
+                entity.RowPara = RowParaHelper.Merge(entity.RowPara, context.RowPara);
             else
                 entity.RowPara = RowParaHelper.Truncate(entity.RowPara, RowParaHelper.MaxLength);
         }
@@ -519,17 +519,17 @@ namespace sailflow.data
             Update(kit, task);
         }
 
-        public void SetTaskRead(FlowCommandContext taskRunner)
+        public void SetTaskRead(FlowCommandContext context)
         {
             using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
                 {
-                    var task = GetTask(kit, taskRunner.TaskId);
+                    var task = GetTask(kit, context.TaskId);
                     ApplyMarkRead(task);
-                    SetTaskState(kit, task, taskRunner.UserId, taskRunner.UserName, TaskStateEnum.Reading);
-                    Sail.ManagerFactory.Activities.Read(kit, task.ActivityInstanceId, taskRunner);
+                    SetTaskState(kit, task, context.UserId, context.UserName, TaskStateEnum.Reading);
+                    Sail.ManagerFactory.Activities.Read(kit, task.ActivityInstanceId, context);
                     kit.commit();
                 }
                 catch (System.Exception e)
@@ -554,11 +554,11 @@ namespace sailflow.data
 
         public void EndTaskState(SQLBuilder kit, string taskId,
             TaskStateEnum taskState,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             string endType = null)
         {
             var task = GetTask(kit, taskId);
-            ApplyTaskEnd(task, taskState, runner, endType);
+            ApplyTaskEnd(task, taskState, context, endType);
             Storage.EndState(
                 kit,
                 taskId,
@@ -573,27 +573,27 @@ namespace sailflow.data
         public static void ApplyTaskEnd(
             TaskEntity task,
             TaskStateEnum taskState,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             string endType = null)
         {
             if (task == null)
                 return;
             task.TaskState = (byte)taskState;
             task.CompletedAt = DateTime.UtcNow;
-            if (runner != null)
+            if (context != null)
             {
-                task.EndedUserId = runner.UserId;
-                task.EndedUserName = runner.UserName;
+                task.EndedUserId = context.UserId;
+                task.EndedUserName = context.UserName;
                 // 办理意见：优先 sail.comment（自动审批），否则 Conditions.comment（办理台）
                 if (string.IsNullOrWhiteSpace(task.Msg))
                 {
                     string comment = null;
-                    if (runner.DynamicVariables != null
-                        && runner.DynamicVariables.TryGetValue("sail.comment", out var dynComment)
+                    if (context.DynamicVariables != null
+                        && context.DynamicVariables.TryGetValue("sail.comment", out var dynComment)
                         && !string.IsNullOrWhiteSpace(dynComment))
                         comment = dynComment;
-                    else if (runner.Conditions != null
-                             && runner.Conditions.TryGetValue("comment", out var condComment)
+                    else if (context.Conditions != null
+                             && context.Conditions.TryGetValue("comment", out var condComment)
                              && !string.IsNullOrWhiteSpace(condComment))
                         comment = condComment;
                     if (!string.IsNullOrWhiteSpace(comment))
@@ -604,13 +604,13 @@ namespace sailflow.data
                 task.EndType = endType;
         }
 
-        public void Complete(SQLBuilder kit, string taskId, FlowCommandContext runner)
+        public void Complete(SQLBuilder kit, string taskId, FlowCommandContext context)
         {
-            EndTaskState(kit, taskId, TaskStateEnum.Completed, runner, TaskEndTypes.SelfComplete);
+            EndTaskState(kit, taskId, TaskStateEnum.Completed, context, TaskEndTypes.SelfComplete);
             var task = GetTask(kit, taskId);
-            FireTaskLifecycle(kit, task, runner, TaskNotifyKind.Completed);
+            FireTaskLifecycle(kit, task, context, TaskNotifyKind.Completed);
             // 代批同链：关其余打开待办（不改 Weight）
-            CloseProxyChainOpenTasks(kit, task, runner);
+            CloseProxyChainOpenTasks(kit, task, context);
         }
 
         /// <summary>
@@ -619,7 +619,7 @@ namespace sailflow.data
         public void CloseProxyChainOpenTasks(
             SQLBuilder kit,
             TaskEntity completed,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             if (completed == null || string.IsNullOrWhiteSpace(completed.ActivityInstanceId))
                 return;
@@ -649,11 +649,11 @@ namespace sailflow.data
                 if (!sameChain)
                     continue;
 
-                ApplyTaskEnd(t, TaskStateEnum.Closed, runner, TaskEndTypes.ProxyTaken);
+                ApplyTaskEnd(t, TaskStateEnum.Closed, context, TaskEndTypes.ProxyTaken);
                 Update(kit, t);
                 var ai = Sail.ManagerFactory.Activities.GetById(kit, t.ActivityInstanceId);
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
-                    kit, t, ai, runner, TaskNotifyKind.Cancelled);
+                    kit, t, ai, context, TaskNotifyKind.Cancelled);
             }
         }
 
@@ -661,7 +661,7 @@ namespace sailflow.data
         /// 若待办为委派受托任务（<see cref="TaskEntity.EntrustedTaskId"/> 非空）：办结受托待办并自动回转原责任人 Waiting，
         /// 返回 true（调用方<strong>不得</strong> Complete 活动实例 / ContinueForward）。否则返回 false，走正常办结。
         /// </summary>
-        public bool TryCompleteAsDelegationReturn(SQLBuilder kit, string taskId, FlowCommandContext runner)
+        public bool TryCompleteAsDelegationReturn(SQLBuilder kit, string taskId, FlowCommandContext context)
         {
             if (string.IsNullOrWhiteSpace(taskId))
                 return false;
@@ -671,10 +671,10 @@ namespace sailflow.data
                 return false;
 
             var originalTaskId = task.EntrustedTaskId;
-            EndTaskState(kit, taskId, TaskStateEnum.Completed, runner);
-            FireTaskLifecycle(kit, GetTask(kit, taskId), runner, TaskNotifyKind.Completed);
+            EndTaskState(kit, taskId, TaskStateEnum.Completed, context);
+            FireTaskLifecycle(kit, GetTask(kit, taskId), context, TaskNotifyKind.Completed);
 
-            RestoreOriginalAssigneeAfterDelegation(kit, originalTaskId, runner);
+            RestoreOriginalAssigneeAfterDelegation(kit, originalTaskId, context);
             return true;
         }
 
@@ -682,7 +682,7 @@ namespace sailflow.data
         public WfDataManagedResult Delegate(
             SQLBuilder kit,
             string taskId,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             PerformerList targets)
         {
             if (targets == null || targets.Count == 0)
@@ -695,7 +695,7 @@ namespace sailflow.data
             if (!string.IsNullOrWhiteSpace(task.EntrustedTaskId))
                 return WfDataManagedResult.Exception("Delegate cannot nest: task is already a delegated task.");
 
-            if (!string.Equals(task.SignId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(task.SignId, context?.UserId, StringComparison.OrdinalIgnoreCase))
                 return WfDataManagedResult.Exception("Delegate is only allowed on the current user's task.");
 
             if (task.TaskState != (short)TaskStateEnum.Waiting
@@ -721,7 +721,7 @@ namespace sailflow.data
             }
             if (target == null)
                 return WfDataManagedResult.Exception("Delegate requires at least one target performer.");
-            if (string.Equals(target.UserId, runner.UserId, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(target.UserId, context.UserId, StringComparison.OrdinalIgnoreCase))
                 return WfDataManagedResult.Exception("Cannot delegate to self.");
 
             var existing = GetTaskListByActivity(
@@ -735,20 +735,20 @@ namespace sailflow.data
                     $"Delegate target already has an open task: {target.UserId}");
             }
 
-            ApplyTaskEnd(task, TaskStateEnum.Closed, runner, TaskEndTypes.DelegatedOut);
+            ApplyTaskEnd(task, TaskStateEnum.Closed, context, TaskEndTypes.DelegatedOut);
             Update(kit, task);
             Sail.CapabilityDispatcher.FireTaskLifecycle(
-                kit, task, activityInstance, runner, TaskNotifyKind.Entrusted);
+                kit, task, activityInstance, context, TaskNotifyKind.Entrusted);
 
             Insert(kit, activityInstance, target.UserId, target.UserName,
-                runner.UserId, runner.UserName, taskId, runner);
+                context.UserId, context.UserName, taskId, context);
             return WfDataManagedResult.Success();
         }
 
         void RestoreOriginalAssigneeAfterDelegation(
             SQLBuilder kit,
             string originalTaskId,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             var originalTask = GetTask(kit, originalTaskId);
             if (originalTask == null)
@@ -776,37 +776,37 @@ namespace sailflow.data
                 Idx = originalTask.Idx ?? 0,
                 IsRead = 0,
                 CreatedDateTime = DateTime.UtcNow,
-                CreatedUserId = runner?.UserId ?? originalTask.CreatedUserId,
-                CreatedUserName = runner?.UserName ?? originalTask.CreatedUserName
+                CreatedUserId = context?.UserId ?? originalTask.CreatedUserId,
+                CreatedUserName = context?.UserName ?? originalTask.CreatedUserName
             };
-            ApplyRunnerTaskMeta(newTask, runner, originalTask);
+            ApplyRunnerTaskMeta(newTask, context, originalTask);
             StampNewTaskClocks(newTask, activateNow: true);
             Insert(kit, newTask);
-            FireTaskLifecycle(kit, newTask, runner, TaskNotifyKind.Created);
+            FireTaskLifecycle(kit, newTask, context, TaskNotifyKind.Created);
         }
 
-        public void Withdraw(SQLBuilder kit, string taskId, FlowCommandContext runner)
+        public void Withdraw(SQLBuilder kit, string taskId, FlowCommandContext context)
         {
-            EndTaskState(kit, taskId, TaskStateEnum.Withdrawed, runner, TaskEndTypes.Withdrawn);
-            FireTaskLifecycle(kit, GetTask(kit, taskId), runner, TaskNotifyKind.Cancelled);
+            EndTaskState(kit, taskId, TaskStateEnum.Withdrawed, context, TaskEndTypes.Withdrawn);
+            FireTaskLifecycle(kit, GetTask(kit, taskId), context, TaskNotifyKind.Cancelled);
         }
 
-        public void SendBack(SQLBuilder kit, string taskId, FlowCommandContext runner)
+        public void SendBack(SQLBuilder kit, string taskId, FlowCommandContext context)
         {
-            EndTaskState(kit, taskId, TaskStateEnum.SendBacked, runner, TaskEndTypes.SendBacked);
-            FireTaskLifecycle(kit, GetTask(kit, taskId), runner, TaskNotifyKind.Cancelled);
+            EndTaskState(kit, taskId, TaskStateEnum.SendBacked, context, TaskEndTypes.SendBacked);
+            FireTaskLifecycle(kit, GetTask(kit, taskId), context, TaskNotifyKind.Cancelled);
         }
 
         private void FireTaskLifecycle(
             SQLBuilder kit,
             TaskEntity task,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             TaskNotifyKind kind)
         {
             if (task?.ActivityInstanceId == null)
                 return;
             var activityInstance = Sail.ManagerFactory.Activities.GetById(kit, task.ActivityInstanceId);
-            Sail.CapabilityDispatcher.FireTaskLifecycle(kit, task, activityInstance, runner, kind);
+            Sail.CapabilityDispatcher.FireTaskLifecycle(kit, task, activityInstance, context, kind);
         }
 
         public WfDataManagedResult Entrust(TaskEntrustedEntity entity, bool cancelOriginalTask = true)
@@ -867,7 +867,7 @@ namespace sailflow.data
         public WfDataManagedResult Transfer(
             SQLBuilder kit,
             string taskId,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             PerformerList targets)
         {
             if (targets == null || targets.Count == 0)
@@ -879,7 +879,7 @@ namespace sailflow.data
                 return WfDataManagedResult.Exception(
                     Sail.Messages.GetEngineMessage("taskmanager.transfer.taskNotFound.warn"));
 
-            if (!string.Equals(task.SignId, runner.UserId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(task.SignId, context.UserId, StringComparison.OrdinalIgnoreCase))
                 return WfDataManagedResult.Exception(
                     Sail.Messages.GetEngineMessage("taskmanager.transfer.notMine.warn"));
 
@@ -907,7 +907,7 @@ namespace sailflow.data
             {
                 if (string.IsNullOrWhiteSpace(target?.UserId))
                     continue;
-                if (string.Equals(target.UserId, runner.UserId, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(target.UserId, context.UserId, StringComparison.OrdinalIgnoreCase))
                     return WfDataManagedResult.Exception(
                         Sail.Messages.GetEngineMessage("taskmanager.transfer.toSelf.warn"));
 
@@ -927,15 +927,15 @@ namespace sailflow.data
                     Sail.Messages.GetEngineMessage("taskmanager.transfer.noneTargets.warn"));
 
             // 关闭原人待办：Closed（勿用 Completed，避免被会签计为已办）
-            ApplyTaskEnd(task, TaskStateEnum.Closed, runner, TaskEndTypes.TransferredOut);
+            ApplyTaskEnd(task, TaskStateEnum.Closed, context, TaskEndTypes.TransferredOut);
             Update(kit, task);
             Sail.CapabilityDispatcher.FireTaskLifecycle(
-                kit, task, activityInstance, runner, TaskNotifyKind.Entrusted);
+                kit, task, activityInstance, context, TaskNotifyKind.Entrusted);
 
             foreach (var target in accepted)
             {
                 Insert(kit, activityInstance, target.UserId, target.UserName,
-                    runner.UserId, runner.UserName, taskId, runner, task);
+                    context.UserId, context.UserName, taskId, context, task);
             }
 
             // 按仍打开的待办重写活动 SignIds/Names，转出人不再占用会签名额
@@ -950,7 +950,7 @@ namespace sailflow.data
         public WfDataManagedResult UrgeOpenTasks(
             SQLBuilder kit,
             string taskId,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             ISet<string> filterUserIds = null)
         {
             var task = GetTask(kit, taskId);
@@ -986,7 +986,7 @@ namespace sailflow.data
             foreach (var t in open)
             {
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
-                    kit, t, activityInstance, runner, TaskNotifyKind.Urged);
+                    kit, t, activityInstance, context, TaskNotifyKind.Urged);
             }
 
             return WfDataManagedResult.Success();
@@ -999,7 +999,7 @@ namespace sailflow.data
         public WfDataManagedResult ChangeAssignees(
             SQLBuilder kit,
             string taskId,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             PerformerList newAssignees)
         {
             if (newAssignees == null || newAssignees.Count == 0)
@@ -1037,10 +1037,10 @@ namespace sailflow.data
             {
                 if (desired.ContainsKey(t.SignId))
                     continue;
-                ApplyTaskEnd(t, TaskStateEnum.Closed, runner, TaskEndTypes.Removed);
+                ApplyTaskEnd(t, TaskStateEnum.Closed, context, TaskEndTypes.Removed);
                 Update(kit, t);
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
-                    kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
+                    kit, t, activityInstance, context, TaskNotifyKind.Cancelled);
             }
 
             var stillOpenIds = new HashSet<string>(
@@ -1056,7 +1056,7 @@ namespace sailflow.data
                 if (stillOpenIds.Contains(kv.Key))
                     continue;
                 Insert(kit, activityInstance, kv.Value.UserId, kv.Value.UserName,
-                    runner?.UserId, runner?.UserName, taskId, runner);
+                    context?.UserId, context?.UserName, taskId, context);
             }
 
             RefreshActivitySignFromOpenTasks(kit, activityInstance);
@@ -1070,7 +1070,7 @@ namespace sailflow.data
         public WfDataManagedResult AddAssignees(
             SQLBuilder kit,
             string taskId,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             PerformerList addTargets)
         {
             if (addTargets == null || addTargets.Count == 0)
@@ -1116,7 +1116,7 @@ namespace sailflow.data
                 if (openIds.Contains(kv.Key))
                     continue;
                 Insert(kit, activityInstance, kv.Value.UserId, kv.Value.UserName,
-                    runner?.UserId, runner?.UserName, taskId, runner);
+                    context?.UserId, context?.UserName, taskId, context);
                 openIds.Add(kv.Key);
                 inserted++;
             }
@@ -1176,7 +1176,7 @@ namespace sailflow.data
         public WfDataManagedResult RemoveAssignees(
             SQLBuilder kit,
             string taskId,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             PerformerList removeTargets)
         {
             if (removeTargets == null || removeTargets.Count == 0)
@@ -1220,10 +1220,10 @@ namespace sailflow.data
 
             foreach (var t in toClose)
             {
-                ApplyTaskEnd(t, TaskStateEnum.Closed, runner, TaskEndTypes.Removed);
+                ApplyTaskEnd(t, TaskStateEnum.Closed, context, TaskEndTypes.Removed);
                 Update(kit, t);
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
-                    kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
+                    kit, t, activityInstance, context, TaskNotifyKind.Cancelled);
             }
 
             RefreshActivitySignFromOpenTasks(kit, activityInstance);
@@ -1278,7 +1278,7 @@ namespace sailflow.data
         public WfDataManagedResult TakeOnExclusive(
             SQLBuilder kit,
             string taskId,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             if (string.IsNullOrWhiteSpace(taskId))
                 return WfDataManagedResult.Exception("TakeOn requires TaskId.");
@@ -1288,8 +1288,8 @@ namespace sailflow.data
                 return WfDataManagedResult.Exception("TakeOn task not found.");
             if (AssigneeRoleHelper.IsParticipant(task.AssigneeRole))
                 return WfDataManagedResult.Exception("TakeOn cannot start from a participant task.");
-            if (!string.IsNullOrWhiteSpace(runner?.UserId)
-                && !string.Equals(task.SignId, runner.UserId, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(context?.UserId)
+                && !string.Equals(task.SignId, context.UserId, StringComparison.OrdinalIgnoreCase))
                 return WfDataManagedResult.Exception("TakeOn requires the current user's to-do.");
             if (task.TaskState != (short)TaskStateEnum.Waiting
                 && task.TaskState != (short)TaskStateEnum.Reading)
@@ -1331,10 +1331,10 @@ namespace sailflow.data
                     ? activityInstance
                     : am.GetById(kit, t.ActivityInstanceId);
 
-                ApplyTaskEnd(t, TaskStateEnum.Closed, runner, TaskEndTypes.TakeOnTaken);
+                ApplyTaskEnd(t, TaskStateEnum.Closed, context, TaskEndTypes.TakeOnTaken);
                 Update(kit, t);
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
-                    kit, t, peerAi ?? activityInstance, runner, TaskNotifyKind.Cancelled);
+                    kit, t, peerAi ?? activityInstance, context, TaskNotifyKind.Cancelled);
 
                 // SignTogether 等：同伴在不同子 AI 上时淹没其加签子树并取消空子 AI
                 if (peerAi != null
@@ -1344,14 +1344,14 @@ namespace sailflow.data
                         StringComparison.OrdinalIgnoreCase)
                     && cancelledChildAi.Add(peerAi.ActivityInstanceId))
                 {
-                    am.CancelSignForwardSubtreeUnder(kit, peerAi.ActivityInstanceId, runner);
+                    am.CancelSignForwardSubtreeUnder(kit, peerAi.ActivityInstanceId, context);
                     if (peerAi.ActivityState == (short)ActivityStateEnum.Ready
                         || peerAi.ActivityState == (short)ActivityStateEnum.Running
                         || peerAi.ActivityState == (short)ActivityStateEnum.Suspended)
                     {
                         peerAi.ActivityState = (short)ActivityStateEnum.Cancelled;
-                        peerAi.UpdatedUserId = runner?.UserId;
-                        peerAi.UpdatedUserName = runner?.UserName;
+                        peerAi.UpdatedUserId = context?.UserId;
+                        peerAi.UpdatedUserName = context?.UserName;
                         peerAi.UpdatedDateTime = DateTime.UtcNow;
                         am.Update(kit, peerAi);
                     }
@@ -1496,7 +1496,7 @@ namespace sailflow.data
         public WfDataManagedResult Consult(
             SQLBuilder kit,
             string srcTaskId,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             PerformerList targets)
         {
             if (targets == null || targets.Count == 0)
@@ -1507,7 +1507,7 @@ namespace sailflow.data
                 return WfDataManagedResult.Exception("Consult source task not found.");
             if (AssigneeRoleHelper.IsParticipant(srcTask.AssigneeRole))
                 return WfDataManagedResult.Exception("Consult cannot be started from a participant task.");
-            if (!string.Equals(srcTask.SignId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(srcTask.SignId, context?.UserId, StringComparison.OrdinalIgnoreCase))
                 return WfDataManagedResult.Exception("Consult requires the current user's to-do.");
             if (srcTask.TaskState != (short)TaskStateEnum.Waiting
                 && srcTask.TaskState != (short)TaskStateEnum.Reading)
@@ -1560,17 +1560,17 @@ namespace sailflow.data
                     IsEMailSent = 0,
                     Idx = 0,
                     IsRead = 0,
-                    CreatedUserId = runner?.UserId,
-                    CreatedUserName = runner?.UserName,
+                    CreatedUserId = context?.UserId,
+                    CreatedUserName = context?.UserName,
                     CreatedDateTime = DateTime.UtcNow,
                     RecordStatusInvalid = 0
                 };
-                ApplyRunnerTaskMeta(entity, runner);
+                ApplyRunnerTaskMeta(entity, context);
                 StampNewTaskClocks(entity, activateNow: true);
                 var newId = Insert(kit, entity);
                 entity.TaskId = newId;
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
-                    kit, entity, activityInstance, runner, TaskNotifyKind.Created);
+                    kit, entity, activityInstance, context, TaskNotifyKind.Created);
                 existingUsers.Add(p.UserId);
                 created++;
             }
@@ -1585,21 +1585,21 @@ namespace sailflow.data
         public WfDataManagedResult Acknowledge(
             SQLBuilder kit,
             string taskId,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             var task = GetTask(kit, taskId);
             if (task == null)
                 return WfDataManagedResult.Exception("Acknowledge task not found.");
             if (!AssigneeRoleHelper.IsParticipant(task.AssigneeRole))
                 return WfDataManagedResult.Exception("Acknowledge requires a participant task.");
-            if (!string.Equals(task.SignId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(task.SignId, context?.UserId, StringComparison.OrdinalIgnoreCase))
                 return WfDataManagedResult.Exception("Acknowledge requires the current user's to-do.");
             if (task.TaskState != (short)TaskStateEnum.Waiting
                 && task.TaskState != (short)TaskStateEnum.Reading)
                 return WfDataManagedResult.Exception("Acknowledge task is not ready/running.");
 
-            EndTaskState(kit, taskId, TaskStateEnum.Completed, runner);
-            FireTaskLifecycle(kit, GetTask(kit, taskId), runner, TaskNotifyKind.Completed);
+            EndTaskState(kit, taskId, TaskStateEnum.Completed, context);
+            FireTaskLifecycle(kit, GetTask(kit, taskId), context, TaskNotifyKind.Completed);
             return WfDataManagedResult.Success();
         }
 
@@ -1607,12 +1607,12 @@ namespace sailflow.data
         public WfDataManagedResult RecallConsult(
             SQLBuilder kit,
             string srcTaskId,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             var srcTask = GetTask(kit, srcTaskId);
             if (srcTask == null)
                 return WfDataManagedResult.Exception("RecallConsult source task not found.");
-            if (!string.Equals(srcTask.SignId, runner?.UserId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(srcTask.SignId, context?.UserId, StringComparison.OrdinalIgnoreCase))
                 return WfDataManagedResult.Exception("RecallConsult requires the current user's to-do.");
 
             var open = GetOpenParticipantsBySrc(kit, srcTaskId);
@@ -1625,11 +1625,11 @@ namespace sailflow.data
             {
                 t.TaskState = (short)TaskStateEnum.Canceled;
                 t.CompletedAt = DateTime.UtcNow;
-                t.EndedUserId = runner?.UserId;
-                t.EndedUserName = runner?.UserName;
+                t.EndedUserId = context?.UserId;
+                t.EndedUserName = context?.UserName;
                 Update(kit, t);
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
-                    kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
+                    kit, t, activityInstance, context, TaskNotifyKind.Cancelled);
             }
 
             return WfDataManagedResult.Success();
@@ -1639,7 +1639,7 @@ namespace sailflow.data
         public void CancelOpenParticipantsOnActivity(
             SQLBuilder kit,
             ActivityInstanceEntity activityInstance,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             if (activityInstance == null)
                 return;
@@ -1655,10 +1655,10 @@ namespace sailflow.data
 
             foreach (var t in open)
             {
-                ApplyTaskEnd(t, TaskStateEnum.Canceled, runner, TaskEndTypes.ActivityCancelled);
+                ApplyTaskEnd(t, TaskStateEnum.Canceled, context, TaskEndTypes.ActivityCancelled);
                 Update(kit, t);
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
-                    kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
+                    kit, t, activityInstance, context, TaskNotifyKind.Cancelled);
             }
         }
 
@@ -1669,7 +1669,7 @@ namespace sailflow.data
         public void CloseOpenApproverTasksOnActivity(
             SQLBuilder kit,
             ActivityInstanceEntity activityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             string preferredEndType = null,
             string completedSignId = null,
             string completedProxySignId = null)
@@ -1703,10 +1703,10 @@ namespace sailflow.data
                         endType = TaskEndTypes.ProxyTaken;
                 }
 
-                ApplyTaskEnd(t, TaskStateEnum.Closed, runner, endType);
+                ApplyTaskEnd(t, TaskStateEnum.Closed, context, endType);
                 Update(kit, t);
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
-                    kit, t, activityInstance, runner, TaskNotifyKind.Cancelled);
+                    kit, t, activityInstance, context, TaskNotifyKind.Cancelled);
             }
         }
 
@@ -1717,7 +1717,7 @@ namespace sailflow.data
             SQLBuilder kit,
             string processInstanceId,
             IEnumerable<string> activityInstanceIds,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             string endType = null)
         {
             if (string.IsNullOrWhiteSpace(processInstanceId) || activityInstanceIds == null)
@@ -1742,11 +1742,11 @@ namespace sailflow.data
                 if (AssigneeRoleHelper.IsParticipant(t.AssigneeRole))
                     continue;
 
-                ApplyTaskEnd(t, TaskStateEnum.Closed, runner, end);
+                ApplyTaskEnd(t, TaskStateEnum.Closed, context, end);
                 Update(kit, t);
                 var ai = Sail.ManagerFactory.Activities.GetById(kit, t.ActivityInstanceId);
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
-                    kit, t, ai, runner, TaskNotifyKind.Cancelled);
+                    kit, t, ai, context, TaskNotifyKind.Cancelled);
             }
         }
 
@@ -1809,14 +1809,14 @@ namespace sailflow.data
             FireTaskLifecycle(kit, newTask, null, TaskNotifyKind.Created);
         }
 
-        public Boolean Replace(string activityInstanceId, List<TaskReplacedEntity> replaced, FlowCommandContext runner)
+        public Boolean Replace(string activityInstanceId, List<TaskReplacedEntity> replaced, FlowCommandContext context)
         {
             using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
                 {
-                    Replace(kit, activityInstanceId, replaced, runner);
+                    Replace(kit, activityInstanceId, replaced, context);
                     kit.commit();
                     return true;
                 }
@@ -1828,7 +1828,7 @@ namespace sailflow.data
             }
         }
 
-        public void Replace(SQLBuilder kit, string activityInstanceId, List<TaskReplacedEntity> replaced, FlowCommandContext runner)
+        public void Replace(SQLBuilder kit, string activityInstanceId, List<TaskReplacedEntity> replaced, FlowCommandContext context)
         {
             CancelTask(kit, activityInstanceId);
             var aim = Sail.ManagerFactory.Activities;
@@ -1837,7 +1837,7 @@ namespace sailflow.data
             activityInstance.SignNames = GenerateActivitySignNames(replaced);
             foreach (var user in replaced)
             {
-                Insert(kit, activityInstance, user.ReplacedByUserId, user.ReplacedByUserName, runner.UserId, runner.UserName);
+                Insert(kit, activityInstance, user.ReplacedByUserId, user.ReplacedByUserName, context.UserId, context.UserName);
             }
         }
 

@@ -84,7 +84,7 @@ namespace sailflow.run{
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            FlowCommandContext runner = new FlowCommandContext
+            FlowCommandContext context = new FlowCommandContext
             {
                 UserId = activityResource.AppRunner.UserId,        
                 UserName = activityResource.AppRunner.UserName

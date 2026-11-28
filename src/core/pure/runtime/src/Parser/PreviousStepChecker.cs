@@ -43,11 +43,11 @@ namespace sailflow.runtime.Parser
         /// Retrieve the previous node tree
         /// 获取上一步节点树
         /// </summary>
-        public IList<NodeView> GetPreviousActivityTree(FlowCommandContext runner, out Boolean hasGatewayPassed)
+        public IList<NodeView> GetPreviousActivityTree(FlowCommandContext context, out Boolean hasGatewayPassed)
         {
             hasGatewayPassed = false;
             var aim = Sail.ManagerFactory.Activities;
-            var runningNode = aim.GetRunningNode(runner);
+            var runningNode = aim.GetRunningNode(context);
             var nodeList = GetPreviousActivityTree(runningNode, out hasGatewayPassed);
             return nodeList;
         }

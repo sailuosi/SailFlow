@@ -15,21 +15,21 @@ namespace sailflow.factory;
 public interface IRuntimeFactory
 {
     ActivityResource CreateActivityResource(
-        FlowCommandContext runner,
+        FlowCommandContext context,
         IDictionary<string, PerformerList> nextActivityPerformers,
         IDictionary<string, string> conditionValuePair = null);
 
     ActivityResource CreateActivityResource(
         IProcessModel processModel,
         NextActivityComponent root,
-        FlowCommandContext runner,
+        FlowCommandContext context,
         IDictionary<string, string> conditionValuePair);
 
     IWfRuntime CreateRuntimeInstanceStartup(
-        FlowCommandContext runner, SQLBuilder kit, ref WfExecutedResult result);
+        FlowCommandContext context, SQLBuilder kit, ref WfExecutedResult result);
 
     IWfRuntime CreateRuntimeInstanceStartupSub(
-        FlowCommandContext runner,
+        FlowCommandContext context,
         ProcessInstanceEntity processInstance,
         SubProcessNode subProcessNode,
         PerformerList performerList,
@@ -37,41 +37,41 @@ public interface IRuntimeFactory
         ref WfExecutedResult result);
 
     IWfRuntime CreateRuntimeInstanceAppRunning(
-        FlowCommandContext runner, SQLBuilder kit, ref WfExecutedResult result);
+        FlowCommandContext context, SQLBuilder kit, ref WfExecutedResult result);
 
     Task<(IWfRuntime Manager, WfExecutedResult Result)> CreateRuntimeInstanceAppRunningAsync(
-        FlowCommandContext runner, SQLBuilder kit, CancellationToken cancellationToken);
+        FlowCommandContext context, SQLBuilder kit, CancellationToken cancellationToken);
 
     IWfRuntime CreateRuntimeInstanceRunAuto(
-        FlowCommandContext runner, SQLBuilder kit, ref WfExecutedResult result);
+        FlowCommandContext context, SQLBuilder kit, ref WfExecutedResult result);
 
     Task<(IWfRuntime Manager, WfExecutedResult Result)> CreateRuntimeInstanceRunAutoAsync(
-        FlowCommandContext runner, SQLBuilder kit, CancellationToken cancellationToken);
+        FlowCommandContext context, SQLBuilder kit, CancellationToken cancellationToken);
 
     IWfRuntime CreateRuntimeInstanceWithdraw(
-        FlowCommandContext runner, ref WfExecutedResult result);
+        FlowCommandContext context, ref WfExecutedResult result);
 
     IWfRuntime CreateRuntimeInstanceSendBack(
-        FlowCommandContext runner, ref WfExecutedResult result);
+        FlowCommandContext context, ref WfExecutedResult result);
 
     IWfRuntime CreateRuntimeInstanceResend(
-        FlowCommandContext runner, ref WfExecutedResult result);
+        FlowCommandContext context, ref WfExecutedResult result);
 
     IWfRuntime CreateRuntimeInstanceRevise(
-        FlowCommandContext runner, ref WfExecutedResult result);
+        FlowCommandContext context, ref WfExecutedResult result);
 
     IWfRuntime CreateRuntimeInstanceReverse(
-        FlowCommandContext runner, ref WfExecutedResult result);
+        FlowCommandContext context, ref WfExecutedResult result);
 
     IWfRuntime CreateRuntimeInstanceReject(
-        FlowCommandContext runner, ref WfExecutedResult result);
+        FlowCommandContext context, ref WfExecutedResult result);
 
     IWfRuntime CreateRuntimeInstanceClose(
-        FlowCommandContext runner, ref WfExecutedResult result);
+        FlowCommandContext context, ref WfExecutedResult result);
 
     IWfRuntime CreateRuntimeInstanceJump(
-        FlowCommandContext runner, ref WfExecutedResult result);
+        FlowCommandContext context, ref WfExecutedResult result);
 
     IWfRuntime CreateRuntimeInstanceSignForward(
-        FlowCommandContext runner, ref WfExecutedResult result);
+        FlowCommandContext context, ref WfExecutedResult result);
 }

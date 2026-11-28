@@ -49,7 +49,7 @@ namespace sailflow.run{
             BackwardTypeEnum backwardType,
             string backSrcActivityInstanceId,
             string backOrgActivityInstanceId,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             ActivityInstanceEntity entity = IActivityInstanceManager.CreateBackwardActivityInstanceObject(
                 processInstance.BizChannel,
@@ -61,7 +61,7 @@ namespace sailflow.run{
                 backwardType,
                 backSrcActivityInstanceId,
                 backOrgActivityInstanceId,
-                runner);
+                context);
 
             return entity;
         }
@@ -76,7 +76,7 @@ namespace sailflow.run{
             ActivityInstanceEntity toActivityInstance,
             TransitionTypeEnum transitionType,
             TransitionFlyingTypeEnum flyingType,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
             var transition = SendBackOperation.ProcessModel.GetForwardTransition(toActivityInstance.ActivityId,
@@ -88,7 +88,7 @@ namespace sailflow.run{
                 toActivityInstance,
                 transitionType,
                 flyingType,
-                runner,
+                context,
                 (byte)ConditionParseResultEnum.Passed);
             var newId = this.ITransitionInstanceManager.Insert(kit.useSQL(), transitionInstanceObject);
 

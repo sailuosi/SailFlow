@@ -13,7 +13,7 @@ namespace sailflow.hooks
         public static FlowHookContext BuildGateContext(
             SailClient sail,
             SQLBuilder kit,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             string processInstanceId,
             ActivityInstanceEntity activityInstance,
             string taskId,
@@ -21,7 +21,7 @@ namespace sailflow.hooks
             BuildHookContext(
                 sail,
                 kit,
-                runner,
+                context,
                 processInstanceId,
                 activityInstance,
                 taskId,
@@ -31,7 +31,7 @@ namespace sailflow.hooks
         public static FlowHookContext BuildHookContext(
             SailClient sail,
             SQLBuilder kit,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             string processInstanceId,
             ActivityInstanceEntity activityInstance,
             string taskId,
@@ -40,15 +40,15 @@ namespace sailflow.hooks
         {
             var dispatcher = sail.CapabilityDispatcher;
             var ctx = dispatcher.BuildHookContextFromRuntime(
-                runner,
+                context,
                 processInstanceId,
                 activityInstance,
                 taskId,
                 eventType,
                 operation);
 
-            ctx.Version = runner?.Version;
-            ctx.ProcessCode = runner?.ProcessCode ?? ctx.ProcessCode;
+            ctx.Version = context?.Version;
+            ctx.ProcessCode = context?.ProcessCode ?? ctx.ProcessCode;
 
             if (kit != null && !string.IsNullOrWhiteSpace(processInstanceId))
             {

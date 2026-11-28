@@ -55,7 +55,7 @@ public class SailApprovalBusinessContext
 
     public FlowCommandContext ToRunner()
     {
-        var runner = new FlowCommandContext
+        var context = new FlowCommandContext
         {
             UserId = UserId,
             UserName = UserName,
@@ -64,7 +64,7 @@ public class SailApprovalBusinessContext
             Conditions = Conditions.Count > 0 ? new Dictionary<string, string>(Conditions) : null,
             NextActivityPerformers = NextActivityPerformers
         };
-        runner.ApplyBizData(new BizDataDto
+        context.ApplyBizData(new BizDataDto
         {
             BizPK = BizPK,
             BizType = BizType,
@@ -72,6 +72,6 @@ public class SailApprovalBusinessContext
             BizChannel = string.IsNullOrWhiteSpace(BizChannel) ? FormCode : BizChannel,
             BizName = BizName
         });
-        return runner;
+        return context;
     }
 }

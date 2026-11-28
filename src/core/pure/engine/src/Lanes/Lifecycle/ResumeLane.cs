@@ -14,12 +14,12 @@ namespace sailflow.lanes
     {
         readonly string _processInstanceId;
 
-        public ResumeLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner, string processInstanceId = null)
-            : base(sail, kit, runner)
+        public ResumeLane(SailClient sail, SQLBuilder kit, FlowCommandContext context, string processInstanceId = null)
+            : base(sail, kit, context)
         {
             _processInstanceId = !string.IsNullOrWhiteSpace(processInstanceId)
                 ? processInstanceId
-                : runner?.ProcessInstanceId;
+                : context?.ProcessInstanceId;
         }
 
         public override FlowOperation Operation => FlowOperation.Resume;

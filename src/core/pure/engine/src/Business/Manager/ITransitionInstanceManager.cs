@@ -23,7 +23,7 @@ namespace sailflow.data;
 /// <summary>契约 · TransitionInstanceManager（实现位于 sailflow.runtime）。</summary>
 public interface ITransitionInstanceManager
 {
-    TrackEntity CreateTransitionInstanceObject( ProcessInstanceEntity processInstance, string transitionId, ActivityInstanceEntity fromActivityInstance, ActivityInstanceEntity toActivityInstance, TransitionTypeEnum transitionType, TransitionFlyingTypeEnum flyingType, FlowCommandContext runner, byte conditionParseResult);
+    TrackEntity CreateTransitionInstanceObject( ProcessInstanceEntity processInstance, string transitionId, ActivityInstanceEntity fromActivityInstance, ActivityInstanceEntity toActivityInstance, TransitionTypeEnum transitionType, TransitionFlyingTypeEnum flyingType, FlowCommandContext context, byte conditionParseResult);
 
     string Insert(SQLBuilder kit, TrackEntity entity);
 

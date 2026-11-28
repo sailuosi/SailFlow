@@ -16,19 +16,19 @@ namespace sailflow.factory;
 public sealed class RunBuilder
 {
     private readonly SailClient _sail;
-    private readonly FlowCommandContext _runner;
+    private readonly FlowCommandContext _context;
 
-    internal RunBuilder(SailClient sail, FlowCommandContext runner)
+    internal RunBuilder(SailClient sail, FlowCommandContext context)
     {
         _sail = sail ?? throw new ArgumentNullException(nameof(sail));
-        _runner = runner ?? throw new ArgumentNullException(nameof(runner));
+        _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
     WorkflowService Service() => new WorkflowService(_sail);
 
     public RunBuilder UseBiz(BizDataDto biz)
     {
-        _runner.ApplyBizData(biz);
+        _context.ApplyBizData(biz);
         return this;
     }
 
@@ -55,14 +55,14 @@ public sealed class RunBuilder
 
         if (Guid.TryParse(processId, out _))
         {
-            _runner.ProcessId = processId;
-            _runner.Version = version;
+            _context.ProcessId = processId;
+            _context.Version = version;
         }
         else
         {
             var entity = _sail.ManagerFactory.Processes.GetByVersion(processId, version);
-            _runner.ProcessId = entity.ProcessId;
-            _runner.Version = entity.Version;
+            _context.ProcessId = entity.ProcessId;
+            _context.Version = entity.Version;
         }
 
         return this;
@@ -70,7 +70,7 @@ public sealed class RunBuilder
 
     public RunBuilder OnTask(string taskId)
     {
-        _runner.TaskId = taskId;
+        _context.TaskId = taskId;
         return this;
     }
 
@@ -78,7 +78,7 @@ public sealed class RunBuilder
     {
         if (nextActivityPerformers == null || nextActivityPerformers.Count == 0)
             throw new ApplicationException(_sail.Messages.GetEngineMessage("workflowservice.nextstep.error"));
-        _runner.NextActivityPerformers = nextActivityPerformers;
+        _context.NextActivityPerformers = nextActivityPerformers;
         return this;
     }
 
@@ -86,51 +86,51 @@ public sealed class RunBuilder
     {
         if (performerList == null || performerList.Count == 0)
             throw new ApplicationException(_sail.Messages.GetEngineMessage("workflowservice.nextstep.error"));
-        _runner.NextActivityPerformers ??= new Dictionary<string, PerformerList>();
-        _runner.NextActivityPerformers.Add(activityId, performerList);
+        _context.NextActivityPerformers ??= new Dictionary<string, PerformerList>();
+        _context.NextActivityPerformers.Add(activityId, performerList);
         return this;
     }
 
     public RunBuilder PrevStepInt()
     {
-        _runner.NextPerformerType = NextPerformerIntTypeEnum.Traced;
+        _context.NextPerformerType = NextPerformerIntTypeEnum.Traced;
         return this;
     }
 
     public RunBuilder IfCondition(IDictionary<string, string> variables)
     {
-        _runner.Conditions = variables;
+        _context.Conditions = variables;
         return this;
     }
 
     public RunBuilder IfCondition(string name, string value)
     {
-        _runner.Conditions.Add(name, value);
+        _context.Conditions.Add(name, value);
         return this;
     }
 
     public RunBuilder SetVariable(string name, string value)
     {
-        if (_runner.DynamicVariables == null)
-            _runner.DynamicVariables = new Dictionary<string, string>();
-        _runner.DynamicVariables[name] = value;
+        if (_context.DynamicVariables == null)
+            _context.DynamicVariables = new Dictionary<string, string>();
+        _context.DynamicVariables[name] = value;
         return this;
     }
 
     public RunBuilder SetVariable(IDictionary<string, string> variables)
     {
-        _runner.DynamicVariables = variables;
+        _context.DynamicVariables = variables;
         return this;
     }
 
     public RunBuilder UseMessageTopic(string topic)
     {
-        _runner.MessageTopic = topic;
+        _context.MessageTopic = topic;
         return this;
     }
 
     /// <summary>建成命令入参袋 <see cref="FlowCommandContext"/>。</summary>
-    public FlowCommandContext Build() => _runner;
+    public FlowCommandContext Build() => _context;
 
     public WfExecutedResult Start() => Service().StartProcess(Build());
 

@@ -56,7 +56,7 @@ namespace sailflow.run{
         private void ContinueMainProcessRunning(ProcessInstanceEntity processInstance,
             SQLBuilder kit)
         {
-            var runner = SubProcessMainContinueHelper.FillNextActivityPerformers(
+            var context = SubProcessMainContinueHelper.FillNextActivityPerformers(
                 Sail,
                 processInstance.InvokedActInstanceId,
                 processInstance.InvokedActivityId,
@@ -65,7 +65,7 @@ namespace sailflow.run{
 
             //开始执行下一步
             var runAppResult = WfExecutedResult.Default();
-            var runtimeInstance = Sail.RuntimeFactory.CreateRuntimeInstanceAppRunning(runner, kit, ref runAppResult);
+            var runtimeInstance = Sail.RuntimeFactory.CreateRuntimeInstanceAppRunning(context, kit, ref runAppResult);
             if (runAppResult.Status == WfExecutedStatus.Exception)
             {
                 throw new WfRuntimeException(Sail.Messages.GetEngineMessage("nodemediatorend.ContinueMainProcessRunning.warn", runAppResult.Message));
@@ -76,7 +76,7 @@ namespace sailflow.run{
             if (runAppResult.Status == WfExecutedStatus.Success)
             {
                 var hookCtx = FlowCapabilityPipeline.BuildHookContext(
-                    Sail, kit, runner,
+                    Sail, kit, context,
                     runtimeInstance.ProcessInstanceId,
                     runtimeInstance.RunningActivityInstance,
                     runtimeInstance.TaskView?.TaskId,

@@ -37,16 +37,16 @@ public class RowParaHelperTests
     }
 
     [Fact]
-    public void ApplyRunnerTaskMeta_from_runner()
+    public void ApplyRunnerTaskMeta_from_context()
     {
         var entity = new TaskEntity();
-        var runner = new FlowCommandContext
+        var context = new FlowCommandContext
         {
             Hurry = 3,
             Tips = "请尽快办理",
             RowPara = RowParaHelper.SetKey(null, RowParaHelper.RemindWayKey, "sms")
         };
-        TaskManager.ApplyRunnerTaskMeta(entity, runner);
+        TaskManager.ApplyRunnerTaskMeta(entity, context);
         Assert.Equal(3, entity.Hurry);
         Assert.Equal("请尽快办理", entity.Tips);
         Assert.Contains("remindWay=", entity.RowPara);
@@ -62,12 +62,12 @@ public class RowParaHelperTests
             RowPara = RowParaHelper.SetKey(null, "keep", "1")
         };
         var entity = new TaskEntity();
-        var runner = new FlowCommandContext
+        var context = new FlowCommandContext
         {
             Hurry = 4,
             RowPara = RowParaHelper.SetKey(null, RowParaHelper.RemindWayKey, "app")
         };
-        TaskManager.ApplyRunnerTaskMeta(entity, runner, src);
+        TaskManager.ApplyRunnerTaskMeta(entity, context, src);
         Assert.Equal(4, entity.Hurry);
         Assert.Equal("旧提示", entity.Tips);
         var map = RowParaHelper.Parse(entity.RowPara);

@@ -29,9 +29,9 @@ namespace sailflow.run{
         /// <summary>
         /// 自动创建
         /// </summary>
-        public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, FlowCommandContext runner, SQLBuilder kit)
+        public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, FlowCommandContext context, SQLBuilder kit)
         {
-            var aiServiceActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, runner);
+            var aiServiceActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, context);
             base.InsertActivityInstance(aiServiceActivityInstance,
                 kit);
             return aiServiceActivityInstance;
@@ -62,10 +62,10 @@ namespace sailflow.run{
             ActivityInstanceEntity fromActivityInstance,
             Activity toActivity,
             ActivityInstanceEntity toActivityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
-            base.IActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance, runner);
+            base.IActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance, context);
             LinkContext.CurrentActivityInstance = toActivityInstance;
             base.InsertTransitionInstance(processInstance,
                 transitionId,
@@ -73,7 +73,7 @@ namespace sailflow.run{
                 toActivityInstance,
                 TransitionTypeEnum.Forward,
                 TransitionFlyingTypeEnum.NotFlying,
-                runner,
+                context,
                 kit);
 
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Successed);

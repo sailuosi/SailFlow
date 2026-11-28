@@ -25,7 +25,7 @@ namespace sailflow.run{
         {
             WfExecutedResult result = base.WfExecutedResult;
 
-            var runner = this.CmdContext;
+            var context = this.CmdContext;
             var runningNode = this.RunningActivityInstance;
             var sendbackOperation = base.SendBackOperation;
 
@@ -34,7 +34,7 @@ namespace sailflow.run{
                 //普通节点
                 //Normal task
                 sendbackOperation.CurrentNodeOperationType = SendBackOperationTypeEnum.Normal;
-                foreach (var step in runner.NextActivityPerformers)
+                foreach (var step in context.NextActivityPerformers)
                 {
                     var prevActivityId = step.Key;
                     var prevActivity = this.ProcessModel.GetActivity(prevActivityId);
@@ -95,7 +95,7 @@ namespace sailflow.run{
                 //会签节点
                 //Multiple instance
                 sendbackOperation.CurrentNodeOperationType = SendBackOperationTypeEnum.MultipleInstance;
-                foreach (var step in runner.NextActivityPerformers)
+                foreach (var step in context.NextActivityPerformers)
                 {
                     var prevActivityId = step.Key;
                     var prevActivity = this.ProcessModel.GetActivity(prevActivityId);

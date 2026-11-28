@@ -35,13 +35,13 @@ public interface IActivityInstanceManager
 
     Task<ActivityInstanceEntity> GetByIdAsync( SQLBuilder kit, string activityInstanceId, CancellationToken cancellationToken = default);
 
-    ActivityInstanceEntity GetRunningNode(FlowCommandContext runner);
+    ActivityInstanceEntity GetRunningNode(FlowCommandContext context);
 
-    ActivityInstanceEntity GetRunningNode(FlowCommandContext runner, out TaskViewEntity taskView);
+    ActivityInstanceEntity GetRunningNode(FlowCommandContext context, out TaskViewEntity taskView);
 
-    ActivityInstanceEntity GetRunningNode(SQLBuilder kit, FlowCommandContext runner, out TaskViewEntity taskView);
+    ActivityInstanceEntity GetRunningNode(SQLBuilder kit, FlowCommandContext context, out TaskViewEntity taskView);
 
-    Task<(ActivityInstanceEntity Node, TaskViewEntity TaskView)> GetRunningNodeAsync( SQLBuilder kit, FlowCommandContext runner, CancellationToken cancellationToken = default);
+    Task<(ActivityInstanceEntity Node, TaskViewEntity TaskView)> GetRunningNodeAsync( SQLBuilder kit, FlowCommandContext context, CancellationToken cancellationToken = default);
 
     ActivityInstanceEntity GetBackSrcActivityInstance(string currentActivityInstanceId);
 
@@ -109,23 +109,23 @@ public interface IActivityInstanceManager
 
     List<ActivityInstanceEntity> GetValidActivityInstanceListOfMI(SQLBuilder kit, string mainActivityInstanceId, string processInstanceId);
 
-    ActivityInstanceEntity CreateActivityInstanceObject(string bizChannel, string bizPK, string bizCode, string processId, string processInstanceId, Activity activity, FlowCommandContext runner);
+    ActivityInstanceEntity CreateActivityInstanceObject(string bizChannel, string bizPK, string bizCode, string processId, string processInstanceId, Activity activity, FlowCommandContext context);
 
     ActivityInstanceEntity CreateActivityInstanceObject(ActivityInstanceEntity main);
 
-    ActivityInstanceEntity CreateBackwardActivityInstanceObject(string bizChannel, string bizPK, string bizCode, string processInstanceId, string processId, Activity activity, BackwardTypeEnum backwardType, string backSrcActivityInstanceId, string backOrgActivityInstanceId, FlowCommandContext runner);
+    ActivityInstanceEntity CreateBackwardActivityInstanceObject(string bizChannel, string bizPK, string bizCode, string processInstanceId, string processId, Activity activity, BackwardTypeEnum backwardType, string backSrcActivityInstanceId, string backOrgActivityInstanceId, FlowCommandContext context);
 
-    void IncreaseTokensHad(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner);
+    void IncreaseTokensHad(SQLBuilder kit, string activityInstanceId, FlowCommandContext context);
 
-    void Read(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner);
+    void Read(SQLBuilder kit, string activityInstanceId, FlowCommandContext context);
 
-    void Withdraw(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner);
+    void Withdraw(SQLBuilder kit, string activityInstanceId, FlowCommandContext context);
 
-    void SendBack(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner);
+    void SendBack(SQLBuilder kit, string activityInstanceId, FlowCommandContext context);
 
-    void Complete(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner);
+    void Complete(SQLBuilder kit, string activityInstanceId, FlowCommandContext context);
 
-    void Complete(SQLBuilder kit, ActivityInstanceEntity activityInstance, FlowCommandContext runner);
+    void Complete(SQLBuilder kit, ActivityInstanceEntity activityInstance, FlowCommandContext context);
 
     void SetApprovalStatus(SQLBuilder kit, string activityInstanceId);
 
@@ -139,17 +139,17 @@ public interface IActivityInstanceManager
 
     void Update(SQLBuilder kit, ActivityInstanceEntity entity);
 
-    void Cancel(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner);
+    void Cancel(SQLBuilder kit, string activityInstanceId, FlowCommandContext context);
 
-    void CancelUnCompletedMultipleInstance(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner);
+    void CancelUnCompletedMultipleInstance(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext context);
 
-    void CancelSignForwardSubtreeUnder(SQLBuilder kit, string rootActivityInstanceId, FlowCommandContext runner);
+    void CancelSignForwardSubtreeUnder(SQLBuilder kit, string rootActivityInstanceId, FlowCommandContext context);
 
-    void WithdrawMainIncludedChildNodes(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext runner);
+    void WithdrawMainIncludedChildNodes(SQLBuilder kit, string mainActivityInstanceId, FlowCommandContext context);
 
-    void Resuspend(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner);
+    void Resuspend(SQLBuilder kit, string activityInstanceId, FlowCommandContext context);
 
-    void Rerun(SQLBuilder kit, string activityInstanceId, FlowCommandContext runner);
+    void Rerun(SQLBuilder kit, string activityInstanceId, FlowCommandContext context);
 
     void Delete(string activityInstanceId);
 

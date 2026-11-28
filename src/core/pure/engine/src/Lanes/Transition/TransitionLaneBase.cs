@@ -17,8 +17,8 @@ namespace sailflow.lanes
     /// </summary>
     public abstract class TransitionLaneBase : FlowLaneBase
     {
-        protected TransitionLaneBase(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        protected TransitionLaneBase(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

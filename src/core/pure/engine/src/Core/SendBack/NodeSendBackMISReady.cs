@@ -25,7 +25,7 @@ namespace sailflow.run{
         /// </summary>
         public override void Execute()
         {
-            var runner = base.SendBackOperation.ActivityResource.AppRunner;
+            var context = base.SendBackOperation.ActivityResource.AppRunner;
             var runningNode = base.SendBackOperation.BackwardFromActivityInstance;
             var runningMainNode = base.IActivityInstanceManager.GetById(runningNode.MainActInstanceId);
             var previousActivityInstance = base.IActivityInstanceManager.GetPreviousActivityInstanceSimple(Kit.useSQL(), runningNode, base.SendBackOperation.BackwardToTaskActivity.ActivityId);
@@ -45,7 +45,7 @@ namespace sailflow.run{
             //If the previous node is also a co signing node, update the main node status to running status
             if (previousActivityInstance.ActivityType == (short)ActivityTypeEnum.MultiSignNode)
             {
-                base.IActivityInstanceManager.Rerun(Kit.useSQL(), previousActivityInstance.MainActInstanceId, runner);
+                base.IActivityInstanceManager.Rerun(Kit.useSQL(), previousActivityInstance.MainActInstanceId, context);
             }
         }
 

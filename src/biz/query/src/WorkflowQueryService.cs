@@ -127,9 +127,9 @@ namespace sailflow.biz.query
             }
         }
 
-        public IList<Performer> GetTaskPerformers(FlowCommandContext runner)
+        public IList<Performer> GetTaskPerformers(FlowCommandContext context)
         {
-            var tasks = GetReadyTaskOfApp(runner).ToList();
+            var tasks = GetReadyTaskOfApp(context).ToList();
             IList<Performer> performerList = new List<Performer>();
             foreach (var task in tasks)
             {
@@ -138,12 +138,12 @@ namespace sailflow.biz.query
             return performerList;
         }
 
-        public IEnumerable<TaskViewEntity> GetReadyTaskOfApp(FlowCommandContext runner)
+        public IEnumerable<TaskViewEntity> GetReadyTaskOfApp(FlowCommandContext context)
         {
             var clip = Sail.UseRunSQL().useClip();
             clip.from<TaskViewEntity>(out var t)
-                .where(() => t.BizPK, runner.BizPK)
-                .where(() => t.ProcessId, runner.ProcessId)
+                .where(() => t.BizPK, context.BizPK)
+                .where(() => t.ProcessId, context.ProcessId)
                 .where(() => t.ProcessState, (short)2)
                 .where(() => t.ActivityType == 4 || t.WorkItemType == 1)
                 .where(() => t.ActivityState, (short)1)
@@ -609,8 +609,8 @@ namespace sailflow.biz.query
             return GetActivityInstanceCompleted(task.BizPK, task.ProcessId);
         }
 
-        public IList<NodeImage> GetActivityInstanceCompleted(FlowCommandContext runner)
-            => GetActivityInstanceCompleted(runner.BizPK, runner.ProcessId);
+        public IList<NodeImage> GetActivityInstanceCompleted(FlowCommandContext context)
+            => GetActivityInstanceCompleted(context.BizPK, context.ProcessId);
 
         public IList<NodeImage> GetActivityInstanceCompleted(string bizPK, string processId)
         {

@@ -116,7 +116,7 @@ namespace sailflow.run{
         {
             bool canContinueForwardCurrentNode = true;
 
-            FlowCommandContext runner = new FlowCommandContext
+            FlowCommandContext context = new FlowCommandContext
             {
                 UserId = activityResource.AppRunner.UserId,        
                 UserName = activityResource.AppRunner.UserName

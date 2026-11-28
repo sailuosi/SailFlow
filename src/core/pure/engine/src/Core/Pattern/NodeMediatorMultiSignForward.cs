@@ -47,7 +47,7 @@ namespace sailflow.run{
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            FlowCommandContext runner = new FlowCommandContext
+            FlowCommandContext context = new FlowCommandContext
             {
                 UserId = activityResource.AppRunner.UserId,
                 UserName = activityResource.AppRunner.UserName
@@ -72,7 +72,7 @@ namespace sailflow.run{
             // 容器直属 Task：不 Complete 容器 AI
             if (IActivityInstanceManager.IsSignForwardContainer(from))
             {
-                return EvaluateContainerAndBubble(kit, from, from, activityResource, runner);
+                return EvaluateContainerAndBubble(kit, from, from, activityResource, context);
             }
 
             // 叶子子 AI：完结叶子，再问父容器
@@ -96,14 +96,14 @@ namespace sailflow.run{
                     container.ActivityState = (short)ActivityStateEnum.Completed;
                     base.IActivityInstanceManager.Update(kit.useSQL(), container);
                     base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(
-                        kit.useSQL(), container.ActivityInstanceId, runner);
+                        kit.useSQL(), container.ActivityInstanceId, context);
                     return true;
                 }
-                HandleSequenceWaiting(kit, container, from, activityResource, runner);
+                HandleSequenceWaiting(kit, container, from, activityResource, context);
                 return false;
             }
 
-            return EvaluateContainerAndBubble(kit, from, container, activityResource, runner);
+            return EvaluateContainerAndBubble(kit, from, container, activityResource, context);
         }
 
         /// <summary>容器 Leave → Waiting 唤醒 / Passed 塌缩上浮。</summary>
@@ -112,7 +112,7 @@ namespace sailflow.run{
             ActivityInstanceEntity current,
             ActivityInstanceEntity container,
             ActivityResource activityResource,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             var passedType = base.IActivityInstanceManager.EvaluateLeaveOnActivity(
                 kit.useSQL(), current, container);
@@ -121,11 +121,11 @@ namespace sailflow.run{
                 || passedType == NodePassedTypeEnum.NotPassed)
             {
                 return CollapseSignForwardAndBubbleLeave(
-                    kit, container, activityResource, runner,
+                    kit, container, activityResource, context,
                     passedType == NodePassedTypeEnum.Passed);
             }
 
-            HandleSequenceWaiting(kit, container, current, activityResource, runner);
+            HandleSequenceWaiting(kit, container, current, activityResource, context);
             return false;
         }
 
@@ -136,7 +136,7 @@ namespace sailflow.run{
             SQLBuilder kit,
             ActivityInstanceEntity container,
             ActivityResource activityResource,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             bool agreed)
         {
             container.ApprovalStatus = agreed
@@ -145,7 +145,7 @@ namespace sailflow.run{
             container.ActivityState = (short)ActivityStateEnum.Completed;
             base.IActivityInstanceManager.Update(kit.useSQL(), container);
             base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(
-                kit.useSQL(), container.ActivityInstanceId, runner);
+                kit.useSQL(), container.ActivityInstanceId, context);
 
             // 无父：异常形态，视为可出
             if (string.IsNullOrEmpty(container.MainActInstanceId))
@@ -164,10 +164,10 @@ namespace sailflow.run{
                     || parentPass == NodePassedTypeEnum.NotPassed)
                 {
                     return CollapseSignForwardAndBubbleLeave(
-                        kit, parent, activityResource, runner,
+                        kit, parent, activityResource, context,
                         parentPass == NodePassedTypeEnum.Passed);
                 }
-                HandleSequenceWaiting(kit, parent, container, activityResource, runner);
+                HandleSequenceWaiting(kit, parent, container, activityResource, context);
                 return false;
             }
 
@@ -184,12 +184,12 @@ namespace sailflow.run{
                     parent.ActivityState = (short)ActivityStateEnum.Completed;
                     base.IActivityInstanceManager.Update(kit.useSQL(), parent);
                     base.IActivityInstanceManager.CancelUnCompletedMultipleInstance(
-                        kit.useSQL(), parent.ActivityInstanceId, runner);
+                        kit.useSQL(), parent.ActivityInstanceId, context);
                     return true;
                 }
 
                 // 节点：旁关 + 淹没加签子树
-                CompleteActivityInstance(parent.ActivityInstanceId, runner, kit);
+                CompleteActivityInstance(parent.ActivityInstanceId, context, kit);
                 base.LinkContext.FromActivityInstance = parent;
                 base.LinkContext.FromActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
                 return true;
@@ -204,7 +204,7 @@ namespace sailflow.run{
             ActivityInstanceEntity container,
             ActivityInstanceEntity fromChild,
             ActivityResource activityResource,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             var mergeType = container.MergeType ?? (short)MergeTypeEnum.Parallel;
             if (mergeType == (short)MergeTypeEnum.Sequence)
@@ -222,7 +222,7 @@ namespace sailflow.run{
                     var next = suspended[0];
                     next.ActivityState = (short)ActivityStateEnum.Ready;
                     base.IActivityInstanceManager.Update(kit.useSQL(), next);
-                    base.FireActivityReady(kit, next, runner);
+                    base.FireActivityReady(kit, next, context);
 
                     container.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(
                         activityResource.AppRunner.NextActivityPerformers,
@@ -233,7 +233,7 @@ namespace sailflow.run{
                 else
                 {
                     // 前加签：子席已尽，补建发起人直属 Task
-                    EnsureDeferredInitiatorTask(kit, container, activityResource, runner);
+                    EnsureDeferredInitiatorTask(kit, container, activityResource, context);
                     base.WfNodeMediatedResult.Feedback = WfNodeMediatedFeedback.WaitingForCompletedMore;
                 }
             }
@@ -251,7 +251,7 @@ namespace sailflow.run{
             SQLBuilder kit,
             ActivityInstanceEntity container,
             ActivityResource activityResource,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             if (!IActivityInstanceManager.IsSignForwardContainer(container))
                 return;
@@ -273,7 +273,7 @@ namespace sailflow.run{
 
             var performer = new Performer(signId, container.SignNames);
             base.ITaskManager.Insert(kit.useSQL(), container, performer, activityResource.AppRunner);
-            base.FireActivityReady(kit, container, runner);
+            base.FireActivityReady(kit, container, context);
         }
     }
 }

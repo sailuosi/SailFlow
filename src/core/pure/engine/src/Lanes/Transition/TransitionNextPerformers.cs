@@ -9,20 +9,20 @@ namespace sailflow.lanes
     {
         public static IDictionary<string, PerformerList> Fill(
             SailClient sail,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             JumpOptionEnum jumpOption)
         {
             IDictionary<string, PerformerList> nextActivityPerformers = null;
-            var pm = sail.ProcessModelFactory.CreateByProcess(runner.ProcessId, runner.Version);
+            var pm = sail.ProcessModelFactory.CreateByProcess(context.ProcessId, context.Version);
             if (jumpOption == JumpOptionEnum.Default)
             {
-                nextActivityPerformers = runner.NextActivityPerformers;
+                nextActivityPerformers = context.NextActivityPerformers;
             }
             else if (jumpOption == JumpOptionEnum.Startup)
             {
                 var firstActivity = pm.GetFirstActivity();
                 var aim = sail.ManagerFactory.Activities;
-                var firstActivityInstance = aim.GetActivityInstanceLatest(runner.BizPK, runner.ProcessId, firstActivity.ActivityId);
+                var firstActivityInstance = aim.GetActivityInstanceLatest(context.BizPK, context.ProcessId, firstActivity.ActivityId);
                 nextActivityPerformers = new Dictionary<string, PerformerList>();
                 var performer = new Performer(firstActivityInstance.CreatedUserId, firstActivityInstance.CreatedUserName);
                 var performerList = new PerformerList();
@@ -33,7 +33,7 @@ namespace sailflow.lanes
             {
                 var endActivity = pm.GetEndActivity();
                 nextActivityPerformers = new Dictionary<string, PerformerList>();
-                var performer = new Performer(runner.UserId, runner.UserName);
+                var performer = new Performer(context.UserId, context.UserName);
                 var performerList = new PerformerList();
                 performerList.Add(performer);
                 nextActivityPerformers.Add(endActivity.ActivityId, performerList);

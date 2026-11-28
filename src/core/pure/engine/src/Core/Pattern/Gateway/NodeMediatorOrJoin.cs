@@ -44,7 +44,7 @@ namespace sailflow.run{
             string transitionId,
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Unknown);
@@ -55,7 +55,7 @@ namespace sailflow.run{
             if (joinNode == null)
             {
                 joinNode = base.CreateActivityInstanceObject(base.GatewayActivity,
-                    processInstance, runner);
+                    processInstance, context);
 
                 //计算所需令牌总数
                 joinNode.TokensRequired = GetTokensRequired(processInstance.ProcessInstanceId, base.GatewayActivity, kit);
@@ -65,7 +65,7 @@ namespace sailflow.run{
                 joinNode.GateWayTypeId = (short)GatewayDirectionEnum.OrJoin;
 
                 //写入首步预选默认用户列表
-                joinNode.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
+                joinNode.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(context.NextActivityPerformers, Sail.JsonSerializer);
 
                 base.InsertActivityInstance(joinNode,
                     kit);
@@ -75,7 +75,7 @@ namespace sailflow.run{
                     joinNode,
                     TransitionTypeEnum.Forward,
                     TransitionFlyingTypeEnum.NotFlying,
-                    runner,
+                    context,
                     kit);
             }
             else
@@ -84,14 +84,14 @@ namespace sailflow.run{
                 base.GatewayActivityInstance = joinNode;
 
                 //增加令牌计数
-                base.IActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.ActivityInstanceId, runner);
+                base.IActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.ActivityInstanceId, context);
                 base.InsertTransitionInstance(processInstance,
                     transitionId,
                     fromActivityInstance,
                     joinNode,
                     TransitionTypeEnum.Forward,
                     TransitionFlyingTypeEnum.NotFlying,
-                    runner,
+                    context,
                     kit);
             }
 
@@ -100,7 +100,7 @@ namespace sailflow.run{
             {
                 //达到完成所需令牌数时，将节点状态设为完成
                 base.CompleteActivityInstance(base.GatewayActivityInstance.ActivityInstanceId,
-                    runner,
+                    context,
                     kit);
                 base.GatewayActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 

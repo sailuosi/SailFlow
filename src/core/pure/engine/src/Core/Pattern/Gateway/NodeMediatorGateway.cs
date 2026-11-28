@@ -59,7 +59,7 @@ namespace sailflow.run{
         /// </summary>
         protected ActivityInstanceEntity CreateActivityInstanceObject(Activity activity,
             ProcessInstanceEntity processInstance,
-            FlowCommandContext runner)
+            FlowCommandContext context)
         {
             var aim = Sail.ManagerFactory.Activities;
             this.GatewayActivityInstance = aim.CreateActivityInstanceObject(processInstance.BizChannel,
@@ -68,7 +68,7 @@ namespace sailflow.run{
                 processInstance.ProcessId,
                 processInstance.ProcessInstanceId,
                 activity,
-                runner);
+                context);
 
             return this.GatewayActivityInstance;
         }
@@ -93,7 +93,7 @@ namespace sailflow.run{
             ActivityInstanceEntity toActivityInstance,
             TransitionTypeEnum transitionType,
             TransitionFlyingTypeEnum flyingType,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
             var tim = Sail.ManagerFactory.Transitions;
@@ -103,7 +103,7 @@ namespace sailflow.run{
                 toActivityInstance,
                 transitionType,
                 flyingType,
-                runner,
+                context,
                 (byte)ConditionParseResultEnum.Passed);
             var newId = tim.Insert(kit.useSQL(), transitionInstanceObject);
 
@@ -114,10 +114,10 @@ namespace sailflow.run{
         /// 完成活动实例
         /// </summary>
         internal virtual void CompleteActivityInstance(string ActivityInstanceId,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
-            IActivityInstanceManager.Complete(kit.useSQL(), ActivityInstanceId, runner);
+            IActivityInstanceManager.Complete(kit.useSQL(), ActivityInstanceId, context);
         }
     }
 }

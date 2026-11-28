@@ -26,12 +26,12 @@ namespace sailflow.run{
         /// <summary>
         /// 自动创建
         /// </summary>
-        public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, FlowCommandContext runner, SQLBuilder kit)
+        public ActivityInstanceEntity CreatedAutomaticlly(Activity toActivity, ProcessInstanceEntity processInstance, FlowCommandContext context, SQLBuilder kit)
         {
-            var msgCatchActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, runner);
+            var msgCatchActivityInstance = CreateActivityInstanceObject(toActivity, processInstance, context);
 
             //写入首步预选默认用户列表
-            msgCatchActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
+            msgCatchActivityInstance.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(context.NextActivityPerformers, Sail.JsonSerializer);
             base.InsertActivityInstance(msgCatchActivityInstance, kit);
 
             return msgCatchActivityInstance;
@@ -63,10 +63,10 @@ namespace sailflow.run{
             ActivityInstanceEntity fromActivityInstance,
             Activity toActivity,
             ActivityInstanceEntity toActivityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
-            base.IActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance, runner);
+            base.IActivityInstanceManager.Complete(kit.useSQL(), toActivityInstance, context);
 
             LinkContext.CurrentActivity = toActivity;
             LinkContext.CurrentActivityInstance = toActivityInstance;

@@ -15,8 +15,8 @@ namespace sailflow.lanes
     /// </summary>
     public abstract class AssigneeLaneBase : FlowLaneBase
     {
-        protected AssigneeLaneBase(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        protected AssigneeLaneBase(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

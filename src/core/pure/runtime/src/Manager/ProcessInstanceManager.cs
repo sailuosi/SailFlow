@@ -178,12 +178,12 @@ namespace sailflow.data
             Sail.Storages.GetRequired<IProcessVariableStorage>();
 
         public ProcessInstanceEntity CreateNewProcessInstanceObject(
-            FlowCommandContext runner,
+            FlowCommandContext context,
             ProcessEntity processEntity,
             SubProcessNode subProcessNode = null,
             SQLBuilder kit = null)
         {
-            runner?.ApplyBizData();
+            context?.ApplyBizData();
 
             var entity = new ProcessInstanceEntity
             {
@@ -191,22 +191,22 @@ namespace sailflow.data
                 ProcessName = processEntity.ProcessName,
                 Version = processEntity.Version,
                 Title = null,
-                BizType = runner?.BizType,
-                BizChannel = runner?.BizChannel,
-                BizPK = runner?.BizPK,
-                BizCode = runner?.BizCode,
-                BizName = runner?.BizName,
+                BizType = context?.BizType,
+                BizChannel = context?.BizChannel,
+                BizPK = context?.BizPK,
+                BizCode = context?.BizCode,
+                BizName = context?.BizName,
                 ProcessState = (int)ProcessStateEnum.Running,
-                StartUnitId = !string.IsNullOrWhiteSpace(runner?.StartUnitId)
-                    ? runner.StartUnitId
-                    : runner?.CompanyId,
-                StartUnitCode = runner?.StartUnitCode,
-                StartUnitName = runner?.StartUnitName,
-                CreatedUserId = runner?.UserId,
-                CreatedUserName = runner?.UserName,
+                StartUnitId = !string.IsNullOrWhiteSpace(context?.StartUnitId)
+                    ? context.StartUnitId
+                    : context?.CompanyId,
+                StartUnitCode = context?.StartUnitCode,
+                StartUnitName = context?.StartUnitName,
+                CreatedUserId = context?.UserId,
+                CreatedUserName = context?.UserName,
                 CreatedDateTime = DateTime.UtcNow,
-                UpdatedUserId = runner?.UserId,
-                UpdatedUserName = runner?.UserName,
+                UpdatedUserId = context?.UserId,
+                UpdatedUserName = context?.UserName,
                 UpdatedDateTime = DateTime.UtcNow
             };
 
@@ -230,13 +230,13 @@ namespace sailflow.data
             if (processEntity.EndType == (short)ProcessEndTypeEnum.Timer)
                 entity.DueAt = CalculateOverdueDateTime(entity.CreatedDateTime.Value, processEntity.EndExpression);
 
-            RunProcessInstanceCreateHooks(kit, runner, processEntity, entity);
+            RunProcessInstanceCreateHooks(kit, context, processEntity, entity);
             return entity;
         }
 
         private void RunProcessInstanceCreateHooks(
             SQLBuilder kit,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             ProcessEntity processEntity,
             ProcessInstanceEntity entity)
         {
@@ -245,7 +245,7 @@ namespace sailflow.data
 
             var ctx = new ProcessInstanceCreateContext
             {
-                Runner = runner,
+                Runner = context,
                 Process = processEntity,
                 Instance = entity,
                 Kit = kit
@@ -366,13 +366,13 @@ namespace sailflow.data
         #endregion
 
         #region Business rules
-        public ProcessInstanceEntity Complete(string processInstanceId, FlowCommandContext runner)
+        public ProcessInstanceEntity Complete(string processInstanceId, FlowCommandContext context)
         {
             var kit = Sail.UseRunSQL();
-            return Complete(kit, processInstanceId, runner);
+            return Complete(kit, processInstanceId, context);
         }
 
-        public ProcessInstanceEntity Complete(SQLBuilder kit, string processInstanceId, FlowCommandContext runner)
+        public ProcessInstanceEntity Complete(SQLBuilder kit, string processInstanceId, FlowCommandContext context)
         {
             var processInstance = GetById(kit, processInstanceId);
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), processInstance.ProcessState.ToString());
@@ -383,18 +383,18 @@ namespace sailflow.data
                     kit,
                     processInstanceId,
                     (short)ProcessStateEnum.Completed,
-                    updatedUserId: runner.UserId,
-                    updatedUserName: runner.UserName,
+                    updatedUserId: context.UserId,
+                    updatedUserName: context.UserName,
                     endedDateTime: endedAt,
-                    endedUserId: runner.UserId,
-                    endedUserName: runner.UserName);
+                    endedUserId: context.UserId,
+                    endedUserName: context.UserName);
                 processInstance.ProcessState = (short)ProcessStateEnum.Completed;
                 processInstance.EndedDateTime = endedAt;
-                processInstance.EndedUserId = runner.UserId;
-                processInstance.EndedUserName = runner.UserName;
+                processInstance.EndedUserId = context.UserId;
+                processInstance.EndedUserName = context.UserName;
                 processInstance.UpdatedDateTime = endedAt;
-                processInstance.UpdatedUserId = runner.UserId;
-                processInstance.UpdatedUserName = runner.UserName;
+                processInstance.UpdatedUserId = context.UserId;
+                processInstance.UpdatedUserName = context.UserName;
             }
             else
             {
@@ -403,13 +403,13 @@ namespace sailflow.data
             return processInstance;
         }
 
-        public void Suspend(string processInstanceId, FlowCommandContext runner)
+        public void Suspend(string processInstanceId, FlowCommandContext context)
         {
             var kit = Sail.UseRunSQL();
-            Suspend(kit, processInstanceId, runner);
+            Suspend(kit, processInstanceId, context);
         }
 
-        public void Suspend(SQLBuilder kit, string processInstanceId, FlowCommandContext runner)
+        public void Suspend(SQLBuilder kit, string processInstanceId, FlowCommandContext context)
         {
             var bEntity = GetById(kit, processInstanceId);
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), bEntity.ProcessState.ToString());
@@ -419,12 +419,12 @@ namespace sailflow.data
                     kit,
                     processInstanceId,
                     (short)ProcessStateEnum.Suspended,
-                    runner.UserId,
-                    runner.UserName);
+                    context.UserId,
+                    context.UserName);
                 bEntity.ProcessState = (short)ProcessStateEnum.Suspended;
                 bEntity.UpdatedDateTime = DateTime.UtcNow;
-                bEntity.UpdatedUserId = runner.UserId;
-                bEntity.UpdatedUserName = runner.UserName;
+                bEntity.UpdatedUserId = context.UserId;
+                bEntity.UpdatedUserName = context.UserName;
             }
             else
             {
@@ -432,13 +432,13 @@ namespace sailflow.data
             }
         }
 
-        public void Resume(string processInstanceId, FlowCommandContext runner)
+        public void Resume(string processInstanceId, FlowCommandContext context)
         {
             var kit = Sail.UseRunSQL();
-            Resume(kit, processInstanceId, runner);
+            Resume(kit, processInstanceId, context);
         }
 
-        public void Resume(SQLBuilder kit, string processInstanceId, FlowCommandContext runner)
+        public void Resume(SQLBuilder kit, string processInstanceId, FlowCommandContext context)
         {
             var bEntity = GetById(kit, processInstanceId);
             var processState = (ProcessStateEnum)Enum.Parse(typeof(ProcessStateEnum), bEntity.ProcessState.ToString());
@@ -448,12 +448,12 @@ namespace sailflow.data
                     kit,
                     processInstanceId,
                     (short)ProcessStateEnum.Running,
-                    runner.UserId,
-                    runner.UserName);
+                    context.UserId,
+                    context.UserName);
                 bEntity.ProcessState = (short)ProcessStateEnum.Running;
                 bEntity.UpdatedDateTime = DateTime.UtcNow;
-                bEntity.UpdatedUserId = runner.UserId;
-                bEntity.UpdatedUserName = runner.UserName;
+                bEntity.UpdatedUserId = context.UserId;
+                bEntity.UpdatedUserName = context.UserName;
             }
             else
             {
@@ -462,7 +462,7 @@ namespace sailflow.data
         }
 
 
-        public void RecallSubProcess(SQLBuilder kit, string invokedActivityInstanceId, FlowCommandContext runner)
+        public void RecallSubProcess(SQLBuilder kit, string invokedActivityInstanceId, FlowCommandContext context)
         {
             var list = Storage.ListSuspendedByInvokedActivity(kit, invokedActivityInstanceId);
 
@@ -473,12 +473,12 @@ namespace sailflow.data
                     kit,
                     bEntity.ProcessInstanceId,
                     (short)ProcessStateEnum.Running,
-                    runner.UserId,
-                    runner.UserName);
+                    context.UserId,
+                    context.UserName);
                 bEntity.ProcessState = (short)ProcessStateEnum.Running;
                 bEntity.UpdatedDateTime = DateTime.UtcNow;
-                bEntity.UpdatedUserId = runner.UserId;
-                bEntity.UpdatedUserName = runner.UserName;
+                bEntity.UpdatedUserId = context.UserId;
+                bEntity.UpdatedUserName = context.UserName;
             }
             else
             {
@@ -509,14 +509,14 @@ namespace sailflow.data
             }
         }
 
-        public bool Cancel(FlowCommandContext runner)
+        public bool Cancel(FlowCommandContext context)
         {
             using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
                 {
-                    var ok = Cancel(kit, runner);
+                    var ok = Cancel(kit, context);
                     kit.commit();
                     return ok;
                 }
@@ -527,18 +527,18 @@ namespace sailflow.data
             }
         }
 
-        public bool Cancel(SQLBuilder kit, FlowCommandContext runner)
+        public bool Cancel(SQLBuilder kit, FlowCommandContext context)
         {
             try
             {
-                var entity = GetProcessInstanceLatest(kit, runner.BizPK, runner.ProcessId, runner.Version);
+                var entity = GetProcessInstanceLatest(kit, context.BizPK, context.ProcessId, context.Version);
                 if (entity == null || entity.ProcessState != (short)ProcessStateEnum.Running)
                     throw FailThrow(new WorkflowException(Sail.Messages.GetEngineMessage("processinstancemanager.cancel.error")), "Cancel");
 
                 entity.ProcessState = (short)ProcessStateEnum.Canceled;
                 entity.RecordStatusInvalid = 1;
-                entity.UpdatedUserId = runner.UserId;
-                entity.UpdatedUserName = runner.UserName;
+                entity.UpdatedUserId = context.UserId;
+                entity.UpdatedUserName = context.UserName;
                 entity.UpdatedDateTime = DateTime.UtcNow;
                 Update(kit, entity);
                 return true;
@@ -549,14 +549,14 @@ namespace sailflow.data
             }
         }
 
-        public bool Discard(FlowCommandContext runner)
+        public bool Discard(FlowCommandContext context)
         {
             using (var kit = Sail.UseRunSQL())
             {
                 kit.beginTransaction();
                 try
                 {
-                    Discard(kit, runner);
+                    Discard(kit, context);
                     kit.commit();
                     return true;
                 }
@@ -567,18 +567,18 @@ namespace sailflow.data
             }
         }
 
-        public void Discard(SQLBuilder kit, FlowCommandContext runner)
+        public void Discard(SQLBuilder kit, FlowCommandContext context)
         {
             Storage.DiscardByVersion(
                 kit,
-                runner.BizPK,
-                runner.ProcessId,
-                runner.Version,
-                runner.UserId,
-                runner.UserName);
+                context.BizPK,
+                context.ProcessId,
+                context.Version,
+                context.UserId,
+                context.UserName);
         }
 
-        public bool Terminate(FlowCommandContext runner)
+        public bool Terminate(FlowCommandContext context)
         {
             using (var kit = Sail.UseRunSQL())
             {
@@ -586,11 +586,11 @@ namespace sailflow.data
                 try
                 {
                     ProcessInstanceEntity entity;
-                    if (!string.IsNullOrWhiteSpace(runner.ProcessInstanceId))
-                        entity = GetById(kit, runner.ProcessInstanceId);
+                    if (!string.IsNullOrWhiteSpace(context.ProcessInstanceId))
+                        entity = GetById(kit, context.ProcessInstanceId);
                     else
-                        entity = GetProcessInstanceLatest(kit, runner.BizPK, runner.ProcessId, runner.Version);
-                    var ok = Terminate(kit, entity, runner);
+                        entity = GetProcessInstanceLatest(kit, context.BizPK, context.ProcessId, context.Version);
+                    var ok = Terminate(kit, entity, context);
                     kit.commit();
                     return ok;
                 }
@@ -604,13 +604,13 @@ namespace sailflow.data
         public bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, string userId, string userName)
             => Terminate(kit, entity, new FlowCommandContext { UserId = userId, UserName = userName });
 
-        public bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, FlowCommandContext runner)
+        public bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, FlowCommandContext context)
         {
             if (entity == null)
                 throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error")), "Terminate");
 
-            var userId = runner?.UserId;
-            var userName = runner?.UserName;
+            var userId = context?.UserId;
+            var userName = context?.UserName;
 
             if (entity.ProcessState == (int)ProcessStateEnum.Running
                 || entity.ProcessState == (int)ProcessStateEnum.Ready
@@ -642,7 +642,7 @@ namespace sailflow.data
                     task.EndedUserId = userId;
                     task.EndedUserName = userName;
                     Sail.CapabilityDispatcher.FireTaskLifecycle(
-                        kit, task, activityInstance: null, runner, TaskNotifyKind.Cancelled);
+                        kit, task, activityInstance: null, context, TaskNotifyKind.Cancelled);
                 }
 
                 return true;
@@ -650,13 +650,13 @@ namespace sailflow.data
             throw FailThrow(new ProcessInstanceException(Sail.Messages.GetEngineMessage("processinstancemanager.terminate.error")), "Terminate");
         }
 
-        public bool SetOverdue(string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
+        public bool SetOverdue(string processInstanceId, DateTime overdueDateTime, FlowCommandContext context)
         {
             var kit = Sail.UseRunSQL();
-            return SetOverdue(kit, processInstanceId, overdueDateTime, runner);
+            return SetOverdue(kit, processInstanceId, overdueDateTime, context);
         }
 
-        public bool SetOverdue(SQLBuilder kit, string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
+        public bool SetOverdue(SQLBuilder kit, string processInstanceId, DateTime overdueDateTime, FlowCommandContext context)
         {
             var entity = GetById(kit, processInstanceId);
             if (entity.ProcessState == (int)ProcessStateEnum.Running
@@ -664,8 +664,8 @@ namespace sailflow.data
                 || entity.ProcessState == (int)ProcessStateEnum.Suspended)
             {
                 entity.DueAt = overdueDateTime;
-                entity.UpdatedUserId = runner.UserId;
-                entity.UpdatedUserName = runner.UserName;
+                entity.UpdatedUserId = context.UserId;
+                entity.UpdatedUserName = context.UserName;
                 entity.UpdatedDateTime = DateTime.UtcNow;
                 Update(kit, entity);
                 return true;

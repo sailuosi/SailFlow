@@ -14,8 +14,8 @@ namespace sailflow.lanes
     {
         readonly JumpOptionEnum _jumpOption;
 
-        public JumpLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner, JumpOptionEnum jumpOption = JumpOptionEnum.Default)
-            : base(sail, kit, runner)
+        public JumpLane(SailClient sail, SQLBuilder kit, FlowCommandContext context, JumpOptionEnum jumpOption = JumpOptionEnum.Default)
+            : base(sail, kit, context)
         {
             _jumpOption = jumpOption;
         }

@@ -11,8 +11,8 @@ namespace sailflow.lanes
 {
     public sealed class ResendLane : TransitionLaneBase
     {
-        public ResendLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public ResendLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

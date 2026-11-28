@@ -106,10 +106,10 @@ namespace sailflow.service
         /// (without considering the situation of multiple subsequent nodes)
         /// 简单模式：根据应用获取流程下一步节点(不考虑有多个后续节点的情况）
         /// </summary>
-        public NodeView GetNextActivity(FlowCommandContext runner,
+        public NodeView GetNextActivity(FlowCommandContext context,
             IDictionary<string, string> condition = null)
         {
-            var info = GetNextStepInfo(runner, condition);
+            var info = GetNextStepInfo(context, condition);
             return info?.NextActivityRoleUserTree?.FirstOrDefault();
         }
 
@@ -121,8 +121,8 @@ namespace sailflow.service
         public NodeView GetNextActivity(string taskId,
             IDictionary<string, string> condition = null)
         {
-            var runner = new FlowCommandContext { TaskId = taskId };
-            var info = GetNextStepInfo(runner, condition);
+            var context = new FlowCommandContext { TaskId = taskId };
+            var info = GetNextStepInfo(context, condition);
             return info?.NextActivityRoleUserTree?.FirstOrDefault();
         }
 
@@ -130,10 +130,10 @@ namespace sailflow.service
         /// Obtain the next node list according to the application process
         /// 根据应用获取流程下一步节点列表
         /// </summary>
-        public IList<NodeView> GetNextActivityTree(FlowCommandContext runner, 
+        public IList<NodeView> GetNextActivityTree(FlowCommandContext context, 
             IDictionary<string, string> condition = null)
         {
-            var info = GetNextStepInfo(runner, condition);
+            var info = GetNextStepInfo(context, condition);
             return info?.NextActivityRoleUserTree ?? new List<NodeView>();
         }
 
@@ -141,10 +141,10 @@ namespace sailflow.service
         /// Obtain the next node list according to the application process
         /// 根据应用获取流程下一步节点列表
         /// </summary>
-        public async Task<IList<NodeView>> GetNextActivityTreeAsync(FlowCommandContext runner,
+        public async Task<IList<NodeView>> GetNextActivityTreeAsync(FlowCommandContext context,
             IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
-            var info = await GetNextStepInfoAsync(runner, condition, cancellationToken).ConfigureAwait(false);
+            var info = await GetNextStepInfoAsync(context, condition, cancellationToken).ConfigureAwait(false);
             return info?.NextActivityRoleUserTree ?? new List<NodeView>();
         }
 
@@ -155,8 +155,8 @@ namespace sailflow.service
         public IList<NodeView> GetNextActivityTree(string taskId,
             IDictionary<string, string> condition = null)
         {
-            var runner = new FlowCommandContext { TaskId = taskId };
-            var info = GetNextStepInfo(runner, condition);
+            var context = new FlowCommandContext { TaskId = taskId };
+            var info = GetNextStepInfo(context, condition);
             return info?.NextActivityRoleUserTree ?? new List<NodeView>();
         }
 
@@ -167,8 +167,8 @@ namespace sailflow.service
         public async Task<IList<NodeView>> GetNextActivityTreeAsync(string taskId,
             IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
-            var runner = new FlowCommandContext { TaskId = taskId };
-            var info = await GetNextStepInfoAsync(runner, condition, cancellationToken).ConfigureAwait(false);
+            var context = new FlowCommandContext { TaskId = taskId };
+            var info = await GetNextStepInfoAsync(context, condition, cancellationToken).ConfigureAwait(false);
             return info?.NextActivityRoleUserTree ?? new List<NodeView>();
         }
 
@@ -176,22 +176,22 @@ namespace sailflow.service
         /// Obtain the next activity list according to the application process
         /// 根据应用获取流程下一步活动列表
         /// </summary>
-        public IList<Activity> GetNextActivityList(FlowCommandContext runner,
+        public IList<Activity> GetNextActivityList(FlowCommandContext context,
             IDictionary<string, string> condition = null)
         {
-            var info = GetNextStepInfo(runner, condition);
-            return ConvertNodeViewListToActivityList(info?.NextActivityRoleUserTree, runner.ProcessId, runner.Version);
+            var info = GetNextStepInfo(context, condition);
+            return ConvertNodeViewListToActivityList(info?.NextActivityRoleUserTree, context.ProcessId, context.Version);
         }
 
         /// <summary>
         /// Obtain the next activity list according to the application process
         /// 根据应用获取流程下一步活动列表
         /// </summary>
-        public async Task<IList<Activity>> GetNextActivityListAsync(FlowCommandContext runner,
+        public async Task<IList<Activity>> GetNextActivityListAsync(FlowCommandContext context,
             IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
-            var info = await GetNextStepInfoAsync(runner, condition, cancellationToken).ConfigureAwait(false);
-            return ConvertNodeViewListToActivityList(info?.NextActivityRoleUserTree, runner.ProcessId, runner.Version);
+            var info = await GetNextStepInfoAsync(context, condition, cancellationToken).ConfigureAwait(false);
+            return ConvertNodeViewListToActivityList(info?.NextActivityRoleUserTree, context.ProcessId, context.Version);
         }
 
         /// <summary>
@@ -201,9 +201,9 @@ namespace sailflow.service
         public IList<Activity> GetNextActivityList(string taskId,
             IDictionary<string, string> condition = null)
         {
-            var runner = new FlowCommandContext { TaskId = taskId };
-            var info = GetNextStepInfo(runner, condition);
-            return ConvertNodeViewListToActivityList(info?.NextActivityRoleUserTree, runner.ProcessId, runner.Version);
+            var context = new FlowCommandContext { TaskId = taskId };
+            var info = GetNextStepInfo(context, condition);
+            return ConvertNodeViewListToActivityList(info?.NextActivityRoleUserTree, context.ProcessId, context.Version);
         }
         
         /// <summary>
@@ -213,9 +213,9 @@ namespace sailflow.service
         public async Task<IList<Activity>> GetNextActivityListAsync(string taskId,
             IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
-            var runner = new FlowCommandContext { TaskId = taskId };
-            var info = await GetNextStepInfoAsync(runner, condition, cancellationToken).ConfigureAwait(false);
-            return ConvertNodeViewListToActivityList(info?.NextActivityRoleUserTree, runner.ProcessId, runner.Version);
+            var context = new FlowCommandContext { TaskId = taskId };
+            var info = await GetNextStepInfoAsync(context, condition, cancellationToken).ConfigureAwait(false);
+            return ConvertNodeViewListToActivityList(info?.NextActivityRoleUserTree, context.ProcessId, context.Version);
         }
         
         /// <summary>
@@ -275,10 +275,10 @@ namespace sailflow.service
         /// According to the application, obtain the next node list of the process, including role users
         /// 根据应用获取流程下一步节点列表，包含角色用户
         /// </summary>
-        public IList<NodeView> GetNextActivityRoleUserTree(FlowCommandContext runner, 
+        public IList<NodeView> GetNextActivityRoleUserTree(FlowCommandContext context, 
             IDictionary<string, string> condition = null)
         {
-            var info = GetNextStepInfo(runner, condition);
+            var info = GetNextStepInfo(context, condition);
             return info?.NextActivityRoleUserTree ?? new List<NodeView>();
         }
 
@@ -286,10 +286,10 @@ namespace sailflow.service
         /// According to the application, obtain the next node list of the process, including role users
         /// 根据应用获取流程下一步节点列表，包含角色用户
         /// </summary>
-        public async Task<IList<NodeView>> GetNextActivityRoleUserTreeAsync(FlowCommandContext runner,
+        public async Task<IList<NodeView>> GetNextActivityRoleUserTreeAsync(FlowCommandContext context,
             IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
-            var info = await GetNextStepInfoAsync(runner, condition, cancellationToken).ConfigureAwait(false);
+            var info = await GetNextStepInfoAsync(context, condition, cancellationToken).ConfigureAwait(false);
             return info?.NextActivityRoleUserTree ?? new List<NodeView>();
         }
 
@@ -303,11 +303,11 @@ namespace sailflow.service
         /// 1) 网关下一步添加人员的预加载用户列表；
         /// 2) 会签模式的下一步添加人员的预加载用户列表；
         /// </summary>
-        public NextStepInfo GetNextStepInfo(FlowCommandContext runner, 
+        public NextStepInfo GetNextStepInfo(FlowCommandContext context, 
             IDictionary<string, string> condition = null)
         {
             var nsp = Managers.NextSteps;
-            var nextStepInfo = nsp.GetNextStepInfo(ResourceService, runner, condition);
+            var nextStepInfo = nsp.GetNextStepInfo(ResourceService, context, condition);
 
             return nextStepInfo;
         }
@@ -316,11 +316,11 @@ namespace sailflow.service
         /// Asynchronous retrieval of next step list
         /// 异步获取下一步列表
         /// </summary>
-        public Task<NextStepInfo> GetNextStepInfoAsync(FlowCommandContext runner,
+        public Task<NextStepInfo> GetNextStepInfoAsync(FlowCommandContext context,
             IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return Task.FromResult(GetNextStepInfo(runner, condition));
+            return Task.FromResult(GetNextStepInfo(context, condition));
         }
 
         /// <summary>
@@ -329,12 +329,12 @@ namespace sailflow.service
         /// 流程启动时获取开始节点下一步的节点角色人员列表
         /// 统一整合到: GetNextActivityRoleUserTree()
         /// </summary>
-        public IList<NodeView> GetFirstActivityRoleUserTree(FlowCommandContext runner, 
+        public IList<NodeView> GetFirstActivityRoleUserTree(FlowCommandContext context, 
             IDictionary<string, string> condition = null)
         {
             using (var kit = Sail.UseRunSQL())
             {
-                var processModel = Sail.ProcessModelFactory.CreateByProcess(runner.ProcessId, runner.Version);
+                var processModel = Sail.ProcessModelFactory.CreateByProcess(context.ProcessId, context.Version);
                 // 与启动运行时一致：从开始事件取下一步（首个办理节点）
                 var startActivity = processModel.GetStartActivity();
                 var nextResult = processModel.GetNextActivityListView(startActivity.ActivityId,
@@ -346,7 +346,7 @@ namespace sailflow.service
                 {
                     var roleIDs = ns.Roles != null ? ns.Roles.Select(x => x.Id).ToArray() : Array.Empty<string>();
                     if (roleIDs.Length > 0)
-                        ns.Users = ResourceService.GetUserListByRoleReceiverType(roleIDs, runner.UserId, (int)ns.ReceiverType);
+                        ns.Users = ResourceService.GetUserListByRoleReceiverType(roleIDs, context.UserId, (int)ns.ReceiverType);
                 }
                 return nextResult.StepList;
             }
@@ -358,11 +358,11 @@ namespace sailflow.service
         /// 流程启动时获取开始节点下一步的节点角色人员列表
         /// 统一整合到: GetNextActivityRoleUserTree()
         /// </summary>
-        public Task<IList<NodeView>> GetFirstActivityRoleUserTreeAsync(FlowCommandContext runner,
+        public Task<IList<NodeView>> GetFirstActivityRoleUserTreeAsync(FlowCommandContext context,
             IDictionary<string, string> condition = null, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return Task.FromResult(GetFirstActivityRoleUserTree(runner, condition));
+            return Task.FromResult(GetFirstActivityRoleUserTree(context, condition));
         }
 
         /// <summary>
@@ -391,11 +391,11 @@ namespace sailflow.service
         /// Get previous activity list
         /// 获取上一步节点信息
         /// </summary>
-        public IList<NodeView> GetPreviousActivityTree(FlowCommandContext runner)
+        public IList<NodeView> GetPreviousActivityTree(FlowCommandContext context)
         {
             var psc = Managers.PreviousSteps;
             var hasGatewayPassed = false;
-            var nodeList = psc.GetPreviousActivityTree(runner, out hasGatewayPassed);
+            var nodeList = psc.GetPreviousActivityTree(context, out hasGatewayPassed);
 
             return nodeList;
         }
@@ -404,21 +404,21 @@ namespace sailflow.service
         /// Get previous activity list
         /// 获取上一步节点信息
         /// </summary>
-        public Task<IList<NodeView>> GetPreviousActivityTreeAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+        public Task<IList<NodeView>> GetPreviousActivityTreeAsync(FlowCommandContext context, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return Task.FromResult(GetPreviousActivityTree(runner));
+            return Task.FromResult(GetPreviousActivityTree(context));
         }
 
         /// <summary>
         /// Get previous activity list
         /// 获取上一步节点信息
         /// </summary>
-        public PreviousStepInfo GetPreviousStepInfo(FlowCommandContext runner)
+        public PreviousStepInfo GetPreviousStepInfo(FlowCommandContext context)
         {             
             var hasGatewayPassed = false;
             var psc = Managers.PreviousSteps;
-            var nodeList = psc.GetPreviousActivityTree(runner, out hasGatewayPassed);
+            var nodeList = psc.GetPreviousActivityTree(context, out hasGatewayPassed);
             var psi = new PreviousStepInfo();
             psi.PreviousActivityRoleUserTree = nodeList;
             psi.HasGatewayPassed = hasGatewayPassed;
@@ -430,10 +430,10 @@ namespace sailflow.service
         /// Get previous activity list
         /// 异步获取上一步节点信息
         /// </summary>
-        public Task<PreviousStepInfo> GetPreviousStepInfoAsync(FlowCommandContext runner, CancellationToken cancellationToken = default)
+        public Task<PreviousStepInfo> GetPreviousStepInfoAsync(FlowCommandContext context, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return Task.FromResult(GetPreviousStepInfo(runner));
+            return Task.FromResult(GetPreviousStepInfo(context));
         }
         #endregion
 
@@ -442,10 +442,10 @@ namespace sailflow.service
         /// Obtain performer information for the signing process
         /// 获取加签步骤人员信息
         /// </summary>
-        public SignForwardStepInfo GetSignForwardStepInfo(FlowCommandContext runner)
+        public SignForwardStepInfo GetSignForwardStepInfo(FlowCommandContext context)
         {
             var ssp = Managers.SignForwardSteps;
-            var stepInfo = ssp.GetSignForwardStepInfo(runner);
+            var stepInfo = ssp.GetSignForwardStepInfo(context);
 
             return stepInfo;
         }
@@ -485,13 +485,13 @@ namespace sailflow.service
         }
 
         /// <summary>
-        /// Get process instance by runner
+        /// Get process instance by context
         /// 获取运行中的流程实例
         /// </summary>
-        public ProcessInstanceEntity GetRunningProcessInstance(FlowCommandContext runner)
+        public ProcessInstanceEntity GetRunningProcessInstance(FlowCommandContext context)
         {
             var pim = Managers.ProcessInstances;
-            var entity = pim.GetRunningProcessInstance(runner.BizPK, runner.ProcessId);
+            var entity = pim.GetRunningProcessInstance(context.BizPK, context.ProcessId);
             return entity;
         }
 
@@ -575,20 +575,20 @@ namespace sailflow.service
         /// Replace task
         /// 取代任务
         /// </summary>
-        public Boolean ReplaceTask(string taskId, List<TaskReplacedEntity> replaced, FlowCommandContext runner)
+        public Boolean ReplaceTask(string taskId, List<TaskReplacedEntity> replaced, FlowCommandContext context)
         {
             var tm = Sail.ManagerFactory.Tasks;
-            return tm.Replace(taskId, replaced, runner);
+            return tm.Replace(taskId, replaced, context);
         }
 
         /// <summary>
         /// Set process overdue
         /// 设置流程实例的过期时间
         /// </summary>
-        public Boolean SetProcessOverdue(string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner)
+        public Boolean SetProcessOverdue(string processInstanceId, DateTime overdueDateTime, FlowCommandContext context)
         {
             var pim = Managers.ProcessInstances;
-            return pim.SetOverdue(processInstanceId, overdueDateTime, runner);
+            return pim.SetOverdue(processInstanceId, overdueDateTime, context);
         }
 
         /// <summary>
@@ -625,10 +625,10 @@ namespace sailflow.service
         /// Get running node
         /// 获取流程当前运行节点信息
         /// </summary>
-        public ActivityInstanceEntity GetRunningNode(FlowCommandContext runner)
+        public ActivityInstanceEntity GetRunningNode(FlowCommandContext context)
         {
             var aim = Sail.ManagerFactory.Activities;
-            var entity = aim.GetRunningNode(runner);
+            var entity = aim.GetRunningNode(context);
 
             return entity;
         }
@@ -838,13 +838,13 @@ namespace sailflow.service
         /// Set task to read status (retrieve task based on task Id)
         /// 设置任务为已读状态(根据任务ID获取任务)
         /// </summary>
-        public bool SetTaskRead(FlowCommandContext runner)
+        public bool SetTaskRead(FlowCommandContext context)
         {
             bool isRead = false;
             try
             {
                 var taskManager = Sail.ManagerFactory.Tasks;
-                taskManager.SetTaskRead(runner);
+                taskManager.SetTaskRead(context);
                 isRead = true;
             }
             catch (System.Exception)

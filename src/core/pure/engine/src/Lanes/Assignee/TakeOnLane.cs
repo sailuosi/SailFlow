@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using mooSQL.data;
 using sailflow.hosting;
 using sailflow.utils;
@@ -14,8 +14,8 @@ namespace sailflow.lanes
     /// </summary>
     public sealed class TakeOnLane : AssigneeLaneBase
     {
-        public TakeOnLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public TakeOnLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

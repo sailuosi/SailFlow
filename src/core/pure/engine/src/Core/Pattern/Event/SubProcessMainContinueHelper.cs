@@ -14,7 +14,7 @@ namespace sailflow.run{
     /// </summary>
     internal static class SubProcessMainContinueHelper
     {
-        /// <summary>同步续推时写入 runner.DynamicVariables，供主流程 SubProcess 中介确定性校验。</summary>
+        /// <summary>同步续推时写入 context.DynamicVariables，供主流程 SubProcess 中介确定性校验。</summary>
         internal const string DynCompletedSubProcessInstanceId = "sail.completedSubProcessInstanceId";
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace sailflow.run{
                     + mainActivityInstanceId);
             }
 
-            var runner = new FlowCommandContext
+            var context = new FlowCommandContext
             {
                 BizChannel = mainProcessInstance.BizChannel,
                 BizPK = mainProcessInstance.BizPK,
@@ -58,8 +58,8 @@ namespace sailflow.run{
 
             if (!string.IsNullOrWhiteSpace(completedSubProcessInstanceId))
             {
-                runner.DynamicVariables ??= new Dictionary<string, string>();
-                runner.DynamicVariables[DynCompletedSubProcessInstanceId] = completedSubProcessInstanceId.Trim();
+                context.DynamicVariables ??= new Dictionary<string, string>();
+                context.DynamicVariables[DynCompletedSubProcessInstanceId] = completedSubProcessInstanceId.Trim();
             }
 
             var dict = new Dictionary<string, PerformerList>();
@@ -69,18 +69,18 @@ namespace sailflow.run{
                 var performerList = PerformerBuilder.CreatePerformerList(roles);
                 if (node.ActivityType != ActivityTypeEnum.EndNode
                     && performerList.Count == 0
-                    && !string.IsNullOrWhiteSpace(runner.UserId))
+                    && !string.IsNullOrWhiteSpace(context.UserId))
                 {
                     performerList = PerformerBuilder.CreatePerformerList(
-                        runner.UserId,
-                        string.IsNullOrWhiteSpace(runner.UserName) ? runner.UserId : runner.UserName);
+                        context.UserId,
+                        string.IsNullOrWhiteSpace(context.UserName) ? context.UserId : context.UserName);
                 }
 
                 dict[node.ActivityId] = performerList;
             }
 
-            runner.NextActivityPerformers = dict;
-            return runner;
+            context.NextActivityPerformers = dict;
+            return context;
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace sailflow.run{
         internal static bool IsInvokedSubProcessCompleted(
             SailClient sail,
             SQLBuilder kit,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             ActivityInstanceEntity fromActivityInstance)
         {
             if (fromActivityInstance == null
@@ -97,8 +97,8 @@ namespace sailflow.run{
                 return false;
 
             var pim = sail.ProcessInstances;
-            if (runner?.DynamicVariables != null
-                && runner.DynamicVariables.TryGetValue(DynCompletedSubProcessInstanceId, out var completedId)
+            if (context?.DynamicVariables != null
+                && context.DynamicVariables.TryGetValue(DynCompletedSubProcessInstanceId, out var completedId)
                 && !string.IsNullOrWhiteSpace(completedId))
             {
                 var child = pim.GetById(kit, completedId.Trim());

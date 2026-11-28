@@ -12,8 +12,8 @@ namespace sailflow.lanes
     /// <summary>撤回：CreateRuntimeInstanceWithdraw → Execute；族群固化 Gate/成功 Hook。</summary>
     public sealed class WithdrawLane : TransitionLaneBase
     {
-        public WithdrawLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public WithdrawLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

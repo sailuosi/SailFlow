@@ -15,10 +15,10 @@ namespace sailflow.lanes
     {
         readonly string _taskId;
 
-        public SuspendLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner, string taskId = null)
-            : base(sail, kit, runner)
+        public SuspendLane(SailClient sail, SQLBuilder kit, FlowCommandContext context, string taskId = null)
+            : base(sail, kit, context)
         {
-            _taskId = !string.IsNullOrWhiteSpace(taskId) ? taskId : runner?.TaskId;
+            _taskId = !string.IsNullOrWhiteSpace(taskId) ? taskId : context?.TaskId;
         }
 
         public override FlowOperation Operation => FlowOperation.Suspend;

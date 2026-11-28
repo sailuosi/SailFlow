@@ -9,7 +9,7 @@ namespace sailflow.assignee.Adapt;
 public static class LegacyMultiSignAdapter
 {
     /// <summary>
-    /// 节点定义了角色类 Partaker → RoleGroup；否则 null（Specific 等依赖 runner）。
+    /// 节点定义了角色类 Partaker → RoleGroup；否则 null（Specific 等依赖 context）。
     /// </summary>
     public static ConfigPair? InferResolveFromActivity(Activity? activity)
     {

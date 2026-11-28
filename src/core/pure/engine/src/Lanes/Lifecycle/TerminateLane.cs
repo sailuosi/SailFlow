@@ -13,8 +13,8 @@ namespace sailflow.lanes
     /// <summary>终止流程实例（ProcessInstanceId 或 BizPK+ProcessId+Version；级联收口待办）。</summary>
     public sealed class TerminateLane : LifecycleLaneBase
     {
-        public TerminateLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public TerminateLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

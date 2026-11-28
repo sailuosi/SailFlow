@@ -20,7 +20,7 @@ namespace sailflow.run{
             ActivityInstanceEntity fromActivityInstance,
             Activity currentActivity,
             ActivityInstanceEntity currentActivityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit);
     }
 
@@ -33,7 +33,7 @@ namespace sailflow.run{
             string transitionId,
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit);
     }
 }

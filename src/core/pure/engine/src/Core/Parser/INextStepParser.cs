@@ -22,7 +22,7 @@ namespace sailflow.run;
 /// <summary>契约 · NextStepParser（实现位于 sailflow.runtime）。</summary>
 public interface INextStepParser
 {
-    NextStepInfo GetNextStepInfo(IResourceService resourceService, FlowCommandContext runner, IDictionary<string, string> condition = null);
+    NextStepInfo GetNextStepInfo(IResourceService resourceService, FlowCommandContext context, IDictionary<string, string> condition = null);
 
     NextActivityListViewResult GetNextActivityRoleUserTree(IResourceService resourceService, FlowCommandContext context, IDictionary<string, string> condition);
 }

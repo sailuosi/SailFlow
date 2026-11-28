@@ -15,8 +15,8 @@ namespace sailflow.lanes
     /// </summary>
     public sealed class StartLane : TransitionLaneBase
     {
-        public StartLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public StartLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

@@ -12,8 +12,8 @@ namespace sailflow.lanes
     /// <summary>同意/推进：CreateRuntimeInstanceAppRunning(kit) → Gate → Execute → OnProcessContinued。</summary>
     public sealed class RunLane : TransitionLaneBase
     {
-        public RunLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public RunLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

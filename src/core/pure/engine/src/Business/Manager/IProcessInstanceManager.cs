@@ -65,41 +65,41 @@ public interface IProcessInstanceManager
 
     void Update(SQLBuilder kit, ProcessInstanceEntity entity);
 
-    ProcessInstanceEntity CreateNewProcessInstanceObject( FlowCommandContext runner, ProcessEntity processEntity, SubProcessNode subProcessNode = null, SQLBuilder kit = null);
+    ProcessInstanceEntity CreateNewProcessInstanceObject( FlowCommandContext context, ProcessEntity processEntity, SubProcessNode subProcessNode = null, SQLBuilder kit = null);
 
-    ProcessInstanceEntity Complete(string processInstanceId, FlowCommandContext runner);
+    ProcessInstanceEntity Complete(string processInstanceId, FlowCommandContext context);
 
-    ProcessInstanceEntity Complete(SQLBuilder kit, string processInstanceId, FlowCommandContext runner);
+    ProcessInstanceEntity Complete(SQLBuilder kit, string processInstanceId, FlowCommandContext context);
 
-    void Suspend(string processInstanceId, FlowCommandContext runner);
+    void Suspend(string processInstanceId, FlowCommandContext context);
 
-    void Suspend(SQLBuilder kit, string processInstanceId, FlowCommandContext runner);
+    void Suspend(SQLBuilder kit, string processInstanceId, FlowCommandContext context);
 
-    void Resume(string processInstanceId, FlowCommandContext runner);
+    void Resume(string processInstanceId, FlowCommandContext context);
 
-    void Resume(SQLBuilder kit, string processInstanceId, FlowCommandContext runner);
+    void Resume(SQLBuilder kit, string processInstanceId, FlowCommandContext context);
 
-    void RecallSubProcess(SQLBuilder kit, string invokedActivityInstanceId, FlowCommandContext runner);
+    void RecallSubProcess(SQLBuilder kit, string invokedActivityInstanceId, FlowCommandContext context);
 
     void Reverse(SQLBuilder kit, string processInstanceId, FlowCommandContext currentUser);
 
-    bool Cancel(FlowCommandContext runner);
+    bool Cancel(FlowCommandContext context);
 
-    bool Cancel(SQLBuilder kit, FlowCommandContext runner);
+    bool Cancel(SQLBuilder kit, FlowCommandContext context);
 
-    bool Discard(FlowCommandContext runner);
+    bool Discard(FlowCommandContext context);
 
-    void Discard(SQLBuilder kit, FlowCommandContext runner);
+    void Discard(SQLBuilder kit, FlowCommandContext context);
 
-    bool Terminate(FlowCommandContext runner);
+    bool Terminate(FlowCommandContext context);
 
     bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, string userId, string userName);
 
-    bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, FlowCommandContext runner);
+    bool Terminate(SQLBuilder kit, ProcessInstanceEntity entity, FlowCommandContext context);
 
-    bool SetOverdue(string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner);
+    bool SetOverdue(string processInstanceId, DateTime overdueDateTime, FlowCommandContext context);
 
-    bool SetOverdue(SQLBuilder kit, string processInstanceId, DateTime overdueDateTime, FlowCommandContext runner);
+    bool SetOverdue(SQLBuilder kit, string processInstanceId, DateTime overdueDateTime, FlowCommandContext context);
 
     bool Delete(string processInstanceId, bool isForced = false);
 

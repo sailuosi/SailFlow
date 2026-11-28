@@ -25,7 +25,7 @@ namespace sailflow.run{
         /// </summary>
         public override void Execute()
         {
-            var runner = base.SendBackOperation.ActivityResource.AppRunner;
+            var context = base.SendBackOperation.ActivityResource.AppRunner;
             var runningNode = base.SendBackOperation.BackwardFromActivityInstance;
             var previousActivityInstance = base.IActivityInstanceManager.GetPreviousActivityInstanceSimple(Kit.useSQL(), runningNode, base.SendBackOperation.BackwardToTaskActivity.ActivityId);
 

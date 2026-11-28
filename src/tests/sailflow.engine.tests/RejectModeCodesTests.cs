@@ -28,24 +28,24 @@ public sealed class RejectModeCodesTests
     [Fact]
     public void ReadMode_defaults_Previous_when_sheet_missing()
     {
-        var runner = new FlowCommandContext();
-        Assert.Equal(RejectModeCodes.Previous, RejectTargetResolver.ReadMode(runner));
+        var context = new FlowCommandContext();
+        Assert.Equal(RejectModeCodes.Previous, RejectTargetResolver.ReadMode(context));
     }
 
     [Fact]
     public void ReadMode_reads_ControlParameterSheet()
     {
-        var runner = new FlowCommandContext
+        var context = new FlowCommandContext
         {
             ControlParameterSheet = new ControlParameterSheet { RejectMode = "Starter" }
         };
-        Assert.Equal(RejectModeCodes.Starter, RejectTargetResolver.ReadMode(runner));
+        Assert.Equal(RejectModeCodes.Starter, RejectTargetResolver.ReadMode(context));
     }
 
     [Fact]
     public void Resolve_Specified_without_return_id_fails()
     {
-        var runner = new FlowCommandContext
+        var context = new FlowCommandContext
         {
             ControlParameterSheet = new ControlParameterSheet
             {
@@ -54,7 +54,7 @@ public sealed class RejectModeCodesTests
             }
         };
         // sail unused until after return-id check
-        var r = RejectTargetResolver.ResolveBackwardTarget(null!, runner);
+        var r = RejectTargetResolver.ResolveBackwardTarget(null!, context);
         Assert.False(r.Ok);
         Assert.Equal(RejectReasonCodes.RejectReturnActivityRequired, r.ReasonCode);
     }
@@ -62,11 +62,11 @@ public sealed class RejectModeCodesTests
     [Fact]
     public void Resolve_invalid_mode_fails()
     {
-        var runner = new FlowCommandContext
+        var context = new FlowCommandContext
         {
             ControlParameterSheet = new ControlParameterSheet { RejectMode = "Nope" }
         };
-        var r = RejectTargetResolver.ResolveBackwardTarget(null!, runner);
+        var r = RejectTargetResolver.ResolveBackwardTarget(null!, context);
         Assert.False(r.Ok);
         Assert.Equal(RejectReasonCodes.RejectModeInvalid, r.ReasonCode);
     }
@@ -74,14 +74,14 @@ public sealed class RejectModeCodesTests
     [Fact]
     public void Resolve_Terminate_via_backward_resolver_fails()
     {
-        var runner = new FlowCommandContext
+        var context = new FlowCommandContext
         {
             ControlParameterSheet = new ControlParameterSheet
             {
                 RejectMode = RejectModeCodes.Terminate
             }
         };
-        var r = RejectTargetResolver.ResolveBackwardTarget(null!, runner);
+        var r = RejectTargetResolver.ResolveBackwardTarget(null!, context);
         Assert.False(r.Ok);
         Assert.Equal(RejectReasonCodes.RejectModeInvalid, r.ReasonCode);
     }

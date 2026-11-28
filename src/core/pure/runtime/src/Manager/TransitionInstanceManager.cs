@@ -45,7 +45,7 @@ namespace sailflow.data
             ActivityInstanceEntity toActivityInstance,
             TransitionTypeEnum transitionType,
             TransitionFlyingTypeEnum flyingType,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             byte conditionParseResult)
         {
             var entity = new TrackEntity
@@ -66,8 +66,8 @@ namespace sailflow.data
                 ToActType = toActivityInstance.ActivityType,
                 ToActName = toActivityInstance.ActivityName,
                 ConditionParsedResult = conditionParseResult,
-                CreatedUserId = runner.UserId,
-                CreatedUserName = runner.UserName,
+                CreatedUserId = context.UserId,
+                CreatedUserName = context.UserName,
                 CreatedDateTime = DateTime.UtcNow
             };
             return entity;

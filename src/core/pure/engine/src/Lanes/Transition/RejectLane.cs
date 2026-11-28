@@ -19,8 +19,8 @@ namespace sailflow.lanes
     /// </summary>
     public sealed class RejectLane : TransitionLaneBase
     {
-        public RejectLane(SailClient sail, SQLBuilder kit, FlowCommandContext runner)
-            : base(sail, kit, runner)
+        public RejectLane(SailClient sail, SQLBuilder kit, FlowCommandContext context)
+            : base(sail, kit, context)
         {
         }
 

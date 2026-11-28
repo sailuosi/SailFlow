@@ -29,18 +29,18 @@ namespace sailflow.run{
             string transitionId,
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Unknown);
 
             if (GatewayActivity.GatewayDetail.JoinPassType == GatewayJoinPassEnum.Count)
             {
-                result = CompleteAutomaticallyByTokensCount(processInstance, transitionId, fromActivity, fromActivityInstance, runner, kit);
+                result = CompleteAutomaticallyByTokensCount(processInstance, transitionId, fromActivity, fromActivityInstance, context, kit);
             }
             else if (GatewayActivity.GatewayDetail.JoinPassType == GatewayJoinPassEnum.Forced)
             {
-                result = CompleteAutomaticallyByForcedBranchesCount(processInstance, transitionId, fromActivity, fromActivityInstance, runner, kit);
+                result = CompleteAutomaticallyByForcedBranchesCount(processInstance, transitionId, fromActivity, fromActivityInstance, context, kit);
             }
             return result;
         }
@@ -53,17 +53,17 @@ namespace sailflow.run{
             string transitionId,
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Unknown);
-            if (runner.ControlParameterSheet == null || runner.ControlParameterSheet.EOrJoinTokenPassCount <= 0)
+            if (context.ControlParameterSheet == null || context.ControlParameterSheet.EOrJoinTokenPassCount <= 0)
             {
                 result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Failed);
                 throw new WfXpdlException(Sail.Messages.GetEngineMessage("nodemediatoreorjoin.CompleteAutomaticallyByTokensCount.error"));
             }
-            var tokensCountRequired = runner.ControlParameterSheet.EOrJoinTokenPassCount;
-            result = CompleteAutomaticallyInternal(processInstance, transitionId, fromActivity, fromActivityInstance, tokensCountRequired, runner, kit);
+            var tokensCountRequired = context.ControlParameterSheet.EOrJoinTokenPassCount;
+            result = CompleteAutomaticallyInternal(processInstance, transitionId, fromActivity, fromActivityInstance, tokensCountRequired, context, kit);
             return result;
         }
 
@@ -75,7 +75,7 @@ namespace sailflow.run{
             string transitionId,
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Unknown);
@@ -97,7 +97,7 @@ namespace sailflow.run{
             }
             else if (forcedCount == 1)
             {
-                result = CompleteAutomaticallyInternal(processInstance, transitionId, fromActivity, fromActivityInstance, tokensCountRequired, runner, kit);
+                result = CompleteAutomaticallyInternal(processInstance, transitionId, fromActivity, fromActivityInstance, tokensCountRequired, context, kit);
             }
             return result;
         }
@@ -111,7 +111,7 @@ namespace sailflow.run{
             Activity fromActivity,
             ActivityInstanceEntity fromActivityInstance,
             int tokensCountRequired,
-            FlowCommandContext runner,
+            FlowCommandContext context,
             SQLBuilder kit)
         {
             NodeAutoExecutedResult result = NodeAutoExecutedResult.CreateGatewayExecutedResult(NodeAutoExecutedStatus.Unknown);
@@ -125,7 +125,7 @@ namespace sailflow.run{
             {
                 //首个分支首次运行
                 joinNode = base.CreateActivityInstanceObject(base.GatewayActivity,
-                    processInstance, runner);
+                    processInstance, context);
 
                 //计算所需令牌总数
                 joinNode.TokensRequired = tokensCountRequired;
@@ -135,7 +135,7 @@ namespace sailflow.run{
                 joinNode.GateWayTypeId = (short)GatewayDirectionEnum.OrJoin;
 
                 //写入首步预选默认用户列表
-                joinNode.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(runner.NextActivityPerformers, Sail.JsonSerializer);
+                joinNode.NextStepPerformers = NextStepUtility.SerializeNextStepPerformers(context.NextActivityPerformers, Sail.JsonSerializer);
 
                 base.InsertActivityInstance(joinNode,
                     kit);
@@ -145,7 +145,7 @@ namespace sailflow.run{
                     joinNode,
                     TransitionTypeEnum.Forward,
                     TransitionFlyingTypeEnum.NotFlying,
-                    runner,
+                    context,
                     kit);
             }
             else
@@ -154,14 +154,14 @@ namespace sailflow.run{
                 base.GatewayActivityInstance = joinNode;
 
                 //增加令牌计数
-                base.IActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.ActivityInstanceId, runner);
+                base.IActivityInstanceManager.IncreaseTokensHad(kit.useSQL(), base.GatewayActivityInstance.ActivityInstanceId, context);
                 base.InsertTransitionInstance(processInstance,
                     transitionId,
                     fromActivityInstance,
                     joinNode,
                     TransitionTypeEnum.Forward,
                     TransitionFlyingTypeEnum.NotFlying,
-                    runner,
+                    context,
                     kit);
             }
 
@@ -170,7 +170,7 @@ namespace sailflow.run{
             {
                 //达到完成所需令牌数时，将节点状态设为完成
                 base.CompleteActivityInstance(base.GatewayActivityInstance.ActivityInstanceId,
-                    runner,
+                    context,
                     kit);
                 base.GatewayActivityInstance.ActivityState = (short)ActivityStateEnum.Completed;
 

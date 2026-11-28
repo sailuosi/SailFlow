@@ -721,10 +721,10 @@ namespace sailflow.xml
                     {
                         //前端用户明确指定下一步的执行用户列表
                         //Front end users clearly specify the list of executing users for the next step
-                        var runner = activityResource.AppRunner;
-                        if (runner != null) 
+                        var context = activityResource.AppRunner;
+                        if (context != null) 
                         {
-                            if (runner.NextPerformerType == NextPerformerIntTypeEnum.Specific
+                            if (context.NextPerformerType == NextPerformerIntTypeEnum.Specific
                              && activityResource.NextActivityPerformers != null)
                             {
                                 if (expression.Compile().Invoke(activityResource, c.Activity))
@@ -732,7 +732,7 @@ namespace sailflow.xml
                                     newRoot.Add(c);
                                 }
                             }
-                            else if (IsInternalNextPerformerType(runner.NextPerformerType) == true)
+                            else if (IsInternalNextPerformerType(context.NextPerformerType) == true)
                             {
                                 //系统内部定义的测试使用方式，直接添加下一步步骤到下一步列表
                                 //The testing usage method defined within the system can be directly added to the next step list

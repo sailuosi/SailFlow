@@ -54,7 +54,7 @@ namespace sailflow.run{
             ActivityResource activityResource,
             SQLBuilder kit)
         {
-            FlowCommandContext runner = new FlowCommandContext
+            FlowCommandContext context = new FlowCommandContext
             {
                 UserId = activityResource.AppRunner.UserId,
                 UserName = activityResource.AppRunner.UserName
@@ -100,18 +100,18 @@ namespace sailflow.run{
 
                 if (passed == NodePassedTypeEnum.NotPassed)
                 {
-                    CompleteActivityInstance(from.ActivityInstanceId, runner, kit);
+                    CompleteActivityInstance(from.ActivityInstanceId, context, kit);
                     from.ActivityState = (short)ActivityStateEnum.Completed;
                     return from.CanNotRenewInstance == 0;
                 }
 
                 // Passed
-                CompleteActivityInstance(from.ActivityInstanceId, runner, kit);
+                CompleteActivityInstance(from.ActivityInstanceId, context, kit);
                 from.ActivityState = (short)ActivityStateEnum.Completed;
                 return from.CanNotRenewInstance == 0;
             }
 
-            CompleteActivityInstance(from.ActivityInstanceId, runner, kit);
+            CompleteActivityInstance(from.ActivityInstanceId, context, kit);
             from.ActivityState = (short)ActivityStateEnum.Completed;
             return from.CanNotRenewInstance == 0;
         }
