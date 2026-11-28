@@ -150,7 +150,7 @@ AntFlow 五型 = 上表笛卡尔积中的常见组合，**仅对照别名**（`B
 | 抄送 | 算人 / 待办 | Host `Copyto`；禁止塞进 Resolve Type |
 | 沟通 | 抄送 / 前加签 | `Consult` 建参与者 `sf_task` 并锁审批；抄送不锁、不加签无审批权 |
 | 关闭 | 终止 / 作废 | `Close` vs `Terminate`/`Discard`（后二者码表默认关） |
-| 催办 | 加急 | `Urge`=提醒不改状态；加急=优先级字段，勿混 |
+| 催办 | 加急/缓急 | `Urge`=催办通知不改状态；缓急=`Task.Hurry`（`tk_hurry`）；队列序号=`Idx`；提醒内容=`Tips`；提醒方式∈`RowPara.remindWay`；勿混 |
 
 ---
 

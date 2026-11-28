@@ -176,5 +176,20 @@ namespace sailflow.utils
         /// 用于消息启动时的主题
         /// </summary>
         public string MessageTopic { get; set; }
+
+        /// <summary>
+        /// 办理缓急 → 写入新待办 <c>Task.Hurry</c>；null 则 0。勿与 Idx（队列序号）混淆。
+        /// </summary>
+        public int? Hurry { get; set; }
+
+        /// <summary>
+        /// 提醒内容 → 写入新待办 <c>Task.Tips</c>（最长 500）。
+        /// </summary>
+        public string Tips { get; set; }
+
+        /// <summary>
+        /// 行扩展 querystring（含提醒方式 <c>remindWay</c> 等）→ 写入新待办 <c>Task.RowPara</c>。
+        /// </summary>
+        public string RowPara { get; set; }
     }
 }

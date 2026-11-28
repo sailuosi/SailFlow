@@ -319,7 +319,7 @@ namespace sailflow.data
             Performer performer,
             FlowCommandContext runner)
         {
-            return Insert(kit, activityInstance, performer, runner.UserId, runner.UserName, null, runner);
+            return Insert(kit, activityInstance, performer, runner.UserId, runner.UserName, null, runner, null);
         }
 
         private string Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
@@ -328,7 +328,8 @@ namespace sailflow.data
             string runnerId,
             string runnerName,
             string entrustedTaskId = null,
-            FlowCommandContext runner = null)
+            FlowCommandContext runner = null,
+            TaskEntity copyMetaFrom = null)
         {
             return Insert(kit, activityInstance,
                 new Performer(performerId, performerName)
@@ -340,7 +341,7 @@ namespace sailflow.data
                     UnitCode = activityInstance?.UnitCode,
                     UnitName = activityInstance?.UnitName
                 },
-                runnerId, runnerName, entrustedTaskId, runner);
+                runnerId, runnerName, entrustedTaskId, runner, copyMetaFrom);
         }
 
         private string Insert(SQLBuilder kit, ActivityInstanceEntity activityInstance,
@@ -348,7 +349,8 @@ namespace sailflow.data
             string runnerId,
             string runnerName,
             string entrustedTaskId = null,
-            FlowCommandContext runner = null)
+            FlowCommandContext runner = null,
+            TaskEntity copyMetaFrom = null)
         {
             var entity = new TaskEntity
             {
@@ -384,6 +386,7 @@ namespace sailflow.data
                 CreatedDateTime = DateTime.UtcNow,
                 RecordStatusInvalid = 0
             };
+            ApplyRunnerTaskMeta(entity, runner, copyMetaFrom);
             StampNewTaskClocks(entity, activateNow: true);
             if (!string.IsNullOrWhiteSpace(entrustedTaskId))
                 entity.EntrustedTaskId = entrustedTaskId;
@@ -437,8 +440,51 @@ namespace sailflow.data
                 entity.ActiveAt = now;
             if (entity.Idx == null)
                 entity.Idx = 0;
+            if (entity.Hurry == null)
+                entity.Hurry = 0;
             if (entity.IsRead == null)
                 entity.IsRead = 0;
+        }
+
+        /// <summary>
+        /// 从命令入参写入新待办缓急/提醒；可选从源任务拷贝后再 merge <paramref name="runner"/>.RowPara。
+        /// 不改 Idx（队列序号）。
+        /// </summary>
+        public static void ApplyRunnerTaskMeta(
+            TaskEntity entity,
+            FlowCommandContext runner,
+            TaskEntity copyFrom = null)
+        {
+            if (entity == null)
+                return;
+
+            if (copyFrom != null)
+            {
+                entity.Hurry = copyFrom.Hurry ?? 0;
+                entity.Tips = copyFrom.Tips;
+                entity.RowPara = copyFrom.RowPara;
+            }
+
+            if (runner == null)
+            {
+                entity.Hurry ??= 0;
+                return;
+            }
+
+            if (runner.Hurry != null)
+                entity.Hurry = runner.Hurry;
+            else
+                entity.Hurry ??= 0;
+
+            if (!string.IsNullOrWhiteSpace(runner.Tips))
+                entity.Tips = RowParaHelper.TruncateTips(runner.Tips);
+            else if (copyFrom == null)
+                entity.Tips = RowParaHelper.TruncateTips(entity.Tips);
+
+            if (!string.IsNullOrWhiteSpace(runner.RowPara))
+                entity.RowPara = RowParaHelper.Merge(entity.RowPara, runner.RowPara);
+            else
+                entity.RowPara = RowParaHelper.Truncate(entity.RowPara, RowParaHelper.MaxLength);
         }
 
         /// <summary>
@@ -733,6 +779,7 @@ namespace sailflow.data
                 CreatedUserId = runner?.UserId ?? originalTask.CreatedUserId,
                 CreatedUserName = runner?.UserName ?? originalTask.CreatedUserName
             };
+            ApplyRunnerTaskMeta(newTask, runner, originalTask);
             StampNewTaskClocks(newTask, activateNow: true);
             Insert(kit, newTask);
             FireTaskLifecycle(kit, newTask, runner, TaskNotifyKind.Created);
@@ -793,13 +840,13 @@ namespace sailflow.data
                 return WfDataManagedResult.Exception(Sail.Messages.GetEngineMessage("taskmanager.entrust.warn"));
             }
 
+            var srcTask = GetTask(kit, entity.TaskId);
             if (cancelOriginalTask)
             {
-                var task = GetTask(kit, entity.TaskId);
-                ApplyTaskEnd(task, TaskStateEnum.Closed, null, TaskEndTypes.DelegatedOut);
-                Update(kit, task);
+                ApplyTaskEnd(srcTask, TaskStateEnum.Closed, null, TaskEndTypes.DelegatedOut);
+                Update(kit, srcTask);
                 Sail.CapabilityDispatcher.FireTaskLifecycle(
-                    kit, task, activityInstance, null, TaskNotifyKind.Cancelled);
+                    kit, srcTask, activityInstance, null, TaskNotifyKind.Cancelled);
             }
 
             var taskList = GetTaskListByActivity(kit, activityInstance.ProcessInstanceId, activityInstance.ActivityInstanceId);
@@ -809,7 +856,7 @@ namespace sailflow.data
             }
 
             Insert(kit, activityInstance, entity.EntrustToUserId, entity.EntrustToUserName,
-                entity.RunnerId, entity.RunnerName, entity.TaskId);
+                entity.RunnerId, entity.RunnerName, entity.TaskId, null, srcTask);
             return WfDataManagedResult.Success();
         }
 
@@ -888,7 +935,7 @@ namespace sailflow.data
             foreach (var target in accepted)
             {
                 Insert(kit, activityInstance, target.UserId, target.UserName,
-                    runner.UserId, runner.UserName, taskId, runner);
+                    runner.UserId, runner.UserName, taskId, runner, task);
             }
 
             // 按仍打开的待办重写活动 SignIds/Names，转出人不再占用会签名额
@@ -1518,6 +1565,7 @@ namespace sailflow.data
                     CreatedDateTime = DateTime.UtcNow,
                     RecordStatusInvalid = 0
                 };
+                ApplyRunnerTaskMeta(entity, runner);
                 StampNewTaskClocks(entity, activateNow: true);
                 var newId = Insert(kit, entity);
                 entity.TaskId = newId;
@@ -1755,6 +1803,7 @@ namespace sailflow.data
                 CreatedUserId = originalTask.CreatedUserId,
                 CreatedUserName = originalTask.CreatedUserName
             };
+            ApplyRunnerTaskMeta(newTask, null, originalTask);
             StampNewTaskClocks(newTask, activateNow: true);
             Insert(kit, newTask);
             FireTaskLifecycle(kit, newTask, null, TaskNotifyKind.Created);

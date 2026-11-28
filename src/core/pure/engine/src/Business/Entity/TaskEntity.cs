@@ -143,10 +143,22 @@ namespace sailflow.data
         public string SignName { get; set; }
 
         /// <summary>
-        /// 优先级（列 <c>tk_idx</c>）；默认 0。
+        /// 会签/队列办理序号（列 <c>tk_idx</c>）；默认 0。非紧急程度（缓急见 <see cref="Hurry"/>）。
         /// </summary>
         [SooColumn(Name = "tk_idx")]
         public int? Idx { get; set; }
+
+        /// <summary>
+        /// 办理缓急（列 <c>tk_hurry</c>）：0无 1平急 2加急 3特急 4特提；默认 0。
+        /// </summary>
+        [SooColumn(Name = "tk_hurry")]
+        public int? Hurry { get; set; }
+
+        /// <summary>
+        /// 提醒内容（列 <c>tk_tips</c>）；办理人打开待办可见；最长 500。
+        /// </summary>
+        [SooColumn(Name = "tk_tips", Length = 500)]
+        public string Tips { get; set; }
 
         /// <summary>
         /// 组别 Id（列 <c>tk_group_id</c>），来自 Performer.GroupId。

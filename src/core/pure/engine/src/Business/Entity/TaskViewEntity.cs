@@ -130,6 +130,14 @@ namespace sailflow.data
         [SooColumn(Name = "tk_idx", Kind = FieldKind.Base)]
         public int? Idx { get; set; }
 
+        /// <summary>办理缓急（列 tk_hurry）。</summary>
+        [SooColumn(Name = "tk_hurry", Kind = FieldKind.Base)]
+        public int? Hurry { get; set; }
+
+        /// <summary>提醒内容（列 tk_tips）。</summary>
+        [SooColumn(Name = "tk_tips", Kind = FieldKind.Base)]
+        public string Tips { get; set; }
+
         [SooColumn(Name = "tk_group_id", Kind = FieldKind.Base)]
         public string GroupId { get; set; }
 

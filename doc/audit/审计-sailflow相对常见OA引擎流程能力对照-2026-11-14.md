@@ -103,7 +103,7 @@
 | Gate / Hook / Outbox 可靠副作用 | ✅        | 🟡  | Sail 三线分离成熟；OA 侧有回调/消息，少见同级 Outbox 模型         |
 | 审批意见                       | ✅        | ✅   | Sail=`sf_task.tk_msg`（`Msg`）；亦可 Host/`Conditions.comment` |
 | 附件                         | ❌/弱      | 🟡  | 两边都非强一等公民                                     |
-| 加急（优先级）                    | 🟡       | ❌   | Sail=`sf_task.tk_idx`（`Idx`）已落列；产品按钮仍弱；**勿与催办** `Urge` **混称** |
+| 加急（缓急 Hurry）                | 🟡       | ❌   | Sail=`sf_task.tk_hurry`（`Hurry`）+ `tk_tips`/`RowPara.remindWay`；**勿与** `tk_idx` 队列序号、**勿与催办** `Urge` **混称** |
 | 分表 / 冷热归档                  | ✅        | ❌   | Sail=`ProcessArchiveService` + HotShard；运维向能力 |
 
 ---
